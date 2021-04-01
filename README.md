@@ -6,7 +6,7 @@ Implemented calibration steps include (varying per instrument):
 | Step                         | MAHLI     | Mastcam   | Mastcam-Z |   IDC     |    ICC    | 
 | ---------------------------- |:---------:|:---------:|:---------:|:---------:|:---------:|
 | Decompanding                 | &#9745;   | &#9745;   | &#9745;   | &#9745;   |  &#9745;  |
-| Debayer (demosaicking)       |           | &#9745;   |           |           |           |
+| Debayer (demosaicking)       |           | &#9745;   | &#9745;   |           |           |
 | Blemish repair (inpainting)  | &#9745;   |           | &#9745;   |           |           |
 | Flatfielding                 | &#9745;   |           |           |           |           |
 | Color weight correction      | &#9745;   | &#9745;   | &#9745;   |  &#9745;  |  &#9745;  |

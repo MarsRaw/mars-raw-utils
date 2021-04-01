@@ -1,9 +1,15 @@
 
 use std::path::Path;
 
+use crate::error;
+
 // Checks if file exists.
 pub fn file_exists(chk_path:&str) -> bool {
     Path::new(&chk_path).exists()
+}
+
+pub fn basename(chk_path:&str) -> String {
+    String::from(Path::new(&chk_path).file_name().unwrap().to_str().unwrap())
 }
 
 pub fn file_writable(chk_path:&str) -> bool {

@@ -17,10 +17,18 @@ use clap::{Arg, App};
 
 
 fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, no_ilt:bool) {
-    let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::M20MastcamZLeft).unwrap();
+    
+    let mut instrument = enums::Instrument::M20MastcamZLeft;
 
-    vprintln!("Inpainting...");
-    raw.apply_inpaint_fix().unwrap();
+    let bn = path::basename(&input_file);
+    if bn.chars().nth(1).unwrap() == 'R' {
+        instrument = enums::Instrument::M20MastcamZRight;
+        vprintln!("Processing for Mastcam-Z Right");
+    } else {
+        vprintln!("Processing for Mastcam-Z Left") ;
+    }
+    
+    let mut raw = rgbimage::RgbImage::open(input_file, instrument).unwrap();
 
     let mut data_max = 255.0;
 
@@ -29,6 +37,15 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
         raw.decompand().unwrap();
         data_max = 2033.0;
     }
+
+    // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
+    if input_file.find("ECM") != None {
+        vprintln!("Debayering...");
+        raw.debayer().unwrap();
+    }
+
+    vprintln!("Inpainting...");
+    raw.apply_inpaint_fix().unwrap();
 
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
