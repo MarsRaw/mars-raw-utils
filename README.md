@@ -1,6 +1,24 @@
-# Mars Raw Utilities
+# Mars Raw Image Utilities
+A set of utilities for processing and calibration of imagery from either the Curiosity or Perseverance rovers. Meant to be used on publicly available images. 
+
+Implemented calibration steps include (varying per instrument):
+
+| Step                         | MAHLI     | Mastcam   | Mastcam-Z |
+| ---------------------------- |:---------:|:---------:|:---------:|
+| Decompanding                 | &#9745;   | &#9745;   | &#9745;   |
+| Debayer (demosaicking)       |           | &#9745;   |           |
+| Blemish repair (inpainting)  | &#9745;   |           | &#9745;   |
+| Flatfielding                 | &#9745;   |           |           |
+| Color weight correction      | &#9745;   | &#9745;   | &#9745;   |
+
+
+Additional instruments will be implemented more or less whenever I get to them...
+
 
 ## Mars Science Laboratory (Curiosity):
+### Fetch Raws:
+...
+
 ### MAHLI Calibration:
 ```
 USAGE:
@@ -19,10 +37,44 @@ OPTIONS:
 ```
 
 ### MastCam:
+```
+USAGE:
+    msl_mcam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>                                      Blue weight
+    -c, --color_noise_reduction <COLOR_NOISE_REDUCTION>    Color noise reduction amount in pixels
+    -G, --green <GREEN>                                    Green weight
+    -i, --inputs <INPUT>...                                Input
+    -R, --red <RED>                                        Red weight
+```
 ...
 ## Mars 2020 (Perseverance):
-### MastCam-Z:
+### Fetch Raws:
 ...
+
+### MastCam-Z:
+```
+USAGE:
+    m20_zcam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>                                      Blue weight
+    -c, --color_noise_reduction <COLOR_NOISE_REDUCTION>    Color noise reduction amount in pixels
+    -G, --green <GREEN>                                    Green weight
+    -i, --inputs <INPUT>...                                Input
+    -R, --red <RED>                                        Red weight
+```
 
 ## References:
 
