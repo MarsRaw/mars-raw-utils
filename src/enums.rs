@@ -4,7 +4,8 @@
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Mission {
     MSL,
-    MARS2020
+    MARS2020,
+    INSIGHT
 }
 
 // Supported instruments
@@ -15,6 +16,8 @@ pub enum Instrument {
     MslMastcamRight,
     M20MastcamZLeft,
     M20MastcamZRight,
+    NsytICC,
+    NsytIDC,
     None
 }
 

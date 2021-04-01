@@ -30,6 +30,14 @@ path = "bin/msl_fetch_raw.rs"
 name = "m20_fetch_raw"
 path = "bin/m20_fetch_raw.rs"
 
+[[bin]]
+name = "nsyt_icc_calibrate"
+path = "bin/nsyt_icc_calibrate.rs"
+
+[[bin]]
+name = "nsyt_idc_calibrate"
+path = "bin/nsyt_idc_calibrate.rs"
+
 [features]
 default = ["opencv-4"]
 clang-runtime = ["clang/runtime"]

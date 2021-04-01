@@ -3,13 +3,13 @@ A set of utilities for processing and calibration of imagery from either the Cur
 
 Implemented calibration steps include (varying per instrument):
 
-| Step                         | MAHLI     | Mastcam   | Mastcam-Z |
-| ---------------------------- |:---------:|:---------:|:---------:|
-| Decompanding                 | &#9745;   | &#9745;   | &#9745;   |
-| Debayer (demosaicking)       |           | &#9745;   |           |
-| Blemish repair (inpainting)  | &#9745;   |           | &#9745;   |
-| Flatfielding                 | &#9745;   |           |           |
-| Color weight correction      | &#9745;   | &#9745;   | &#9745;   |
+| Step                         | MAHLI     | Mastcam   | Mastcam-Z |   IDC     |    ICC    | 
+| ---------------------------- |:---------:|:---------:|:---------:|:---------:|:---------:|
+| Decompanding                 | &#9745;   | &#9745;   | &#9745;   | &#9745;   |  &#9745;  |
+| Debayer (demosaicking)       |           | &#9745;   |           |           |           |
+| Blemish repair (inpainting)  | &#9745;   |           | &#9745;   |           |           |
+| Flatfielding                 | &#9745;   |           |           |           |           |
+| Color weight correction      | &#9745;   | &#9745;   | &#9745;   |  &#9745;  |  &#9745;  |
 
 
 Additional instruments will be implemented more or less whenever I get to them...
@@ -78,6 +78,46 @@ OPTIONS:
     -R, --red <RED>            Red weight
 ```
 
+## InSight
+### Fetch Raws:
+...
+### Instrument Context Camera (ICC):
+```
+USAGE:
+    nsyt_icc_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -r, --raw        Raw color, skip ILT
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>          Blue weight
+    -G, --green <GREEN>        Green weight
+    -i, --inputs <INPUT>...    Input
+    -R, --red <RED>            Red weight
+```
+
+### Instrument Deployment Camera (IDC):
+```
+USAGE:
+    nsyt_idc_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -r, --raw        Raw color, skip ILT
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>          Blue weight
+    -G, --green <GREEN>        Green weight
+    -i, --inputs <INPUT>...    Input
+    -R, --red <RED>            Red weight
+```
+
+
 ## References:
 
 Bell, J. F. et al. (2017), The Mars Science Laboratory Curiosity rover
@@ -113,4 +153,10 @@ Mastcam instruments: Preflight and in‐flight calibration, validation,
 and data archiving, Earth and Space Science, 4, 396– 452,
 doi:10.1002/2016EA000219.
 https://doi.org/10.1002/2016EA000219
+
+
+Deen, R., Zamani, P., Abarca, H., Maki, J. InSight (NSYT)
+Software Interface Specification Camera Experiment Data Record (EDR) and Reduced Data Record (RDR) Data
+Products (version 3.3: 26 June 2019)
+https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/insight_cameras_sis.pdf
 
