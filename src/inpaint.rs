@@ -29,7 +29,7 @@ fn determine_mask_file(instrument:enums::Instrument) -> error::Result<&'static s
     }
 }
 
-fn load_mask_file(filename:&str) -> error::Result<core::Mat> {
+fn load_mask_file(filename:&str, instrument:enums::Instrument) -> error::Result<core::Mat> {
     if ! path::file_exists(filename) {
         return Err(constants::status::FILE_NOT_FOUND);
     }
@@ -37,13 +37,16 @@ fn load_mask_file(filename:&str) -> error::Result<core::Mat> {
     vprintln!("Loading inpaint mask file {}", filename);
 
     let mask = imgcodecs::imread(filename, imgcodecs::IMREAD_GRAYSCALE).unwrap();
-    let subframe = opencvutils::crop(&mask, 32, 16, 1584, 1184).unwrap();
-    Ok(subframe)
+
+    match instrument {
+        enums::Instrument::MslMAHLI => Ok(opencvutils::crop(&mask, 32, 16, 1584, 1184).unwrap()),
+        _ => Ok(mask)
+    }
 }
 
 fn load_mask(instrument:enums::Instrument) -> error::Result<core::Mat> {
     let mask_file = determine_mask_file(instrument).unwrap();
-    load_mask_file(mask_file)
+    load_mask_file(mask_file, instrument)
 }
 
 pub fn apply_inpaint_to_buffer(buffer:&ImageBuffer, instrument:enums::Instrument) -> error::Result<ImageBuffer> {

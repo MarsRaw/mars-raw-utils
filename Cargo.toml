@@ -14,6 +14,22 @@ doctest = false
 name = "msl_mahli_calibrate"
 path = "bin/msl_mahli_calibrate.rs"
 
+[[bin]]
+name = "msl_mcam_calibrate"
+path = "bin/msl_mcam_calibrate.rs"
+
+[[bin]]
+name = "m20_zcam_calibrate"
+path = "bin/m20_zcam_calibrate.rs"
+
+[[bin]]
+name = "msl_fetch_raw"
+path = "bin/msl_fetch_raw.rs"
+
+[[bin]]
+name = "m20_fetch_raw"
+path = "bin/m20_fetch_raw.rs"
+
 [features]
 default = ["opencv-4"]
 clang-runtime = ["clang/runtime"]
@@ -32,6 +48,7 @@ zip = "0.5.11"
 json = "0.12.4"
 chrono = "0.4.19"
 clang-sys = "1.1.1"
+http = "0.2.3"
 
 
 [build-dependencies]

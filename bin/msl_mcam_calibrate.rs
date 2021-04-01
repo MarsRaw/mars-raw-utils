@@ -4,36 +4,42 @@ use mars_raw_utils::{
     vprintln, 
     rgbimage, 
     enums, 
-    path, 
+    path,
     util
 };
 
 #[macro_use]
 extern crate clap;
-use clap::{Arg, App};
 
 use std::process;
 
-fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32) {
-    let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::MslMAHLI).unwrap();
+use clap::{Arg, App};
 
-    if raw.width == 1632 && raw.height == 1200 {
-        vprintln!("Cropping...");
-        raw.crop(32, 16, 1584, 1184).unwrap();
-    }
-    
-    vprintln!("Inpainting...");
-    raw.apply_inpaint_fix().unwrap();
+
+
+fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, color_noise_reduction:i32) {
+    let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::MslMastcamLeft).unwrap();
+
+    //vprintln!("Inpainting...");
+    //raw.apply_inpaint_fix(enums::Instrument::MslMastcamLeft).unwrap();
 
     vprintln!("Decompanding...");
     raw.decompand().unwrap();
 
-    vprintln!("Flatfielding...");
-    raw.flatfield().unwrap();
+    vprintln!("Debayering...");
+    raw.debayer().unwrap();
+
+    //vprintln!("Flatfielding...");
+    //raw.flatfield(enums::Instrument::MslMAHLI).unwrap();
 
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
 
+    if color_noise_reduction > 0 {
+        vprintln!("Color noise reduction...");
+        raw.reduce_color_noise(color_noise_reduction).unwrap();
+    }
+    
     vprintln!("Normalizing...");
     raw.normalize_to_16bit_with_max(2033.0).unwrap();
 
@@ -42,6 +48,8 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     let out_file = input_file.replace(".jpg", "-rjcal.png").replace(".JPG", "-rjcal.png");
     raw.save(&out_file).unwrap();
 }
+
+
 
 fn main() {
     
@@ -77,6 +85,13 @@ fn main() {
                         .help("Blue weight")
                         .required(false)
                         .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_COLOR_NOISE_REDUCTION)
+                        .short(constants::param::PARAM_COLOR_NOISE_REDUCTION_SHORT)
+                        .long(constants::param::PARAM_COLOR_NOISE_REDUCTION)
+                        .value_name("COLOR_NOISE_REDUCTION")
+                        .help("Color noise reduction amount in pixels")
+                        .required(false)
+                        .takes_value(true))
                     .arg(Arg::with_name(constants::param::PARAM_VERBOSE)
                         .short(constants::param::PARAM_VERBOSE)
                         .help("Show verbose output"))
@@ -89,6 +104,7 @@ fn main() {
     let mut red_scalar = constants::DEFAULT_RED_WEIGHT;
     let mut green_scalar = constants::DEFAULT_GREEN_WEIGHT;
     let mut blue_scalar = constants::DEFAULT_BLUE_WEIGHT;
+    let mut color_noise_reduction = 0;
 
     // Check formatting and handle it
     if matches.is_present(constants::param::PARAM_RED_WEIGHT) {
@@ -121,14 +137,34 @@ fn main() {
         }
     }
 
+    if matches.is_present(constants::param::PARAM_COLOR_NOISE_REDUCTION) {
+        let s = matches.value_of(constants::param::PARAM_COLOR_NOISE_REDUCTION).unwrap();
+        if util::string_is_valid_i32(&s) {
+            color_noise_reduction = s.parse::<i32>().unwrap();
+        } else {
+            eprintln!("Error: Invalid number specified for color noise reduction");
+            process::exit(1);
+        }
+        if color_noise_reduction % 2 == 0 {
+            eprintln!("Error: Color noise reduction value must be odd");
+            process::exit(1);
+        }
+        if color_noise_reduction < 0 {
+            eprintln!("Error: Color noise reduction value must a positive number");
+            process::exit(1);
+        }
+    }
+
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
-            process_file(in_file, red_scalar, green_scalar, blue_scalar);
+            process_file(in_file, red_scalar, green_scalar, blue_scalar, color_noise_reduction);
         } else {
             eprintln!("File not found: {}", in_file);
         }
     }
+
+    
 }

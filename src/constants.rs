@@ -42,6 +42,9 @@ pub mod param {
 
     pub const PARAM_BLUE_WEIGHT : &str = "blue";
     pub const PARAM_BLUE_WEIGHT_SHORT : &str = "B";
+
+    pub const PARAM_COLOR_NOISE_REDUCTION : &str = "color_noise_reduction";
+    pub const PARAM_COLOR_NOISE_REDUCTION_SHORT : &str = "c";
 }
 
 pub mod cal {

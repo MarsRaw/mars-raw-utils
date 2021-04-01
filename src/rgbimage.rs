@@ -10,6 +10,8 @@ use crate::{
     flatfield, 
     inpaint,
     ok,
+    debayer,
+    noise
 };
 
 use image::{
@@ -27,13 +29,14 @@ pub struct RgbImage {
     pub width: usize,
     pub height: usize,
     empty: bool,
+    instrument: enums::Instrument,
 }
 
 #[allow(dead_code)]
 impl RgbImage {
 
 
-    pub fn new(width:usize, height:usize) -> error::Result<RgbImage> {
+    pub fn new(width:usize, height:usize, instrument:enums::Instrument) -> error::Result<RgbImage> {
         let red = ImageBuffer::new(width, height).unwrap();
         let green = ImageBuffer::new(width, height).unwrap();
         let blue = ImageBuffer::new(width, height).unwrap();
@@ -44,11 +47,12 @@ impl RgbImage {
             _blue:blue,
             width:width,
             height:height,
-            empty:false
+            empty:false,
+            instrument:instrument
         })
     }
 
-    pub fn open(file_path:&str) -> error::Result<RgbImage> {
+    pub fn open(file_path:&str, instrument:enums::Instrument) -> error::Result<RgbImage> {
         if !path::file_exists(file_path) {
             return Err(constants::status::FILE_NOT_FOUND);
         }
@@ -61,7 +65,7 @@ impl RgbImage {
         let height = dims.1 as usize;
         vprintln!("Input image dimensions: {:?}", image_data.dimensions());
 
-        let mut rgbimage = RgbImage::new(width, height).unwrap();
+        let mut rgbimage = RgbImage::new(width, height, instrument).unwrap();
 
         for y in 0..height {
             for x in 0..width {
@@ -83,12 +87,29 @@ impl RgbImage {
             _blue:ImageBuffer::new_empty().unwrap(),
             width:0,
             height:0,
-            empty:true
+            empty:true,
+            instrument:enums::Instrument::None
+        })
+    }
+
+    pub fn new_from_buffers_rgb(red:&ImageBuffer, green:&ImageBuffer, blue:&ImageBuffer, instrument:enums::Instrument) -> error::Result<RgbImage> {
+        Ok(RgbImage{
+            _red:red.clone(),
+            _green:green.clone(),
+            _blue:blue.clone(),
+            width:red.width,
+            height:red.height,
+            empty:false,
+            instrument:instrument
         })
     }
 
     pub fn is_empty(&self) -> bool {
         self.empty
+    }
+
+    pub fn set_instrument(&mut self, instrument:enums::Instrument) {
+        self.instrument = instrument;
     }
 
     pub fn put(&mut self, x:usize, y:usize, r:f32, g:f32, b:f32) -> error::Result<&str>{
@@ -129,22 +150,44 @@ impl RgbImage {
         ok!()
     }
 
-    pub fn flatfield(&mut self, instrument:enums::Instrument) -> error::Result<&str> {
+    pub fn flatfield(&mut self) -> error::Result<&str> {
 
-        let mut flat = flatfield::load_flat(instrument).unwrap();
-        if flat.width == 1632 && flat.height == 1200 {
+        let mut flat = flatfield::load_flat(self.instrument).unwrap();
+        if self.instrument == enums::Instrument::MslMAHLI && flat.width == 1632 && flat.height == 1200 {
             flat.crop(32, 16, 1584, 1184).unwrap();
         }
-        flat.apply_inpaint_fix(instrument).unwrap();
+        flat.apply_inpaint_fix().unwrap();
         self.apply_flat(flat).unwrap();
         ok!()
     }
 
-    pub fn decompand(&mut self, instrument:enums::Instrument) -> error::Result<&str> {
-        decompanding::decompand_buffer(&mut self._red, instrument).unwrap();
-        decompanding::decompand_buffer(&mut self._green, instrument).unwrap();
-        decompanding::decompand_buffer(&mut self._blue, instrument).unwrap();
+    pub fn decompand(&mut self) -> error::Result<&str> {
+        decompanding::decompand_buffer(&mut self._red, self.instrument).unwrap();
+        decompanding::decompand_buffer(&mut self._green, self.instrument).unwrap();
+        decompanding::decompand_buffer(&mut self._blue, self.instrument).unwrap();
 
+        ok!()
+    }
+
+
+
+    pub fn debayer(&mut self) -> error::Result<&str> {
+        let debayered = debayer::debayer(&self._red).unwrap();
+
+        self._red = debayered.red().clone();
+        self._green = debayered.green().clone();
+        self._blue = debayered.blue().clone();
+
+        ok!()
+    }
+
+
+    pub fn reduce_color_noise(&mut self, amount:i32) -> error::Result<&str> {
+
+        let result = noise::color_noise_reduction(&mut self.clone(), amount).unwrap();
+        self._red = result.red().clone();
+        self._green = result.green().clone();
+        self._blue = result.blue().clone();
         ok!()
     }
 
@@ -165,10 +208,24 @@ impl RgbImage {
         ok!()
     }
 
-    pub fn apply_inpaint_fix(&mut self, instrument:enums::Instrument) -> error::Result<&str> {
-        self._red = inpaint::apply_inpaint_to_buffer(&self._red, instrument).unwrap();
-        self._green = inpaint::apply_inpaint_to_buffer(&self._green, instrument).unwrap();
-        self._blue = inpaint::apply_inpaint_to_buffer(&self._blue, instrument).unwrap();
+    pub fn apply_inpaint_fix(&mut self) -> error::Result<&str> {
+        self._red = inpaint::apply_inpaint_to_buffer(&self._red, self.instrument).unwrap();
+        self._green = inpaint::apply_inpaint_to_buffer(&self._green, self.instrument).unwrap();
+        self._blue = inpaint::apply_inpaint_to_buffer(&self._blue, self.instrument).unwrap();
+        ok!()
+    }
+
+    pub fn normalize_to_8bit_with_max(&mut self, max:f32) -> error::Result<&str> {
+        self._red = self._red.normalize_force_minmax(0.0, 255.0, 0.0, max).unwrap();
+        self._green = self._green.normalize_force_minmax(0.0, 255.0, 0.0, max).unwrap();
+        self._blue = self._blue.normalize_force_minmax(0.0, 255.0, 0.0, max).unwrap();
+        ok!()
+    }
+
+    pub fn normalize_to_12bit_with_max(&mut self, max:f32) -> error::Result<&str> {
+        self._red = self._red.normalize_force_minmax(0.0, 2033.0, 0.0, max).unwrap();
+        self._green = self._green.normalize_force_minmax(0.0, 2033.0, 0.0, max).unwrap();
+        self._blue = self._blue.normalize_force_minmax(0.0, 2033.0, 0.0, max).unwrap();
         ok!()
     }
 
@@ -176,6 +233,34 @@ impl RgbImage {
         self._red = self._red.normalize_force_minmax(0.0, 65535.0, 0.0, max).unwrap();
         self._green = self._green.normalize_force_minmax(0.0, 65535.0, 0.0, max).unwrap();
         self._blue = self._blue.normalize_force_minmax(0.0, 65535.0, 0.0, max).unwrap();
+        ok!()
+    }
+
+    pub fn normalize_to_12bit(&mut self) -> error::Result<&str> {
+
+        let r_mnmx = self._red.get_min_max().unwrap();
+        let g_mnmx = self._green.get_min_max().unwrap();
+        let b_mnmx = self._blue.get_min_max().unwrap();
+
+        let mut mx = if r_mnmx.max > g_mnmx.max { r_mnmx.max} else { g_mnmx.max };
+        mx = if mx > b_mnmx.max { mx } else { b_mnmx.max };
+
+        self.normalize_to_12bit_with_max(mx).unwrap();
+
+        ok!()
+    }
+
+    pub fn normalize_to_8bit(&mut self) -> error::Result<&str> {
+
+        let r_mnmx = self._red.get_min_max().unwrap();
+        let g_mnmx = self._green.get_min_max().unwrap();
+        let b_mnmx = self._blue.get_min_max().unwrap();
+
+        let mut mx = if r_mnmx.max > g_mnmx.max { r_mnmx.max} else { g_mnmx.max };
+        mx = if mx > b_mnmx.max { mx } else { b_mnmx.max };
+
+        self.normalize_to_8bit_with_max(mx).unwrap();
+
         ok!()
     }
 
@@ -190,6 +275,11 @@ impl RgbImage {
 
         self.normalize_to_16bit_with_max(mx).unwrap();
 
+        ok!()
+    }
+
+    pub fn normalize_16bit_to_8bit(&mut self) -> error::Result<&str> {
+        self.normalize_to_8bit_with_max(65535.0).unwrap();
         ok!()
     }
 
@@ -213,7 +303,7 @@ impl RgbImage {
         vprintln!("Writing image buffer to file at {}", to_file);
         if path::parent_exists_and_writable(&to_file) {
             out_img.save(to_file).unwrap();
-            vprintln!("    File saved.");
+            vprintln!("File saved.");
             return ok!();
         } else {
             eprintln!("Parent does not exist or cannot be written: {}", path::get_parent(to_file));

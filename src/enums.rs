@@ -14,7 +14,8 @@ pub enum Instrument {
     MslMastcamLeft,
     MslMastcamRight,
     M20MastcamZLeft,
-    M20MastcamZRight
+    M20MastcamZRight,
+    None
 }
 
 
