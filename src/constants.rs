@@ -4,9 +4,9 @@ pub const _16_BIT_MAX : f32 = std::u16::MAX as f32;
 pub const STRIP_HEIGHT : usize = 128;
 pub const STRIP_WIDTH : usize = 1648;
 
-pub const DEFAULT_RED_WEIGHT : f32 = 0.902;
+pub const DEFAULT_RED_WEIGHT : f32 = 1.0;
 pub const DEFAULT_GREEN_WEIGHT : f32 = 1.0;
-pub const DEFAULT_BLUE_WEIGHT : f32 = 1.8889;
+pub const DEFAULT_BLUE_WEIGHT : f32 = 1.0;
 
 // Strings
 pub mod status {
@@ -31,12 +31,17 @@ pub mod param {
     pub const PARAM_VERBOSE : &str = "v";
     pub const PARAM_OUTPUT : &str = "output";
     pub const PARAM_OUTPUT_SHORT : &str = "o";
-    pub const PARAM_DARK : &str = "dark";
-    pub const PARAM_DARK_SHORT : &str = "d";
-    pub const PARAM_FLAT : &str = "flat";
-    pub const PARAM_FLAT_SHORT : &str = "f";
     pub const PARAM_INPUTS : &str = "inputs";
     pub const PARAM_INPUTS_SHORT : &str = "i";
+
+    pub const PARAM_RED_WEIGHT : &str = "red";
+    pub const PARAM_RED_WEIGHT_SHORT : &str = "R";
+
+    pub const PARAM_GREEN_WEIGHT : &str = "green";
+    pub const PARAM_GREEN_WEIGHT_SHORT : &str = "G";
+
+    pub const PARAM_BLUE_WEIGHT : &str = "blue";
+    pub const PARAM_BLUE_WEIGHT_SHORT : &str = "B";
 }
 
 pub mod cal {

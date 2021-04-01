@@ -26,7 +26,7 @@ pub const ILT : [u32; 256] = [0, 2, 3, 3, 4, 5, 5, 6, 7, 8, 9, 10, 11, 12, 14, 1
 
 
 
-pub fn decompand_buffer(buffer:&mut ImageBuffer, instrument:enums::Instrument) -> error::Result<&str> {
+pub fn decompand_buffer(buffer:&mut ImageBuffer, _instrument:enums::Instrument) -> error::Result<&str> {
 
     for x in 0..buffer.width {
         for y in 0..buffer.height {

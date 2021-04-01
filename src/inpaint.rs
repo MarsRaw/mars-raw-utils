@@ -1,6 +1,6 @@
 
 
-use opencv::{core, prelude::*, imgcodecs, photo, imgproc, Result};
+use opencv::{core, prelude::*, imgcodecs, photo};
 use crate::{constants, path, error, enums, imagebuffer::ImageBuffer, vprintln};
 use opencv::prelude::MatTrait;
 
@@ -68,19 +68,3 @@ pub fn apply_inpaint_to_buffer(buffer:&ImageBuffer, instrument:enums::Instrument
         Ok(b)
     }
 }
-
-/*
-
-def load_inpaint_mask(inpaint_mask_path):
-    mask = cv2.imread(inpaint_mask_path, 0)
-    mask = np.copy(np.asarray(mask, dtype=np.uint8))
-    mask = check_crop(mask)
-    return mask
-
-def apply_inpaint_fix(data, inpaint_mask_path=MAHLI_INPAINT_MASK_PATH):
-    mask = load_inpaint_mask(inpaint_mask_path)
-    data = np.copy(np.asarray(data, dtype=np.uint8))
-    data = cv2.inpaint(data, mask, 3, cv2.INPAINT_TELEA)
-    data = np.copy(np.asarray(data, dtype=np.float32))
-    return data
-*/

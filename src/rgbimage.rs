@@ -34,9 +34,9 @@ impl RgbImage {
 
 
     pub fn new(width:usize, height:usize) -> error::Result<RgbImage> {
-        let mut red = ImageBuffer::new(width, height).unwrap();
-        let mut green = ImageBuffer::new(width, height).unwrap();
-        let mut blue = ImageBuffer::new(width, height).unwrap();
+        let red = ImageBuffer::new(width, height).unwrap();
+        let green = ImageBuffer::new(width, height).unwrap();
+        let blue = ImageBuffer::new(width, height).unwrap();
 
         Ok(RgbImage{
             _red:red,
@@ -54,7 +54,7 @@ impl RgbImage {
         }
 
         vprintln!("Loading image from {}", file_path);
-        let image_data = open(file_path).unwrap().into_rgb();
+        let image_data = open(file_path).unwrap().into_rgb8();
         let dims = image_data.dimensions();
 
         let width = dims.0 as usize;
@@ -93,9 +93,9 @@ impl RgbImage {
 
     pub fn put(&mut self, x:usize, y:usize, r:f32, g:f32, b:f32) -> error::Result<&str>{
         if x < self.width && y < self.height {
-            self._red.put(x, y, r);
-            self._green.put(x, y, g);
-            self._blue.put(x, y, b);
+            self._red.put(x, y, r)?;
+            self._green.put(x, y, g)?;
+            self._blue.put(x, y, b)?;
             return ok!();
         } else {
             return Err(constants::status::INVALID_PIXEL_COORDINATES);
