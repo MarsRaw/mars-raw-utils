@@ -9,14 +9,18 @@ use opencv::{
 use crate::{
     error, 
     rgbimage::RgbImage,
-    opencvutils
+    opencvutils,
+    enums
 };
 
 
 
 pub fn color_noise_reduction(image:&mut RgbImage, amount:i32) -> error::Result<RgbImage> {
     unsafe {
-        image.normalize_to_8bit_with_max(2033.0).unwrap();
+        
+        if image.get_mode().unwrap() != enums::ImageMode::U8BIT {
+            image.normalize_to_8bit_with_max(enums::ImageMode::maxvalue(image.get_mode().unwrap())).unwrap();
+        }
         
         let m = opencvutils::rgbimage_to_cv2_mat_u8(image).unwrap();
 
@@ -49,7 +53,13 @@ pub fn color_noise_reduction(image:&mut RgbImage, amount:i32) -> error::Result<R
         imgproc::cvt_color(&lab, &mut o, imgproc::COLOR_Lab2RGB, 0).unwrap();
 
         let mut i = opencvutils::cv2_mat_to_rgbimage_u8(&o, image.width, image.height).unwrap();
-        i.normalize_to_12bit_with_max(255.0).unwrap();
+
+        if image.get_mode().unwrap() == enums::ImageMode::U12BIT {
+            i.normalize_to_12bit_with_max(255.0).unwrap();
+        } else if image.get_mode().unwrap() == enums::ImageMode::U16BIT {
+            i.normalize_to_16bit_with_max(255.0).unwrap();
+        }
+        
         Ok(i)
     }
 }

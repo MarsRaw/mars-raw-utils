@@ -81,7 +81,7 @@ pub fn cv2_mat_to_rgbimage_u8(m:&core::Mat, width:usize, height:usize) -> error:
     let green = cv2_mat_to_buffer_2d_u8(&m, 1, width, height).unwrap();
     let blue = cv2_mat_to_buffer_2d_u8(&m, 2, width, height).unwrap();
     
-    let newimage = RgbImage::new_from_buffers_rgb(&red, &green, &blue, enums::Instrument::None).unwrap();
+    let newimage = RgbImage::new_from_buffers_rgb(&red, &green, &blue, enums::Instrument::None, enums::ImageMode::U8BIT).unwrap();
     Ok(newimage)
 }
 
@@ -90,7 +90,7 @@ pub fn cv2_mat_to_rgbimage_u16(m:&core::Mat, width:usize, height:usize) -> error
     let green = cv2_mat_to_buffer_2d_u16(&m, 1, width, height).unwrap();
     let blue = cv2_mat_to_buffer_2d_u16(&m, 2, width, height).unwrap();
     
-    let newimage = RgbImage::new_from_buffers_rgb(&red, &green, &blue, enums::Instrument::None).unwrap();
+    let newimage = RgbImage::new_from_buffers_rgb(&red, &green, &blue, enums::Instrument::None, enums::ImageMode::U16BIT).unwrap();
     Ok(newimage)
 }
 

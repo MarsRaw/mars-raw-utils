@@ -30,6 +30,7 @@ pub struct RgbImage {
     pub height: usize,
     empty: bool,
     instrument: enums::Instrument,
+    mode: enums::ImageMode
 }
 
 #[allow(dead_code)]
@@ -48,7 +49,8 @@ impl RgbImage {
             width:width,
             height:height,
             empty:false,
-            instrument:instrument
+            instrument:instrument,
+            mode:enums::ImageMode::U8BIT
         })
     }
 
@@ -88,11 +90,12 @@ impl RgbImage {
             width:0,
             height:0,
             empty:true,
-            instrument:enums::Instrument::None
+            instrument:enums::Instrument::None,
+            mode:enums::ImageMode::U8BIT
         })
     }
 
-    pub fn new_from_buffers_rgb(red:&ImageBuffer, green:&ImageBuffer, blue:&ImageBuffer, instrument:enums::Instrument) -> error::Result<RgbImage> {
+    pub fn new_from_buffers_rgb(red:&ImageBuffer, green:&ImageBuffer, blue:&ImageBuffer, instrument:enums::Instrument, mode:enums::ImageMode) -> error::Result<RgbImage> {
         Ok(RgbImage{
             _red:red.clone(),
             _green:green.clone(),
@@ -100,7 +103,8 @@ impl RgbImage {
             width:red.width,
             height:red.height,
             empty:false,
-            instrument:instrument
+            instrument:instrument,
+            mode:mode
         })
     }
 
@@ -110,6 +114,10 @@ impl RgbImage {
 
     pub fn set_instrument(&mut self, instrument:enums::Instrument) {
         self.instrument = instrument;
+    }
+
+    pub fn get_mode(&self) -> error::Result<enums::ImageMode> {
+        Ok(self.mode)
     }
 
     pub fn put(&mut self, x:usize, y:usize, r:f32, g:f32, b:f32) -> error::Result<&str>{
@@ -165,7 +173,7 @@ impl RgbImage {
         decompanding::decompand_buffer(&mut self._red, self.instrument).unwrap();
         decompanding::decompand_buffer(&mut self._green, self.instrument).unwrap();
         decompanding::decompand_buffer(&mut self._blue, self.instrument).unwrap();
-
+        self.mode = enums::ImageMode::U12BIT;
         ok!()
     }
 
@@ -219,6 +227,7 @@ impl RgbImage {
         self._red = self._red.normalize_force_minmax(0.0, 255.0, 0.0, max).unwrap();
         self._green = self._green.normalize_force_minmax(0.0, 255.0, 0.0, max).unwrap();
         self._blue = self._blue.normalize_force_minmax(0.0, 255.0, 0.0, max).unwrap();
+        self.mode = enums::ImageMode::U8BIT;
         ok!()
     }
 
@@ -226,6 +235,7 @@ impl RgbImage {
         self._red = self._red.normalize_force_minmax(0.0, 2033.0, 0.0, max).unwrap();
         self._green = self._green.normalize_force_minmax(0.0, 2033.0, 0.0, max).unwrap();
         self._blue = self._blue.normalize_force_minmax(0.0, 2033.0, 0.0, max).unwrap();
+        self.mode = enums::ImageMode::U12BIT;
         ok!()
     }
 
@@ -233,6 +243,7 @@ impl RgbImage {
         self._red = self._red.normalize_force_minmax(0.0, 65535.0, 0.0, max).unwrap();
         self._green = self._green.normalize_force_minmax(0.0, 65535.0, 0.0, max).unwrap();
         self._blue = self._blue.normalize_force_minmax(0.0, 65535.0, 0.0, max).unwrap();
+        self.mode = enums::ImageMode::U16BIT;
         ok!()
     }
 

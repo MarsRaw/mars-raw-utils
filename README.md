@@ -26,6 +26,7 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
 
@@ -43,6 +44,7 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
 
@@ -65,15 +67,15 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>                                      Blue weight
-    -c, --color_noise_reduction <COLOR_NOISE_REDUCTION>    Color noise reduction amount in pixels
-    -G, --green <GREEN>                                    Green weight
-    -i, --inputs <INPUT>...                                Input
-    -R, --red <RED>                                        Red weight
+    -B, --blue <BLUE>          Blue weight
+    -G, --green <GREEN>        Green weight
+    -i, --inputs <INPUT>...    Input
+    -R, --red <RED>            Red weight
 ```
 
 ## References:
