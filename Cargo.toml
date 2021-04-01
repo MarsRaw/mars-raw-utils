@@ -1,0 +1,38 @@
+[package]
+name = "mars_raw_utils"
+version = "0.1.0"
+authors = ["Kevin M. Gill <kmsmgill@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "mars_raw_utils"
+doctest = false
+
+[[bin]]
+name = "msl_mahli_calibrate"
+path = "bin/msl_mahli_calibrate.rs"
+
+[features]
+default = ["opencv-4"]
+clang-runtime = ["clang/runtime"]
+opencv-32 = []
+opencv-34 = []
+opencv-4 = []
+contrib = []
+docs-only = []
+
+[dependencies]
+image = "0.23.14"
+clap = "2.33.3"
+spice = "0.1.0"
+opencv = "0.51.0"
+zip = "0.5.11"
+json = "0.12.4"
+chrono = "0.4.19"
+clang-sys = "1.1.1"
+
+
+[build-dependencies]
+clang = { version = "1.0", features = ["clang_6_0"], optional = true }
