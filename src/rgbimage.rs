@@ -120,6 +120,10 @@ impl RgbImage {
         Ok(self.mode)
     }
 
+    pub fn get_instrument(&self) -> error::Result<enums::Instrument> {
+        Ok(self.instrument)
+    }
+
     pub fn put(&mut self, x:usize, y:usize, r:f32, g:f32, b:f32) -> error::Result<&str>{
         if x < self.width && y < self.height {
             self._red.put(x, y, r)?;
@@ -232,9 +236,9 @@ impl RgbImage {
     }
 
     pub fn normalize_to_12bit_with_max(&mut self, max:f32) -> error::Result<&str> {
-        self._red = self._red.normalize_force_minmax(0.0, 2033.0, 0.0, max).unwrap();
-        self._green = self._green.normalize_force_minmax(0.0, 2033.0, 0.0, max).unwrap();
-        self._blue = self._blue.normalize_force_minmax(0.0, 2033.0, 0.0, max).unwrap();
+        self._red = self._red.normalize_force_minmax(0.0, decompanding::get_max_for_instrument(self.instrument) as f32, 0.0, max).unwrap();
+        self._green = self._green.normalize_force_minmax(0.0, decompanding::get_max_for_instrument(self.instrument) as f32, 0.0, max).unwrap();
+        self._blue = self._blue.normalize_force_minmax(0.0, decompanding::get_max_for_instrument(self.instrument) as f32, 0.0, max).unwrap();
         self.mode = enums::ImageMode::U12BIT;
         ok!()
     }

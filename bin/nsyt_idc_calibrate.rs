@@ -5,7 +5,8 @@ use mars_raw_utils::{
     rgbimage, 
     enums, 
     path,
-    util
+    util,
+    decompanding
 };
 
 #[macro_use]
@@ -24,7 +25,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     if ! no_ilt {
         vprintln!("Decompanding...");
         raw.decompand().unwrap();
-        data_max = 2033.0;
+        data_max = decompanding::get_max_for_instrument(enums::Instrument::NsytIDC) as f32;
     }
 
     vprintln!("Applying color weights...");

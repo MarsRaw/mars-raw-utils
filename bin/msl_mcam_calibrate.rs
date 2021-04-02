@@ -5,7 +5,8 @@ use mars_raw_utils::{
     rgbimage, 
     enums, 
     path,
-    util
+    util,
+    decompanding
 };
 
 #[macro_use]
@@ -18,7 +19,10 @@ use clap::{Arg, App};
 
 
 fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, color_noise_reduction:i32, no_ilt:bool) {
-    let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::MslMastcamLeft).unwrap();
+    
+    let instrument = enums::Instrument::MslMastcamLeft;
+
+    let mut raw = rgbimage::RgbImage::open(input_file, instrument).unwrap();
 
     //vprintln!("Inpainting...");
     //raw.apply_inpaint_fix(enums::Instrument::MslMastcamLeft).unwrap();
@@ -28,7 +32,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     if ! no_ilt {
         vprintln!("Decompanding...");
         raw.decompand().unwrap();
-        data_max = 2033.0;
+        data_max = decompanding::get_max_for_instrument(instrument) as f32;
     }
     
 

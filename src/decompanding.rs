@@ -25,8 +25,49 @@ pub const ILT : [u32; 256] = [0, 2, 3, 3, 4, 5, 5, 6, 7, 8, 9, 10, 11, 12, 14, 1
                                 1933, 1948, 1963, 1979, 1994, 2009, 2025, 2033];
 
 
+pub const NSYT_ILT : [u32; 256] = [
+                                0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 5, 6, 7, 8, 9, 11, 12,
+                                14, 15, 17, 19, 21, 23, 25, 27, 29, 32, 34, 37, 40, 43, 46,
+                                49, 52, 55, 59, 62, 66, 70, 73, 77, 82, 86, 90, 95, 99, 104,
+                                109, 114, 119, 124, 129, 135, 140, 146, 152, 158, 164, 170,
+                                176, 182, 189, 196, 202, 209, 216, 224, 231, 238, 246, 254,
+                                261, 269, 277, 286, 294, 302, 311, 320, 328, 337, 347, 356,
+                                365, 375, 384, 394, 404, 414, 424, 435, 445, 456, 467, 477,
+                                488, 500, 511, 522, 534, 545, 557, 569, 581, 594, 606, 619,
+                                631, 644, 657, 670, 683, 697, 710, 724, 738, 752, 766, 780,
+                                794, 809, 823, 838, 853, 868, 884, 899, 914, 930, 946, 962,
+                                978, 994, 1011, 1027, 1044, 1061, 1078, 1095, 1112, 1130, 
+                                1147, 1165, 1183, 1201, 1219, 1237, 1256, 1274, 1293, 1312,
+                                1331, 1350, 1370, 1389, 1409, 1429, 1449, 1469, 1489, 1509,
+                                1530, 1551, 1572, 1593, 1614, 1635, 1657, 1678, 1700, 1722,
+                                1744, 1766, 1789, 1811, 1834, 1857, 1880, 1903, 1926, 1950,
+                                1974, 1997, 2021, 2045, 2070, 2094, 2119, 2144, 2168, 2193,
+                                2219, 2244, 2270, 2295, 2321, 2347, 2373, 2400, 2426, 2453,
+                                2479, 2506, 2534, 2561, 2588, 2616, 2644, 2671, 2700, 2728,
+                                2756, 2785, 2813, 2842, 2871, 2900, 2930, 2959, 2989, 3019,
+                                3049, 3079, 3109, 3140, 3170, 3201, 3232, 3263, 3295, 3326,
+                                3358, 3390, 3421, 3454, 3486, 3518, 3551, 3584, 3617, 3650,
+                                3683, 3716, 3750, 3784, 3818, 3852, 3886, 3920, 3955, 3990,
+                                4025, 4060, 4095];
 
-pub fn decompand_buffer(buffer:&mut ImageBuffer, _instrument:enums::Instrument) -> error::Result<&str> {
+
+fn get_ilt_for_instrument(instrument:enums::Instrument) -> [u32; 256] {
+
+    match instrument {
+        enums::Instrument::NsytICC => NSYT_ILT,
+        enums::Instrument::NsytIDC => NSYT_ILT,
+        _ => ILT
+    }
+}
+
+pub fn get_max_for_instrument(instrument:enums::Instrument) -> u32 {
+    let ilt = get_ilt_for_instrument(instrument);
+    ilt[255]
+}
+
+pub fn decompand_buffer(buffer:&mut ImageBuffer, instrument:enums::Instrument) -> error::Result<&str> {
+
+    let ilt = get_ilt_for_instrument(instrument);
 
     for x in 0..buffer.width {
         for y in 0..buffer.height {
@@ -34,7 +75,7 @@ pub fn decompand_buffer(buffer:&mut ImageBuffer, _instrument:enums::Instrument) 
             if raw_value > 255 {
                 return Err(constants::status::INVALID_RAW_VALUE);
             }
-            let ilt_value = ILT[raw_value];
+            let ilt_value = ilt[raw_value];
             buffer.put(x, y, ilt_value as f32).unwrap();
         }
     }
