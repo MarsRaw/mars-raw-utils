@@ -44,6 +44,10 @@ path = "bin/nsyt_idc_calibrate.rs"
 name = "msl_ecam_calibrate"
 path = "bin/msl_ecam_calibrate.rs"
 
+[[bin]]
+name = "hpc_filter"
+path = "bin/hpc_filter.rs"
+
 [features]
 default = ["opencv-4"]
 opencv-4 = []

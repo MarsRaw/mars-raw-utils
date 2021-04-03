@@ -134,6 +134,30 @@ OPTIONS:
     -R, --red <RED>            Red weight
 ```
 
+## Hot Pixel Correction Filter
+Attempt at hot pixel detection and removal. 
+
+Method:
+
+For each pixel (excluding image border pixels):
+ 1. Compute the standard deviation of a window of pixels (3x3, say)
+ 1. Compute the z-score for the target pixel
+ 1. If the z-score exceeds a threshold variance (example: 2.5) from the mean we replace the pixel value with a median filter
+
+```
+USAGE:
+    hpc_filter [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -t, --hpc_threshold <THRESHOLD>    Hot pixel correction variance threshold
+    -w, --hpc_window <WINDOW_SIZE>     Hot pixel correction window size
+    -i, --inputs <INPUT>...            Input
+```
 
 ## References:
 

@@ -11,7 +11,8 @@ use crate::{
     inpaint,
     ok,
     debayer,
-    noise
+    noise,
+    hotpixel
 };
 
 use image::{
@@ -227,6 +228,13 @@ impl RgbImage {
         ok!()
     }
 
+    pub fn hot_pixel_correction(&mut self, window_size:i32, threshold:f32) -> error::Result<&str> {
+
+        self._red = hotpixel::hot_pixel_detection(&self._red, window_size, threshold).unwrap();
+        self._green = hotpixel::hot_pixel_detection(&self._green, window_size, threshold).unwrap();
+        self._blue = hotpixel::hot_pixel_detection(&self._blue, window_size, threshold).unwrap();
+        ok!()
+    }
 
     pub fn crop(&mut self, x:usize, y:usize, width:usize, height:usize) -> error::Result<&str> {
         self._red = self._red.get_subframe(x, y, width, height).unwrap();

@@ -23,6 +23,7 @@ pub mod status {
     pub const INVALID_ENUM_VALUE: &str = "Invalid enum value";
     pub const INVALID_RAW_VALUE: &str = "Invalid raw image value";
     pub const UNSUPPORTED_INSTRUMENT: &str = "Unsupported instrument";
+    pub const EVEN_NUMBER_REQUIRED: &str = "Value error: Even number required";
 }
 
 
@@ -50,6 +51,13 @@ pub mod param {
     pub const PARAM_RAW_COLOR : &str = "raw";
     pub const PARAM_RAW_COLOR_SHORT : &str = "r";
 
+    // Hot pixel correction threshold
+    pub const PARAM_HPC_THRESHOLD : &str = "hpc_threshold";
+    pub const PARAM_HPC_THRESHOLD_SHORT : &str = "t";
+
+    // Hot pixel correction window size
+    pub const PARAM_HPC_WINDOW_SIZE : &str = "hpc_window";
+    pub const PARAM_HPC_WINDOW_SIZE_SHORT : &str = "w";
 }
 
 pub mod cal {
