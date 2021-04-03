@@ -55,7 +55,24 @@ OPTIONS:
     -i, --inputs <INPUT>...                                Input
     -R, --red <RED>                                        Red weight
 ```
-...
+### Engineering Cameras (Navcam, FHAZ, RHAZ):
+```
+SAGE:
+    msl_ecam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -r, --raw        Raw color, skip ILT (not currently used)
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>          Blue weight
+    -G, --green <GREEN>        Green weight
+    -i, --inputs <INPUT>...    Input
+    -R, --red <RED>            Red weight
+```
+
 ## Mars 2020 (Perseverance):
 ### Fetch Raws:
 ...

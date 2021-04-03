@@ -168,7 +168,12 @@ impl RgbImage {
         if self.instrument == enums::Instrument::MslMAHLI && flat.width == 1632 && flat.height == 1200 {
             flat.crop(32, 16, 1584, 1184).unwrap();
         }
-        flat.apply_inpaint_fix().unwrap();
+        
+        if inpaint::inpaint_supported_for_instrument(self.instrument) {
+            flat.apply_inpaint_fix().unwrap();
+        } else {
+            vprintln!("No inpaint available for flatfield image on {:?}", self.instrument);
+        }
         self.apply_flat(flat).unwrap();
         ok!()
     }
@@ -180,8 +185,6 @@ impl RgbImage {
         self.mode = enums::ImageMode::U12BIT;
         ok!()
     }
-
-
 
     pub fn debayer(&mut self) -> error::Result<&str> {
         let debayered = debayer::debayer(&self._red).unwrap();
@@ -217,6 +220,8 @@ impl RgbImage {
         self._red = self._red.get_subframe(x, y, width, height).unwrap();
         self._green = self._green.get_subframe(x, y, width, height).unwrap();
         self._blue = self._blue.get_subframe(x, y, width, height).unwrap();
+        self.width = width;
+        self.height = height;
         ok!()
     }
 

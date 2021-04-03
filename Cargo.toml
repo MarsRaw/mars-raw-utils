@@ -1,14 +1,16 @@
 [package]
 name = "mars_raw_utils"
 version = "0.1.0"
-authors = ["Kevin M. Gill <kmsmgill@gmail.com>"]
+authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
+repository = "https://github.com/kmgill/mars-raw-utils"
+readme = "README.md"
+keywords = ["mars", "msl", "mars2020"]
+license = "MIT"
 
 [lib]
 name = "mars_raw_utils"
-doctest = false
 
 [[bin]]
 name = "msl_mahli_calibrate"
@@ -38,14 +40,13 @@ path = "bin/nsyt_icc_calibrate.rs"
 name = "nsyt_idc_calibrate"
 path = "bin/nsyt_idc_calibrate.rs"
 
+[[bin]]
+name = "msl_ecam_calibrate"
+path = "bin/msl_ecam_calibrate.rs"
+
 [features]
 default = ["opencv-4"]
-clang-runtime = ["clang/runtime"]
-opencv-32 = []
-opencv-34 = []
 opencv-4 = []
-contrib = []
-docs-only = []
 
 [dependencies]
 image = "0.23.14"
@@ -57,7 +58,3 @@ json = "0.12.4"
 chrono = "0.4.19"
 clang-sys = "1.1.1"
 http = "0.2.3"
-
-
-[build-dependencies]
-clang = { version = "1.0", features = ["clang_6_0"], optional = true }

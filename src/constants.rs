@@ -1,12 +1,12 @@
 
-pub const _16_BIT_MAX : f32 = std::u16::MAX as f32;
-
-pub const STRIP_HEIGHT : usize = 128;
-pub const STRIP_WIDTH : usize = 1648;
-
 pub const DEFAULT_RED_WEIGHT : f32 = 1.0;
 pub const DEFAULT_GREEN_WEIGHT : f32 = 1.0;
 pub const DEFAULT_BLUE_WEIGHT : f32 = 1.0;
+
+pub mod url {
+    pub const MSL_RAW_WEBSERVICE_URL : &str = "https://mars.nasa.gov/api/v1/raw_image_items/";
+    pub const M20_RAW_WEBSERVICE_URL : &str = "https://mars.nasa.gov/rss/api/";
+}
 
 // Strings
 pub mod status {
@@ -61,5 +61,16 @@ pub mod cal {
     pub const MSL_MAHLI_INPAINT_MASK_PATH : &str = "src/cal/MSL_MAHLI_INPAINT_Sol2904_V1.png";
     pub const MSL_MAHLI_FLAT_PATH  : &str = "src/cal/MSL_MAHLI_FLAT_Sol2904_V1.png";
 
+
+    // Limiting to navcams on RCE-B
+    pub const MSL_NCAM_RIGHT_INPAINT_PATH : &str = "src/cal/MSL_NRB_INPAINT_Sol3052_V1.png";
+    pub const MSL_NCAM_RIGHT_FLAT_PATH : &str = "src/cal/MSL_NRB_FLAT_V1.png";
+    pub const MSL_NCAM_LEFT_FLAT_PATH : &str = "src/cal/MSL_NLB_FLAT_V1.png";
+
+    pub const MSL_FHAZ_RIGHT_FLAT_PATH : &str = "src/cal/MSL_FRB_FLAT_V1.png";
+    pub const MSL_FHAZ_LEFT_FLAT_PATH : &str = "src/cal/MSL_FLB_FLAT_V1.png";
+
+    pub const MSL_RHAZ_RIGHT_FLAT_PATH : &str = "src/cal/MSL_RRB_FLAT_V1.png";
+    pub const MSL_RHAZ_LEFT_FLAT_PATH : &str = "src/cal/MSL_RLB_FLAT_V1.png";
 }
 

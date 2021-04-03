@@ -14,6 +14,12 @@ pub enum Instrument {
     MslMAHLI,
     MslMastcamLeft,
     MslMastcamRight,
+    MslNavCamRight, // Limiting to RCE-B camera for ECAM. For now.
+    MslNavCamLeft,
+    MslFrontHazLeft,
+    MslFrontHazRight,
+    MslRearHazLeft,
+    MslRearHazRight,
     M20MastcamZLeft,
     M20MastcamZRight,
     NsytICC,

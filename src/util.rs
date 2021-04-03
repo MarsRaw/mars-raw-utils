@@ -1,4 +1,5 @@
 
+use crate::path;
 
 use std::str::FromStr;
 
@@ -16,5 +17,10 @@ pub fn string_is_valid_f32(s:&str) -> bool {
 
 pub fn string_is_valid_i32(s:&str) -> bool {
     string_is_valid_num::<i32>(s)
+}
+
+pub fn filename_char_at_pos(filename:&str, pos:usize) -> char {
+    let bn = path::basename(&filename);
+    bn.chars().nth(pos).unwrap()
 }
 

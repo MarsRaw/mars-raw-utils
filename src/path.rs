@@ -1,8 +1,6 @@
 
 use std::path::Path;
 
-use crate::error;
-
 // Checks if file exists.
 pub fn file_exists(chk_path:&str) -> bool {
     Path::new(&chk_path).exists()
@@ -25,12 +23,21 @@ pub fn get_parent(chk_path:&str) -> String {
 
 pub fn parent_exists(chk_path:&str) -> bool {
     let parent = get_parent(chk_path);
-    file_exists(parent.as_str())
+    if parent.len() > 0 {
+        file_exists(parent.as_str())
+    } else {
+        true // Cannot assume true on $CWD (or that it is $CWD)...
+    }
 }
 
 pub fn parent_writable(chk_path:&str) -> bool {
     let parent = get_parent(chk_path);
-    file_writable(parent.as_str())
+    if parent.len() > 0 {
+        file_writable(parent.as_str())
+    } else {
+        true // Cannot assume true on $CWD (or that is is $CWD)...
+    }
+    
 }
 
 pub fn parent_exists_and_writable(chk_path:&str) -> bool {

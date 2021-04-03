@@ -25,7 +25,17 @@ fn determine_mask_file(instrument:enums::Instrument) -> error::Result<&'static s
                     Ok(constants::cal::M20_INPAINT_MASK_LEFT_PATH),
         enums::Instrument::M20MastcamZRight =>
                     Ok(constants::cal::M20_INPAINT_MASK_RIGHT_PATH),
+        enums::Instrument::MslNavCamRight =>
+                    Ok(constants::cal::MSL_NCAM_RIGHT_INPAINT_PATH),
         _ => Err(constants::status::UNSUPPORTED_INSTRUMENT)
+    }
+}
+
+pub fn inpaint_supported_for_instrument(instrument:enums::Instrument) -> bool {
+    let r = determine_mask_file(instrument);
+    match r {
+        Ok(_) => true,
+        Err(_) => false
     }
 }
 
