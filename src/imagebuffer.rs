@@ -303,7 +303,6 @@ impl ImageBuffer {
         self.normalize_force_minmax(min, max, minmax.min, minmax.max)
     }
 
-
     pub fn crop(&self, height:usize, width:usize) -> error::Result<ImageBuffer> {
 
         let mut cropped_buffer = ImageBuffer::new(width, height).unwrap();

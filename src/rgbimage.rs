@@ -149,6 +149,9 @@ impl RgbImage {
 
     fn apply_flat_on_channel(buffer:&ImageBuffer, flat_buffer:&ImageBuffer) -> error::Result<ImageBuffer> {
         let mean_flat = flat_buffer.mean();
+
+
+
         let corrected = buffer.scale(mean_flat).unwrap().divide(&flat_buffer).unwrap();
         Ok(corrected)
     }
@@ -168,7 +171,16 @@ impl RgbImage {
         if self.instrument == enums::Instrument::MslMAHLI && flat.width == 1632 && flat.height == 1200 {
             flat.crop(32, 16, 1584, 1184).unwrap();
         }
-        
+        // This isn't the final fix...
+
+        // Crop the flatfield image if it's larger than the input image. 
+        // Sizes need to match
+        if flat.width > self.width {
+            let x = (flat.width - self.width) / 2;
+            let y = (flat.width - self.width) / 2;
+            flat.crop(x, y, self.width, self.height).unwrap();
+        }
+
         if inpaint::inpaint_supported_for_instrument(self.instrument) {
             flat.apply_inpaint_fix().unwrap();
         } else {

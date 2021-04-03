@@ -5,6 +5,7 @@ use opencv::{
     imgcodecs, 
     photo
 };
+use opencv::prelude::MatTraitManual;
 
 use crate::{
     constants, 
@@ -61,7 +62,18 @@ fn load_mask(instrument:enums::Instrument) -> error::Result<core::Mat> {
 
 pub fn apply_inpaint_to_buffer(buffer:&ImageBuffer, instrument:enums::Instrument) -> error::Result<ImageBuffer> {
 
-    let mask = load_mask(instrument).unwrap();
+    let mut mask = load_mask(instrument).unwrap();
+
+    let sz = mask.size().unwrap();
+
+    // Crop the mask image if it's larger than the input image. 
+    // Sizes need to match
+    if sz.width > buffer.width as i32 {
+        let x = (sz.width - buffer.width as i32) / 2;
+        let y = (sz.height - buffer.width as i32) / 2;
+        vprintln!("Cropping inpaint mask with params {}, {}, {}, {}", x, y, buffer.width, buffer.height);
+        mask = opencvutils::crop(&mask, x, y, buffer.width as i32, buffer.height as i32).unwrap();
+    }
     let buffer_as_mat = opencvutils::buffer_to_cv2_mat(&buffer).unwrap();
 
     unsafe {
