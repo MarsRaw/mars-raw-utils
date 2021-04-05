@@ -21,12 +21,27 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     
     let mut instrument = enums::Instrument::M20NavcamRight;
 
-
-    if util::filename_char_at_pos(&input_file, 1) == 'L' {
-        instrument = enums::Instrument::M20NavcamLeft;
-        vprintln!("Processing for NavCam Right");
+    // Attempt to figure out camera from file name
+    if util::filename_char_at_pos(&input_file, 0) == 'N' {         // NAVCAMS
+        if util::filename_char_at_pos(&input_file, 1) == 'L' {     // Left
+            instrument = enums::Instrument::M20NavcamLeft;
+        } else {                                   // Assume Right
+            instrument = enums::Instrument::M20NavcamRight;
+        }
+    } else if util::filename_char_at_pos(&input_file, 0) == 'F' {  // FHAZ
+        if util::filename_char_at_pos(&input_file, 1)  == 'L' {     // Left
+            instrument = enums::Instrument::M20FrontHazLeft;
+        } else {                                   // Assume Right
+            instrument = enums::Instrument::M20FrontHazRight;
+        }  
+    } else if util::filename_char_at_pos(&input_file, 0) == 'R' {  // RHAZ
+        if util::filename_char_at_pos(&input_file, 1)  == 'L' {     // Left
+            instrument = enums::Instrument::M20RearHazLeft;
+        } else {                                   // Assume Right
+            instrument = enums::Instrument::M20RearHazRight;
+        }
     }
-    
+
     let mut raw = rgbimage::RgbImage::open(input_file, instrument).unwrap();
 
     let mut data_max = 255.0;
@@ -43,6 +58,8 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
         raw.debayer().unwrap();
     }
 
+    // We're going to need a reliable way of figuring out what part of the sensor
+    // is represented before we can flatfield or apply an inpainting mask
     //vprintln!("Inpainting...");
     //raw.apply_inpaint_fix().unwrap();
 
@@ -51,6 +68,11 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
 
     vprintln!("Normalizing...");
     raw.normalize_to_16bit_with_max(data_max).unwrap();
+
+    // Trim off border pixels
+    let crop_to_width = raw.width - 4;
+    let crop_to_height = raw.height - 4;
+    raw.crop(2, 2, crop_to_width, crop_to_height).unwrap();
 
     vprintln!("Writing to disk...");
     let out_file = input_file.replace(".png", "-rjcal.png").replace(".PNG", "-rjcal.png");
