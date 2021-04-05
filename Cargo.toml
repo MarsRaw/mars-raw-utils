@@ -7,7 +7,7 @@ description = "Utilities for working with publicly available raw MSL, Mars2020, 
 repository = "https://github.com/kmgill/mars-raw-utils"
 readme = "README.md"
 keywords = ["mars", "msl", "mars2020"]
-license = "MIT"
+license = "MIT" 
 
 [lib]
 name = "mars_raw_utils"
@@ -48,9 +48,19 @@ path = "bin/msl_ecam_calibrate.rs"
 name = "hpc_filter"
 path = "bin/hpc_filter.rs"
 
+[[bin]]
+name = "m20_ecam_calibrate"
+path = "bin/m20_ecam_calibrate.rs"
+
+
 [features]
 default = ["opencv-4"]
+clang-runtime = ["clang/runtime"]
 opencv-4 = []
+opencv-32 = []
+opencv-34 = []
+contrib = []
+docs-only = []
 
 [dependencies]
 image = "0.23.14"
@@ -62,3 +72,6 @@ json = "0.12.4"
 chrono = "0.4.19"
 clang-sys = "1.1.1"
 http = "0.2.3"
+
+[build-dependencies]
+clang = { version = "1.0", features = ["clang_6_0"], optional = true } 

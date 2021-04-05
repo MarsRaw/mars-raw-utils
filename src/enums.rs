@@ -22,6 +22,8 @@ pub enum Instrument {
     MslRearHazRight,
     M20MastcamZLeft,
     M20MastcamZRight,
+    M20NavcamLeft,
+    M20NavcamRight,
     NsytICC,
     NsytIDC,
     None

@@ -52,7 +52,8 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
 
     let mut raw = rgbimage::RgbImage::open(input_file, instrument).unwrap();
 
-    if inpaint::inpaint_supported_for_instrument(instrument) {
+    // Exclude subframed images for now...
+    if inpaint::inpaint_supported_for_instrument(instrument) && raw.height >= 1022 {
         vprintln!("Inpainting...");
         raw.apply_inpaint_fix().unwrap();
     } else {
@@ -72,9 +73,12 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     //     data_max = decompanding::get_max_for_instrument(instrument) as f32;
     // }
     
-
-    vprintln!("Flatfielding...");
-    raw.flatfield().unwrap();
+    // Exclude subframed images for now...
+    if raw.height >= 1022 {
+        vprintln!("Flatfielding...");
+        raw.flatfield().unwrap();
+    }
+    
     
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
@@ -82,8 +86,12 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     vprintln!("Normalizing...");
     raw.normalize_to_16bit_with_max(data_max).unwrap();
 
-    vprintln!("Writing to disk...");
+    // Trim off border pixels
+    let crop_to_width = raw.width - 2;
+    let crop_to_height = raw.height - 2;
+    raw.crop(1, 1, crop_to_width, crop_to_height).unwrap();
 
+    vprintln!("Writing to disk...");
     let out_file = input_file.replace(".jpg", "-rjcal.png").replace(".JPG", "-rjcal.png");
     raw.save(&out_file).unwrap();
 }
