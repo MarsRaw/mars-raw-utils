@@ -3,13 +3,22 @@ A set of utilities for processing and calibration of imagery from either the Cur
 
 Implemented calibration steps include (varying per instrument):
 
-| Step                         | MAHLI     | Mastcam   | Mastcam-Z |   IDC     |    ICC    | 
-| ---------------------------- |:---------:|:---------:|:---------:|:---------:|:---------:|
-| Decompanding                 | &#9745;   | &#9745;   | &#9745;   | &#9745;   |  &#9745;  |
-| Debayer (demosaicking)       |           | &#9745;   | &#9745;   |           |           |
-| Blemish repair (inpainting)  | &#9745;   |           | &#9745;   |           |           |
-| Flatfielding                 | &#9745;   |           |           |           |           |
-| Color weight correction      | &#9745;   | &#9745;   | &#9745;   |  &#9745;  |  &#9745;  |
+| Mission    |     Camera  | Decompand | Debayer | Inpaint      | Flats  | HPC*   |
+| ---------- |:-----------:|:---------:|:-------:|:------------:|:------:|:------:|
+| MSL        | MastCam     | &#9745;   | &#9745; |              |        |        |
+| MSL        | MAHLI       | &#9745;   |         | &#9745;      | &#9745;|        |
+| MSL        | NavCam      |           |         | &#9745;      | &#9745;| &#9745;|
+| MSL        | Rear Haz    |           |         | &#9745;      | &#9745;| &#9745;|
+| MSL        | Front Haz   |           |         | &#9745;      | &#9745;| &#9745;|
+| Mars2020   | Mastcam-Z   | &#9745;   | &#9745; | &#9745;      |        |        |
+| Mars2020   | NavCam      |           | &#9745; |              |        |        |
+| Mars2020   | Rear Haz    |           | &#9745; |              |        |        |
+| Mars2020   | Front Haz   |           | &#9745; |              |        |        |
+| InSight    | IDC         | &#9745;   |         |              |        |        |
+| InSight    | ICC         | &#9745;   |         |              |        |        |
+
+
+\* Hot pixel detection and correction
 
 
 Additional instruments will be implemented more or less whenever I get to them...
@@ -94,6 +103,25 @@ OPTIONS:
     -i, --inputs <INPUT>...    Input
     -R, --red <RED>            Red weight
 ```
+
+### Engineering Cameras (Navcam, FHAZ, RHAZ):
+```
+USAGE:
+    m20_ecam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -r, --raw        Raw color, skip ILT
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>          Blue weight
+    -G, --green <GREEN>        Green weight
+    -i, --inputs <INPUT>...    Input
+    -R, --red <RED>            Red weight
+```
+
 
 ## InSight
 ### Fetch Raws:
