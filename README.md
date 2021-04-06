@@ -14,6 +14,7 @@ Implemented calibration steps include (varying per instrument):
 | Mars2020   | NavCam      |           | &#9745; |              |        |        |
 | Mars2020   | Rear Haz    |           | &#9745; |              |        |        |
 | Mars2020   | Front Haz   |           | &#9745; |              |        |        |
+| Mars2020   | Watson      |           |         | &#9745;      |        |        |
 | InSight    | IDC         | &#9745;   |         |              |        |        |
 | InSight    | ICC         | &#9745;   |         |              |        |        |
 
@@ -103,7 +104,23 @@ OPTIONS:
     -i, --inputs <INPUT>...    Input
     -R, --red <RED>            Red weight
 ```
+### Watson:
+```
+USAGE:
+    m20_watson_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
 
+FLAGS:
+    -h, --help       Prints help information
+    -r, --raw        Raw color, skip ILT
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>          Blue weight
+    -G, --green <GREEN>        Green weight
+    -i, --inputs <INPUT>...    Input
+    -R, --red <RED>            Red weight
+```
 ### Engineering Cameras (Navcam, FHAZ, RHAZ):
 ```
 USAGE:
@@ -229,3 +246,6 @@ Software Interface Specification Camera Experiment Data Record (EDR) and Reduced
 Products (version 3.3: 26 June 2019)
 https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/insight_cameras_sis.pdf
 
+
+Edgett, Kenneth & Caplinger, Michael & Ravine, Michael. (2019). Mars 2020 Perseverance SHERLOC WATSON Camera Pre-delivery Characterization and Calibration Report. 10.13140/RG.2.2.18447.00165. 
+https://www.researchgate.net/publication/345959204_Mars_2020_Perseverance_SHERLOC_WATSON_Camera_Pre-delivery_Characterization_and_Calibration_Report

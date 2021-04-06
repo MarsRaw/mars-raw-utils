@@ -67,8 +67,10 @@ pub mod cal {
     pub const M20_INPAINT_MASK_LEFT_PATH : &str = "src/cal/M20_MCZ_LEFT_INPAINT_MASK_V1.png";
 
     pub const MSL_MAHLI_INPAINT_MASK_PATH : &str = "src/cal/MSL_MAHLI_INPAINT_Sol2904_V1.png";
-    pub const MSL_MAHLI_FLAT_PATH  : &str = "src/cal/MSL_MAHLI_FLAT_Sol2904_V1.png";
+    pub const MSL_MAHLI_FLAT_PATH : &str = "src/cal/MSL_MAHLI_FLAT_Sol2904_V1.png";
 
+    pub const M20_WATSON_INPAINT_MASK_PATH : &str = "src/cal/M20_WATSON_INPAINT_MASK_V1.png";
+    pub const M20_WATSON_FLAT_PATH : &str = "src/cal/M20_WATSON_FLAT_V0.png";
 
     // Limiting to navcams on RCE-B
     pub const MSL_NCAM_RIGHT_INPAINT_PATH : &str = "src/cal/MSL_NRB_INPAINT_Sol3052_V1.png";

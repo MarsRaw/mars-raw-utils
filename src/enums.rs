@@ -28,6 +28,7 @@ pub enum Instrument {
     M20FrontHazRight,
     M20RearHazLeft,
     M20RearHazRight,
+    M20Watson,
     NsytICC,
     NsytIDC,
     None
@@ -49,7 +50,7 @@ impl ImageMode {
     pub fn maxvalue(mode:ImageMode) -> f32 {
         match mode {
             ImageMode::U8BIT => 255.0,
-            ImageMode::U12BIT => 2033.0,
+            ImageMode::U12BIT => 2033.0, // In terms of the ILT
             ImageMode::U16BIT => 65535.0
         }
     }
