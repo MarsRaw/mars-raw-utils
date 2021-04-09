@@ -17,4 +17,5 @@ pub mod debayer;
 pub mod noise;
 pub mod util;
 pub mod hotpixel;
+pub mod httpfetch;
 pub mod jsonfetch;
