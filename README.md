@@ -27,7 +27,26 @@ Additional instruments will be implemented more or less whenever I get to them..
 
 ## Mars Science Laboratory (Curiosity):
 ### Fetch Raws:
-...
+```
+SAGE:
+    msl_fetch_raw [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help          Prints help information
+    -l, --list          Don't download, only list results
+    -t, --thumbnails    Download thumbnails in the results
+    -v                  Show verbose output
+    -V, --version       Prints version information
+
+OPTIONS:
+    -c, --camera <camera>...    M20 Camera Instrument(s)
+    -M, --maxsol <maxsol>       Ending Mission Sol
+    -m, --minsol <minsol>       Starting Mission Sol
+    -n, --num <num>             Max number of results
+    -p, --page <page>           Results page (starts at 1)
+    -S, --seqid <seqid>         Specific sequence id or substring
+    -s, --sol <sol>             Mission Sol
+```
 
 ### MAHLI Calibration:
 ```
@@ -85,7 +104,26 @@ OPTIONS:
 
 ## Mars 2020 (Perseverance):
 ### Fetch Raws:
-...
+```
+USAGE:
+    m20_fetch_raw [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help          Prints help information
+    -l, --list          Don't download, only list results
+    -t, --thumbnails    Download thumbnails in the results
+    -v                  Show verbose output
+    -V, --version       Prints version information
+
+OPTIONS:
+    -c, --camera <camera>...    M20 Camera Instrument(s)
+    -M, --maxsol <maxsol>       Ending Mission Sol
+    -m, --minsol <minsol>       Starting Mission Sol
+    -n, --num <num>             Max number of results
+    -p, --page <page>           Results page (starts at 1)
+    -S, --seqid <seqid>         Specific sequence id or substring
+    -s, --sol <sol>             Mission Sol
+```
 
 ### MastCam-Z:
 ```
