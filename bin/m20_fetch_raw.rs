@@ -36,13 +36,36 @@ fn print_image(image:&JsonValue) {
                 );
 }
 
+fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str) {
+    print_header();
+    for i in 0..json_res["images"].len() {
+        let image = &json_res["images"][i];
+        
+        // If this image is a thumbnail and we're ignoring those, then ignore it.
+        if image["sample_type"] == "Thumbnail" && ! thumbnails {
+            continue;
+        }
+
+        // If we're searching for a substring and this image doesn't match, skip it.
+        if search != "" && image["imageid"].as_str().unwrap().find(&search) == None {
+            continue;
+        }
+
+        print_image(image);
+
+        if !list_only {
+            fetch_image(image);
+        }
+        
+    }
+}
 
 fn fetch_image(image:&JsonValue) {
     let image_url = &image["image_files"]["full_res"].as_str().unwrap();
     let bn = path::basename(image_url);
 
     let image_data = httpfetch::simple_fetch_bin(image_url).unwrap();
-    
+
     let path = Path::new(bn.as_str());
 
     let mut file = match File::create(&path) {
@@ -235,28 +258,9 @@ fn main() {
         req.param(p[0], p[1]);
     }
 
-    let json_res = req.fetch().unwrap();
-
-    print_header();
-    for i in 0..json_res["images"].len() {
-        let image = &json_res["images"][i];
-        
-        // If this image is a thumbnail and we're ignoring those, then ignore it.
-        if image["sample_type"] == "Thumbnail" && ! thumbnails {
-            continue;
-        }
-
-        // If we're searching for a substring and this image doesn't match, skip it.
-        if search != "" && image["imageid"].as_str().unwrap().find(&search) == None {
-            continue;
-        }
-
-        print_image(image);
-
-        if !list_only {
-            fetch_image(image);
-        }
-        
+    match req.fetch() {
+        Ok(v) => process_results(&v, thumbnails, list_only, search),
+        Err(_e) => eprintln!("Error fetching data from remote server")
     }
 
 }

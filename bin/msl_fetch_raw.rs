@@ -54,6 +54,33 @@ fn fetch_image(image:&JsonValue) {
     file.write_all(&image_data[..]).unwrap();
 }
 
+fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str) {
+
+    print_header();
+    vprintln!("{} images found", json_res["items"].len());
+    for i in 0..json_res["items"].len() {
+        let image = &json_res["items"][i];
+        
+        // If this image is a thumbnail and we're ignoring those, then ignore it.
+        if image["is_thumbnail"].as_bool().unwrap() && ! thumbnails {
+            continue;
+        }
+
+        // If we're searching for a substring and this image doesn't match, skip it.
+        if search != "" && image["imageid"].as_str().unwrap().find(&search) == None {
+            continue;
+        }
+
+        print_image(image);
+
+        if !list_only {
+            fetch_image(image);
+        }
+        
+    }
+}
+
+
 fn main() {
     let matches = App::new(crate_name!())
                     .version(crate_version!())
@@ -234,29 +261,9 @@ fn main() {
         req.param(p[0], p[1]);
     }
 
-    let json_res = req.fetch().unwrap();
-
-    print_header();
-    vprintln!("{} images found", json_res["items"].len());
-    for i in 0..json_res["items"].len() {
-        let image = &json_res["items"][i];
-        
-        // If this image is a thumbnail and we're ignoring those, then ignore it.
-        if image["is_thumbnail"].as_bool().unwrap() && ! thumbnails {
-            continue;
-        }
-
-        // If we're searching for a substring and this image doesn't match, skip it.
-        if search != "" && image["imageid"].as_str().unwrap().find(&search) == None {
-            continue;
-        }
-
-        print_image(image);
-
-        if !list_only {
-            fetch_image(image);
-        }
-        
+    match req.fetch() {
+        Ok(v) => process_results(&v, thumbnails, list_only, search),
+        Err(_e) => eprintln!("Error fetching data from remote server")
     }
 
 }

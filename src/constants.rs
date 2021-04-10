@@ -24,6 +24,7 @@ pub mod status {
     pub const INVALID_RAW_VALUE: &str = "Invalid raw image value";
     pub const UNSUPPORTED_INSTRUMENT: &str = "Unsupported instrument";
     pub const EVEN_NUMBER_REQUIRED: &str = "Value error: Even number required";
+    pub const REMOTE_SERVER_ERROR: &str = "Remote server error";
 }
 
 

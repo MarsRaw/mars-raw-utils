@@ -19,8 +19,11 @@ impl JsonFetcher {
     }
 
     pub fn fetch(&self) -> error::Result<json::JsonValue> {
-        let json_text = self.fetcher.fetch_text().unwrap();
-        let parsed_json = json::parse(&json_text).unwrap();
-        Ok(parsed_json)
+        let json_text = self.fetcher.fetch_text();
+
+        match json_text {
+            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
+            Ok(v) => Ok(json::parse(&v).unwrap())
+        }
     }
 }

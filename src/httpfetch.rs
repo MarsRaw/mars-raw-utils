@@ -30,18 +30,21 @@ impl HttpFetcher {
 
     fn fetch(&self) -> error::Result<blocking::Response>{
         vprintln!("Request URI: {}", self.uri);
-        let res = blocking::get(self.uri.as_str()).unwrap();
 
-        // check response code, etc... Handle errors better...
-        assert_eq!(res.status(), StatusCode::OK);
+        let res = blocking::get(self.uri.as_str());
 
-        Ok(res)
+        match res {
+            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
+            Ok(v) => Ok(v)
+        }
     }
 
     pub fn fetch_text(&self) -> error::Result<std::string::String> {
-        let res = self.fetch().unwrap();
-        let text = res.text().unwrap();
-        Ok(text)
+        let res = self.fetch();
+        match res {
+            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
+            Ok(v) => Ok(v.text().unwrap())
+        }
     }
 
     pub fn fetch_bin(&self) -> error::Result<Vec<u8>> {
