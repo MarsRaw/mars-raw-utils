@@ -83,5 +83,7 @@ pub mod cal {
 
     pub const MSL_RHAZ_RIGHT_FLAT_PATH : &str = "src/cal/MSL_RRB_FLAT_V1.png";
     pub const MSL_RHAZ_LEFT_FLAT_PATH : &str = "src/cal/MSL_RLB_FLAT_V1.png";
+
+    pub const MSL_MCAM_LEFT_INPAINT_PATH : &str = "src/cal/MSL_MCAM_LEFT_INPAINT_Sol3082_V1.png";
 }
 
