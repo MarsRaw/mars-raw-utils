@@ -119,6 +119,13 @@ fn main() {
                     .help("Don't download, only list results")
                     .takes_value(false)
                     .required(false)) 
+                .arg(Arg::with_name("movie")
+                    .short("e")
+                    .long("movie")
+                    .value_name("movie")
+                    .help("Only movie frames")
+                    .takes_value(false)
+                    .required(false)) 
                 .arg(Arg::with_name("thumbnails")
                     .short("t")
                     .long("thumbnails")
@@ -162,11 +169,19 @@ fn main() {
     let mut thumbnails = false;
     let mut search = "";
     let mut list_only = false;
+    let mut movie_only = false;
 
-    let cameras: Vec<&str> = matches.values_of("camera").unwrap().collect();
-
+    let mut cameras: Vec<&str> = Vec::default();
+    if matches.is_present("camera") {
+        cameras = matches.values_of("camera").unwrap().collect();
+    }
+    
     if matches.is_present("thumbnails") {
         thumbnails = true;
+    }
+
+    if matches.is_present("movie") {
+        movie_only = true;
     }
 
     if matches.is_present("list") {
@@ -238,7 +253,7 @@ fn main() {
     let minsol_s = format!("{}:sol:gte", minsol);
     let maxsol_s = format!("{}:sol:lte", maxsol);
 
-    let params = vec![
+    let mut params = vec![
         vec!["feed", "raw_images"],
         vec!["category", "mars2020"],
         vec!["feedtype", "json"],
@@ -249,6 +264,14 @@ fn main() {
         vec!["condition_2", minsol_s.as_str()],
         vec!["condition_3", maxsol_s.as_str()]
     ];
+
+    if thumbnails {
+        params.push(vec!["extended", "sample_type::thumbnail,"]);
+    } else if movie_only {
+        params.push(vec!["extended", "sample_type::full,product_id::ecv,"]);
+    } else {
+        params.push(vec!["extended", "sample_type::full,"]);
+    }
 
     let uri = constants::url::M20_RAW_WEBSERVICE_URL;
 
