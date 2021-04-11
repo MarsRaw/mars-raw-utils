@@ -168,7 +168,10 @@ fn main() {
     let mut search = "";
     let mut list_only = false;
 
-    let cameras: Vec<&str> = matches.values_of("camera").unwrap().collect();
+    let mut cameras: Vec<&str> = Vec::default();
+    if matches.is_present("camera") {
+        cameras = matches.values_of("camera").unwrap().collect();
+    }
 
     if matches.is_present("thumbnails") {
         thumbnails = true;
