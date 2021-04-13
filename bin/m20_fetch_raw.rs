@@ -38,6 +38,8 @@ fn print_image(image:&JsonValue) {
 
 fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str) {
     print_header();
+
+    let mut valid_img_count = 0;
     for i in 0..json_res["images"].len() {
         let image = &json_res["images"][i];
         
@@ -51,6 +53,7 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
             continue;
         }
 
+        valid_img_count += 1;
         print_image(image);
 
         if !list_only {
@@ -58,6 +61,8 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
         }
         
     }
+
+    println!("{} images found", valid_img_count);
 }
 
 fn fetch_image(image:&JsonValue) {

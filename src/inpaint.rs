@@ -44,11 +44,11 @@ pub fn inpaint_supported_for_instrument(instrument:enums::Instrument) -> bool {
 }
 
 fn load_mask_file(filename:&str, instrument:enums::Instrument) -> error::Result<core::Mat> {
+    vprintln!("Loading inpaint mask file {}", filename);
+
     if ! path::file_exists(filename) {
         return Err(constants::status::FILE_NOT_FOUND);
     }
-
-    vprintln!("Loading inpaint mask file {}", filename);
 
     let mask = imgcodecs::imread(filename, imgcodecs::IMREAD_GRAYSCALE).unwrap();
 

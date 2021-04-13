@@ -13,7 +13,7 @@ license = "MIT"
 maintainer = "Kevin M. Gill <apoapsys@gmail.com>"
 copyright = "2021, Kevin M. Gill <apoapsys@gmail.com>"
 license-file = ["LICENSE", "2"]
-extended-description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
+extended-description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images" 
 depends = "$auto"
 section = "science"
 priority = "optional"
@@ -100,6 +100,7 @@ zip = "0.5.11"
 json = "0.12.4"
 chrono = "0.4.19"
 clang-sys = "1.1.1"
+const_format = "0.2.14"
 reqwest = { version = "0.11.2", features = ["blocking"] }
 
 [build-dependencies]

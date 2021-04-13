@@ -1,3 +1,4 @@
+use const_format::formatcp;
 
 pub const DEFAULT_RED_WEIGHT : f32 = 1.0;
 pub const DEFAULT_GREEN_WEIGHT : f32 = 1.0;
@@ -63,25 +64,33 @@ pub mod param {
 
 pub mod cal {
 
+    const fn data_dir() -> &'static str {
+        if cfg!(debug_assertions) {
+            return "src/cal";
+        } else {
+            return "/usr/share/mars_raw_utils/data/";
+        }
+    }
+
     // These can't stay hard coded like this...
-    pub const M20_INPAINT_MASK_RIGHT_PATH : &str = "src/cal/M20_MCZ_RIGHT_INPAINT_MASK_V1.png";
-    pub const M20_INPAINT_MASK_LEFT_PATH : &str = "src/cal/M20_MCZ_LEFT_INPAINT_MASK_V1.png";
+    pub const M20_INPAINT_MASK_RIGHT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "M20_MCZ_RIGHT_INPAINT_MASK_V1.png");
+    pub const M20_INPAINT_MASK_LEFT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "M20_MCZ_LEFT_INPAINT_MASK_V1.png");
 
-    pub const MSL_MAHLI_INPAINT_MASK_PATH : &str = "src/cal/MSL_MAHLI_INPAINT_Sol2904_V1.png";
-    pub const MSL_MAHLI_FLAT_PATH : &str = "src/cal/MSL_MAHLI_FLAT_Sol2904_V1.png";
+    pub const MSL_MAHLI_INPAINT_MASK_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_MAHLI_INPAINT_Sol2904_V1.png");
+    pub const MSL_MAHLI_FLAT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_MAHLI_FLAT_Sol2904_V1.png");
 
-    pub const M20_WATSON_INPAINT_MASK_PATH : &str = "src/cal/M20_WATSON_INPAINT_MASK_V1.png";
-    pub const M20_WATSON_FLAT_PATH : &str = "src/cal/M20_WATSON_FLAT_V0.png";
+    pub const M20_WATSON_INPAINT_MASK_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "M20_WATSON_INPAINT_MASK_V1.png");
+    pub const M20_WATSON_FLAT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "M20_WATSON_FLAT_V0.png");
 
     // Limiting to navcams on RCE-B
-    pub const MSL_NCAM_RIGHT_INPAINT_PATH : &str = "src/cal/MSL_NRB_INPAINT_Sol3052_V1.png";
-    pub const MSL_NCAM_RIGHT_FLAT_PATH : &str = "src/cal/MSL_NRB_FLAT_V1.png";
-    pub const MSL_NCAM_LEFT_FLAT_PATH : &str = "src/cal/MSL_NLB_FLAT_V1.png";
+    pub const MSL_NCAM_RIGHT_INPAINT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_NRB_INPAINT_Sol3052_V1.png");
+    pub const MSL_NCAM_RIGHT_FLAT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_NRB_FLAT_V1.png");
+    pub const MSL_NCAM_LEFT_FLAT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_NLB_FLAT_V1.png");
 
-    pub const MSL_FHAZ_RIGHT_FLAT_PATH : &str = "src/cal/MSL_FRB_FLAT_V1.png";
-    pub const MSL_FHAZ_LEFT_FLAT_PATH : &str = "src/cal/MSL_FLB_FLAT_V1.png";
+    pub const MSL_FHAZ_RIGHT_FLAT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_FRB_FLAT_V1.png");
+    pub const MSL_FHAZ_LEFT_FLAT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_FLB_FLAT_V1.png");
 
-    pub const MSL_RHAZ_RIGHT_FLAT_PATH : &str = "src/cal/MSL_RRB_FLAT_V1.png";
-    pub const MSL_RHAZ_LEFT_FLAT_PATH : &str = "src/cal/MSL_RLB_FLAT_V1.png";
+    pub const MSL_RHAZ_RIGHT_FLAT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_RRB_FLAT_V1.png");
+    pub const MSL_RHAZ_LEFT_FLAT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_RLB_FLAT_V1.png");
 }
 
