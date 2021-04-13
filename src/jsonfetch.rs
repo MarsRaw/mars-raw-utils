@@ -1,6 +1,6 @@
 
 use json;
-use crate::{constants, print, vprintln, error, httpfetch::HttpFetcher};
+use crate::{constants, error, httpfetch::HttpFetcher};
 
 pub struct JsonFetcher {
     fetcher : HttpFetcher

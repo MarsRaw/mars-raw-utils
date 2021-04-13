@@ -5,8 +5,7 @@ use mars_raw_utils::{
     rgbimage, 
     enums, 
     path,
-    util,
-    decompanding
+    util
 };
 
 #[macro_use]
@@ -17,7 +16,7 @@ use std::process;
 use clap::{Arg, App};
 
 
-fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, no_ilt:bool) {
+fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, _no_ilt:bool) {
     
     let mut instrument = enums::Instrument::M20NavcamRight;
 
@@ -44,7 +43,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
 
     let mut raw = rgbimage::RgbImage::open(input_file, instrument).unwrap();
 
-    let mut data_max = 255.0;
+    let data_max = 255.0;
 
     // if ! no_ilt {
     //     vprintln!("Decompanding...");

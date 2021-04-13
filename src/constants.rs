@@ -1,4 +1,3 @@
-use const_format::formatcp;
 
 pub const DEFAULT_RED_WEIGHT : f32 = 1.0;
 pub const DEFAULT_GREEN_WEIGHT : f32 = 1.0;

@@ -5,8 +5,7 @@ use mars_raw_utils::{
     rgbimage, 
     enums, 
     path, 
-    util,
-    decompanding
+    util
 };
 
 #[macro_use]
@@ -21,7 +20,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     vprintln!("Inpainting...");
     raw.apply_inpaint_fix().unwrap();
 
-    let mut data_max = 255.0;
+    let data_max = 255.0;
 
     //if ! no_ilt {
     //    vprintln!("Decompanding...");

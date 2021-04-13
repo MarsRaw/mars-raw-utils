@@ -1,8 +1,7 @@
 
 use reqwest::{StatusCode, blocking};
 
-use json;
-use crate::{constants, print, vprintln, error};
+use crate::{constants, vprintln, error};
 use std::string::String;
 
 pub struct HttpFetcher {
@@ -35,7 +34,14 @@ impl HttpFetcher {
 
         match res {
             Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
-            Ok(v) => Ok(v)
+            Ok(v) => {
+                if v.status() != StatusCode::OK {
+                    // Should return a more specific error...
+                    return Err(constants::status::REMOTE_SERVER_ERROR);
+                } else {
+                    return Ok(v);
+                }
+            }
         }
     }
 
@@ -48,12 +54,12 @@ impl HttpFetcher {
     }
 
     pub fn fetch_bin(&self) -> error::Result<Vec<u8>> {
-        let res = self.fetch().unwrap();
-        let v = res.bytes().unwrap().to_owned()[0..].to_vec();
-        Ok(v)
+        let res = self.fetch();
+        match res {
+            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
+            Ok(v) => Ok(v.bytes().unwrap().to_owned()[0..].to_vec()) // Kinda hacky...
+        }
     }
-
-
 }
 
 pub fn simple_fetch_text(url:&str) -> error::Result<std::string::String> {
