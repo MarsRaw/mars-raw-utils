@@ -13,6 +13,7 @@ use json::{
 use std::path::Path;
 use std::fs::File;
 use std::io::Write;
+use std::collections::HashMap;
 
 #[macro_use]
 extern crate clap;
@@ -91,6 +92,17 @@ fn fetch_image(image:&JsonValue) {
 }
 
 fn main() {
+    let instruments: HashMap<&str, Vec<&str>> = 
+    [
+        ("HAZ_FRONT", vec!["FRONT_HAZCAM_LEFT_A", "FRONT_HAZCAM_LEFT_B", "FRONT_HAZCAM_RIGHT_A", "FRONT_HAZCAM_RIGHT_B"]),
+        ("SUPERCAM", vec!["SUPERCAM_RMI"]),
+        ("HAZ_REAR", vec!["REAR_HAZCAM_LEFT", "REAR_HAZCAM_RIGHT"]),
+        ("NAVCAM", vec!["NAVCAM_LEFT", "NAVCAM_RIGHT"]),
+        ("MASTCAM", vec!["MCZ_LEFT","MCZ_RIGHT"]),
+        ("EDLCAM", vec!["EDL_DDCAM", "EDL_PUCAM1", "EDL_PUCAM2", "EDL_RUCAM", "EDL_RDCAM", "LCAM"]),
+        ("WATSON", vec!["SHERLOC_WATSON"])
+    ].iter().cloned().collect();
+
     let matches = App::new(crate_name!())
                     .version(crate_version!())
                     .author(crate_authors!())
@@ -185,10 +197,19 @@ fn main() {
     let mut list_only = false;
     let mut movie_only = false;
 
-    let mut cameras: Vec<&str> = Vec::default();
+    let mut camera_inputs: Vec<&str> = Vec::default();
     if matches.is_present("camera") {
-        cameras = matches.values_of("camera").unwrap().collect();
+        camera_inputs = matches.values_of("camera").unwrap().collect();
     }
+
+    let camera_ids_res = util::find_remote_instrument_names_fromlist(&camera_inputs, &instruments);
+    let cameras = match camera_ids_res {
+        Err(_e) => {
+            eprintln!("Invalid camera instrument(s) specified");
+            process::exit(1);
+        },
+        Ok(v) => v,
+    };
     
     if matches.is_present("thumbnails") {
         thumbnails = true;

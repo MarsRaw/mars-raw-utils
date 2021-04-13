@@ -1,14 +1,24 @@
 
-use mars_raw_utils::{constants, print, vprintln, jsonfetch, httpfetch, path, util};
+use mars_raw_utils::{
+    constants, 
+    print, 
+    vprintln, 
+    jsonfetch, 
+    httpfetch, 
+    path, 
+    util
+};
 use json::{JsonValue};
 use std::path::Path;
 use std::fs::File;
 use std::io::Write;
+use std::collections::HashMap;
 
 #[macro_use]
 extern crate clap;
 use std::process;
 use clap::{Arg, App};
+
 
 fn print_header() {
     println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7}", 
@@ -82,6 +92,20 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
 
 
 fn main() {
+
+    let instruments: HashMap<&str, Vec<&str>> = 
+        [
+            ("HAZ_FRONT", vec!["FHAZ_RIGHT_A", "FHAZ_LEFT_A", "FHAZ_RIGHT_B", "FHAZ_LEFT_B"]), 
+            ("HAZ_REAR", vec!["RHAZ_RIGHT_A", "RHAZ_LEFT_A", "RHAZ_RIGHT_B", "RHAZ_LEFT_B"]), 
+            ("NAV_LEFT", vec!["NAV_LEFT_A", "NAV_LEFT_B"]),
+            ("NAV_RIGHT", vec!["NAV_RIGHT_A", "NAV_RIGHT_B"]),
+            ("CHEMCAM", vec!["CHEMCAM_RMI"]),
+            ("MARDI", vec!["MARDI"]),
+            ("MAHLI", vec!["MAHLI"]),
+            ("MASTCAM", vec!["MAST_LEFT", "MAST_RIGHT"])
+        ].iter().cloned().collect();
+
+
     let matches = App::new(crate_name!())
                     .version(crate_version!())
                     .author(crate_authors!())
@@ -168,10 +192,20 @@ fn main() {
     let mut search = "";
     let mut list_only = false;
 
-    let mut cameras: Vec<&str> = Vec::default();
+    let mut camera_inputs: Vec<&str> = Vec::default();
     if matches.is_present("camera") {
-        cameras = matches.values_of("camera").unwrap().collect();
+        camera_inputs = matches.values_of("camera").unwrap().collect();
     }
+
+    let camera_ids_res = util::find_remote_instrument_names_fromlist(&camera_inputs, &instruments);
+    let cameras = match camera_ids_res {
+        Err(_e) => {
+            eprintln!("Invalid camera instrument(s) specified");
+            process::exit(1);
+        },
+        Ok(v) => v,
+    };
+
 
     if matches.is_present("thumbnails") {
         thumbnails = true;
