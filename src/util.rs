@@ -36,7 +36,7 @@ pub fn filename_char_at_pos(filename:&str, pos:usize) -> char {
 ////////////////////////////////////
 /// 
 pub fn is_name_a_remote_instrument(instrument:&str, instruments:&HashMap<&str, Vec<&str>>) -> bool {
-    for (key, rem_inst_list) in instruments {
+    for (_key, rem_inst_list) in instruments {
         for s in rem_inst_list.iter() {
             if &instrument == s {
                 return true;
@@ -74,7 +74,7 @@ pub fn find_remote_instrument_names_fromlist(instrument_inputs:&Vec<&str>, instr
     for c in instrument_inputs.iter() {
         let found_list_res = find_remote_instrument_names(c, instruments);
         let res = match found_list_res {
-            Err(e) => return Err(constants::status::UNSUPPORTED_INSTRUMENT),
+            Err(_e) => return Err(constants::status::UNSUPPORTED_INSTRUMENT),
             Ok(v) => v,
         };
         inst_list.extend(res);
@@ -84,5 +84,15 @@ pub fn find_remote_instrument_names_fromlist(instrument_inputs:&Vec<&str>, instr
         return Ok(inst_list);
     } else {
         return Err(constants::status::UNSUPPORTED_INSTRUMENT);
+    }
+}
+
+
+pub fn print_instruments(instruments:&HashMap<&str, Vec<&str>>) {
+    for (key, rem_inst_list) in instruments {
+        println!("{}", key);
+        for s in rem_inst_list.iter() {
+            println!("  {}", s);
+        }
     }
 }

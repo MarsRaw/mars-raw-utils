@@ -33,15 +33,23 @@ fn print_header() {
                 );
 }
 
+fn null_to_str(item:&JsonValue) -> String {
+    if item.is_null() {
+        return String::from("");
+    } else {
+        return format!("{}", item);
+    }
+}
+
 fn print_image(image:&JsonValue) {
     println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7}", 
                     image["imageid"], 
                     image["instrument"],
                     format!("{:6}", image["sol"]), // This is such a hack...
                     &image["date_taken"].as_str().unwrap()[..16],
-                    image["extended"]["lmst"],
-                    format!("{:6}", image["site"]),
-                    format!("{:6}", image["drive"]),
+                    null_to_str(&image["extended"]["lmst"]),
+                    format!("{:6}", null_to_str(&image["site"])),
+                    format!("{:6}", null_to_str(&image["drive"])),
                     image["is_thumbnail"]
                 );
 }
@@ -176,11 +184,23 @@ fn main() {
                     .help("Specific sequence id or substring")
                     .required(false)
                     .takes_value(true))  
+                .arg(Arg::with_name("instruments")
+                    .short("i")
+                    .long("instruments")
+                    .value_name("instruments")
+                    .help("List camera instrument and exit")
+                    .takes_value(false)
+                    .required(false)) 
                 .get_matches();
 
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
         print::set_verbose(true);
+    }
+
+    if matches.is_present("instruments") {
+        util::print_instruments(&instruments);
+        process::exit(0);
     }
 
     let mut num_per_page = 100;

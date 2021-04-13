@@ -180,11 +180,23 @@ fn main() {
                     .help("Specific sequence id or substring")
                     .required(false)
                     .takes_value(true))  
+                .arg(Arg::with_name("instruments")
+                    .short("i")
+                    .long("instruments")
+                    .value_name("instruments")
+                    .help("List camera instrument and exit")
+                    .takes_value(false)
+                    .required(false)) 
                 .get_matches();
 
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
         print::set_verbose(true);
+    }
+
+    if matches.is_present("instruments") {
+        util::print_instruments(&instruments);
+        process::exit(0);
     }
 
     let mut num_per_page = 100;
