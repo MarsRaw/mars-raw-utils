@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
@@ -106,3 +106,11 @@ platforms = "1.1.0"
 
 [build-dependencies]
 clang = { version = "1.0", features = ["clang_6_0"], optional = true } 
+[package.metadata.rpm]
+package = "mars_raw_utils"
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+mars_raw_utils = { path = "/usr/bin/mars_raw_utils" }
