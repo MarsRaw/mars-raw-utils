@@ -24,9 +24,6 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
 
     let mut raw = rgbimage::RgbImage::open(input_file, instrument).unwrap();
 
-    //vprintln!("Inpainting...");
-    //raw.apply_inpaint_fix(enums::Instrument::MslMastcamLeft).unwrap();
-
     let mut data_max = 255.0;
 
     if ! no_ilt {
@@ -34,11 +31,13 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
         raw.decompand().unwrap();
         data_max = decompanding::get_max_for_instrument(instrument) as f32;
     }
-    
 
     vprintln!("Debayering...");
     raw.debayer().unwrap();
     
+    vprintln!("Inpainting...");
+    raw.apply_inpaint_fix().unwrap();
+
     //vprintln!("Flatfielding...");
     //raw.flatfield(enums::Instrument::MslMAHLI).unwrap();
 
