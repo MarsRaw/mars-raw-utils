@@ -24,6 +24,29 @@ Implemented calibration steps include (varying per instrument):
 
 Additional instruments will be implemented more or less whenever I get to them...
 
+## Building from source:
+So far I've only tested building on Ubuntu 20.04, both natively and within the Windows Subsystem for Linux on Windows 10. Within the project folder, the software can be built for testing via `cargo build` and individual binaries can be run in debug mode via, for example, `cargo run --bin m20_fetch_raw -- -i`
+
+To build successfully on Ubuntu, you'll likely need the following packages installed via apt:
+* build-essential
+* libopencv-dev 
+* libssl-dev 
+* libclang1 
+* libclang-dev 
+* librust-clang-sys-dev 
+* librust-clang-sys+runtime-dev 
+* clang-tools 
+
+The dockerfile demonstrates a method for building an installable debian package, or you can use the container itself:
+
+```
+docker build -t mars_raw_utils .
+docker run --name mars_raw_utils -dit mars_raw_utils
+docker exec -it mars_raw_utils bash
+```
+
+Builds for RPM, MacOSX and Windows are in the plan.
+
 
 ## Mars Science Laboratory (Curiosity):
 ### Fetch Raws:
