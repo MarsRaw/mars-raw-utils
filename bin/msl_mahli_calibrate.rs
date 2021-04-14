@@ -15,7 +15,13 @@ use clap::{Arg, App};
 
 use std::process;
 
-fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, no_ilt:bool) {
+fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, no_ilt:bool, only_new:bool) {
+    let out_file = input_file.replace(".jpg", "-rjcal.png").replace(".JPG", "-rjcal.png");
+    if path::file_exists(&out_file) && only_new {
+        vprintln!("Output file exists, skipping. ({})", out_file);
+        return;
+    }
+
     let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::MslMAHLI).unwrap();
 
     if raw.width == 1632 && raw.height == 1200 {
@@ -44,8 +50,6 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     raw.normalize_to_16bit_with_max(data_max).unwrap();
 
     vprintln!("Writing to disk...");
-
-    let out_file = input_file.replace(".jpg", "-rjcal.png").replace(".JPG", "-rjcal.png");
     raw.save(&out_file).unwrap();
 }
 
@@ -90,6 +94,9 @@ fn main() {
                         .short(constants::param::PARAM_RAW_COLOR_SHORT)
                         .long(constants::param::PARAM_RAW_COLOR)
                         .help("Raw color, skip ILT"))
+                    .arg(Arg::with_name(constants::param::PARAM_ONLY_NEW)
+                        .short(constants::param::PARAM_ONLY_NEW_SHORT)
+                        .help("Only new images. Skipped processed images."))
                     .get_matches();
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
@@ -101,6 +108,11 @@ fn main() {
     let mut blue_scalar = constants::DEFAULT_BLUE_WEIGHT;
     let mut no_ilt = false;
     
+    let mut only_new = false;
+    if matches.is_present(constants::param::PARAM_ONLY_NEW) {
+        only_new = true;
+    }
+
     if matches.is_present(constants::param::PARAM_RAW_COLOR) {
         no_ilt = true;
     }
@@ -141,7 +153,7 @@ fn main() {
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
-            process_file(in_file, red_scalar, green_scalar, blue_scalar, no_ilt);
+            process_file(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, only_new);
         } else {
             eprintln!("File not found: {}", in_file);
         }

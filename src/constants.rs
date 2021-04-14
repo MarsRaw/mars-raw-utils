@@ -59,6 +59,9 @@ pub mod param {
     // Hot pixel correction window size
     pub const PARAM_HPC_WINDOW_SIZE : &str = "hpc_window";
     pub const PARAM_HPC_WINDOW_SIZE_SHORT : &str = "w";
+
+    pub const PARAM_ONLY_NEW : &str = "new";
+    pub const PARAM_ONLY_NEW_SHORT : &str = "n";
 }
 
 pub mod cal {

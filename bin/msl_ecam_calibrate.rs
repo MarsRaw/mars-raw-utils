@@ -25,8 +25,13 @@ use std::process;
 //
 // Also leaving in the ILT parameter until I iron out the cases in which it's needed
 // for ECAM. 
-fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, _no_ilt:bool, hpc_threshold:f32) {
-    
+fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, _no_ilt:bool, hpc_threshold:f32, only_new:bool) {
+    let out_file = input_file.replace(".jpg", "-rjcal.png").replace(".JPG", "-rjcal.png");
+    if path::file_exists(&out_file) && only_new {
+        vprintln!("Output file exists, skipping. ({})", out_file);
+        return;
+    }
+
     let mut instrument = enums::Instrument::MslNavCamRight;
 
     // Attempt to figure out camera from file name
@@ -92,7 +97,6 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     raw.crop(1, 1, crop_to_width, crop_to_height).unwrap();
 
     vprintln!("Writing to disk...");
-    let out_file = input_file.replace(".jpg", "-rjcal.png").replace(".JPG", "-rjcal.png");
     raw.save(&out_file).unwrap();
 }
 
@@ -146,6 +150,9 @@ fn main() {
                         .help("Hot pixel correction variance threshold")
                         .required(false)
                         .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_ONLY_NEW)
+                        .short(constants::param::PARAM_ONLY_NEW_SHORT)
+                        .help("Only new images. Skipped processed images."))
                     .get_matches();
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
@@ -158,6 +165,11 @@ fn main() {
     let mut hpc_threshold = 0.0;
     let mut no_ilt = false;
     
+    let mut only_new = false;
+    if matches.is_present(constants::param::PARAM_ONLY_NEW) {
+        only_new = true;
+    }
+
     // Check formatting and handle it
     if matches.is_present(constants::param::PARAM_RED_WEIGHT) {
         let s = matches.value_of(constants::param::PARAM_RED_WEIGHT).unwrap();
@@ -208,7 +220,7 @@ fn main() {
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
-            process_file(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, hpc_threshold);
+            process_file(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, hpc_threshold, only_new);
         } else {
             eprintln!("File not found: {}", in_file);
         }
