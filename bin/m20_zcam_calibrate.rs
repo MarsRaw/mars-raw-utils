@@ -40,8 +40,10 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     }
 
     // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
-    if input_file.find("ECM") != None {
-        vprintln!("Debayering...");
+    // Update: Not always. Added a check to determine whether or not is is grayscale.
+    // It's not perfect so please validate results. Gonna keep the 'ECM' check for now.
+    if input_file.find("ECM") != None && raw.is_grayscale() {
+        vprintln!("Image appears to be grayscale, applying debayering...");
         raw.debayer().unwrap();
     }
 
@@ -53,6 +55,11 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
 
     vprintln!("Normalizing...");
     raw.normalize_to_16bit_with_max(data_max).unwrap();
+
+    if raw.width == 1648 {
+        vprintln!("Cropping...");
+        raw.crop(24, 4, 1600, 1192).unwrap();
+    }
 
     vprintln!("Writing to disk...");
     let out_file = input_file.replace(".png", "-rjcal.png").replace(".PNG", "-rjcal.png");

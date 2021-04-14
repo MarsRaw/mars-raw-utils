@@ -245,6 +245,33 @@ impl RgbImage {
         ok!()
     }
 
+    fn is_pixel_grayscale(&self, x:usize, y:usize) -> bool {
+        let r = self._red.get(x, y).unwrap();
+        let g = self._green.get(x, y).unwrap();
+        let b = self._blue.get(x, y).unwrap();
+
+        r == g && g == b
+    }
+
+    // This makes some assumptions and isn't perfect.
+    pub fn is_grayscale(&self) -> bool {
+
+        let tl = self.is_pixel_grayscale(30, 30);
+        let bl = self.is_pixel_grayscale(30, self.height - 30);
+        let tr = self.is_pixel_grayscale(self.width - 30, 30);
+        let br = self.is_pixel_grayscale(self.width - 30, self.height - 30);
+
+        let mid_x = self.width / 2;
+        let mid_y = self.height / 2;
+
+        let mtl = self.is_pixel_grayscale(mid_x - 20, mid_y - 20);
+        let mbl = self.is_pixel_grayscale(mid_x - 20, mid_y + 20);
+        let mtr = self.is_pixel_grayscale(mid_x + 20, mid_y - 20);
+        let mbr = self.is_pixel_grayscale(mid_x + 20, mid_y + 20);
+
+        tl && bl && tr && br && mtl && mbl && mtr && mbr
+    }
+
     pub fn apply_inpaint_fix(&mut self) -> error::Result<&str> {
         self._red = inpaint::apply_inpaint_to_buffer(&self._red, self.instrument).unwrap();
         self._green = inpaint::apply_inpaint_to_buffer(&self._green, self.instrument).unwrap();
