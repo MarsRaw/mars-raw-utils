@@ -150,9 +150,6 @@ impl RgbImage {
 
     fn apply_flat_on_channel(buffer:&ImageBuffer, flat_buffer:&ImageBuffer) -> error::Result<ImageBuffer> {
         let mean_flat = flat_buffer.mean();
-
-
-
         let corrected = buffer.scale(mean_flat).unwrap().divide(&flat_buffer).unwrap();
         Ok(corrected)
     }
@@ -230,9 +227,9 @@ impl RgbImage {
 
     pub fn hot_pixel_correction(&mut self, window_size:i32, threshold:f32) -> error::Result<&str> {
 
-        self._red = hotpixel::hot_pixel_detection(&self._red, window_size, threshold).unwrap();
-        self._green = hotpixel::hot_pixel_detection(&self._green, window_size, threshold).unwrap();
-        self._blue = hotpixel::hot_pixel_detection(&self._blue, window_size, threshold).unwrap();
+        self._red = hotpixel::hot_pixel_detection(&self._red, window_size, threshold).unwrap().buffer;
+        self._green = hotpixel::hot_pixel_detection(&self._green, window_size, threshold).unwrap().buffer;
+        self._blue = hotpixel::hot_pixel_detection(&self._blue, window_size, threshold).unwrap().buffer;
         ok!()
     }
 
