@@ -11,6 +11,7 @@ pub struct ImageBuffer {
     pub width: usize,
     pub height: usize,
     empty: bool,
+    mask: Option<Vec<f32>> // Make this an array of bool
 }
 
 pub struct Offset {
@@ -35,7 +36,8 @@ impl ImageBuffer {
         Ok(ImageBuffer{buffer:v,
             width:width,
             height:height,
-            empty:false
+            empty:false,
+            mask:None
         })
     }
 
@@ -43,7 +45,8 @@ impl ImageBuffer {
         Ok(ImageBuffer{buffer:Vec::new(),
             width:0,
             height:0,
-            empty:true
+            empty:true,
+            mask:None
         })
     }
 
@@ -57,7 +60,8 @@ impl ImageBuffer {
         Ok(ImageBuffer{buffer:v,
                     width:width,
                     height:height,
-                    empty:false
+                    empty:false,
+                    mask:None
         })
     }
 
@@ -89,6 +93,24 @@ impl ImageBuffer {
         }
 
         ImageBuffer::from_vec(v, width, height)
+    }
+
+    pub fn set_mask(&mut self, mask:&ImageBuffer) {
+        self.mask = Some(mask.buffer.to_owned());
+    }
+
+    /*
+    Any value over 0 will be treated as a 'true'. A lack of a mask will also be treated as 'true'.
+    */
+    pub fn get_mask_at_point(&self, x:usize, y:usize) -> bool {
+        match &self.mask {
+            Some(b) => {
+                let msk_idx = self.width * y + x;
+                let v = b[msk_idx];
+                return v > 0.0;
+            },
+            None => true
+        }
     }
 
     pub fn get_slice(&self, top_y:usize, len:usize) -> error::Result<ImageBuffer> {
