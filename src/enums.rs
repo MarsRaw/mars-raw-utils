@@ -29,6 +29,7 @@ pub enum Instrument {
     M20RearHazLeft,
     M20RearHazRight,
     M20Watson,
+    M20SuperCam,
     NsytICC,
     NsytIDC,
     None

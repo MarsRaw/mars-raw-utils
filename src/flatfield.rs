@@ -22,6 +22,8 @@ pub fn load_flat(instrument:enums::Instrument) -> error::Result<RgbImage> {
                 Ok(RgbImage::open(constants::cal::MSL_RHAZ_RIGHT_FLAT_PATH, instrument).unwrap()),
         enums::Instrument::M20Watson =>
                 Ok(RgbImage::open(constants::cal::M20_WATSON_FLAT_PATH, instrument).unwrap()),
+        enums::Instrument::M20SuperCam =>
+                Ok(RgbImage::open(constants::cal::M20_SCAM_FLAT_PATH, instrument).unwrap()),
         _ => Err(constants::status::UNSUPPORTED_INSTRUMENT)
     }
 }

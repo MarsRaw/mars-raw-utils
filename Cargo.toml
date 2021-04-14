@@ -26,6 +26,7 @@ assets = [
     ["target/release/m20_fetch_raw", "usr/bin/", "755"],
     ["target/release/m20_watson_calibrate", "usr/bin/", "755"],
     ["target/release/m20_zcam_calibrate", "usr/bin/", "755"],
+    ["target/release/m20_scam_calibrate", "usr/bin/", "755"],
     ["target/release/hpc_filter", "usr/bin/", "755"],
     ["target/release/nsyt_icc_calibrate", "usr/bin/", "755"],
     ["target/release/nsyt_idc_calibrate", "usr/bin/", "755"],
@@ -81,6 +82,10 @@ path = "bin/m20_ecam_calibrate.rs"
 [[bin]]
 name = "m20_watson_calibrate"
 path = "bin/m20_watson_calibrate.rs"
+
+[[bin]]
+name = "m20_scam_calibrate"
+path = "bin/m20_scam_calibrate.rs"
 
 [features]
 default = ["opencv-4"]
