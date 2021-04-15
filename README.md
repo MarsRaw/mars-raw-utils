@@ -330,21 +330,7 @@ Edgett, Kenneth & Caplinger, Michael & Ravine, Michael. (2019). Mars 2020 Persev
 https://www.researchgate.net/publication/345959204_Mars_2020_Perseverance_SHERLOC_WATSON_Camera_Pre-delivery_Characterization_and_Calibration_Report
 
 
-Maurice, Sylvestre & Wiens, R. & Mouélic, S. & Anderson, R. & Beyssac, O. & Bonal, L. & Clegg, S. & Deflores, L. & Dromart, G. & Fischer, W. & Forni, O. & Gasnault, O. & Grotzinger, J. & Johnson, Jordanlee & Martínez-Frías, Jesús & Mangold, N. & McLennan, S. & Montmessin, F. & Rull, Fernando & Sharma, Shiv. (2015). The SuperCam InUSAGE:
-    m20_scam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>          Blue weight
-    -G, --green <GREEN>        Green weight
-    -i, --inputs <INPUT>...    Input
-    -R, --red <RED>            Red weightstrument for the Mars2020 Rover. European Planetary Science Congress 2015. 10. 
+Maurice, Sylvestre & Wiens, R. & Mouélic, S. & Anderson, R. & Beyssac, O. & Bonal, L. & Clegg, S. & Deflores, L. & Dromart, G. & Fischer, W. & Forni, O. & Gasnault, O. & Grotzinger, J. & Johnson, Jordanlee & Martínez-Frías, Jesús & Mangold, N. & McLennan, S. & Montmessin, F. & Rull, Fernando & Sharma, Shiv. (2015). The SuperCam Instrument for the Mars2020 Rover. European Planetary Science Congress 2015. 10. 
 https://www.researchgate.net/publication/283271532_The_SuperCam_Instrument_for_the_Mars2020_Rover
 
 
@@ -354,3 +340,8 @@ https://doi.org/10.1117/12.2536034
 
 Wiens, R.C., Maurice, S., Barraclough, B. et al. The ChemCam Instrument Suite on the Mars Science Laboratory (MSL) Rover: Body Unit and Combined System Tests. Space Sci Rev 170, 167–227 (2012). 
 https://doi.org/10.1007/s11214-012-9902-4
+
+
+O. Gasnault, S. Maurice, R. C. Wiens, S. Le Mouélic, W. W. Fischer, P. Caïs, K. McCabe, J.-M. Reess, and C. Virmontois 
+"SUPERCAM REMOTE MICRO-IMAGER ON MARS 2020." - 46th Lunar and Planetary Science Conference (2015).
+https://www.hou.usra.edu/meetings/lpsc2015/pdf/2990.pdf
