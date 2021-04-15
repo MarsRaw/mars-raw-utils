@@ -27,7 +27,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     }
     
     let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::M20SuperCam).unwrap();
-
+    
     let data_max = 255.0;
 
     if input_file.find("ECM") != None && raw.is_grayscale() {
@@ -45,7 +45,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
 
     vprintln!("Normalizing...");
     raw.normalize_to_16bit_with_max(data_max).unwrap();
-    
+
     vprintln!("Writing to disk...");
     raw.save(&out_file).unwrap();
 }
