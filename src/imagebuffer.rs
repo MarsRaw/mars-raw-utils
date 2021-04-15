@@ -43,7 +43,7 @@ fn crop_array<T:Copy>(arr:&Vec<T>, from_width:usize, from_height:usize, to_width
     Ok(new_arr)
 }
 
-fn subframe_array<T:Copy>(arr:&Vec<T>, from_width:usize, from_height:usize, left_x:usize, top_y:usize, to_width:usize, to_height:usize) -> error::Result<Vec<T>> {
+fn subframe_array<T:Copy>(arr:&Vec<T>, from_width:usize, _from_height:usize, left_x:usize, top_y:usize, to_width:usize, to_height:usize) -> error::Result<Vec<T>> {
     let mut new_arr : Vec<T> = Vec::with_capacity(to_width * to_height);
 
     for y in 0..to_height {
@@ -163,7 +163,7 @@ impl ImageBuffer {
         m.resize(self.buffer.len(), false);
 
         for i in 0..self.buffer.len() {
-            m[i] = self.buffer[i] > 0.0;
+            m[i] = buffer.buffer[i] > 0.0;
         }
 
         Ok(m)
@@ -171,6 +171,14 @@ impl ImageBuffer {
 
     pub fn set_mask(&mut self, mask:&ImageBuffer) {
         self.mask = Some(self.buffer_to_mask(&mask).unwrap());
+    }
+
+    pub fn copy_mask_to(&self, dest:&mut ImageBuffer) {
+        dest.mask = self.mask.to_owned();
+    }
+
+    pub fn clear_mask(&mut self) {
+        self.mask = None;
     }
 
     fn get_mask_at_index(&self, idx:usize) -> error::Result<bool> {

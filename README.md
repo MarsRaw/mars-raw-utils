@@ -15,6 +15,7 @@ Implemented calibration steps include (varying per instrument):
 | Mars2020   | Rear Haz    |           | &#9745; |              |        |        |
 | Mars2020   | Front Haz   |           | &#9745; |              |        |        |
 | Mars2020   | Watson      |           |         | &#9745;      |        |        |
+| Mars2020   | SuperCam    |           | &#9745; |              | &#9745;|        |
 | InSight    | IDC         | &#9745;   |         |              |        |        |
 | InSight    | ICC         | &#9745;   |         |              |        |        |
 
@@ -51,7 +52,7 @@ Builds for RPM, MacOSX and Windows are in the plan.
 ## Mars Science Laboratory (Curiosity):
 ### Fetch Raws:
 ```
-SAGE:
+USAGE:
     msl_fetch_raw [FLAGS] [OPTIONS]
 
 FLAGS:
@@ -109,7 +110,7 @@ OPTIONS:
 ```
 ### Engineering Cameras (Navcam, FHAZ, RHAZ):
 ```
-SAGE:
+USAGE:
     msl_ecam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
 
 FLAGS:
@@ -199,7 +200,24 @@ OPTIONS:
     -i, --inputs <INPUT>...    Input
     -R, --red <RED>            Red weight
 ```
+### SuperCam
+```
+USAGE:
+    m20_scam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
 
+FLAGS:
+    -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
+    -r, --raw        Raw color, skip ILT
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>          Blue weight
+    -G, --green <GREEN>        Green weight
+    -i, --inputs <INPUT>...    Input
+    -R, --red <RED>            Red weight
+```
 
 ## InSight
 ### Fetch Raws:
@@ -311,11 +329,28 @@ https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/insight_came
 Edgett, Kenneth & Caplinger, Michael & Ravine, Michael. (2019). Mars 2020 Perseverance SHERLOC WATSON Camera Pre-delivery Characterization and Calibration Report. 10.13140/RG.2.2.18447.00165. 
 https://www.researchgate.net/publication/345959204_Mars_2020_Perseverance_SHERLOC_WATSON_Camera_Pre-delivery_Characterization_and_Calibration_Report
 
-Maurice, Sylvestre & Wiens, R. & Mouélic, S. & Anderson, R. & Beyssac, O. & Bonal, L. & Clegg, S. & Deflores, L. & Dromart, G. & Fischer, W. & Forni, O. & Gasnault, O. & Grotzinger, J. & Johnson, Jordanlee & Martínez-Frías, Jesús & Mangold, N. & McLennan, S. & Montmessin, F. & Rull, Fernando & Sharma, Shiv. (2015). The SuperCam Instrument for the Mars2020 Rover. European Planetary Science Congress 2015. 10. 
+
+Maurice, Sylvestre & Wiens, R. & Mouélic, S. & Anderson, R. & Beyssac, O. & Bonal, L. & Clegg, S. & Deflores, L. & Dromart, G. & Fischer, W. & Forni, O. & Gasnault, O. & Grotzinger, J. & Johnson, Jordanlee & Martínez-Frías, Jesús & Mangold, N. & McLennan, S. & Montmessin, F. & Rull, Fernando & Sharma, Shiv. (2015). The SuperCam InUSAGE:
+    m20_scam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
+    -r, --raw        Raw color, skip ILT
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>          Blue weight
+    -G, --green <GREEN>        Green weight
+    -i, --inputs <INPUT>...    Input
+    -R, --red <RED>            Red weightstrument for the Mars2020 Rover. European Planetary Science Congress 2015. 10. 
 https://www.researchgate.net/publication/283271532_The_SuperCam_Instrument_for_the_Mars2020_Rover
+
 
 J. -M. Reess, Marion Bonafous, L. Lapauw, O. Humeau, T. Fouchet, P. Bernardi, Ph. Cais, M. Deleuze, O. Forni, S. Maurice, S. Robinson, R. C. Wiens, "The SuperCam infrared instrument on the NASA MARS2020 mission: performance and qualification results," Proc. SPIE 11180, International Conference on Space Optics — ICSO 2018, 1118037 (12 July 2019); 
 https://doi.org/10.1117/12.2536034
+
 
 Wiens, R.C., Maurice, S., Barraclough, B. et al. The ChemCam Instrument Suite on the Mars Science Laboratory (MSL) Rover: Body Unit and Combined System Tests. Space Sci Rev 170, 167–227 (2012). 
 https://doi.org/10.1007/s11214-012-9902-4

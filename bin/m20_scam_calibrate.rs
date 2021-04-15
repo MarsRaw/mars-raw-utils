@@ -9,7 +9,8 @@ use mars_raw_utils::{
     rgbimage, 
     enums, 
     path, 
-    util
+    util,
+    imagebuffer
 };
 
 #[macro_use]
@@ -28,8 +29,13 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     
     let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::M20SuperCam).unwrap();
     
+    vprintln!("Loading image mask from {}", constants::cal::M20_SCAM_MASK_PATH);
+    let mask = imagebuffer::ImageBuffer::from_file(constants::cal::M20_SCAM_MASK_PATH).unwrap();
+    raw.apply_mask(&mask);
+
     let data_max = 255.0;
 
+    
     if input_file.find("ECM") != None && raw.is_grayscale() {
         vprintln!("Image appears to be grayscale, applying debayering...");
         raw.debayer().unwrap();

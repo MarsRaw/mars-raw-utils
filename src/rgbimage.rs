@@ -136,6 +136,24 @@ impl RgbImage {
         }
     }
 
+    pub fn apply_mask(&mut self, mask:&ImageBuffer) {
+        self._red.set_mask(mask);
+        self._green.set_mask(mask);
+        self._blue.set_mask(mask);
+    }
+
+    pub fn clear_mask(&mut self) {
+        self._red.clear_mask();
+        self._green.clear_mask();
+        self._blue.clear_mask();
+    }
+
+    pub fn copy_mask_from(&mut self, src:&ImageBuffer) {
+        src.copy_mask_to(&mut self._red);
+        src.copy_mask_to(&mut self._green);
+        src.copy_mask_to(&mut self._blue);
+    }
+
     pub fn red(&self) -> &ImageBuffer {
         &self._red
     }
