@@ -5,7 +5,8 @@ use mars_raw_utils::{
     jsonfetch, 
     httpfetch, 
     path, 
-    util
+    util,
+    vprintln
 };
 use json::{
     JsonValue
@@ -20,8 +21,14 @@ extern crate clap;
 use std::process;
 use clap::{Arg, App};
 
+fn image_exists_on_filesystem(image:&JsonValue) -> bool {
+    let image_url = &image["image_files"]["full_res"].as_str().unwrap();
+    let bn = path::basename(image_url);
+    path::file_exists(bn.as_str())
+}
+
 fn print_header() {
-    println!("{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7}", 
+    println!("{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7} {:10}", 
                     "ID", 
                     "Instrument",
                     "Sol",
@@ -29,12 +36,13 @@ fn print_header() {
                     "Image Date (Mars)",
                     "Site",
                     "Drive",
-                    "Thumb"
+                    "Thumb",
+                    "Present"
                 );
 }
 
 fn print_image(image:&JsonValue) {
-    println!("{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7}", 
+    println!("{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7} {:10}", 
                     image["imageid"], 
                     image["camera"]["instrument"],
                     format!("{:6}", image["sol"]), // This is such a hack...
@@ -42,11 +50,12 @@ fn print_image(image:&JsonValue) {
                     image["date_taken_mars"],
                     format!("{:6}", image["site"]),
                     format!("{:6}", image["drive"]),
-                    image["sample_type"] == "Thumbnail"
+                    if image["sample_type"] == "Thumbnail" { constants::status::YES } else { constants::status::NO },
+                    if image_exists_on_filesystem(&image) { constants::status::YES } else { constants::status::NO }
                 );
 }
 
-fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str) {
+fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str, only_new:bool) {
     print_header();
 
     let mut valid_img_count = 0;
@@ -67,7 +76,7 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
         print_image(image);
 
         if !list_only {
-            fetch_image(image);
+            fetch_image(image, only_new);
         }
         
     }
@@ -75,19 +84,23 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
     println!("{} images found", valid_img_count);
 }
 
-fn fetch_image(image:&JsonValue) {
+fn fetch_image(image:&JsonValue, only_new:bool) {
     let image_url = &image["image_files"]["full_res"].as_str().unwrap();
     let bn = path::basename(image_url);
 
-    let image_data = httpfetch::simple_fetch_bin(image_url).unwrap();
+    if image_exists_on_filesystem(&image) && only_new {
+        vprintln!("Output file {} exists, skipping", bn);
+        return;
+    }
 
     let path = Path::new(bn.as_str());
-
+    
     let mut file = match File::create(&path) {
         Err(why) => panic!("couldn't create {}", why),
         Ok(file) => file,
     };
 
+    let image_data = httpfetch::simple_fetch_bin(image_url).unwrap();
     file.write_all(&image_data[..]).unwrap();
 }
 
@@ -160,7 +173,7 @@ fn main() {
                     .takes_value(false)
                     .required(false)) 
                 .arg(Arg::with_name("num")
-                    .short("n")
+                    .short("N")
                     .long("num")
                     .value_name("num")
                     .help("Max number of results")
@@ -187,6 +200,9 @@ fn main() {
                     .help("List camera instrument and exit")
                     .takes_value(false)
                     .required(false)) 
+                .arg(Arg::with_name(constants::param::PARAM_ONLY_NEW)
+                    .short(constants::param::PARAM_ONLY_NEW_SHORT)
+                    .help("Only new images. Skipped processed images."))
                 .get_matches();
 
 
@@ -208,6 +224,8 @@ fn main() {
     let mut search = "";
     let mut list_only = false;
     let mut movie_only = false;
+
+    let only_new = matches.is_present(constants::param::PARAM_ONLY_NEW);
 
     let mut camera_inputs: Vec<&str> = Vec::default();
     if matches.is_present("camera") {
@@ -329,7 +347,7 @@ fn main() {
     }
 
     match req.fetch() {
-        Ok(v) => process_results(&v, thumbnails, list_only, search),
+        Ok(v) => process_results(&v, thumbnails, list_only, search, only_new),
         Err(_e) => eprintln!("Error fetching data from remote server")
     }
 

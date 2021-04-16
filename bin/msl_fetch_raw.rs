@@ -19,9 +19,14 @@ extern crate clap;
 use std::process;
 use clap::{Arg, App};
 
+fn image_exists_on_filesystem(image:&JsonValue) -> bool {
+    let image_url = &image["url"].as_str().unwrap();
+    let bn = path::basename(image_url);
+    path::file_exists(bn.as_str())
+}
 
 fn print_header() {
-    println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7}", 
+    println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
                     "ID", 
                     "Instrument",
                     "Sol",
@@ -29,7 +34,8 @@ fn print_header() {
                     "Image Date (Mars)",
                     "Site",
                     "Drive",
-                    "Thumb"
+                    "Thumb",
+                    "Present"
                 );
 }
 
@@ -42,7 +48,7 @@ fn null_to_str(item:&JsonValue) -> String {
 }
 
 fn print_image(image:&JsonValue) {
-    println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7}", 
+    println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
                     image["imageid"], 
                     image["instrument"],
                     format!("{:6}", image["sol"]), // This is such a hack...
@@ -50,14 +56,20 @@ fn print_image(image:&JsonValue) {
                     null_to_str(&image["extended"]["lmst"]),
                     format!("{:6}", null_to_str(&image["site"])),
                     format!("{:6}", null_to_str(&image["drive"])),
-                    image["is_thumbnail"]
+                    if image["is_thumbnail"].as_bool().unwrap() { constants::status::YES } else { constants::status::NO },
+                    if image_exists_on_filesystem(&image) { constants::status::YES } else { constants::status::NO }
                 );
 }
 
 
-fn fetch_image(image:&JsonValue) {
+fn fetch_image(image:&JsonValue, only_new:bool) {
     let image_url = &image["url"].as_str().unwrap();
     let bn = path::basename(image_url);
+
+    if image_exists_on_filesystem(&image) && only_new {
+        vprintln!("Output file {} exists, skipping", bn);
+        return;
+    }
 
     // Dude, error checking!!
     let image_data = httpfetch::simple_fetch_bin(image_url).unwrap();
@@ -72,7 +84,7 @@ fn fetch_image(image:&JsonValue) {
     file.write_all(&image_data[..]).unwrap();
 }
 
-fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str) {
+fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str, only_new:bool) {
 
     print_header();
     vprintln!("{} images found", json_res["items"].len());
@@ -92,7 +104,7 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
         print_image(image);
 
         if !list_only {
-            fetch_image(image);
+            fetch_image(image, only_new);
         }
         
     }
@@ -164,7 +176,7 @@ fn main() {
                     .takes_value(false)
                     .required(false)) 
                 .arg(Arg::with_name("num")
-                    .short("n")
+                    .short("N")
                     .long("num")
                     .value_name("num")
                     .help("Max number of results")
@@ -191,6 +203,9 @@ fn main() {
                     .help("List camera instrument and exit")
                     .takes_value(false)
                     .required(false)) 
+                .arg(Arg::with_name(constants::param::PARAM_ONLY_NEW)
+                    .short(constants::param::PARAM_ONLY_NEW_SHORT)
+                    .help("Only new images. Skipped processed images."))
                 .get_matches();
 
 
@@ -211,6 +226,8 @@ fn main() {
     let mut thumbnails = false;
     let mut search = "";
     let mut list_only = false;
+
+    let only_new = matches.is_present(constants::param::PARAM_ONLY_NEW);
 
     let mut camera_inputs: Vec<&str> = Vec::default();
     if matches.is_present("camera") {
@@ -319,7 +336,7 @@ fn main() {
     }
 
     match req.fetch() {
-        Ok(v) => process_results(&v, thumbnails, list_only, search),
+        Ok(v) => process_results(&v, thumbnails, list_only, search, only_new),
         Err(_e) => eprintln!("Error fetching data from remote server")
     }
 

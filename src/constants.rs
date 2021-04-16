@@ -25,6 +25,9 @@ pub mod status {
     pub const UNSUPPORTED_INSTRUMENT: &str = "Unsupported instrument";
     pub const EVEN_NUMBER_REQUIRED: &str = "Value error: Even number required";
     pub const REMOTE_SERVER_ERROR: &str = "Remote server error";
+    pub const YES : &str = "Yes";
+    pub const NO : &str = "No";
+    pub const DOWNLOADING : &str = "Downloading";
 }
 
 
