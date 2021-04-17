@@ -20,3 +20,4 @@ pub mod hotpixel;
 pub mod httpfetch;
 pub mod jsonfetch;
 pub mod m20remote;
+pub mod mslremote;

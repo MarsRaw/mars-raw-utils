@@ -97,12 +97,12 @@ fn fetch_image(image:&JsonValue, only_new:bool) {
 }
 
 #[allow(dead_code)]
-pub struct InstrumentMap {
+pub struct M20InstrumentMap {
     pub map: HashMap<&'static str, Vec<&'static str>>
 }
 
-pub fn make_instrument_map() -> InstrumentMap {
-    InstrumentMap{map: 
+pub fn make_instrument_map() -> M20InstrumentMap {
+    M20InstrumentMap{map: 
     [
         ("HAZ_FRONT", vec!["FRONT_HAZCAM_LEFT_A", "FRONT_HAZCAM_LEFT_B", "FRONT_HAZCAM_RIGHT_A", "FRONT_HAZCAM_RIGHT_B"]),
         ("SUPERCAM", vec!["SUPERCAM_RMI"]),
@@ -115,7 +115,6 @@ pub fn make_instrument_map() -> InstrumentMap {
 }
 
 pub fn remote_fetch(cameras:Vec<String>, num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool, list_only:bool, search:&str, only_new:bool) {
-    //let instruments = make_instrument_map();
 
     let joined_cameras = cameras.join("|");
     let num_per_page_s = format!("{}", num_per_page);
