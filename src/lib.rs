@@ -12,7 +12,6 @@ pub mod inpaint;
 pub mod enums;
 pub mod flatfield;
 pub mod rgbimage;
-pub mod opencvutils;
 pub mod debayer;
 pub mod noise;
 pub mod util;

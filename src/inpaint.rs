@@ -9,7 +9,6 @@ use crate::{
     enums, 
     imagebuffer::ImageBuffer, 
     vprintln,
-    opencvutils,
     not_implemented
 };
 
@@ -72,7 +71,7 @@ pub fn apply_inpaint_to_buffer(buffer:&ImageBuffer, instrument:enums::Instrument
         vprintln!("Cropping inpaint mask with params {}, {}, {}, {}", x, y, buffer.width, buffer.height);
         mask = mask.get_subframe(x, y, buffer.width, buffer.height).unwrap();
     }
-    let buffer_as_mat = opencvutils::buffer_to_cv2_mat(&buffer).unwrap();
+
 
 
     not_implemented!()
