@@ -11,7 +11,7 @@ pub struct ImageBuffer {
     pub width: usize,
     pub height: usize,
     empty: bool,
-    mask: Option<Vec<bool>> 
+    pub mask: Option<Vec<bool>> 
 }
 
 pub struct Offset {
@@ -74,7 +74,7 @@ impl ImageBuffer {
     }
 
     // Creates a new image buffer of the requested width and height
-    fn new_with_mask(width:usize, height:usize, mask:&Option<Vec<bool>>) -> error::Result<ImageBuffer> {
+    pub fn new_with_mask(width:usize, height:usize, mask:&Option<Vec<bool>>) -> error::Result<ImageBuffer> {
 
         let mut v:Vec<f32> = Vec::with_capacity(width * height);
         v.resize(width * height, 0.0);
@@ -108,6 +108,46 @@ impl ImageBuffer {
                     height:height,
                     empty:false,
                     mask:None
+        })
+    }
+
+    // Creates a new image buffer at the requested width, height and data
+    pub fn from_vec_u8(v_u8:Vec<u8>, width:usize, height:usize) -> error::Result<ImageBuffer> {
+
+        if v_u8.len() != (width * height) {
+            return Err(constants::status::DIMENSIONS_DO_NOT_MATCH_VECTOR_LENGTH);
+        }
+
+        let mut v = vec![0.0 as f32; width * height];
+        for i in 0..v_u8.len() {
+            v[i] = v_u8[i] as f32;
+        }
+
+        Ok(ImageBuffer{buffer:v,
+                    width:width,
+                    height:height,
+                    empty:false,
+                    mask:None
+        })
+    }
+
+    // Creates a new image buffer at the requested width, height and data
+    pub fn from_vec_u8_with_mask(v_u8:Vec<u8>, width:usize, height:usize, mask:&Option<Vec<bool>>) -> error::Result<ImageBuffer> {
+
+        if v_u8.len() != (width * height) {
+            return Err(constants::status::DIMENSIONS_DO_NOT_MATCH_VECTOR_LENGTH);
+        }
+
+        let mut v = vec![0.0 as f32; width * height];
+        for i in 0..v_u8.len() {
+            v[i] = v_u8[i] as f32;
+        }
+
+        Ok(ImageBuffer{buffer:v,
+                    width:width,
+                    height:height,
+                    empty:false,
+                    mask: if *mask != None { Some(mask.as_ref().unwrap().to_owned()) } else { None }
         })
     }
 
