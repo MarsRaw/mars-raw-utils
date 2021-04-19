@@ -109,6 +109,7 @@ clang-sys = "1.1.1"
 const_format = "0.2.14"
 reqwest = { version = "0.11.2", features = ["blocking"] }
 platforms = "1.1.0"
+bayer = "0.1.5"
 
 [build-dependencies]
 clang = { version = "1.0", features = ["clang_6_0"], optional = true } 

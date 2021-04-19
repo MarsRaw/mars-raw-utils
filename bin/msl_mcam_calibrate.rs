@@ -31,14 +31,16 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
 
     let mut data_max = 255.0;
 
+    vprintln!("Debayering...");
+    raw.debayer().unwrap();
+
     if ! no_ilt {
         vprintln!("Decompanding...");
         raw.decompand().unwrap();
         data_max = decompanding::get_max_for_instrument(instrument) as f32;
     }
 
-    vprintln!("Debayering...");
-    raw.debayer().unwrap();
+    
     
     vprintln!("Inpainting...");
     raw.apply_inpaint_fix().unwrap();
