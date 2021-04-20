@@ -29,15 +29,12 @@ pub struct RgbImage {
     _blue: ImageBuffer,
     pub width: usize,
     pub height: usize,
-    empty: bool,
     instrument: enums::Instrument,
     mode: enums::ImageMode
 }
 
 #[allow(dead_code)]
 impl RgbImage {
-
-
     pub fn new(width:usize, height:usize, instrument:enums::Instrument) -> error::Result<RgbImage> {
         let red = ImageBuffer::new(width, height).unwrap();
         let green = ImageBuffer::new(width, height).unwrap();
@@ -49,7 +46,6 @@ impl RgbImage {
             _blue:blue,
             width:width,
             height:height,
-            empty:false,
             instrument:instrument,
             mode:enums::ImageMode::U8BIT
         })
@@ -83,19 +79,6 @@ impl RgbImage {
         Ok(rgbimage)
     }
 
-    pub fn new_empty() -> error::Result<RgbImage> {
-        Ok(RgbImage{
-            _red:ImageBuffer::new_empty().unwrap(),
-            _green:ImageBuffer::new_empty().unwrap(),
-            _blue:ImageBuffer::new_empty().unwrap(),
-            width:0,
-            height:0,
-            empty:true,
-            instrument:enums::Instrument::None,
-            mode:enums::ImageMode::U8BIT
-        })
-    }
-
     pub fn new_from_buffers_rgb(red:&ImageBuffer, green:&ImageBuffer, blue:&ImageBuffer, instrument:enums::Instrument, mode:enums::ImageMode) -> error::Result<RgbImage> {
         Ok(RgbImage{
             _red:red.clone(),
@@ -103,26 +86,21 @@ impl RgbImage {
             _blue:blue.clone(),
             width:red.width,
             height:red.height,
-            empty:false,
             instrument:instrument,
             mode:mode
         })
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.empty
     }
 
     pub fn set_instrument(&mut self, instrument:enums::Instrument) {
         self.instrument = instrument;
     }
 
-    pub fn get_mode(&self) -> error::Result<enums::ImageMode> {
-        Ok(self.mode)
+    pub fn get_mode(&self) -> enums::ImageMode {
+        self.mode
     }
 
-    pub fn get_instrument(&self) -> error::Result<enums::Instrument> {
-        Ok(self.instrument)
+    pub fn get_instrument(&self) -> enums::Instrument {
+        self.instrument
     }
 
     pub fn put(&mut self, x:usize, y:usize, r:f32, g:f32, b:f32) -> error::Result<&str>{
@@ -289,9 +267,20 @@ impl RgbImage {
 
     pub fn apply_inpaint_fix(&mut self) -> error::Result<&str> {
         let fixed = inpaint::apply_inpaint_to_buffer(&self).unwrap();
-        self._red = fixed.red().clone();
-        self._green = fixed.green().clone();
-        self._blue = fixed.blue().clone();
+
+        let mut new_r = fixed.red().clone();
+        self._red.copy_mask_to(&mut new_r);
+
+        let mut new_g = fixed.green().clone();
+        self._green.copy_mask_to(&mut new_g);
+
+        let mut new_b = fixed.blue().clone();
+        self._blue.copy_mask_to(&mut new_b);
+
+        self._red = new_r;
+        self._green = new_g;
+        self._blue = new_b;
+
         ok!()
     }
 

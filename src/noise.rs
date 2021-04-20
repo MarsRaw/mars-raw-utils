@@ -63,10 +63,10 @@ fn combine_lab_channels(splitlab:&SplitLab) -> Vec<Lab> {
 }
 
 pub fn color_noise_reduction(image:&mut RgbImage, amount:i32) -> error::Result<RgbImage> {
-    let orig_mode = image.get_mode().unwrap();
+    let orig_mode = image.get_mode();
 
-    if image.get_mode().unwrap() != enums::ImageMode::U8BIT {
-        image.normalize_to_8bit_with_max(decompanding::get_max_for_instrument(image.get_instrument().unwrap()) as f32).unwrap();
+    if image.get_mode() != enums::ImageMode::U8BIT {
+        image.normalize_to_8bit_with_max(decompanding::get_max_for_instrument(image.get_instrument()) as f32).unwrap();
     }
 
     // We're juggling a couple different data structures here so we need to
@@ -110,7 +110,7 @@ pub fn color_noise_reduction(image:&mut RgbImage, amount:i32) -> error::Result<R
         }
     }
 
-    let mut newimage = RgbImage::new_from_buffers_rgb(&red, &green, &blue, image.get_instrument().unwrap(), enums::ImageMode::U8BIT).unwrap();
+    let mut newimage = RgbImage::new_from_buffers_rgb(&red, &green, &blue, image.get_instrument(), enums::ImageMode::U8BIT).unwrap();
 
     if orig_mode == enums::ImageMode::U12BIT {
         newimage.normalize_to_12bit_with_max(255.0).unwrap();
