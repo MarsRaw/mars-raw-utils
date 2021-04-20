@@ -1,4 +1,6 @@
 # Mars Raw Image Utilities
+[![Rust](https://github.com/kmgill/mars-raw-utils/actions/workflows/rust.yml/badge.svg)](https://github.com/kmgill/mars-raw-utils/actions/workflows/rust.yml)
+
 A set of utilities for processing and calibration of imagery from either the Curiosity or Perseverance rovers. Meant to be used on publicly available images. 
 
 Implemented calibration steps include (varying per instrument):
