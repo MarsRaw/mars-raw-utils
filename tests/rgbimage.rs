@@ -26,16 +26,17 @@ fn test_image_size() {
 #[test]
 fn test_image_mode() {
     let mut img_rgb = rgbimage::RgbImage::open(&M20_ZCAM_ECM_RGB, enums::Instrument::M20MastcamZLeft).unwrap();
-    assert_eq!(img_rgb.get_mode(), Ok(enums::ImageMode::U8BIT));
+    assert_eq!(img_rgb.get_mode(), enums::ImageMode::U8BIT);
     img_rgb.decompand().unwrap();
-    assert_eq!(img_rgb.get_mode(), Ok(enums::ImageMode::U12BIT));
+    assert_eq!(img_rgb.get_mode(), enums::ImageMode::U12BIT);
     img_rgb.normalize_to_16bit_with_max(2033.0).unwrap();
-    assert_eq!(img_rgb.get_mode(), Ok(enums::ImageMode::U16BIT));
+    assert_eq!(img_rgb.get_mode(), enums::ImageMode::U16BIT);
     img_rgb.normalize_to_12bit_with_max(65535.0).unwrap();
-    assert_eq!(img_rgb.get_mode(), Ok(enums::ImageMode::U12BIT));
+    assert_eq!(img_rgb.get_mode(), enums::ImageMode::U12BIT);
     img_rgb.normalize_to_8bit_with_max(2033.0).unwrap();
-    assert_eq!(img_rgb.get_mode(), Ok(enums::ImageMode::U8BIT));
+    assert_eq!(img_rgb.get_mode(), enums::ImageMode::U8BIT);
 }
+
 
 #[test]
 fn test_cropping() {
