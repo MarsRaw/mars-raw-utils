@@ -9,8 +9,8 @@ use crate::{
     enums, 
     imagebuffer::ImageBuffer, 
     vprintln,
-    not_implemented,
-    stats
+    stats,
+    rgbimage::RgbImage
 };
 
 #[derive(Debug, Clone)]
@@ -19,6 +19,13 @@ struct Point {
     y: usize,
     score: u32
 }
+
+struct RgbVec {
+    rgb: Vec<[f32; 3]>,
+    width: usize,
+    height: usize
+}
+
 
 fn determine_mask_file(instrument:enums::Instrument) -> error::Result<&'static str> {
     match instrument {
@@ -104,7 +111,7 @@ fn find_starting_point(mask:&ImageBuffer) -> Option<Point> {
     None
 }
 
-fn isolate_window(buffer:&ImageBuffer, mask:&ImageBuffer, window_size:i32, x:usize, y:usize) -> error::Result<Vec<f32>> {
+fn isolate_window(buffer:&RgbVec, mask:&ImageBuffer, channel:usize, window_size:i32, x:usize, y:usize) -> error::Result<Vec<f32>> {
     let mut v:Vec<f32> = Vec::with_capacity(36);
     let start = window_size / 2 * -1;
     let end = window_size / 2 + 1;
@@ -118,15 +125,15 @@ fn isolate_window(buffer:&ImageBuffer, mask:&ImageBuffer, window_size:i32, x:usi
                 && get_y < buffer.height as i32
                 && mask.get(get_x as usize, get_y as usize).unwrap() == 0.0
                 {
-                v.push(buffer.get(get_x as usize, get_y as usize).unwrap());
+                v.push(buffer.rgb[(get_y * buffer.width as i32 + get_x) as usize][channel]);
             }
         }
     }
     Ok(v)
 }
 
-fn predict_value(buffer:&ImageBuffer, mask:&ImageBuffer, x:usize, y:usize) -> f32 {
-    let window = isolate_window(&buffer, &mask, 3, x, y).unwrap();
+fn predict_value(buffer:&RgbVec, mask:&ImageBuffer, channel:usize, x:usize, y:usize) -> f32 {
+    let window = isolate_window(&buffer, &mask, channel, 3, x, y).unwrap();
     let m = stats::mean(&window[0..]).unwrap();
     m
 }
@@ -171,7 +178,6 @@ fn find_next_point(mask:&ImageBuffer, x:i32, y:i32) -> Option<Point> {
     pts.push(get_point_and_score_at_xy(&mask, x + 1, y));
     pts.push(get_point_and_score_at_xy(&mask, x + 1, y - 1));
 
-    
     let mut largest_score : Option<Point> = None;
 
     for opt_pt in pts.iter() {
@@ -187,13 +193,19 @@ fn find_next_point(mask:&ImageBuffer, x:i32, y:i32) -> Option<Point> {
 }
 
 
-fn infill(buffer:&mut ImageBuffer, mask:&mut ImageBuffer, starting:&Point) {
+fn infill(buffer:&mut RgbVec, mask:&mut ImageBuffer, starting:&Point) {
 
     let mut current = starting.to_owned();
     loop {
-        vprintln!("Filling in pixel at {}, {}", current.x, current.y);
-        let pt_new_value = predict_value(&buffer, &mask, current.x, current.y);
-        buffer.put(current.x, current.y, pt_new_value).unwrap();
+        //vprintln!("Filling in pixel at {}, {}", current.x, current.y);
+        let pt_new_value_0 = predict_value(&buffer, &mask, 0, current.x, current.y);
+        let pt_new_value_1 = predict_value(&buffer, &mask, 1, current.x, current.y);
+        let pt_new_value_2 = predict_value(&buffer, &mask, 2, current.x, current.y);
+        
+        buffer.rgb[current.y * buffer.width + current.x][0] = pt_new_value_0;
+        buffer.rgb[current.y * buffer.width + current.x][1] = pt_new_value_1;
+        buffer.rgb[current.y * buffer.width + current.x][2] = pt_new_value_2;
+
         mask.put(current.x, current.y, 0.0).unwrap();
 
         match find_next_point(&mask, current.x as i32, current.y as i32) {
@@ -203,19 +215,60 @@ fn infill(buffer:&mut ImageBuffer, mask:&mut ImageBuffer, starting:&Point) {
     }
 }
 
-// Embarrassingly slow and inefficient.
-pub fn apply_inpaint_to_buffer(buffer:&ImageBuffer, instrument:enums::Instrument) -> error::Result<ImageBuffer> {
+fn rgb_image_to_vec(rgb:&RgbImage) -> RgbVec {
 
-    let mut working_buffer = buffer.clone();
-    let mut mask = load_mask(instrument).unwrap();
+    let mut v: Vec<[f32; 3]> = Vec::with_capacity(rgb.width * rgb.height);
+    v.resize(rgb.width * rgb.height, [0.0, 0.0, 0.0]);
+
+    for y in 0..rgb.height {
+        for x in 0..rgb.width {
+            let idx = y * rgb.width + x;
+            let r = rgb.red().get(x, y).unwrap();
+            let g = rgb.green().get(x, y).unwrap();
+            let b = rgb.blue().get(x, y).unwrap();
+            v[idx][0] = r;
+            v[idx][1] = g;
+            v[idx][2] = b;
+        }
+    }
+
+    RgbVec{rgb:v, width:rgb.width, height:rgb.height}
+}
+
+fn vec_to_rgb_image(buffer:&RgbVec) -> RgbImage {
+    let mut red = ImageBuffer::new(buffer.width, buffer.height).unwrap();
+    let mut green = ImageBuffer::new(buffer.width, buffer.height).unwrap();
+    let mut blue = ImageBuffer::new(buffer.width, buffer.height).unwrap();
+
+    for y in 0..buffer.height {
+        for x in 0..buffer.width {
+            let r = buffer.rgb[y * (buffer.width) + x][0];
+            let g = buffer.rgb[y * (buffer.width) + x][1];
+            let b = buffer.rgb[y * (buffer.width) + x][2];
+            red.put(x, y, r).unwrap();
+            green.put(x, y, g).unwrap();
+            blue.put(x, y, b).unwrap();
+        }
+    }
+
+    let newimage = RgbImage::new_from_buffers_rgb(&red, &green, &blue, enums::Instrument::None, enums::ImageMode::U8BIT).unwrap();
+
+    newimage
+}
+
+// Embarrassingly slow and inefficient. Runs slow in debug. A lot faster with a release build.
+pub fn apply_inpaint_to_buffer(rgb:&RgbImage) -> error::Result<RgbImage> {
+
+    let mut working_buffer = rgb_image_to_vec(&rgb);
+    let mut mask = load_mask(rgb.get_instrument().unwrap()).unwrap();
 
     // Crop the mask image if it's larger than the input image. 
     // Sizes need to match
-    if mask.width > buffer.width {
-        let x = (mask.width - buffer.width) / 2;
-        let y = (mask.height - buffer.width) / 2;
-        vprintln!("Cropping inpaint mask with params {}, {}, {}, {}", x, y, buffer.width, buffer.height);
-        mask = mask.get_subframe(x, y, buffer.width, buffer.height).unwrap();
+    if mask.width > working_buffer.width {
+        let x = (mask.width - working_buffer.width) / 2;
+        let y = (mask.height - working_buffer.width) / 2;
+        vprintln!("Cropping inpaint mask with params {}, {}, {}, {}", x, y, working_buffer.width, working_buffer.height);
+        mask = mask.get_subframe(x, y, working_buffer.width, working_buffer.height).unwrap();
     }
 
     // For this to work, we need the mask to be mutable and we're
@@ -225,18 +278,15 @@ pub fn apply_inpaint_to_buffer(buffer:&ImageBuffer, instrument:enums::Instrument
     loop {
         match find_starting_point(&mask) {
             Some(pt) => {
-                vprintln!("Starting point: {}, {}", pt.x, pt.y);
+                //vprintln!("Starting point: {}, {}", pt.x, pt.y);
                 infill(&mut working_buffer, &mut mask, &pt);
             },
             None => break
         };
     }
 
-    Ok(working_buffer)
-}
-
-
-// pub fn apply_inpaint_to_rgb_array(rgb:Vec<[f32; 3]>, instrument:enums::Instrument)  {
-
+    let mut newimage = vec_to_rgb_image(&working_buffer);
+    newimage.set_instrument(rgb.get_instrument().unwrap());
     
-// }
+    Ok(newimage)
+}

@@ -288,9 +288,10 @@ impl RgbImage {
     }
 
     pub fn apply_inpaint_fix(&mut self) -> error::Result<&str> {
-        self._red = inpaint::apply_inpaint_to_buffer(&self._red, self.instrument).unwrap();
-        self._green = inpaint::apply_inpaint_to_buffer(&self._green, self.instrument).unwrap();
-        self._blue = inpaint::apply_inpaint_to_buffer(&self._blue, self.instrument).unwrap();
+        let fixed = inpaint::apply_inpaint_to_buffer(&self).unwrap();
+        self._red = fixed.red().clone();
+        self._green = fixed.green().clone();
+        self._blue = fixed.blue().clone();
         ok!()
     }
 
