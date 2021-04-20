@@ -8,6 +8,7 @@ pub mod constants;
 pub mod imagebuffer;
 pub mod path;
 pub mod decompanding;
+pub mod stats;
 pub mod inpaint;
 pub mod enums;
 pub mod flatfield;
