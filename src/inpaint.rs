@@ -84,14 +84,14 @@ fn load_mask(instrument:enums::Instrument) -> error::Result<ImageBuffer> {
 fn get_num_good_neighbors(mask:&ImageBuffer, x:i32, y:i32) -> u32 {
 
     // Juggling the possibility of negitive numbers and whether or now we allow that.
-    let t = if y > 0 { mask.get(x as usize, (y-1) as usize).unwrap() > 0.0 } else { false };
-    let tl = if x > 0 && y > 0 { mask.get((x-1) as usize, (y-1) as usize).unwrap() > 0.0 } else { false };
-    let l = if x > 0 { mask.get((x-1)  as usize, y as usize).unwrap() > 0.0 } else { false };
-    let bl = if x > 0 && y < mask.height as i32 - 1 { mask.get((x-1) as usize, (y+1) as usize).unwrap() > 0.0 } else { false };
-    let b = if y < mask.height as i32 - 1 { mask.get(x as usize, (y+1) as usize).unwrap() > 0.0 } else { false };
-    let br = if x < mask.width as i32 - 1 && y < mask.height as i32 - 1 { mask.get((x+1) as usize, (y+1) as usize).unwrap() > 0.0 } else { false };
-    let r = if x < mask.width as i32 - 1 { mask.get((x+1) as usize, y as usize).unwrap() > 0.0 } else { false };
-    let tr = if x < mask.width as i32 - 1 && y > 0 { mask.get((x+1) as usize, (y-1) as usize).unwrap() > 0.0 } else { false };
+    let t = if y > 0 { mask.get(x as usize, (y-1) as usize).unwrap() == 0.0 } else { false };
+    let tl = if x > 0 && y > 0 { mask.get((x-1) as usize, (y-1) as usize).unwrap() == 0.0 } else { false };
+    let l = if x > 0 { mask.get((x-1)  as usize, y as usize).unwrap() == 0.0 } else { false };
+    let bl = if x > 0 && y < mask.height as i32 - 1 { mask.get((x-1) as usize, (y+1) as usize).unwrap() == 0.0 } else { false };
+    let b = if y < mask.height as i32 - 1 { mask.get(x as usize, (y+1) as usize).unwrap() == 0.0 } else { false };
+    let br = if x < mask.width as i32 - 1 && y < mask.height as i32 - 1 { mask.get((x+1) as usize, (y+1) as usize).unwrap() == 0.0 } else { false };
+    let r = if x < mask.width as i32 - 1 { mask.get((x+1) as usize, y as usize).unwrap() == 0.0 } else { false };
+    let tr = if x < mask.width as i32 - 1 && y > 0 { mask.get((x+1) as usize, (y-1) as usize).unwrap() == 0.0 } else { false };
 
     let mut s = 0;
 
@@ -154,7 +154,7 @@ fn predict_value(buffer:&RgbVec, mask:&ImageBuffer, channel:usize, x:usize, y:us
 
 fn get_point_and_score_at_xy(mask:&ImageBuffer, x:i32, y:i32) -> Option<Point> {
 
-    if x < 0 || x >= mask.width as i32 || y < 0 || y > mask.height as i32 {
+    if x < 0 || x >= mask.width as i32 || y < 0 || y >= mask.height as i32 {
         return None;
     }
 
@@ -210,7 +210,6 @@ fn infill(buffer:&mut RgbVec, mask:&mut ImageBuffer, starting:&Point) -> error::
 
     let mut current = starting.to_owned();
     loop {
-        //vprintln!("Filling in pixel at {}, {}", current.x, current.y);
         let pt_new_value_0 = predict_value(&buffer, &mask, 0, current.x, current.y);
         let pt_new_value_1 = predict_value(&buffer, &mask, 1, current.x, current.y);
         let pt_new_value_2 = predict_value(&buffer, &mask, 2, current.x, current.y);

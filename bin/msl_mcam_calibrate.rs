@@ -41,9 +41,13 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     }
 
     
+    // Only inpaint with the same size as the mask until we can reliably determine
+    // subframing sensor location.
+    if raw.width == 1328 && raw.height == 1184 {
+        vprintln!("Inpainting...");
+        raw.apply_inpaint_fix().unwrap();
+    }
     
-    vprintln!("Inpainting...");
-    raw.apply_inpaint_fix().unwrap();
 
     //vprintln!("Flatfielding...");
     //raw.flatfield(enums::Instrument::MslMAHLI).unwrap();

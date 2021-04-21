@@ -31,14 +31,7 @@ Additional instruments will be implemented more or less whenever I get to them..
 So far I've only tested building on Ubuntu 20.04, both natively and within the Windows Subsystem for Linux on Windows 10. Within the project folder, the software can be built for testing via `cargo build` and individual binaries can be run in debug mode via, for example, `cargo run --bin m20_fetch_raw -- -i`
 
 To build successfully on Ubuntu, you'll likely need the following packages installed via apt:
-* build-essential
-* libopencv-dev 
 * libssl-dev 
-* libclang1 
-* libclang-dev 
-* librust-clang-sys-dev 
-* librust-clang-sys+runtime-dev 
-* clang-tools 
 
 The dockerfile demonstrates a method for building an installable debian package, or you can use the container itself:
 
@@ -48,7 +41,7 @@ docker run --name mars_raw_utils -dit mars_raw_utils
 docker exec -it mars_raw_utils bash
 ```
 
-Builds for RPM, MacOSX and Windows are in the plan.
+Builds for RPM, MacOSX and Windows are in the plan. Though the project has built and run from MacOSX and Windows, I haven't worked out the installation method in a way that handles the calibration data.
 
 
 ## Mars Science Laboratory (Curiosity):
@@ -283,6 +276,21 @@ OPTIONS:
     -t, --hpc_threshold <THRESHOLD>    Hot pixel correction variance threshold
     -w, --hpc_window <WINDOW_SIZE>     Hot pixel correction window size
     -i, --inputs <INPUT>...            Input
+```
+
+## Inpainting Filter
+Applies a basic inpainting filter on a set of input images. Inpainting regions need to be marked in red (rgb 255, 0, 0).
+```
+USAGE:
+    inpaint_filter [FLAGS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --inputs <INPUT>...    Input
 ```
 
 ## References:

@@ -1,0 +1,19 @@
+FROM centos:centos8
+
+RUN yum group install -y "Development Tools"
+
+RUN bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+RUN yum install -y openssl-devel 
+
+WORKDIR /build
+
+COPY . .
+RUN cargo install cargo-rpm
+RUN cp -v src/cal/*png .rpm/
+RUN cargo rpm build -v
+RUN rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.1.1-1.el8.x86_64.rpm
+
+WORKDIR /data

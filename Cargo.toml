@@ -105,6 +105,7 @@ bayer = "0.1.5"
 fastblur = "0.1.1"
 lab = "0.9.0"
 
+
 [package.metadata.rpm]
 package = "mars_raw_utils"
 
@@ -112,4 +113,35 @@ package = "mars_raw_utils"
 buildflags = ["--release"]
 
 [package.metadata.rpm.targets]
-mars_raw_utils = { path = "/usr/bin/mars_raw_utils" }
+hpc_filter = { path = "/usr/bin/hpc_filter" }
+inpaint_filter = { path = "/usr/bin/inpaint_filter" }
+m20_ecam_calibrate = { path = "/usr/bin/m20_ecam_calibrate" }
+m20_fetch_raw = { path = "/usr/bin/m20_fetch_raw" }
+m20_scam_calibrate = { path = "/usr/bin/m20_scam_calibrate" }
+m20_watson_calibrate = { path = "/usr/bin/m20_watson_calibrate" }
+m20_zcam_calibrate = { path = "/usr/bin/m20_zcam_calibrate" }
+msl_ecam_calibrate = { path = "/usr/bin/msl_ecam_calibrate" }
+msl_fetch_raw = { path = "/usr/bin/msl_fetch_raw" }
+msl_mahli_calibrate = { path = "/usr/bin/msl_mahli_calibrate" }
+msl_mcam_calibrate = { path = "/usr/bin/msl_mcam_calibrate" }
+nsyt_icc_calibrate = { path = "/usr/bin/nsyt_icc_calibrate" }
+nsyt_idc_calibrate = { path = "/usr/bin/nsyt_idc_calibrate" }
+
+[package.metadata.rpm.files]
+"M20_MCZ_LEFT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png", mode = "644"}
+"M20_MCZ_RIGHT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_RIGHT_INPAINT_MASK_V1.png", mode = "644"}
+"M20_SCAM_FLAT_Sol1_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_SCAM_FLAT_Sol1_V1.png", mode = "644"}
+"M20_SCAM_MASK_Sol1_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_SCAM_MASK_Sol1_V1.png", mode = "644"}
+"M20_WATSON_FLAT_V0.png" = { path =  "/usr/share/mars_raw_utils/data/M20_WATSON_FLAT_V0.png", mode = "644"}
+"M20_WATSON_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_WATSON_INPAINT_MASK_V1.png", mode = "644"}
+"MSL_FLB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_FLB_FLAT_V1.png", mode = "644"}
+"MSL_FRB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_FRB_FLAT_V1.png", mode = "644"}
+"MSL_MAHLI_FLAT_Sol2904_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_MAHLI_FLAT_Sol2904_V1.png", mode = "644"}
+"MSL_MAHLI_INPAINT_Sol2904_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_MAHLI_INPAINT_Sol2904_V1.png", mode = "644"}
+"MSL_MCAM_LEFT_INPAINT_Sol3082_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_MCAM_LEFT_INPAINT_Sol3082_V1.png", mode = "644"}
+"MSL_NLB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_NLB_FLAT_V1.png", mode = "644"}
+"MSL_NRB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_NRB_FLAT_V1.png", mode = "644"}
+"MSL_NRB_INPAINT_Sol3052_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_NRB_INPAINT_Sol3052_V1.png", mode = "644"}
+"MSL_RLB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_RLB_FLAT_V1.png", mode = "644"}
+"MSL_RRB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_RRB_FLAT_V1.png", mode = "644"}
+

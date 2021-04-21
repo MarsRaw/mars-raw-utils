@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate clap;
+
 fn main() {
-    println!("Hello, world!");
+    println!("{}, Version {}", crate_name!(), crate_version!());
 }
