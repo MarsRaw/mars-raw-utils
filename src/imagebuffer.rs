@@ -1,5 +1,12 @@
 
-use crate::{path, constants, vprintln, error, ok};
+use crate::{
+    path, 
+    constants, 
+    vprintln, 
+    error, 
+    ok,
+    enums
+};
 
 extern crate image;
 use image::{open, DynamicImage, Rgb};
@@ -529,7 +536,7 @@ impl ImageBuffer {
         Ok(MinMax{min:mn, max:mx})
     }
 
-    pub fn save(&self, to_file:&str) -> error::Result<&str> {
+    pub fn save_16bit(&self, to_file:&str) -> error::Result<&str> {
         let mut out_img = DynamicImage::new_rgb16(self.width as u32, self.height as u32).into_rgb16();
         
         for y in 0..self.height {
@@ -553,5 +560,40 @@ impl ImageBuffer {
     
     }
 
+    pub fn save_8bit(&self, to_file:&str) -> error::Result<&str> {
+        let mut out_img = DynamicImage::new_rgb8(self.width as u32, self.height as u32).into_rgb8();
+        
+        for y in 0..self.height {
+            for x in 0..self.width {
+                if self.get_mask_at_point(x, y).unwrap() {
+                    let val = self.get(x, y).unwrap().round() as u8;
+                    out_img.put_pixel(x as u32, y as u32, Rgb([val, val, val]));
+                }
+            }
+        }
+
+        vprintln!("Writing image buffer to file at {}", to_file);
+        if path::parent_exists_and_writable(&to_file) {
+            out_img.save(to_file).unwrap();
+            vprintln!("File saved.");
+            return ok!();
+        } else {
+            eprintln!("Parent does not exist or cannot be written: {}", path::get_parent(to_file));
+            return Err(constants::status::PARENT_NOT_EXISTS_OR_UNWRITABLE);
+        }
+    
+    }
+
+    pub fn save(&self, to_file:&str, mode:enums::ImageMode) -> error::Result<&str> {
+
+        match mode {
+            enums::ImageMode::U8BIT => {
+                return self.save_8bit(to_file);
+            },
+            _ => {
+                return self.save_16bit(to_file);
+            }
+        }
+    }
 }
 

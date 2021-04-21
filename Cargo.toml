@@ -88,6 +88,10 @@ path = "bin/m20_watson_calibrate.rs"
 name = "m20_scam_calibrate"
 path = "bin/m20_scam_calibrate.rs"
 
+[[bin]]
+name = "inpaint_filter"
+path = "bin/inpaint_filter.rs"
+
 [features]
 
 [dependencies]

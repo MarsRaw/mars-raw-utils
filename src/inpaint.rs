@@ -27,6 +27,7 @@ struct RgbVec {
     height: usize
 }
 
+const DEFAULT_WINDOW_SIZE : i32 = 3;
 
 fn determine_mask_file(instrument:enums::Instrument) -> error::Result<&'static str> {
     match instrument {
@@ -145,7 +146,7 @@ fn isolate_window(buffer:&RgbVec, mask:&ImageBuffer, channel:usize, window_size:
 }
 
 fn predict_value(buffer:&RgbVec, mask:&ImageBuffer, channel:usize, x:usize, y:usize) -> f32 {
-    let window = isolate_window(&buffer, &mask, channel, 3, x, y).unwrap();
+    let window = isolate_window(&buffer, &mask, channel, DEFAULT_WINDOW_SIZE, x, y).unwrap();
     let m = stats::mean(&window[0..]).unwrap();
     m
 }
@@ -288,18 +289,18 @@ fn vec_to_rgb_image(buffer:&RgbVec) -> error::Result<RgbImage> {
     RgbImage::new_from_buffers_rgb(&red, &green, &blue, enums::Instrument::None, enums::ImageMode::U8BIT)
 }
 
+
+
+
 // Embarrassingly slow and inefficient. Runs slow in debug. A lot faster with a release build.
-pub fn apply_inpaint_to_buffer(rgb:&RgbImage) -> error::Result<RgbImage> {
+pub fn apply_inpaint_to_buffer_with_mask(rgb:&RgbImage, mask_src:&ImageBuffer) -> error::Result<RgbImage> {
 
     let mut working_buffer = match rgb_image_to_vec(&rgb) {
         Ok(b) => b,
         Err(e) => return Err(e)
     };
 
-    let mut mask = match load_mask(rgb.get_instrument()) {
-        Ok(m) => m,
-        Err(_) => return Err("Error loading mask")
-    };
+    let mut mask = mask_src.clone();
 
     // Crop the mask image if it's larger than the input image. 
     // Sizes need to match
@@ -339,4 +340,41 @@ pub fn apply_inpaint_to_buffer(rgb:&RgbImage) -> error::Result<RgbImage> {
     newimage.set_instrument(rgb.get_instrument());
     
     Ok(newimage)
+}
+
+
+pub fn apply_inpaint_to_buffer(rgb:&RgbImage) -> error::Result<RgbImage> {
+
+    let mask = match load_mask(rgb.get_instrument()) {
+        Ok(m) => m,
+        Err(_) => return Err("Error loading mask")
+    };
+
+    apply_inpaint_to_buffer_with_mask(&rgb, &mask)
+}
+
+pub fn make_mask_from_red(rgbimage:&RgbImage) -> error::Result<ImageBuffer> {
+
+    let mut new_mask = match ImageBuffer::new(rgbimage.width, rgbimage.height) {
+        Ok(b) => b,
+        Err(e) => return Err(e)
+    };
+    for y in 0..rgbimage.height {
+        for x in 0..rgbimage.width {
+            let r = rgbimage.red().get(x, y).unwrap();
+            let g = rgbimage.green().get(x, y).unwrap();
+            let b = rgbimage.blue().get(x, y).unwrap();
+            
+            // if r != g || r != b || g != b {
+            //     new_mask.put(x, y, 255.0).unwrap();
+            // }
+            if r == 255.0 && g == 0.0 && b == 0.0 {
+                new_mask.put(x, y, 255.0).unwrap();
+            }
+
+        }
+    }
+
+
+    Ok(new_mask)
 }

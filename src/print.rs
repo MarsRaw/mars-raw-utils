@@ -23,3 +23,13 @@ macro_rules! vprintln {
         }
     };
 }
+
+#[macro_export]
+macro_rules! veprintln {
+    () => (if crate::print::is_verbose() { std::print!("\n"); });
+    ($($arg:tt)*) => {
+        if crate::print::is_verbose() { 
+            eprintln!($($arg)*);
+        }
+    };
+}
