@@ -108,7 +108,7 @@ fn main() {
     }
 
     let mut num_per_page = 100;
-    let mut page = 1;
+    let mut page = None;
     let mut minsol = 1000000;
     let mut maxsol = -1;
     let mut sol = -1;
@@ -158,7 +158,7 @@ fn main() {
     if matches.is_present("page") {
         let s = matches.value_of("page").unwrap();
         if util::string_is_valid_f32(&s) {
-            page = s.parse::<i32>().unwrap();
+            page = Some(s.parse::<i32>().unwrap());
         } else {
             eprintln!("Error: Invalid number specified");
             process::exit(1);
@@ -200,5 +200,9 @@ fn main() {
         maxsol = sol;
     }
 
-    mslremote::remote_fetch(cameras, num_per_page, page, minsol, maxsol, thumbnails, list_only, search, only_new);
+    mslremote::print_header();
+    match mslremote::remote_fetch(&cameras, num_per_page, page, minsol, maxsol, thumbnails, list_only, search, only_new) {
+        Ok(c) => println!("{} images found", c),
+        Err(e) => eprintln!("Error: {}", e)
+    }
 }

@@ -2,11 +2,17 @@
 use crate::{
     path,
     constants,
-    error
+    error,
+    ok,
+    vprintln,
+    httpfetch
 };
 
 use std::str::FromStr;
 use std::collections::HashMap;
+use std::path::Path;
+use std::fs::File;
+use std::io::Write;
 
 pub fn string_is_valid_num<T:FromStr>(s:&str) -> bool {
     let num = s.parse::<T>();
@@ -95,4 +101,46 @@ pub fn print_instruments(instruments:&HashMap<&str, Vec<&str>>) {
             println!("  {}", s);
         }
     }
+}
+
+pub fn stringvec(a:&str, b:&str) -> Vec<String> {
+    vec![a.to_owned(), b.to_owned()]
+}
+
+pub fn stringvec_b(a:&str, b:String) -> Vec<String> {
+    vec![a.to_owned(), b]
+}
+
+
+pub fn image_exists_on_filesystem(image_url:&str) -> bool {
+    //let image_url = &image["image_files"]["full_res"].as_str().unwrap();
+    let bn = path::basename(image_url);
+    path::file_exists(bn.as_str())
+}
+
+pub fn fetch_image(image_url:&str, only_new:bool) -> error::Result<&'static str> {
+    //let image_url = &image["url"].as_str().unwrap();
+    let bn = path::basename(image_url);
+
+    if image_exists_on_filesystem(&image_url) && only_new {
+        vprintln!("Output file {} exists, skipping", bn);
+        return ok!();
+    }
+
+    let image_data = match httpfetch::simple_fetch_bin(image_url) {
+        Ok(i) => i,
+        Err(e) => return Err(e)
+    };
+    
+    let path = Path::new(bn.as_str());
+
+    let mut file = match File::create(&path) {
+        Err(why) => panic!("couldn't create {}", why),
+        Ok(file) => file,
+    };
+
+    match file.write_all(&image_data[..]) {
+        Ok(_) => return ok!(),
+        Err(_e) => return Err("Error writing image to filesystem")
+    };
 }

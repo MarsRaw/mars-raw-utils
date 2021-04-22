@@ -1,25 +1,19 @@
 
 use crate::{
     constants, 
-    vprintln, 
     jsonfetch, 
-    httpfetch, 
-    path
+    error,
+    util::*
 };
 
-use json::{JsonValue};
-use std::path::Path;
-use std::fs::File;
-use std::io::Write;
+use json::{
+    JsonValue
+};
+
 use std::collections::HashMap;
 
-fn image_exists_on_filesystem(image:&JsonValue) -> bool {
-    let image_url = &image["url"].as_str().unwrap();
-    let bn = path::basename(image_url);
-    path::file_exists(bn.as_str())
-}
 
-fn print_header() {
+pub fn print_header() {
     println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
                     "ID", 
                     "Instrument",
@@ -43,6 +37,8 @@ fn null_to_str(item:&JsonValue) -> String {
 }
 
 fn print_image(image:&JsonValue) {
+    let image_url = &image["url"].as_str().unwrap();
+
     println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
                     image["imageid"], 
                     image["instrument"],
@@ -52,38 +48,13 @@ fn print_image(image:&JsonValue) {
                     format!("{:6}", null_to_str(&image["site"])),
                     format!("{:6}", null_to_str(&image["drive"])),
                     if image["is_thumbnail"].as_bool().unwrap() { constants::status::YES } else { constants::status::NO },
-                    if image_exists_on_filesystem(&image) { constants::status::YES } else { constants::status::NO }
+                    if image_exists_on_filesystem(&image_url) { constants::status::YES } else { constants::status::NO }
                 );
 }
 
 
-fn fetch_image(image:&JsonValue, only_new:bool) {
-    let image_url = &image["url"].as_str().unwrap();
-    let bn = path::basename(image_url);
-
-    if image_exists_on_filesystem(&image) && only_new {
-        vprintln!("Output file {} exists, skipping", bn);
-        return;
-    }
-
-    // Dude, error checking!!
-    let image_data = httpfetch::simple_fetch_bin(image_url).unwrap();
-    
-    let path = Path::new(bn.as_str());
-
-    let mut file = match File::create(&path) {
-        Err(why) => panic!("couldn't create {}", why),
-        Ok(file) => file,
-    };
-
-    file.write_all(&image_data[..]).unwrap();
-}
-
-
-fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str, only_new:bool) {
-
-    print_header();
-    vprintln!("{} images found", json_res["items"].len());
+fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32>  {
+    let mut valid_img_count = 0;
     for i in 0..json_res["items"].len() {
         let image = &json_res["items"][i];
         
@@ -97,13 +68,20 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
             continue;
         }
 
+        valid_img_count += 1;
         print_image(image);
 
         if !list_only {
-            fetch_image(image, only_new);
+            let image_url = &image["url"].as_str().unwrap();
+            match fetch_image(image_url, only_new) {
+                Ok(_) => (),
+                Err(e) => return Err(e)
+            };
         }
         
     }
+
+    Ok(valid_img_count)
 }
 
 #[allow(dead_code)]
@@ -126,35 +104,98 @@ pub fn make_instrument_map() -> MSLInstrumentMap {
 }
 
 
-pub fn remote_fetch(cameras:Vec<String>, num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) {
+fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32) -> error::Result<json::JsonValue> {
 
-    let joined_cameras = cameras.join("|");
-    let num_per_page_s = format!("{}", num_per_page);
-    let page_s = format!("{}", (page - 1));
-    let minsol_s = format!("{}:sol:gte", minsol);
-    let maxsol_s = format!("{}:sol:lte", maxsol);
-
-    let params = vec![
-        vec!["condition_1", "msl:mission"],
-        vec!["per_page", num_per_page_s.as_str()],
-        vec!["page", page_s.as_str()],
-        vec!["order", "sol desc,instrument_sort asc,sample_type_sort asc, date_taken desc"],
-        vec!["search", joined_cameras.as_str()],
-        vec!["condition_2", minsol_s.as_str()],
-        vec!["condition_3", maxsol_s.as_str()]
+    let mut params = vec![
+        stringvec("condition_1", "msl:mission"),
+        stringvec_b("per_page", format!("{}", num_per_page)),
+        stringvec("order", "sol desc,instrument_sort asc,sample_type_sort asc, date_taken desc"),
+        stringvec_b("search", cameras.join("|")),
+        stringvec_b("condition_2", format!("{}:sol:gte", minsol)),
+        stringvec_b("condition_3", format!("{}:sol:lte", maxsol))
     ];
+
+    match page {
+        Some(p) => {
+            params.push(stringvec_b("page", format!("{}", (p - 1))));
+        },
+        None => ()
+    };
 
     let uri = constants::url::MSL_RAW_WEBSERVICE_URL;
 
     let mut req = jsonfetch::JsonFetcher::new(uri);
 
     for p in params {
-        req.param(p[0], p[1]);
+        req.param(p[0].as_str(), p[1].as_str());
     }
 
-    match req.fetch() {
-        Ok(v) => process_results(&v, thumbnails, list_only, search, only_new),
-        Err(_e) => eprintln!("Error fetching data from remote server")
+    req.fetch()
+}
+
+
+pub fn fetch_page(cameras:&Vec<String>, num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+    match submit_query(&cameras, num_per_page, Some(page), minsol, maxsol) {
+        Ok(v) => {
+            process_results(&v, thumbnails, list_only, search, only_new)
+        },
+        Err(e) => Err(e)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct MslRemoteStats {
+    pub more: bool,
+    pub total: i32,
+    pub page: i32,
+    pub per_page: i32
+}
+
+pub fn fetch_stats(cameras:&Vec<String>, minsol:i32, maxsol:i32) -> error::Result<MslRemoteStats> {
+    match submit_query(&cameras, 0, Some(0), minsol, maxsol) {
+        Ok(v) => {
+            Ok(MslRemoteStats{
+                more:v["more"].as_bool().unwrap(),
+                total:v["total"].as_i32().unwrap(),
+                page:v["page"].as_i32().unwrap(),
+                per_page:v["per_page"].as_i32().unwrap()
+            })
+        },
+        Err(e) => Err(e)
+    }
+}
+
+pub fn fetch_all(cameras:&Vec<String>, num_per_page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+
+    let stats = match fetch_stats(&cameras, minsol, maxsol) {
+        Ok(s) => s,
+        Err(e) => return Err(e)
+    };
+
+    let pages = (stats.total as f32 / num_per_page as f32).ceil() as i32;
+
+    let mut count = 0;
+    for page in 0..pages {
+        match fetch_page(&cameras, num_per_page, page, minsol, maxsol, thumbnails, list_only, search, only_new) {
+            Ok(c) => {
+                count = count + c;
+            },
+            Err(e) => return Err(e)
+        };
     }
 
+    //println!("{:?}, pages: {}", stats ,pages);
+    Ok(count)
+}
+
+
+pub fn remote_fetch(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+    match page {
+        Some(p) => {
+            fetch_page(&cameras, num_per_page, p, minsol, maxsol, thumbnails, list_only, search, only_new)
+        },
+        None => {
+            fetch_all(&cameras, num_per_page, minsol, maxsol, thumbnails, list_only, search, only_new)
+        }
+    }
 }
