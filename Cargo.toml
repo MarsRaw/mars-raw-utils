@@ -31,6 +31,7 @@ assets = [
     ["target/release/hpc_filter", "usr/bin/", "755"],
     ["target/release/nsyt_icc_calibrate", "usr/bin/", "755"],
     ["target/release/nsyt_idc_calibrate", "usr/bin/", "755"],
+    ["target/release/inpaint_filter", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["src/cal/*png", "usr/share/mars_raw_utils/data/", "644"],
 ]
