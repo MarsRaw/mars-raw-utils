@@ -305,7 +305,7 @@ pub fn apply_inpaint_to_buffer_with_mask(rgb:&RgbImage, mask_src:&ImageBuffer) -
     // Sizes need to match
     if mask.width > working_buffer.width {
         let x = (mask.width - working_buffer.width) / 2;
-        let y = (mask.height - working_buffer.width) / 2;
+        let y = (mask.height - working_buffer.height) / 2;
         vprintln!("Cropping inpaint mask with params {}, {}, {}, {}", x, y, working_buffer.width, working_buffer.height);
         mask = match mask.get_subframe(x, y, working_buffer.width, working_buffer.height) {
             Ok(m) => m,
