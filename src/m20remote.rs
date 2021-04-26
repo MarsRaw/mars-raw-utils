@@ -106,7 +106,7 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
     ];
     match page {
         Some(p) => {
-            params.push(stringvec_b("page", format!("{}", (p - 1))));
+            params.push(stringvec_b("page", format!("{}", p)));
         },
         None => ()
     };

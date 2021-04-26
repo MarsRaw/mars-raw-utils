@@ -158,7 +158,7 @@ fn main() {
     if matches.is_present("page") {
         let s = matches.value_of("page").unwrap();
         if util::string_is_valid_f32(&s) {
-            page = Some(s.parse::<i32>().unwrap());
+            page = Some(s.parse::<i32>().unwrap() - 1);
         } else {
             eprintln!("Error: Invalid number specified");
             process::exit(1);
