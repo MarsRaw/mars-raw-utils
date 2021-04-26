@@ -9,7 +9,11 @@ use crate::{
 };
 
 extern crate image;
-use image::{open, DynamicImage, Rgb};
+use image::{
+    open, 
+    DynamicImage, 
+    Rgba
+};
 
 // A simple image raster buffer.
 #[derive(Debug, Clone)]
@@ -537,13 +541,14 @@ impl ImageBuffer {
     }
 
     pub fn save_16bit(&self, to_file:&str) -> error::Result<&str> {
-        let mut out_img = DynamicImage::new_rgb16(self.width as u32, self.height as u32).into_rgb16();
+        let mut out_img = DynamicImage::new_rgba16(self.width as u32, self.height as u32).into_rgba16();
         
         for y in 0..self.height {
             for x in 0..self.width {
                 if self.get_mask_at_point(x, y).unwrap() {
                     let val = self.get(x, y).unwrap().round() as u16;
-                    out_img.put_pixel(x as u32, y as u32, Rgb([val, val, val]));
+                    let a = if self.get_mask_at_point(x, y).unwrap() { 65535 } else { 0 };
+                    out_img.put_pixel(x as u32, y as u32, Rgba([val, val, val, a]));
                 }
             }
         }
@@ -561,13 +566,14 @@ impl ImageBuffer {
     }
 
     pub fn save_8bit(&self, to_file:&str) -> error::Result<&str> {
-        let mut out_img = DynamicImage::new_rgb8(self.width as u32, self.height as u32).into_rgb8();
+        let mut out_img = DynamicImage::new_rgba8(self.width as u32, self.height as u32).into_rgba8();
         
         for y in 0..self.height {
             for x in 0..self.width {
                 if self.get_mask_at_point(x, y).unwrap() {
                     let val = self.get(x, y).unwrap().round() as u8;
-                    out_img.put_pixel(x as u32, y as u32, Rgb([val, val, val]));
+                    let a = if self.get_mask_at_point(x, y).unwrap() { 255 } else { 0 };
+                    out_img.put_pixel(x as u32, y as u32, Rgba([val, val, val, a]));
                 }
             }
         }
