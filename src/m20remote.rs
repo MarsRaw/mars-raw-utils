@@ -7,8 +7,6 @@ use crate::{
 use json::{
     JsonValue
 };
-use std::collections::HashMap;
-
 
 pub fn print_header() {
     println!("{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7} {:10}", 
@@ -70,13 +68,8 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
     Ok(valid_img_count)
 }
 
-#[allow(dead_code)]
-pub struct M20InstrumentMap {
-    pub map: HashMap<&'static str, Vec<&'static str>>
-}
-
-pub fn make_instrument_map() -> M20InstrumentMap {
-    M20InstrumentMap{map: 
+pub fn make_instrument_map() -> InstrumentMap {
+    InstrumentMap{map: 
     [
         ("HAZ_FRONT", vec!["FRONT_HAZCAM_LEFT_A", "FRONT_HAZCAM_LEFT_B", "FRONT_HAZCAM_RIGHT_A", "FRONT_HAZCAM_RIGHT_B"]),
         ("SUPERCAM", vec!["SUPERCAM_RMI"]),

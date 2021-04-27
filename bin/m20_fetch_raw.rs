@@ -109,7 +109,7 @@ fn main() {
     }
 
     if matches.is_present("instruments") {
-        util::print_instruments(&im.map);
+        im.print_instruments();
         process::exit(0);
     }
 
@@ -130,7 +130,7 @@ fn main() {
         camera_inputs = matches.values_of("camera").unwrap().collect();
     }
 
-    let camera_ids_res = util::find_remote_instrument_names_fromlist(&camera_inputs, &im.map);
+    let camera_ids_res = im.find_remote_instrument_names_fromlist(&camera_inputs);
     let cameras = match camera_ids_res {
         Err(_e) => {
             eprintln!("Invalid camera instrument(s) specified");

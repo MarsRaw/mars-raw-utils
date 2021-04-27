@@ -10,9 +10,6 @@ use json::{
     JsonValue
 };
 
-use std::collections::HashMap;
-
-
 pub fn print_header() {
     println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
                     "ID", 
@@ -84,13 +81,8 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
     Ok(valid_img_count)
 }
 
-#[allow(dead_code)]
-pub struct MSLInstrumentMap {
-    pub map: HashMap<&'static str, Vec<&'static str>>
-}
-
-pub fn make_instrument_map() -> MSLInstrumentMap {
-    MSLInstrumentMap{map: 
+pub fn make_instrument_map() -> InstrumentMap {
+    InstrumentMap{map: 
         [
             ("HAZ_FRONT", vec!["FHAZ_RIGHT_A", "FHAZ_LEFT_A", "FHAZ_RIGHT_B", "FHAZ_LEFT_B"]), 
             ("HAZ_REAR", vec!["RHAZ_RIGHT_A", "RHAZ_LEFT_A", "RHAZ_RIGHT_B", "RHAZ_LEFT_B"]), 
