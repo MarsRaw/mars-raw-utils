@@ -32,6 +32,7 @@ assets = [
     ["target/release/nsyt_icc_calibrate", "usr/bin/", "755"],
     ["target/release/nsyt_idc_calibrate", "usr/bin/", "755"],
     ["target/release/inpaint_filter", "usr/bin/", "755"],
+    ["target/release/upscale", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["src/cal/*png", "usr/share/mars_raw_utils/data/", "644"],
 ]
@@ -93,6 +94,10 @@ path = "bin/m20_scam_calibrate.rs"
 name = "inpaint_filter"
 path = "bin/inpaint_filter.rs"
 
+[[bin]]
+name = "upscale"
+path = "bin/upscale.rs"
+
 [features]
 
 [dependencies]
@@ -127,6 +132,7 @@ msl_mahli_calibrate = { path = "/usr/bin/msl_mahli_calibrate" }
 msl_mcam_calibrate = { path = "/usr/bin/msl_mcam_calibrate" }
 nsyt_icc_calibrate = { path = "/usr/bin/nsyt_icc_calibrate" }
 nsyt_idc_calibrate = { path = "/usr/bin/nsyt_idc_calibrate" }
+upscale = { path = "/usr/bin/upscale" }
 
 [package.metadata.rpm.files]
 "M20_MCZ_LEFT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png", mode = "644"}
