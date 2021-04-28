@@ -41,6 +41,8 @@ fn determine_mask_file(instrument:enums::Instrument) -> error::Result<&'static s
                     Ok(constants::cal::MSL_NCAM_RIGHT_INPAINT_PATH),
         enums::Instrument::MslMastcamLeft =>
                     Ok(constants::cal::MSL_MCAM_LEFT_INPAINT_PATH),
+        enums::Instrument::MslMastcamRight =>
+                    Ok(constants::cal::MSL_MCAM_RIGHT_INPAINT_PATH),            
         enums::Instrument::M20Watson =>
                     Ok(constants::cal::M20_WATSON_INPAINT_MASK_PATH),
         _ => Err(constants::status::UNSUPPORTED_INSTRUMENT)

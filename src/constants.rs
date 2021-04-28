@@ -105,5 +105,6 @@ pub mod cal {
     pub const MSL_RHAZ_LEFT_FLAT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_RLB_FLAT_V1.png");
 
     pub const MSL_MCAM_LEFT_INPAINT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_MCAM_LEFT_INPAINT_Sol3082_V1.png");
+    pub const MSL_MCAM_RIGHT_INPAINT_PATH : &str = const_format::formatcp!("{}/{}", data_dir(), "MSL_MCAM_RIGHT_INPAINT_Sol3101_V1.png");
 }
 

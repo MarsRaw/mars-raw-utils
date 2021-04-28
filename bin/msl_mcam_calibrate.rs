@@ -25,14 +25,23 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
         return;
     }
 
-    let instrument = enums::Instrument::MslMastcamLeft;
+    let mut instrument = enums::Instrument::MslMastcamLeft;
+
+    if util::filename_char_at_pos(&input_file, 5) == 'R' {
+        instrument = enums::Instrument::MslMastcamRight;
+        vprintln!("Processing for Mastcam Right");
+    } else {
+        vprintln!("Processing for Mastcam Left") ;
+    }
 
     let mut raw = rgbimage::RgbImage::open(input_file, instrument).unwrap();
 
     let mut data_max = 255.0;
-
-    vprintln!("Debayering...");
-    raw.debayer().unwrap();
+    
+    if /*util::filename_char_at_pos(&input_file, 22) == 'E' &&*/ raw.is_grayscale() {
+        vprintln!("Image appears to be grayscale, applying debayering...");
+        raw.debayer().unwrap();
+    }
 
     if ! no_ilt {
         vprintln!("Decompanding...");
@@ -50,7 +59,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     
 
     //vprintln!("Flatfielding...");
-    //raw.flatfield(enums::Instrument::MslMAHLI).unwrap();
+    //raw.flatfield().unwrap();
 
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
