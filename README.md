@@ -43,6 +43,8 @@ docker exec -it mars_raw_utils bash
 
 Builds for RPM, MacOSX and Windows are in the plan. Though the project has built and run from MacOSX and Windows, I haven't worked out the installation method in a way that handles the calibration data.
 
+## Specifying Calibration Data Location:
+By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can set the calibration file directory by using the `MARS_RAW_DATA` environment variable. The variable will override the default locations, as well.
 
 ## Mars Science Laboratory (Curiosity):
 ### Fetch Raws:
@@ -290,6 +292,23 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
+    -i, --inputs <INPUT>...    Input
+```
+
+## Upscale Experiment
+An experiment in smooth image upscaling using the median-based inpainting algorithm.
+
+```
+USAGE:
+    upscale [FLAGS] --factor <FACTOR> --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --factor <FACTOR>      Scale factor
     -i, --inputs <INPUT>...    Input
 ```
 
