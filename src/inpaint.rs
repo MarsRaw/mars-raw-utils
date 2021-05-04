@@ -11,7 +11,8 @@ use crate::{
     vprintln,
     stats,
     rgbimage::RgbImage,
-    ok
+    ok,
+    calibfile
 };
 
 #[derive(Debug, Clone)]
@@ -29,22 +30,22 @@ struct RgbVec {
 
 const DEFAULT_WINDOW_SIZE : i32 = 3;
 
-fn determine_mask_file(instrument:enums::Instrument) -> error::Result<&'static str> {
+fn determine_mask_file(instrument:enums::Instrument) -> error::Result<String> {
     match instrument {
         enums::Instrument::MslMAHLI => 
-                    Ok(constants::cal::MSL_MAHLI_INPAINT_MASK_PATH),
+                    calibfile::calibration_file(constants::cal::MSL_MAHLI_INPAINT_MASK_PATH),
         enums::Instrument::M20MastcamZLeft => 
-                    Ok(constants::cal::M20_INPAINT_MASK_LEFT_PATH),
+                    calibfile::calibration_file(constants::cal::M20_INPAINT_MASK_LEFT_PATH),
         enums::Instrument::M20MastcamZRight =>
-                    Ok(constants::cal::M20_INPAINT_MASK_RIGHT_PATH),
+                    calibfile::calibration_file(constants::cal::M20_INPAINT_MASK_RIGHT_PATH),
         enums::Instrument::MslNavCamRight =>
-                    Ok(constants::cal::MSL_NCAM_RIGHT_INPAINT_PATH),
+                    calibfile::calibration_file(constants::cal::MSL_NCAM_RIGHT_INPAINT_PATH),
         enums::Instrument::MslMastcamLeft =>
-                    Ok(constants::cal::MSL_MCAM_LEFT_INPAINT_PATH),
+                    calibfile::calibration_file(constants::cal::MSL_MCAM_LEFT_INPAINT_PATH),
         enums::Instrument::MslMastcamRight =>
-                    Ok(constants::cal::MSL_MCAM_RIGHT_INPAINT_PATH),            
+                    calibfile::calibration_file(constants::cal::MSL_MCAM_RIGHT_INPAINT_PATH),            
         enums::Instrument::M20Watson =>
-                    Ok(constants::cal::M20_WATSON_INPAINT_MASK_PATH),
+                    calibfile::calibration_file(constants::cal::M20_WATSON_INPAINT_MASK_PATH),
         _ => Err(constants::status::UNSUPPORTED_INSTRUMENT)
     }
 }
@@ -80,7 +81,7 @@ fn load_mask(instrument:enums::Instrument) -> error::Result<ImageBuffer> {
         Err(e) => return Err(e)
     };
 
-    load_mask_file(mask_file, instrument)
+    load_mask_file(mask_file.as_str(), instrument)
 }
 
 fn get_num_good_neighbors(mask:&ImageBuffer, x:i32, y:i32) -> u32 {

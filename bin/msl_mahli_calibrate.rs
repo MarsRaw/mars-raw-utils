@@ -22,7 +22,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
         return;
     }
 
-    let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::MslMAHLI).unwrap();
+    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::MslMAHLI).unwrap();
 
     if raw.width == 1632 && raw.height == 1200 {
         vprintln!("Cropping...");

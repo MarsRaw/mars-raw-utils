@@ -27,7 +27,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
         return;
     }
     
-    let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::M20SuperCam).unwrap();
+    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::M20SuperCam).unwrap();
     
     vprintln!("Loading image mask from {}", constants::cal::M20_SCAM_MASK_PATH);
     let mask = imagebuffer::ImageBuffer::from_file(constants::cal::M20_SCAM_MASK_PATH).unwrap();

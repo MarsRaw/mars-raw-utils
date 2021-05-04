@@ -23,7 +23,7 @@ use std::process;
 
 fn process_file(input_file:&str, scale_factor:usize) {
 
-    let raw = rgbimage::RgbImage::open(input_file, enums::Instrument::None).unwrap();
+    let raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::None).unwrap();
 
     let mut upscaled = rgbimage::RgbImage::new(raw.width * scale_factor, raw.height * scale_factor, enums::Instrument::None).unwrap();
     let mut fill_mask = imagebuffer::ImageBuffer::new(raw.width * scale_factor, raw.height * scale_factor).unwrap();

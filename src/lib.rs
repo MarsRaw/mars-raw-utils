@@ -5,6 +5,7 @@ pub mod print;
 pub mod error;
 
 pub mod constants;
+pub mod calibfile;
 pub mod imagebuffer;
 pub mod path;
 pub mod decompanding;

@@ -55,7 +55,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
         }
     }
 
-    let mut raw = rgbimage::RgbImage::open(input_file, instrument).unwrap();
+    let mut raw = rgbimage::RgbImage::open(String::from(input_file), instrument).unwrap();
 
     // Exclude subframed images for now...
     if inpaint::inpaint_supported_for_instrument(instrument) && raw.height >= 1022 {

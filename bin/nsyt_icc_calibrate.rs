@@ -24,7 +24,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
         return;
     }
 
-    let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::NsytICC).unwrap();
+    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::NsytICC).unwrap();
 
     let mut data_max = 255.0;
 

@@ -17,7 +17,7 @@ use std::process;
 
 fn process_file(input_file:&str) {
 
-    let raw = rgbimage::RgbImage::open(input_file, enums::Instrument::None).unwrap();
+    let raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::None).unwrap();
     
     vprintln!("Generating mask from red pixels...");
     let mask = inpaint::make_mask_from_red(&raw).unwrap();

@@ -51,8 +51,12 @@ impl RgbImage {
         })
     }
 
-    pub fn open(file_path:&str, instrument:enums::Instrument) -> error::Result<RgbImage> {
-        if !path::file_exists(file_path) {
+    pub fn open_str(file_path:&str, instrument:enums::Instrument) -> error::Result<RgbImage> {
+        RgbImage::open(String::from(file_path), instrument)
+    }
+
+    pub fn open(file_path:String, instrument:enums::Instrument) -> error::Result<RgbImage> {
+        if !path::file_exists(file_path.as_str()) {
             return Err(constants::status::FILE_NOT_FOUND);
         }
 

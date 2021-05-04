@@ -17,7 +17,7 @@ use std::process;
 
 fn process_file(input_file:&str, hpc_threshold:f32, hpc_window_size:i32) {
 
-    let mut raw = rgbimage::RgbImage::open(input_file, enums::Instrument::None).unwrap();
+    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::None).unwrap();
 
     if hpc_threshold > 0.0 {
         vprintln!("Hot pixel correction with variance threshold {}...", hpc_threshold);
