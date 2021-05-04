@@ -72,11 +72,20 @@ pub mod param {
 
 pub mod cal {
 
+    // NOTE: I don't like this. At all. Need a much more robust way of locating calibration files.
     const fn data_dir() -> &'static str {
         if cfg!(debug_assertions) {
             return "src/cal";
         } else {
-            return "/usr/share/mars_raw_utils/data/";
+
+            if cfg!(target_os = "macos") {
+                return "/usr/local/share/mars_raw_utils/data/";
+            } else if cfg!(target_os = "windows") {
+                return "src/cal"; // C:/something/something/something/darkside/
+            } else {
+                return "/usr/share/mars_raw_utils/data/";
+            }
+            
         }
     }
 
