@@ -3,7 +3,7 @@ use mars_raw_utils::{
     constants, 
     print,
     util,
-    mslremote
+    msl
 };
 
 #[macro_use]
@@ -96,7 +96,7 @@ fn main() {
                     .help("Only new images. Skipped processed images."))
                 .get_matches();
 
-    let instruments = mslremote::make_instrument_map();
+    let instruments = msl::remote::make_instrument_map();
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
         print::set_verbose(true);
@@ -200,8 +200,8 @@ fn main() {
         maxsol = sol;
     }
 
-    mslremote::print_header();
-    match mslremote::remote_fetch(&cameras, num_per_page, page, minsol, maxsol, thumbnails, list_only, search, only_new) {
+    msl::remote::print_header();
+    match msl::remote::remote_fetch(&cameras, num_per_page, page, minsol, maxsol, thumbnails, list_only, search, only_new) {
         Ok(c) => println!("{} images found", c),
         Err(e) => eprintln!("Error: {}", e)
     }

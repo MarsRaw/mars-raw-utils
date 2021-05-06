@@ -4,6 +4,9 @@ extern crate clap;
 pub mod print;
 pub mod error;
 
+pub mod m20;
+pub mod msl;
+pub mod nsyt;
 pub mod constants;
 pub mod calibfile;
 pub mod imagebuffer;
@@ -20,5 +23,3 @@ pub mod util;
 pub mod hotpixel;
 pub mod httpfetch;
 pub mod jsonfetch;
-pub mod m20remote;
-pub mod mslremote;

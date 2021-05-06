@@ -3,7 +3,7 @@ use mars_raw_utils::{
     constants, 
     print, 
     util,
-    m20remote
+    m20
 };
 
 #[macro_use]
@@ -102,7 +102,7 @@ fn main() {
                 .get_matches();
 
 
-    let im = m20remote::make_instrument_map();
+    let im = m20::remote::make_instrument_map();
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
         print::set_verbose(true);
@@ -210,8 +210,8 @@ fn main() {
         maxsol = sol;
     }
 
-    m20remote::print_header();
-    match m20remote::remote_fetch(&cameras, num_per_page, page, minsol, maxsol, thumbnails, movie_only, list_only, search, only_new) {
+    m20::remote::print_header();
+    match m20::remote::remote_fetch(&cameras, num_per_page, page, minsol, maxsol, thumbnails, movie_only, list_only, search, only_new) {
         Ok(c) => println!("{} images found", c),
         Err(e) => eprintln!("Error: {}", e)
     };
