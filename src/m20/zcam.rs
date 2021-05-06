@@ -27,6 +27,12 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
 
     let mut data_max = 255.0;
 
+    if ! no_ilt {
+        vprintln!("Decompanding...");
+        raw.decompand().unwrap();
+        data_max = decompanding::get_max_for_instrument(instrument) as f32;
+    }
+
     // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
     // Update: Not always. Added a check to determine whether or not is is grayscale.
     // It's not perfect so please validate results. Gonna keep the 'ECM' check for now.
@@ -35,11 +41,7 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         raw.debayer().unwrap();
     }
 
-    if ! no_ilt {
-        vprintln!("Decompanding...");
-        raw.decompand().unwrap();
-        data_max = decompanding::get_max_for_instrument(instrument) as f32;
-    }
+
 
 
 

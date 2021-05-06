@@ -1,0 +1,3 @@
+[submodule "mars-raw-utils-data"]
+	path = mars-raw-utils-data
+	url = https://github.com/kmgill/mars-raw-utils-data.git

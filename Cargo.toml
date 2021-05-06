@@ -1,12 +1,12 @@
 [package]
 name = "mars_raw_utils"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
 repository = "https://github.com/kmgill/mars-raw-utils"
 readme = "README.md"
-keywords = ["mars", "msl", "mars2020"]
+keywords = ["mars", "msl", "mars2020", "insight", "nsyt", "mastcam", "mahli", "mastcam-z"]
 license = "MIT" 
 exclude = ["cal-psd"]
 
@@ -34,7 +34,7 @@ assets = [
     ["target/release/inpaint_filter", "usr/bin/", "755"],
     ["target/release/upscale", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
-    ["src/cal/*png", "usr/share/mars_raw_utils/data/", "644"],
+    ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
 ]
 
 [lib]

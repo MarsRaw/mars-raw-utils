@@ -7,7 +7,7 @@ COPY . .
 
 RUN cargo deb
 
-RUN apt install ./target/debian/mars_raw_utils_0.1.1_amd64.deb 
+RUN apt install ./target/debian/mars_raw_utils_0.1.2_amd64.deb 
 
 WORKDIR /data
 

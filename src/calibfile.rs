@@ -8,13 +8,13 @@ use crate::{
 
 fn determine_data_dir() -> String {
     if cfg!(debug_assertions) {
-        return String::from("src/cal");
+        return String::from("mars-raw-utils-data/caldata");
     } else {
 
         if cfg!(target_os = "macos") {
             return String::from("/usr/local/share/mars_raw_utils/data/");
         } else if cfg!(target_os = "windows") {
-            return String::from("src/cal"); // C:/something/something/something/darkside/
+            return String::from("mars-raw-utils-data/caldata"); // C:/something/something/something/darkside/
         } else {
             return String::from("/usr/share/mars_raw_utils/data/");
         }
