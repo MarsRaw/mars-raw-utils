@@ -38,16 +38,17 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
 
     let mut data_max = 255.0;
     
-    if /*util::filename_char_at_pos(&input_file, 22) == 'E' &&*/ raw.is_grayscale() {
-        vprintln!("Image appears to be grayscale, applying debayering...");
-        raw.debayer().unwrap();
-    }
-
     if ! no_ilt {
         vprintln!("Decompanding...");
         raw.decompand().unwrap();
         data_max = decompanding::get_max_for_instrument(instrument) as f32;
     }
+
+    if /*util::filename_char_at_pos(&input_file, 22) == 'E' &&*/ raw.is_grayscale() {
+        vprintln!("Image appears to be grayscale, applying debayering...");
+        raw.debayer().unwrap();
+    }
+
 
     
     // Only inpaint with the same size as the mask until we can reliably determine

@@ -468,15 +468,13 @@ impl ImageBuffer {
     }
 
     pub fn normalize_force_minmax(&self, min:f32, max:f32, forced_min:f32, forced_max:f32) -> error::Result<ImageBuffer> {
-        let shifted = self.shift_to_min_zero().unwrap();
-
         let need_len = self.width * self.height;
         let mut v:Vec<f32> = Vec::with_capacity(need_len);
         v.resize(need_len, 0.0);
 
         for i in 0..need_len {
             if self.get_mask_at_index(i).unwrap() {
-                let value = ((shifted.buffer[i] - forced_min) / (forced_max- forced_min)) * (max - min) + min;
+                let value = ((self.buffer[i] - forced_min) / (forced_max- forced_min)) * (max - min) + min;
                 v[i] = value;
             }
         }
