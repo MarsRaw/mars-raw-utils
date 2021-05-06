@@ -8,7 +8,7 @@ repository = "https://github.com/kmgill/mars-raw-utils"
 readme = "README.md"
 keywords = ["mars", "msl", "mars2020", "insight", "nsyt", "mastcam", "mahli", "mastcam-z"]
 license = "MIT" 
-exclude = ["cal-psd"]
+exclude = ["mars-raw-utils-data"]
 
 [package.metadata.deb]
 maintainer = "Kevin M. Gill <apoapsys@gmail.com>"
