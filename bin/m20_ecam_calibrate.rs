@@ -57,7 +57,7 @@ fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f
     // }
 
     // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
-    if input_file.find("ECM") != None {
+    if raw.is_grayscale() {
         vprintln!("Debayering...");
         raw.debayer().unwrap();
     }
