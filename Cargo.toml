@@ -6,7 +6,7 @@ edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
 repository = "https://github.com/kmgill/mars-raw-utils"
 readme = "README.md"
-keywords = ["mars", "msl", "mars2020", "insight", "nsyt", "mastcam", "mahli", "mastcam-z"]
+keywords = ["mars", "msl", "mars2020", "insight"]
 license = "MIT" 
 exclude = ["mars-raw-utils-data"]
 
