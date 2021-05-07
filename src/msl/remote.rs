@@ -74,6 +74,10 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };
+            match save_image_json(image_url, &image, only_new){
+                Ok(_) => (),
+                Err(e) => return Err(e)
+            };
         }
         
     }

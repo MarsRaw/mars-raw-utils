@@ -14,6 +14,10 @@ use std::path::Path;
 use std::fs::File;
 use std::io::Write;
 
+use json::{
+    JsonValue
+};
+
 pub fn string_is_valid_num<T:FromStr>(s:&str) -> bool {
     let num = s.parse::<T>();
     match num {
@@ -156,5 +160,29 @@ pub fn fetch_image(image_url:&str, only_new:bool) -> error::Result<&'static str>
     match file.write_all(&image_data[..]) {
         Ok(_) => return ok!(),
         Err(_e) => return Err("Error writing image to filesystem")
+    };
+}
+
+pub fn save_image_json(image_url:&str, item:&JsonValue, only_new:bool) -> error::Result<&'static str> {
+    let bn = path::basename(image_url);
+
+    let out_file = bn.replace(".jpg", "-metadata.json").replace(".JPG", "-metadata.json")
+                             .replace(".png", "-metadata.json").replace(".PNG", "-metadata.json");
+
+    if path::file_exists(out_file.as_str()) && only_new {
+        vprintln!("Output file {} exists, skipping", bn);
+        return ok!();
+    }
+
+    let path = Path::new(out_file.as_str());
+
+    let mut file = match File::create(&path) {
+        Err(why) => panic!("couldn't create {}", why),
+        Ok(file) => file,
+    };
+
+    match file.write_all(item.pretty(4).as_bytes()) {
+        Ok(_) => return ok!(),
+        Err(_e) => return Err("Error writing metadata to filesystem")
     };
 }
