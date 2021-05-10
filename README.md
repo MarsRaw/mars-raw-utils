@@ -386,3 +386,7 @@ https://www.researchgate.net/publication/4087683_High-quality_linear_interpolati
 
 Getreuer, Pascal. (2011). Malvar-He-Cutler Linear Image Demosaicking. Image Processing On Line. 1. 10.5201/ipol.2011.g_mhcd. 
 https://www.researchgate.net/publication/270045976_Malvar-He-Cutler_Linear_Image_Demosaicking
+
+
+Maki, J.N., Gruel, D., McKinney, C. et al. The Mars 2020 Engineering Cameras and Microphone on the Perseverance Rover: A Next-Generation Imaging System for Mars Exploration. Space Sci Rev 216, 137 (2020). 
+https://doi.org/10.1007/s11214-020-00765-9
