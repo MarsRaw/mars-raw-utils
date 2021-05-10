@@ -8,6 +8,16 @@ pub mod url {
     pub const M20_RAW_WEBSERVICE_URL : &str = "https://mars.nasa.gov/rss/api/";
 }
 
+pub mod time {
+    pub const MSL_SURFACE_SCLK: f32 = 434589485.0;
+    pub const MSL_UNIX_COUNT_OFFSET: f32 = 1381317960.0;
+    pub const MSL_SURFACE_SEC_OFFSET : f32 = 1344174599.0;
+
+    pub const RATE_ADJUSTMENT: f32 = 1.000009438;
+    pub const LEAP_SEC : f32 = 2.0;
+    pub const MARS_SEC_ADJUSTMENT : f32 = 1.02749125;
+}
+
 // Strings
 pub mod status {
     pub const EMPTY : &str = "";
@@ -82,7 +92,8 @@ pub mod cal {
     pub const M20_WATSON_INPAINT_MASK_PATH : &str = "{DATADIR}/M20_WATSON_INPAINT_MASK_V1.png";
     pub const M20_WATSON_FLAT_PATH : &str = "{DATADIR}/M20_WATSON_FLAT_V0.png";
 
-    pub const M20_SCAM_FLAT_PATH : &str = "{DATADIR}/M20_SCAM_FLAT_Sol1_V1.png";
+    pub const M20_SCAM_FLAT_BAYER_PATH : &str = "{DATADIR}/M20_SCAM_FLAT_BAYER_Sol77_V2.png";
+    pub const M20_SCAM_FLAT_RGB_PATH : &str = "{DATADIR}/M20_SCAM_FLAT_RGB_Sol77_V2.png";
     pub const M20_SCAM_MASK_PATH : &str = "{DATADIR}/M20_SCAM_MASK_Sol1_V1.png";
 
     // Limiting to navcams on RCE-B

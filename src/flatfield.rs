@@ -26,7 +26,7 @@ pub fn load_flat(instrument:enums::Instrument) -> error::Result<RgbImage> {
         enums::Instrument::M20Watson =>
                 Ok(RgbImage::open(calibfile::calibration_file(constants::cal::M20_WATSON_FLAT_PATH).unwrap(), instrument).unwrap()),
         enums::Instrument::M20SuperCam =>
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::M20_SCAM_FLAT_PATH).unwrap(), instrument).unwrap()),
+                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::M20_SCAM_FLAT_RGB_PATH).unwrap(), instrument).unwrap()),
         _ => Err(constants::status::UNSUPPORTED_INSTRUMENT)
     }
 }
