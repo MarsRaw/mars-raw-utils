@@ -9,6 +9,7 @@ use crate::{
 
 // G at R locations
 // G at B locations
+#[allow(non_upper_case_globals)]
 pub const GR_GB : [f32; 25] = [
     0.0,  0.0, -1.0,  0.0,  0.0,
     0.0,  0.0,  2.0,  0.0,  0.0,
@@ -19,6 +20,7 @@ pub const GR_GB : [f32; 25] = [
 
 // R at G in R row, B column
 // B at G in B row, R column
+#[allow(non_upper_case_globals)]
 pub const Rg_RB_Bg_BR : [f32; 25] = [
     0.0,  0.0,  0.5,  0.0,  0.0,
     0.0, -1.0,  0.0, -1.0,  0.0,
@@ -29,6 +31,7 @@ pub const Rg_RB_Bg_BR : [f32; 25] = [
 
 // R at G in B row, R column
 // B at G in R row, B column
+#[allow(non_upper_case_globals)]
 pub const Rg_BR_Bg_RB : [f32; 25] = [
     0.0,  0.0, -1.0,  0.0,  0.0,
     0.0, -1.0,  4.0, -1.0,  0.0,
@@ -39,6 +42,7 @@ pub const Rg_BR_Bg_RB : [f32; 25] = [
 
 //R at B in B row, B column
 //B at R in R row, R column
+#[allow(non_upper_case_globals)]
 pub const Rb_BB_Br_RR : [f32; 25] = [
     0.0,  0.0, -1.5,  0.0,  0.0,
     0.0,  2.0,  0.0,  2.0,  0.0,

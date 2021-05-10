@@ -38,6 +38,7 @@ pub mod status {
     pub const YES : &str = "Yes";
     pub const NO : &str = "No";
     pub const DOWNLOADING : &str = "Downloading";
+    pub const INVALID_CALIBRATION_FILE_ID : &str = "Invalid calibration file";
 }
 
 
@@ -82,32 +83,30 @@ pub mod param {
 
 pub mod cal {
 
-    // These can't stay hard coded like this...
-    pub const M20_INPAINT_MASK_RIGHT_PATH : &str = "{DATADIR}/M20_MCZ_RIGHT_INPAINT_MASK_V1.png";
-    pub const M20_INPAINT_MASK_LEFT_PATH : &str = "{DATADIR}/M20_MCZ_LEFT_INPAINT_MASK_V1.png";
+    pub const M20_INPAINT_MASK_RIGHT_PATH : &str = "M20_INPAINT_MASK_RIGHT_PATH";
+    pub const M20_INPAINT_MASK_LEFT_PATH : &str = "M20_INPAINT_MASK_LEFT_PATH";
 
-    pub const MSL_MAHLI_INPAINT_MASK_PATH : &str = "{DATADIR}/MSL_MAHLI_INPAINT_Sol2904_V1.png";
-    pub const MSL_MAHLI_FLAT_PATH : &str = "{DATADIR}/MSL_MAHLI_FLAT_Sol2904_V1.png";
+    pub const MSL_MAHLI_INPAINT_MASK_PATH : &str = "MSL_MAHLI_INPAINT_MASK_PATH";
+    pub const MSL_MAHLI_FLAT_PATH : &str = "MSL_MAHLI_FLAT_PATH";
 
-    pub const M20_WATSON_INPAINT_MASK_PATH : &str = "{DATADIR}/M20_WATSON_INPAINT_MASK_V1.png";
-    pub const M20_WATSON_FLAT_PATH : &str = "{DATADIR}/M20_WATSON_FLAT_V0.png";
+    pub const M20_WATSON_INPAINT_MASK_PATH : &str = "M20_WATSON_INPAINT_MASK_PATH";
+    pub const M20_WATSON_FLAT_PATH : &str = "M20_WATSON_FLAT_PATH";
 
-    pub const M20_SCAM_FLAT_BAYER_PATH : &str = "{DATADIR}/M20_SCAM_FLAT_BAYER_Sol77_V2.png";
-    pub const M20_SCAM_FLAT_RGB_PATH : &str = "{DATADIR}/M20_SCAM_FLAT_RGB_Sol77_V2.png";
-    pub const M20_SCAM_MASK_PATH : &str = "{DATADIR}/M20_SCAM_MASK_Sol1_V1.png";
+    pub const M20_SCAM_FLAT_PATH : &str = "M20_SCAM_FLAT_PATH";
+    pub const M20_SCAM_MASK_PATH : &str = "M20_SCAM_MASK_PATH";
 
     // Limiting to navcams on RCE-B
-    pub const MSL_NCAM_RIGHT_INPAINT_PATH : &str = "{DATADIR}/MSL_NRB_INPAINT_Sol3052_V1.png";
-    pub const MSL_NCAM_RIGHT_FLAT_PATH : &str = "{DATADIR}/MSL_NRB_FLAT_V1.png";
-    pub const MSL_NCAM_LEFT_FLAT_PATH : &str = "{DATADIR}/MSL_NLB_FLAT_V1.png";
+    pub const MSL_NCAM_RIGHT_INPAINT_PATH : &str = "MSL_NCAM_RIGHT_INPAINT_PATH";
+    pub const MSL_NCAM_RIGHT_FLAT_PATH : &str = "MSL_NCAM_RIGHT_FLAT_PATH";
+    pub const MSL_NCAM_LEFT_FLAT_PATH : &str = "MSL_NCAM_LEFT_FLAT_PATH";
 
-    pub const MSL_FHAZ_RIGHT_FLAT_PATH : &str = "{DATADIR}/MSL_FRB_FLAT_V1.png";
-    pub const MSL_FHAZ_LEFT_FLAT_PATH : &str = "{DATADIR}/MSL_FLB_FLAT_V1.png";
+    pub const MSL_FHAZ_RIGHT_FLAT_PATH : &str = "MSL_FHAZ_RIGHT_FLAT_PATH";
+    pub const MSL_FHAZ_LEFT_FLAT_PATH : &str = "MSL_FHAZ_LEFT_FLAT_PATH";
 
-    pub const MSL_RHAZ_RIGHT_FLAT_PATH : &str = "{DATADIR}/MSL_RRB_FLAT_V1.png";
-    pub const MSL_RHAZ_LEFT_FLAT_PATH : &str = "{DATADIR}/MSL_RLB_FLAT_V1.png";
+    pub const MSL_RHAZ_RIGHT_FLAT_PATH : &str = "MSL_RHAZ_RIGHT_FLAT_PATH";
+    pub const MSL_RHAZ_LEFT_FLAT_PATH : &str = "MSL_RHAZ_LEFT_FLAT_PATH";
 
-    pub const MSL_MCAM_LEFT_INPAINT_PATH : &str = "{DATADIR}/MSL_MCAM_LEFT_INPAINT_Sol3082_V1.png";
-    pub const MSL_MCAM_RIGHT_INPAINT_PATH : &str = "{DATADIR}/MSL_MCAM_RIGHT_INPAINT_Sol3101_V1.png";
+    pub const MSL_MCAM_LEFT_INPAINT_PATH : &str = "MSL_MCAM_LEFT_INPAINT_PATH";
+    pub const MSL_MCAM_RIGHT_INPAINT_PATH : &str = "MSL_MCAM_RIGHT_INPAINT_PATH";
 }
 
