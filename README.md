@@ -86,7 +86,11 @@ OPTIONS:
     -i, --inputs <INPUT>...    Input
     -R, --red <RED>            Red weight
 ```
-
+#### Recommended Color Correction Multiples:
+* RED: 1.16
+* GREEN: 1.00
+* BLUE: 1.05
+* 
 ### MastCam:
 ```
 USAGE:
@@ -105,6 +109,12 @@ OPTIONS:
     -i, --inputs <INPUT>...                                Input
     -R, --red <RED>                                        Red weight
 ```
+
+#### Recommended Color Correction Multiples:
+* RED: 1.20
+* GREEN: 1.00
+* BLUE: 1.26
+
 ### Engineering Cameras (Navcam, FHAZ, RHAZ):
 ```
 USAGE:

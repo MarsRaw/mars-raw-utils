@@ -35,6 +35,7 @@ assets = [
     ["target/release/upscale", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
+    ["mars-raw-utils-data/caldata/caldata.toml", "usr/share/mars_raw_utils/data/", "644"],
 ]
 
 [lib]
@@ -149,5 +150,6 @@ upscale = { path = "/usr/bin/upscale" }
 "MSL_NRB_INPAINT_Sol3052_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_NRB_INPAINT_Sol3052_V1.png", mode = "644"}
 "MSL_RLB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_RLB_FLAT_V1.png", mode = "644"}
 "MSL_RRB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_RRB_FLAT_V1.png", mode = "644"}
+"caldata.toml" = { path =  "/usr/share/mars_raw_utils/data/caldata.toml", mode = "644"}
 
 
