@@ -69,6 +69,28 @@ OPTIONS:
     -s, --sol <sol>             Mission Sol
 ```
 
+#### Examples:
+
+Show available instruments:
+```
+msl_fetch_raw -i
+```
+
+List what's available for Mastcam on sol 3113: (remove the `-l` to download the images)
+```
+msl_fetch_raw -c MASTCAM -s 3113 -l
+```
+
+List what's available for NAV_RIGHT between sols 3110 and 3112: (remove the `-l` to download the images)
+```
+msl_fetch_raw -c NAV_RIGHT -m 3110 -M 3112 -l
+```
+
+Download NAV_RIGHT during sols 3110 through 3112, filtering for sequence id NCAM00595:
+```
+msl_fetch_raw -c NAV_RIGHT -m 3110 -M 3112 -S NCAM00595
+```
+
 ### MAHLI Calibration:
 ```
 USAGE:
@@ -90,7 +112,13 @@ OPTIONS:
 * RED: 1.16
 * GREEN: 1.00
 * BLUE: 1.05
-* 
+
+#### Examples:
+Calibrate a directory of JPEGs, applying color correction values:
+```
+msl_mahli_calibrate -i *jpg -v -R 1.16 -G 1.00 -B 1.05
+```
+
 ### MastCam:
 ```
 USAGE:
@@ -115,6 +143,22 @@ OPTIONS:
 * GREEN: 1.00
 * BLUE: 1.26
 
+#### Examples:
+Calibrate a directory of JPEGs, applying color correction values:
+```
+msl_mcam_calibrate -i *jpg -v -R 1.20 -G 1.0 -B 1.26
+```
+
+Calibrate a directory of JPEGs, skipping ILT conversion (decompanding):
+```
+msl_mcam_calibrate -i *jpg -v -r
+```
+
+Calibrate a directory of JPEGs, applying color noise reduction with a chroma blur radius of 21 pixels:
+```
+msl_mcam_calibrate -i *jpg -v -c 21
+```
+
 ### Engineering Cameras (Navcam, FHAZ, RHAZ):
 ```
 USAGE:
@@ -122,15 +166,28 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
     -r, --raw        Raw color, skip ILT (not currently used)
     -v               Show verbose output
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>          Blue weight
-    -G, --green <GREEN>        Green weight
-    -i, --inputs <INPUT>...    Input
-    -R, --red <RED>            Red weight
+    -B, --blue <BLUE>                  Blue weight
+    -G, --green <GREEN>                Green weight
+    -t, --hpc_threshold <THRESHOLD>    Hot pixel correction variance threshold
+    -i, --inputs <INPUT>...            Input
+    -R, --red <RED>                    Red weight
+```
+
+#### Examples:
+Calibrate a directory of JPEGs:
+```
+msl_ecam_calibrate -i *jpg -v
+```
+
+Calibrate a directory of JPEGs, apply a hot pixel detection with a threshold of 2.5 standard deviations:
+```
+msl_ecam_calibrate -i *jpg -v -t 2.5
 ```
 
 ## Mars 2020 (Perseverance):
