@@ -9,13 +9,19 @@ pub mod url {
 }
 
 pub mod time {
-    pub const MSL_SURFACE_SCLK: f32 = 434589485.0;
-    pub const MSL_UNIX_COUNT_OFFSET: f32 = 1381317960.0;
-    pub const MSL_SURFACE_SEC_OFFSET : f32 = 1344174599.0;
+    pub const MSL_SURFACE_SCLK: f64 = 434589485.0;
+    pub const MSL_UNIX_COUNT_OFFSET: f64 = 1381317960.0;
+    pub const MSL_SURFACE_SEC_OFFSET : f64 = 1344174599.0;
+    pub const MSL_RATE_ADJUSTMENT: f64 = 1.000009438;
 
-    pub const RATE_ADJUSTMENT: f32 = 1.000009438;
-    pub const LEAP_SEC : f32 = 2.0;
-    pub const MARS_SEC_ADJUSTMENT : f32 = 1.02749125;
+    // These values need validation
+    pub const M20_SURFACE_SCLK: f64 = 667129493.0;
+    pub const M20_UNIX_COUNT_OFFSET: f64 = 0.0;
+    pub const M20_SURFACE_SEC_OFFSET : f64 = 1613681700.0;
+    pub const M20_RATE_ADJUSTMENT: f64 = 1.00000;
+    
+    pub const LEAP_SEC : f64 = 2.0;
+    pub const MARS_SEC_ADJUSTMENT : f64 = 1.02749125;
 }
 
 // Strings

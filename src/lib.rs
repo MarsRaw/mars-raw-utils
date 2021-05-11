@@ -23,3 +23,4 @@ pub mod util;
 pub mod hotpixel;
 pub mod httpfetch;
 pub mod jsonfetch;
+pub mod time;
