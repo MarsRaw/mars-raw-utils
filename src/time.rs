@@ -17,6 +17,18 @@ pub struct MissionTime {
     pub sclk: i32
 }
 
+
+pub fn get_seconds_since_epoch() -> f64 {
+    let now = SystemTime::now();
+
+    let unix_time = now.duration_since(UNIX_EPOCH).unwrap();
+    let unix_secs =  unix_time.as_secs() as f64;
+    let unix_millis = ((unix_time.as_nanos() % 1_000_000_000) as f64) / 1_000_000_000.0;
+    let unix_sec = unix_secs as f64 + unix_millis as f64;
+
+    unix_sec
+}
+
 pub fn calc_mission_time(surface_sclk:f64, unix_count_offset:f64, surface_sec_offset:f64, rate_adjustment:f64) -> error::Result<MissionTime> {
     // Needs testing in multiple time zones! (My system is set to UTC)
     let now = SystemTime::now();
