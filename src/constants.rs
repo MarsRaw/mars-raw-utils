@@ -15,7 +15,7 @@ pub mod time {
     pub const MSL_RATE_ADJUSTMENT: f64 = 1.000009438;
 
     pub const MSL_LONGITUDE: f64 = 137.4417;
-    pub const MSL_SOL_OFFSET: f64 = -49268.0;
+    pub const MSL_SOL_OFFSET: f64 = -49269.0;
 
     // These values need validation
     pub const M2020_LONGITUDE: f64 = 77.43;
