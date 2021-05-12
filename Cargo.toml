@@ -35,6 +35,7 @@ assets = [
     ["target/release/upscale", "usr/bin/", "755"],
     ["target/release/msl_date", "usr/bin/", "755"],
     ["target/release/m20_date", "usr/bin/", "755"],
+    ["target/release/nsyt_date", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
     ["mars-raw-utils-data/caldata/caldata.toml", "usr/share/mars_raw_utils/data/", "644"],
@@ -107,6 +108,9 @@ path = "bin/msl_date.rs"
 name = "m20_date"
 path = "bin/m20_date.rs"
 
+[[bin]]
+name = "nsyt_date"
+path = "bin/nsyt_date.rs"
 
 [features]
 
@@ -145,6 +149,7 @@ nsyt_idc_calibrate = { path = "/usr/bin/nsyt_idc_calibrate" }
 upscale = { path = "/usr/bin/upscale" }
 msl_date = { path = "/usr/bin/msl_date" }
 m20_date = { path = "/usr/bin/m20_date" }
+nsyt_date = { path = "/usr/bin/nsyt_date" }
 
 [package.metadata.rpm.files]
 "M20_MCZ_LEFT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png", mode = "644"}
