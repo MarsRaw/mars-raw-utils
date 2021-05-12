@@ -76,8 +76,8 @@ pub fn get_lmst(sol_offset:f64, longitude:f64) -> error::Result<MissionTime> {
     // VALIDATE THIS SECTION. I'M JUST GUESSING
     // let unix_count = seconds_since_epoch - constants::time::M20_UNIX_COUNT_OFFSET;
     // let display_sclk = constants::time::M20_SURFACE_SCLK + unix_count + 2.0;
-    
-    let lmst_string = format!("Sol {} {:02}:{:02}:{:02.3} LMST", sol, hours, minutes, seconds);
+
+    let lmst_string = format!("Sol {} {:02}:{:02}:{:06.3} LMST", sol, hours, minutes, seconds);
 
     Ok(MissionTime{
         display: lmst_string,
