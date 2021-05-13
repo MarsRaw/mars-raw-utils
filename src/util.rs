@@ -14,8 +14,8 @@ use std::path::Path;
 use std::fs::File;
 use std::io::Write;
 
-use json::{
-    JsonValue
+use serde::{
+    Serialize
 };
 
 pub fn string_is_valid_num<T:FromStr>(s:&str) -> bool {
@@ -163,7 +163,12 @@ pub fn fetch_image(image_url:&str, only_new:bool) -> error::Result<&'static str>
     };
 }
 
-pub fn save_image_json(image_url:&str, item:&JsonValue, only_new:bool) -> error::Result<&'static str> {
+pub fn save_image_json<T:Serialize>(image_url:&str, item:&T, only_new:bool) -> error::Result<&'static str> {
+    let item_str = serde_json::to_string_pretty(item).unwrap();
+    save_image_json_from_string(&image_url, &item_str, only_new)
+}
+
+pub fn save_image_json_from_string(image_url:&str, item:&String, only_new:bool) -> error::Result<&'static str> {
     let bn = path::basename(image_url);
 
     let out_file = bn.replace(".jpg", "-metadata.json").replace(".JPG", "-metadata.json")
@@ -181,7 +186,7 @@ pub fn save_image_json(image_url:&str, item:&JsonValue, only_new:bool) -> error:
         Ok(file) => file,
     };
 
-    match file.write_all(item.pretty(4).as_bytes()) {
+    match file.write_all(item.as_bytes()) {
         Ok(_) => return ok!(),
         Err(_e) => return Err("Error writing metadata to filesystem")
     };

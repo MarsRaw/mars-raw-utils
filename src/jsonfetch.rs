@@ -1,5 +1,7 @@
 
-use json;
+use serde_json::{
+    Value
+};
 use crate::{constants, error, httpfetch::HttpFetcher};
 
 pub struct JsonFetcher {
@@ -18,12 +20,23 @@ impl JsonFetcher {
         self.fetcher.param(key, value);
     }
 
-    pub fn fetch(&self) -> error::Result<json::JsonValue> {
+    pub fn fetch(&self) -> error::Result<Value> {
         let json_text = self.fetcher.fetch_text();
 
         match json_text {
             Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
-            Ok(v) => Ok(json::parse(&v).unwrap())
+            Ok(v) => Ok(serde_json::from_str(&v).unwrap())
+        }
+    }
+
+
+
+    pub fn fetch_str(&self) -> error::Result<String> {
+        let json_text = self.fetcher.fetch_text();
+
+        match json_text {
+            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
+            Ok(v) => Ok(v)
         }
     }
 }

@@ -4,9 +4,79 @@ use crate::{
     error,
     util::*
 };
-use json::{
-    JsonValue
+
+use serde::{
+    Deserialize, 
+    Serialize
 };
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Extended {
+
+    #[serde(alias = "mastAz")]
+    pub mast_az: String,
+
+    #[serde(alias = "mastEl")]
+    pub mast_el: String,
+    pub sclk: String,
+
+    #[serde(alias = "scaleFactor")]
+    pub scale_factor: String,
+    pub xyz: String,
+
+    #[serde(alias = "subframeRect")]
+    pub subframe_rect: String,
+    pub dimension: String
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ImageFiles {
+    pub medium: String,
+    pub small: String, 
+    pub full_res: String,
+    pub large: String
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Camera {
+    pub filter_name: String,
+    pub camera_vector: String,
+    pub camera_model_component_list: String,
+    pub camera_position: String,
+    pub instrument: String,
+    pub camera_model_type: String
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Image {
+    pub extended: Extended,
+    pub sol: u32,
+    pub attitude: String,
+    pub image_files: ImageFiles,
+    pub imageid: String,
+    pub camera: Camera,
+    pub caption: String,
+    pub sample_type: String,
+    pub date_taken_mars: String,
+    pub credit: String,
+    pub date_taken_utc: String,
+    pub json_link: String,
+    pub link: String,
+    pub drive: String,
+    pub title: String,
+    pub site: u32,
+    pub date_received: String
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct M20ApiResults {
+    pub images: Vec<Image>,
+    pub per_page: String,
+    pub total_results: u32,
+    pub page: u32,
+    pub mission: String,
+    pub total_images: u32
+}
 
 pub fn print_header() {
     println!("{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7} {:10}", 
@@ -22,33 +92,33 @@ pub fn print_header() {
                 );
 }
 
-fn print_image(image:&JsonValue) {
-    let image_url = &image["image_files"]["full_res"].as_str().unwrap();
+
+fn print_image(image:&Image) {
     println!("{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7} {:10}", 
-                    image["imageid"], 
-                    image["camera"]["instrument"],
-                    format!("{:6}", image["sol"]), // This is such a hack...
-                    &image["date_taken_utc"].as_str().unwrap()[..16],
-                    image["date_taken_mars"],
-                    format!("{:6}", image["site"]),
-                    format!("{:6}", image["drive"]),
-                    if image["sample_type"] == "Thumbnail" { constants::status::YES } else { constants::status::NO },
-                    if image_exists_on_filesystem(&image_url) { constants::status::YES } else { constants::status::NO }
+                    image.imageid, 
+                    image.camera.instrument,
+                    format!("{:6}", image.sol),
+                    image.date_taken_utc,//[..16],
+                    image.date_taken_mars,
+                    format!("{:6}", image.site),
+                    format!("{:6}", image.drive),
+                    if image.sample_type == "Thumbnail" { constants::status::YES } else { constants::status::NO },
+                    if image_exists_on_filesystem(&image.image_files.full_res) { constants::status::YES } else { constants::status::NO }
                 );
 }
 
-fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+fn process_results(results:&M20ApiResults, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+    
     let mut valid_img_count = 0;
-    for i in 0..json_res["images"].len() {
-        let image = &json_res["images"][i];
-        
+
+    for image in results.images.iter() {
         // If this image is a thumbnail and we're ignoring those, then ignore it.
-        if image["sample_type"] == "Thumbnail" && ! thumbnails {
+        if image.sample_type == "Thumbnail" && ! thumbnails {
             continue;
         }
 
         // If we're searching for a substring and this image doesn't match, skip it.
-        if search != "" && image["imageid"].as_str().unwrap().find(&search) == None {
+        if search != "" && image.imageid.find(&search) == None {
             continue;
         }
 
@@ -56,12 +126,12 @@ fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:
         print_image(image);
 
         if !list_only {
-            let image_url = &image["image_files"]["full_res"].as_str().unwrap();
-            match fetch_image(&image_url, only_new) {
+            match fetch_image(&image.image_files.full_res, only_new) {
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };
-            match save_image_json(image_url, &image, only_new){
+
+            match save_image_json(&image.image_files.full_res, &image, only_new){
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };
@@ -88,7 +158,7 @@ pub fn make_instrument_map() -> InstrumentMap {
 
 
 
-fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool) -> error::Result<json::JsonValue> {
+fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool) -> error::Result<String> {
     let joined_cameras = cameras.join("|");
 
     let mut params = vec![
@@ -124,13 +194,14 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
         req.param(p[0].as_str(), p[1].as_str());
     }
 
-    req.fetch()
+    req.fetch_str()
 }
 
 pub fn fetch_page(cameras:&Vec<String>, num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
     match submit_query(&cameras, num_per_page, Some(page), minsol, maxsol, thumbnails, movie_only) {
         Ok(v) => {
-            process_results(&v, thumbnails, list_only, search, only_new)
+            let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
+            process_results(&res, thumbnails, list_only, search, only_new)
         },
         Err(e) => Err(e)
     }
@@ -147,11 +218,12 @@ pub struct M20RemoteStats {
 pub fn fetch_stats(cameras:&Vec<String>, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool) -> error::Result<M20RemoteStats> {
     match submit_query(&cameras, 0, Some(0), minsol, maxsol, thumbnails, movie_only) {
         Ok(v) => {
+            let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
             Ok(M20RemoteStats{
-                error_message:v["error_message"].to_string(),
-                total_results:v["total_results"].as_i32().unwrap(),
-                page:v["page"].as_i32().unwrap(),
-                total_images:v["total_images"].as_i32().unwrap()
+                error_message:String::from(""),
+                total_results:res.total_results as i32,
+                page:res.page as i32,
+                total_images:res.total_images as i32
             })
         },
         Err(e) => Err(e)

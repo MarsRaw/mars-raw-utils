@@ -6,9 +6,66 @@ use crate::{
     util::*
 };
 
-use json::{
-    JsonValue
+use serde::{
+    Deserialize, 
+    Serialize
 };
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Extended {
+    pub lmst: Option<String>,
+    pub bucket: String,
+    pub mast_az: Option<String>,
+    pub mast_el: Option<String>,
+    pub url_list: String,
+    pub contributor: String,
+    pub filter_name: Option<String>,
+    pub sample_type: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Image {
+    pub extended: Extended,
+    pub id: u32,
+    pub camera_vector: Option<String>,
+    pub site: Option<u32>,
+    pub imageid: String,
+    pub subframe_rect: Option<String>,
+    pub sol: u32,
+    pub scale_factor: Option<u32>,
+    pub camera_model_component_list: Option<String>,
+    pub instrument: String,
+    pub url: String,
+    pub spacecraft_clock: Option<f32>,
+    pub attitude: Option<String>,
+    pub camera_position: Option<String>,
+    pub camera_model_type: Option<String>,
+    pub drive: Option<u32>,
+    pub xyz: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub mission: String,
+    pub date_taken: String,
+    pub date_received: String,
+    pub instrument_sort: u32,
+    pub sample_type_sort: u32,
+    pub is_thumbnail: bool,
+    pub title: String,
+    pub description: String,
+    pub link: String,
+    pub image_credit: String,
+    pub https_url: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MslApiResults {
+    pub items: Vec<Image>,
+    pub more: bool,
+    pub total: u32,
+    pub page: u32,
+    pub per_page: u32
+}
+
 
 pub fn print_header() {
     println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
@@ -25,56 +82,61 @@ pub fn print_header() {
 }
 
 
-fn null_to_str(item:&JsonValue) -> String {
-    if item.is_null() {
-        return String::from("");
-    } else {
-        return format!("{}", item);
+fn null_to_str<T:std::fmt::Display>(o:&Option<T>) -> String {
+    match o {
+        None => {
+            String::from("")
+        },
+        Some(v) => {
+            format!("{}", v)
+        }
     }
+    // if !item.is_null() && item.is_string() {
+    //     return format!("{}", item.as_str().unwrap());
+    // } else if !item.is_null() && item.is_u64() {
+    //     return format!("{}", item.as_u64().unwrap());
+    // } else {
+    //     return String::from("");
+    // }
 }
 
-fn print_image(image:&JsonValue) {
-    let image_url = &image["url"].as_str().unwrap();
-
+fn print_image(image:&Image) {
     println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
-                    image["imageid"], 
-                    image["instrument"],
-                    format!("{:6}", image["sol"]), // This is such a hack...
-                    &image["date_taken"].as_str().unwrap()[..16],
-                    null_to_str(&image["extended"]["lmst"]),
-                    format!("{:6}", null_to_str(&image["site"])),
-                    format!("{:6}", null_to_str(&image["drive"])),
-                    if image["is_thumbnail"].as_bool().unwrap() { constants::status::YES } else { constants::status::NO },
-                    if image_exists_on_filesystem(&image_url) { constants::status::YES } else { constants::status::NO }
+                    image.imageid, 
+                    image.instrument,
+                    format!("{:6}", image.sol), // This is such a hack...
+                    &image.date_taken[..16],
+                    null_to_str(&image.extended.lmst),
+                    format!("{:6}", null_to_str(&image.site)),
+                    format!("{:6}", null_to_str(&image.drive)),
+                    if image.is_thumbnail { constants::status::YES } else { constants::status::NO },
+                    if image_exists_on_filesystem(&image.url) { constants::status::YES } else { constants::status::NO }
                 );
 }
 
 
-fn process_results(json_res:&JsonValue, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32>  {
+fn process_results(results:&MslApiResults, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32>  {
     let mut valid_img_count = 0;
-    for i in 0..json_res["items"].len() {
-        let image = &json_res["items"][i];
-        
+    for image in results.items.iter() {
         // If this image is a thumbnail and we're ignoring those, then ignore it.
-        if image["is_thumbnail"].as_bool().unwrap() && ! thumbnails {
+        if image.is_thumbnail && ! thumbnails {
             continue;
         }
 
         // If we're searching for a substring and this image doesn't match, skip it.
-        if search != "" && image["imageid"].as_str().unwrap().find(&search) == None {
+        if search != "" && image.imageid.find(&search) == None {
             continue;
         }
 
         valid_img_count += 1;
-        print_image(image);
+        print_image(&image);
 
         if !list_only {
-            let image_url = &image["url"].as_str().unwrap();
-            match fetch_image(image_url, only_new) {
+            match fetch_image(&image.url, only_new) {
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };
-            match save_image_json(image_url, &image, only_new){
+            match save_image_json(&image.url, &image, only_new){
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };
@@ -100,7 +162,7 @@ pub fn make_instrument_map() -> InstrumentMap {
 }
 
 
-fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32) -> error::Result<json::JsonValue> {
+fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32) -> error::Result<String> {
 
     let mut params = vec![
         stringvec("condition_1", "msl:mission"),
@@ -126,14 +188,15 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
         req.param(p[0].as_str(), p[1].as_str());
     }
 
-    req.fetch()
+    req.fetch_str()
 }
 
 
 pub fn fetch_page(cameras:&Vec<String>, num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
     match submit_query(&cameras, num_per_page, Some(page), minsol, maxsol) {
         Ok(v) => {
-            process_results(&v, thumbnails, list_only, search, only_new)
+            let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
+            process_results(&res, thumbnails, list_only, search, only_new)
         },
         Err(e) => Err(e)
     }
@@ -150,11 +213,12 @@ pub struct MslRemoteStats {
 pub fn fetch_stats(cameras:&Vec<String>, minsol:i32, maxsol:i32) -> error::Result<MslRemoteStats> {
     match submit_query(&cameras, 0, Some(0), minsol, maxsol) {
         Ok(v) => {
+            let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
             Ok(MslRemoteStats{
-                more:v["more"].as_bool().unwrap(),
-                total:v["total"].as_i32().unwrap(),
-                page:v["page"].as_i32().unwrap(),
-                per_page:v["per_page"].as_i32().unwrap()
+                more:res.more,
+                total:res.total as i32,
+                page:res.page as i32,
+                per_page:res.per_page as i32
             })
         },
         Err(e) => Err(e)

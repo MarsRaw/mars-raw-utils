@@ -2,7 +2,7 @@ use mars_raw_utils::{
     httpfetch
 };
 
-use json;
+use serde_json;
 
 #[test]
 fn test_text_fetch() {
@@ -24,7 +24,7 @@ fn test_text_fetch_with_params() {
     hf.param("json", "{\"foo\":\"bar\"}");
     let res = hf.fetch_text().unwrap();
 
-    let j = json::parse(&res).unwrap();
+    let j : serde_json::Value = serde_json::from_str(&res).unwrap();
     assert_eq!(j["object_or_array"], "object");
     assert_eq!(j["size"], 1);
 }
