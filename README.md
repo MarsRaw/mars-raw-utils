@@ -28,11 +28,47 @@ Implemented calibration steps include (varying per instrument):
 Additional instruments will be implemented more or less whenever I get to them...
 
 ## Building from source:
-So far I've only tested building on Ubuntu 20.04, both natively and within the Windows Subsystem for Linux on Windows 10. Within the project folder, the software can be built for testing via `cargo build` and individual binaries can be run in debug mode via, for example, `cargo run --bin m20_fetch_raw -- -i`
+A working Rust (https://www.rust-lang.org/) installation is required for building.
 
-To build successfully on Ubuntu, you'll likely need the following packages installed via apt:
-* libssl-dev 
+So far I've only tested building on Ubuntu 20.04, both natively and within the Windows Subsystem for Linux on Windows 10 and on MacOSX Catalina. Within the project folder, the software can be built for testing via `cargo build` and individual binaries can be run in debug mode via, for example, `cargo run --bin m20_fetch_raw -- -i`
 
+To build successfully on Linux, you'll likely need the following packages installed via apt:
+* libssl-dev (Ubuntu)
+* openssl-devel (RHEL, CentOS, Fedora)
+
+### Clone from git:
+```
+git clone git@github.com:kmgill/mars-raw-utils.git
+cd mars-raw-utils/
+git submodule init
+git submodule update
+```
+
+### Install via cargo:
+```
+cargo install --path .
+export MARS_RAW_DATA=$PWD/mars-raw-utils-data/caldata
+```
+NOTE: You'll want to set $MARS_RAW_DATA in ~/.bash_profile using the absolute path.
+
+### Install via apt (Debian, Ubuntu, ...):
+```
+cargo install cargo-deb
+cargo deb
+sudo apt install ./target/debian/mars_raw_utils_0.1.3_amd64.deb
+```
+NOTE: Adjust the output debian package filename to what is outputted by build.
+
+### Install via rpm (RHEL, CentOS, Fedora, ...)
+```
+cargo install cargo-rpm
+cp -v mars-raw-utils-data/caldata/* .rpm/
+cargo rpm build -v
+rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.1.3-1.el8.x86_64.rpm
+```
+NOTE: Adjust the output rpm package filename to what is outputted by build.
+
+### Docker:
 The dockerfile demonstrates a method for building an installable debian package, or you can use the container itself:
 
 ```
@@ -41,10 +77,10 @@ docker run --name mars_raw_utils -dit mars_raw_utils
 docker exec -it mars_raw_utils bash
 ```
 
-Builds for RPM, MacOSX and Windows are in the plan. Though the project has built and run from MacOSX and Windows, I haven't worked out the installation method in a way that handles the calibration data.
+Builds for MacOSX (maybe via Homebrew?) and Windows are in the plan. Though the project has built and run from MacOSX and Windows, I haven't worked out the installation method in a way that handles the calibration data.
 
 ## Specifying Calibration Data Location:
-By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can set the calibration file directory by using the `MARS_RAW_DATA` environment variable. The variable will override the default locations, as well.
+By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can set the calibration file directory by using the `MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
 
 ## Mars Science Laboratory (Curiosity):
 ### Fetch Raws:
