@@ -15,14 +15,14 @@ pub mod time {
     pub const MSL_RATE_ADJUSTMENT: f64 = 1.000009438;
 
     pub const MSL_LONGITUDE: f64 = 137.4417;
-    pub const MSL_SOL_OFFSET: f64 = -49269.0;
+    pub const MSL_SOL_OFFSET: f64 = -49268.0;
 
     // These values need validation
     pub const M2020_LONGITUDE: f64 = 77.43;
     pub const M2020_SOL_OFFSET: f64 = -52303.0;
 
     pub const NSYT_LONGITUDE: f64 = 135.6234;
-    pub const NSYT_SOL_OFFSET: f64 = -51510.62207089476;
+    pub const NSYT_SOL_OFFSET: f64 = -51510.0;
     
     pub const LEAP_SEC : f64 = 2.0;
     pub const MARS_SEC_ADJUSTMENT : f64 = 1.02749125;
