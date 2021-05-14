@@ -415,6 +415,21 @@ OPTIONS:
     -i, --inputs <INPUT>...    Input
 ```
 
+## Crop
+```
+USAGE:
+    crop [FLAGS] --crop <WINDOW_SIZE> --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -c, --crop <WINDOW_SIZE>    Crop as x,y,width,height
+    -i, --inputs <INPUT>...     Input
+```
+
 ## References:
 
 Bell, J. F. et al. (2017), The Mars Science Laboratory Curiosity rover
