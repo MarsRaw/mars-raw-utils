@@ -27,12 +27,14 @@ pub struct Hms {
 pub struct MissionTime {
     pub lmst_display: String,
     pub ltst_display: String,
-    pub sols: i32,
+    pub mtc_display: String,
+    pub sol: i32,
     pub lmst_hms: Hms,
     pub ltst_hms: Hms,
     pub sclk: i32,
     pub msd: f64,
     pub mtc: f64,
+    pub mtc_hms: Hms,
     pub lmst: f64,
     pub ltst: f64,
     pub l_s: f64,
@@ -130,23 +132,27 @@ pub fn get_lmst(sol_offset:f64, longitude:f64) -> error::Result<MissionTime> {
 
     let lmst_hms = t_to_hms(lmst).unwrap();
     let ltst_hms = t_to_hms(ltst).unwrap();
+    let mtc_hms = t_to_hms(mtc).unwrap();
 
     // VALIDATE THIS SECTION. I'M JUST GUESSING
     // let unix_count = seconds_since_epoch - constants::time::M20_UNIX_COUNT_OFFSET;
     // let display_sclk = constants::time::M20_SURFACE_SCLK + unix_count + 2.0;
 
-    let lmst_string = format!("Sol {} {:02}:{:02}:{:06.3} LMST", sol, lmst_hms.hours, lmst_hms.minutes, lmst_hms.seconds);
+    let lmst_string = format!("{:02}:{:02}:{:06.3} LMST", lmst_hms.hours, lmst_hms.minutes, lmst_hms.seconds);
     let ltst_string = format!("{:02}:{:02}:{:06.3} LTST", ltst_hms.hours, ltst_hms.minutes, ltst_hms.seconds);
+    let mtc_string = format!("{:02}:{:02}:{:06.3}", mtc_hms.hours, mtc_hms.minutes, mtc_hms.seconds);
 
     Ok(MissionTime{
         lmst_display: lmst_string,
         ltst_display: ltst_string,
-        sols: sol as i32,
+        mtc_display: mtc_string,
+        sol: sol as i32,
         lmst_hms: lmst_hms,
         ltst_hms: ltst_hms,
         sclk: 0 as i32,
         msd: msd,
         mtc: mtc,
+        mtc_hms: mtc_hms,
         lmst: lmst,
         ltst: ltst,
         l_s: l_s,
