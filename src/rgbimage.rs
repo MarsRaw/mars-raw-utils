@@ -168,14 +168,16 @@ impl RgbImage {
         let mut flat = flatfield::load_flat(self.instrument).unwrap();
         if self.instrument == enums::Instrument::MslMAHLI && flat.width == 1632 && flat.height == 1200 {
             flat.crop(32, 16, 1584, 1184).unwrap();
-        }
+        } 
+        
         // This isn't the final fix...
 
         // Crop the flatfield image if it's larger than the input image. 
         // Sizes need to match
         if flat.width > self.width {
             let x = (flat.width - self.width) / 2;
-            let y = (flat.width - self.width) / 2;
+            let y = (flat.height - self.height) / 2;
+            vprintln!("Cropping flat with x/y/width/height: {},{} {}x{}", x, y, self.width, self.height);
             flat.crop(x, y, self.width, self.height).unwrap();
         }
 
