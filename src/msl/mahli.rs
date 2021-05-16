@@ -19,8 +19,13 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     if raw.width == 1632 && raw.height == 1200 {
         vprintln!("Cropping...");
         raw.crop(32, 16, 1584, 1184).unwrap();
+    } else if raw.width == 1648 && raw.height == 1200 {
+        vprintln!("Cropping...");
+        raw.crop(48, 16, 1584, 1184).unwrap();
     }
-    
+    vprintln!("Image width/height after cropping: {}x{}", raw.width, raw.height);
+
+    //1648, 1200
     vprintln!("Inpainting...");
     raw.apply_inpaint_fix().unwrap();
 
