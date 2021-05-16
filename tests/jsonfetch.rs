@@ -3,6 +3,7 @@ use mars_raw_utils::{
 };
 
 #[test]
+#[ignore]
 fn test_json_fetch() {
 
     let jf = jsonfetch::JsonFetcher::new("http://echo.jsontest.com/key/value/one/two");
@@ -12,6 +13,7 @@ fn test_json_fetch() {
 }
 
 #[test]
+#[ignore]
 fn test_json_fetch_with_params() {
     let mut jf = jsonfetch::JsonFetcher::new("http://validate.jsontest.com/");
     jf.param("json", "{\"foo\":\"bar\"}");

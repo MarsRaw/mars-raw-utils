@@ -5,6 +5,7 @@ use mars_raw_utils::{
 use serde_json;
 
 #[test]
+#[ignore]
 fn test_text_fetch() {
 
     let hf = httpfetch::HttpFetcher::new("http://echo.jsontest.com/key/value/one/two");
@@ -18,6 +19,7 @@ fn test_text_fetch() {
 }
 
 #[test]
+#[ignore]
 fn test_text_fetch_with_params() {
 
     let mut hf = httpfetch::HttpFetcher::new("http://validate.jsontest.com/");
@@ -30,6 +32,7 @@ fn test_text_fetch_with_params() {
 }
 
 #[test]
+#[ignore]
 fn test_bin_fetch() {
 
     let hf = httpfetch::HttpFetcher::new("http://echo.jsontest.com/key/value/one/two");
@@ -43,6 +46,7 @@ fn test_bin_fetch() {
 }
 
 #[test]
+#[ignore]
 fn test_simple_text_fetch() {
 
     let res = httpfetch::simple_fetch_text("http://echo.jsontest.com/key/value/one/two").unwrap();
@@ -55,6 +59,7 @@ fn test_simple_text_fetch() {
 }
 
 #[test]
+#[ignore]
 fn test_simple_bin_fetch() {
 
     let res = httpfetch::simple_fetch_bin("http://echo.jsontest.com/key/value/one/two").unwrap();
