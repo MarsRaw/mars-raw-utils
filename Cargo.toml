@@ -131,6 +131,8 @@ fastblur = "0.1.1"
 lab = "0.10.0"
 toml = "0.5.8"
 serde = { version = "1.0.125", features = ["derive"] }
+sscanf = "0.1.1"
+string-builder = "0.2.0"
 
 [package.metadata.rpm]
 package = "mars_raw_utils"

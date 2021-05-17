@@ -2,7 +2,8 @@ use crate::{
     constants, 
     jsonfetch, 
     error,
-    util::*
+    util::*,
+    cahvor::Cahvor
 };
 
 use serde::{
@@ -22,11 +23,16 @@ pub struct Extended {
 
     #[serde(alias = "scaleFactor")]
     pub scale_factor: String,
-    pub xyz: String,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub xyz: Option<Vec<f64>>,
 
     #[serde(alias = "subframeRect")]
-    pub subframe_rect: String,
-    pub dimension: String
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub subframe_rect: Option<Vec<f64>>,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub dimension: Option<Vec<f64>>
 }
 
 #[derive(Serialize, Deserialize)]
@@ -40,9 +46,15 @@ pub struct ImageFiles {
 #[derive(Serialize, Deserialize)]
 pub struct Camera {
     pub filter_name: String,
-    pub camera_vector: String,
-    pub camera_model_component_list: String,
-    pub camera_position: String,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub camera_vector: Option<Vec<f64>>,
+
+    #[serde(with = "crate::jsonfetch::cahvor_format")]
+    pub camera_model_component_list: Option<Cahvor>,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub camera_position: Option<Vec<f64>>,
     pub instrument: String,
     pub camera_model_type: String
 }
@@ -73,6 +85,9 @@ pub struct M20ApiResults {
     pub images: Vec<Image>,
     pub per_page: String,
     pub total_results: u32,
+
+    // Skip this for now. Some times this is encoded as a number, other times it's a string
+    #[serde(skip_deserializing)]
     pub page: u32,
     pub mission: String,
     pub total_images: u32

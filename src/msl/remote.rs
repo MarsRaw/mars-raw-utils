@@ -1,15 +1,18 @@
 
+
 use crate::{
     constants, 
     jsonfetch, 
     error,
-    util::*
+    util::*,
+    cahvor::Cahvor
 };
 
 use serde::{
     Deserialize, 
     Serialize
 };
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Extended {
@@ -27,21 +30,33 @@ pub struct Extended {
 pub struct Image {
     pub extended: Extended,
     pub id: u32,
-    pub camera_vector: Option<String>,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub camera_vector: Option<Vec<f64>>,
     pub site: Option<u32>,
     pub imageid: String,
-    pub subframe_rect: Option<String>,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub subframe_rect: Option<Vec<f64>>,
     pub sol: u32,
     pub scale_factor: Option<u32>,
-    pub camera_model_component_list: Option<String>,
+
+    #[serde(with = "crate::jsonfetch::cahvor_format")]
+    pub camera_model_component_list: Option<Cahvor>,
     pub instrument: String,
     pub url: String,
     pub spacecraft_clock: Option<f32>,
-    pub attitude: Option<String>,
-    pub camera_position: Option<String>,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub attitude: Option<Vec<f64>>,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub camera_position: Option<Vec<f64>>,
     pub camera_model_type: Option<String>,
     pub drive: Option<u32>,
-    pub xyz: Option<String>,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub xyz: Option<Vec<f64>>,
     pub created_at: String,
     pub updated_at: String,
     pub mission: String,
@@ -91,13 +106,6 @@ fn null_to_str<T:std::fmt::Display>(o:&Option<T>) -> String {
             format!("{}", v)
         }
     }
-    // if !item.is_null() && item.is_string() {
-    //     return format!("{}", item.as_str().unwrap());
-    // } else if !item.is_null() && item.is_u64() {
-    //     return format!("{}", item.as_u64().unwrap());
-    // } else {
-    //     return String::from("");
-    // }
 }
 
 fn print_image(image:&Image) {
