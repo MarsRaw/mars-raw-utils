@@ -7,7 +7,10 @@ use crate::{
 };
 
 pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, no_ilt:bool, only_new:bool) {
-    let out_file = input_file.replace(".png", "-rjcal.png").replace(".PNG", "-rjcal.png");
+    let out_file = input_file.replace(".png", "-rjcal.png")
+                            .replace(".PNG", "-rjcal.png")
+                            .replace(".JPG", "-rjcal.png")
+                            .replace(".jpg", "-rjcal.png");
     if path::file_exists(&out_file) && only_new {
         vprintln!("Output file exists, skipping. ({})", out_file);
         return;
@@ -25,6 +28,9 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
 
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
+
+    vprintln!("Cropping...");
+    raw.crop(0, 3, 1024, 1018).unwrap();
 
     vprintln!("Normalizing...");
     raw.normalize_to_16bit_with_max(data_max).unwrap();
