@@ -145,6 +145,9 @@ pub fn calibration_file(calib_file_name:&str) -> error::Result<String> {
         constants::cal::MSL_RHAZ_LEFT_FLAT_PATH => Ok(locate_calibration_file(config.msl.rhaz_left.flat).unwrap()),
         constants::cal::MSL_MCAM_LEFT_INPAINT_PATH => Ok(locate_calibration_file(config.msl.mastcam_left.inpaint_mask).unwrap()),
         constants::cal::MSL_MCAM_RIGHT_INPAINT_PATH => Ok(locate_calibration_file(config.msl.mastcam_right.inpaint_mask).unwrap()),
+        
+        constants::cal::NSYT_IDC_FLAT_PATH => Ok(locate_calibration_file(config.nsyt.idc.flat).unwrap()),
+        constants::cal::NSYT_ICC_FLAT_PATH => Ok(locate_calibration_file(config.nsyt.icc.flat).unwrap()),
 
         _ => Err(constants::status::INVALID_CALIBRATION_FILE_ID)
     }

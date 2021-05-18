@@ -26,6 +26,9 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         data_max = decompanding::get_max_for_instrument(enums::Instrument::NsytICC) as f32;
     }
 
+    //vprintln!("Flatfielding...");
+    //raw.flatfield().unwrap();
+
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
 

@@ -120,5 +120,8 @@ pub mod cal {
 
     pub const MSL_MCAM_LEFT_INPAINT_PATH : &str = "MSL_MCAM_LEFT_INPAINT_PATH";
     pub const MSL_MCAM_RIGHT_INPAINT_PATH : &str = "MSL_MCAM_RIGHT_INPAINT_PATH";
+
+    pub const NSYT_IDC_FLAT_PATH : &str = "NSYT_IDC_FLAT_PATH";
+    pub const NSYT_ICC_FLAT_PATH : &str = "NSYT_ICC_FLAT_PATH";
 }
 
