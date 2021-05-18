@@ -31,6 +31,7 @@ assets = [
     ["target/release/hpc_filter", "usr/bin/", "755"],
     ["target/release/nsyt_icc_calibrate", "usr/bin/", "755"],
     ["target/release/nsyt_idc_calibrate", "usr/bin/", "755"],
+    ["target/release/nsyt_fetch_raw", "usr/bin/", "755"],
     ["target/release/inpaint_filter", "usr/bin/", "755"],
     ["target/release/upscale", "usr/bin/", "755"],
     ["target/release/msl_date", "usr/bin/", "755"],
@@ -64,6 +65,10 @@ path = "bin/msl_fetch_raw.rs"
 [[bin]]
 name = "m20_fetch_raw"
 path = "bin/m20_fetch_raw.rs"
+
+[[bin]]
+name = "nsyt_fetch_raw"
+path = "bin/nsyt_fetch_raw.rs"
 
 [[bin]]
 name = "nsyt_icc_calibrate"
@@ -154,6 +159,7 @@ msl_mahli_calibrate = { path = "/usr/bin/msl_mahli_calibrate" }
 msl_mcam_calibrate = { path = "/usr/bin/msl_mcam_calibrate" }
 nsyt_icc_calibrate = { path = "/usr/bin/nsyt_icc_calibrate" }
 nsyt_idc_calibrate = { path = "/usr/bin/nsyt_idc_calibrate" }
+nsyt_fetch_raw = { path = "/usr/bin/nsyt_fetch_raw" }
 upscale = { path = "/usr/bin/upscale" }
 msl_date = { path = "/usr/bin/msl_date" }
 m20_date = { path = "/usr/bin/m20_date" }

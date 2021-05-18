@@ -1,5 +1,3 @@
-
-
 use crate::{
     constants, 
     jsonfetch, 
@@ -13,53 +11,51 @@ use serde::{
     Serialize
 };
 
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Extended {
-    pub lmst: Option<String>,
-    pub bucket: String,
-    pub mast_az: Option<String>,
-    pub mast_el: Option<String>,
-    pub url_list: String,
-    pub contributor: String,
-    pub filter_name: Option<String>,
-    pub sample_type: String
+    pub localtime: String
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Image {
-    pub extended: Extended,
     pub id: u32,
-
+    
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub camera_vector: Option<Vec<f64>>,
+
     pub site: Option<u32>,
     pub imageid: String,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub subframe_rect: Option<Vec<f64>>,
+
     pub sol: u32,
-    pub scale_factor: Option<u32>,
+    pub scale_factor: u32,
 
     #[serde(with = "crate::jsonfetch::cahvor_format")]
     pub camera_model_component_list: Option<Cahvor>,
+
     pub instrument: String,
     pub url: String,
-    pub spacecraft_clock: Option<f32>,
+    pub spacecraft_clock: f64,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub attitude: Option<Vec<f64>>,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub camera_position: Option<Vec<f64>>,
+
     pub camera_model_type: Option<String>,
+
     pub drive: Option<u32>,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub xyz: Option<Vec<f64>>,
+
     pub created_at: String,
     pub updated_at: String,
     pub mission: String,
+    pub extended: Extended,
     pub date_taken: String,
     pub date_received: String,
     pub instrument_sort: u32,
@@ -73,7 +69,7 @@ pub struct Image {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct MslApiResults {
+pub struct NsytApiResults {
     pub items: Vec<Image>,
     pub more: bool,
     pub total: u32,
@@ -81,49 +77,31 @@ pub struct MslApiResults {
     pub per_page: u32
 }
 
-
 pub fn print_header() {
-    println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
+    println!("{:37} {:15} {:6} {:20} {:27} {:7} {:10}", 
                     "ID", 
                     "Instrument",
                     "Sol",
                     "Image Date (UTC)",
                     "Image Date (Mars)",
-                    "Site",
-                    "Drive",
                     "Thumb",
                     "Present"
                 );
 }
 
-
-fn null_to_str<T:std::fmt::Display>(o:&Option<T>) -> String {
-    match o {
-        None => {
-            String::from("")
-        },
-        Some(v) => {
-            format!("{}", v)
-        }
-    }
-}
-
 fn print_image(image:&Image) {
-    println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
+    println!("{:37} {:15} {:<6} {:20} {:27} {:7} {:10}", 
                     image.imageid, 
-                    image.instrument,
-                    format!("{:6}", image.sol), // This is such a hack...
+                    image.instrument.to_uppercase(),
+                    format!("{:<6}", image.sol), // This is such a hack...
                     &image.date_taken[..16],
-                    null_to_str(&image.extended.lmst),
-                    format!("{:6}", null_to_str(&image.site)),
-                    format!("{:6}", null_to_str(&image.drive)),
+                    image.extended.localtime,
                     if image.is_thumbnail { constants::status::YES } else { constants::status::NO },
                     if image_exists_on_filesystem(&image.url) { constants::status::YES } else { constants::status::NO }
                 );
 }
 
-
-fn process_results(results:&MslApiResults, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32>  {
+fn process_results(results:&NsytApiResults, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32>  {
     let mut valid_img_count = 0;
     for image in results.items.iter() {
         // If this image is a thumbnail and we're ignoring those, then ignore it.
@@ -155,25 +133,19 @@ fn process_results(results:&MslApiResults, thumbnails:bool, list_only:bool, sear
     Ok(valid_img_count)
 }
 
+
 pub fn make_instrument_map() -> InstrumentMap {
     InstrumentMap{map: 
         [
-            ("HAZ_FRONT", vec!["FHAZ_RIGHT_A", "FHAZ_LEFT_A", "FHAZ_RIGHT_B", "FHAZ_LEFT_B"]), 
-            ("HAZ_REAR", vec!["RHAZ_RIGHT_A", "RHAZ_LEFT_A", "RHAZ_RIGHT_B", "RHAZ_LEFT_B"]), 
-            ("NAV_LEFT", vec!["NAV_LEFT_A", "NAV_LEFT_B"]),
-            ("NAV_RIGHT", vec!["NAV_RIGHT_A", "NAV_RIGHT_B"]),
-            ("CHEMCAM", vec!["CHEMCAM_RMI"]),
-            ("MARDI", vec!["MARDI"]),
-            ("MAHLI", vec!["MAHLI"]),
-            ("MASTCAM", vec!["MAST_LEFT", "MAST_RIGHT"])
+            ("IDC", vec!["idc"]),
+            ("ICC", vec!["icc"]),
         ].iter().cloned().collect()}
 }
-
 
 fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32) -> error::Result<String> {
 
     let mut params = vec![
-        stringvec("condition_1", "msl:mission"),
+        stringvec("condition_1", "insight:mission"),
         stringvec_b("per_page", format!("{}", num_per_page)),
         stringvec("order", "sol desc,instrument_sort asc,sample_type_sort asc, date_taken desc"),
         stringvec_b("search", cameras.join("|")),
@@ -188,7 +160,7 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
         None => ()
     };
 
-    let uri = constants::url::MSL_RAW_WEBSERVICE_URL;
+    let uri = constants::url::NSYT_RAW_WEBSERVICE_URL;
 
     let mut req = jsonfetch::JsonFetcher::new(uri);
 
@@ -199,11 +171,10 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
     req.fetch_str()
 }
 
-
 pub fn fetch_page(cameras:&Vec<String>, num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
     match submit_query(&cameras, num_per_page, Some(page), minsol, maxsol) {
         Ok(v) => {
-            let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
+            let res: NsytApiResults = serde_json::from_str(v.as_str()).unwrap();
             process_results(&res, thumbnails, list_only, search, only_new)
         },
         Err(e) => Err(e)
@@ -211,18 +182,18 @@ pub fn fetch_page(cameras:&Vec<String>, num_per_page:i32, page:i32, minsol:i32, 
 }
 
 #[derive(Debug, Clone)]
-pub struct MslRemoteStats {
+pub struct NsytRemoteStats {
     pub more: bool,
     pub total: i32,
     pub page: i32,
     pub per_page: i32
 }
 
-pub fn fetch_stats(cameras:&Vec<String>, minsol:i32, maxsol:i32) -> error::Result<MslRemoteStats> {
+pub fn fetch_stats(cameras:&Vec<String>, minsol:i32, maxsol:i32) -> error::Result<NsytRemoteStats> {
     match submit_query(&cameras, 0, Some(0), minsol, maxsol) {
         Ok(v) => {
-            let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
-            Ok(MslRemoteStats{
+            let res: NsytApiResults = serde_json::from_str(v.as_str()).unwrap();
+            Ok(NsytRemoteStats{
                 more:res.more,
                 total:res.total as i32,
                 page:res.page as i32,
