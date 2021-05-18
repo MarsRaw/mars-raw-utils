@@ -21,6 +21,7 @@ use serde::{
 pub struct Config {
     pub msl: MslCalData,
     pub m20: M20CalData,
+    pub nsyt: NsytCalData
 }
 
 #[allow(non_snake_case)]
@@ -55,6 +56,14 @@ pub struct M20CalData {
     pub mastcamz_left: InstrumentProperties,
     pub watson: InstrumentProperties,
     pub supercam_rmi: InstrumentProperties
+}
+
+#[allow(non_snake_case)]
+#[allow(dead_code)]
+#[derive(Deserialize)]
+pub struct NsytCalData {
+    pub idc: InstrumentProperties,
+    pub icc: InstrumentProperties
 }
 
 pub fn load_caldata_mapping_file() -> error::Result<Config> {
