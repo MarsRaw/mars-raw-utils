@@ -23,6 +23,8 @@ pub fn load_flat(instrument:enums::Instrument) -> error::Result<RgbImage> {
                 Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_RHAZ_LEFT_FLAT_PATH).unwrap(), instrument).unwrap()),
         enums::Instrument::MslRearHazRight => 
                 Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_RHAZ_RIGHT_FLAT_PATH).unwrap(), instrument).unwrap()),
+        enums::Instrument::MslChemCam => 
+                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_CCAM_FLAT_PATH).unwrap(), instrument).unwrap()),        
         enums::Instrument::M20Watson =>
                 Ok(RgbImage::open(calibfile::calibration_file(constants::cal::M20_WATSON_FLAT_PATH).unwrap(), instrument).unwrap()),
         enums::Instrument::M20SuperCam =>

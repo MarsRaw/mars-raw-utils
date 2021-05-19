@@ -20,6 +20,7 @@ pub enum Instrument {
     MslFrontHazRight,
     MslRearHazLeft,
     MslRearHazRight,
+    MslChemCam,
     M20MastcamZLeft,
     M20MastcamZRight,
     M20NavcamLeft,
