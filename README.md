@@ -430,6 +430,38 @@ OPTIONS:
     -i, --inputs <INPUT>...     Input
 ```
 
+## Mission Dates
+Mission time and sol are available for MSL, Mars2020, and InSight via `msl_date`, `m20_date`, and `nsyt_date`, respectively. 
+
+Currently, the output provides valules for the Mars Sol Date, coordinated Mars time, mission sol, mission time (LMST), local true color time, and areocentric solar longitude. The algorithm used for the calculation is based on James Tauber's marsclock.com and is exposed via `time::get_lmst()`.
+
+Example Output:
+```
+$ msl_date
+Mars Sol Date:          52391.26879394437
+Coordinated Mars Time:  06:27:03.797
+Mission Sol:            3122
+Mission Time:           15:36:49.805 LMST
+Local True Solar Time:  15:29:37.673 LTST
+Solar Longitude:        47.04093399663567
+
+$ m20_date
+Mars Sol Date:          52391.270293050664
+Coordinated Mars Time:  06:29:13.320
+Mission Sol:            87
+Mission Time:           11:38:56.520 LMST
+Local True Solar Time:  11:31:44.417 LTST
+Solar Longitude:        47.04161842268443
+
+$ nsyt_date 
+Mars Sol Date:          52391.27048977531
+Coordinated Mars Time:  06:29:30.317
+Mission Sol:            880
+Mission Time:           15:31:59.933 LMST
+Local True Solar Time:  15:24:47.833 LTST
+Solar Longitude:        47.041708238462114
+```
+
 ## References:
 
 Bell, J. F. et al. (2017), The Mars Science Laboratory Curiosity rover
