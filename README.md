@@ -12,6 +12,7 @@ Implemented calibration steps include (varying per instrument):
 | MSL        | NavCam      |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | Rear Haz    |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | Front Haz   |           |         | &#9745;      | &#9745;| &#9745;|
+| MSL        | ChemCam RMI |           |         |              | &#9745;|        |
 | Mars2020   | Mastcam-Z   | &#9745;   | &#9745; | &#9745;      |        |        |
 | Mars2020   | NavCam      |           | &#9745; |              |        |        |
 | Mars2020   | Rear Haz    |           | &#9745; |              |        |        |
@@ -224,6 +225,21 @@ msl_ecam_calibrate -i *jpg -v
 Calibrate a directory of JPEGs, apply a hot pixel detection with a threshold of 2.5 standard deviations:
 ```
 msl_ecam_calibrate -i *jpg -v -t 2.5
+```
+
+### ChemCam RMI:
+```
+USAGE:
+    msl_ccam_calibrate [FLAGS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --inputs <INPUT>...    Input
 ```
 
 ## Mars 2020 (Perseverance):
