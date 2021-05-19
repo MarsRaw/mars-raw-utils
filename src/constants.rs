@@ -123,5 +123,7 @@ pub mod cal {
 
     pub const NSYT_IDC_FLAT_PATH : &str = "NSYT_IDC_FLAT_PATH";
     pub const NSYT_ICC_FLAT_PATH : &str = "NSYT_ICC_FLAT_PATH";
+
+    pub const MSL_CCAM_MASK_PATH : &str = "MSL_CCAM_MASK_PATH";
 }
 

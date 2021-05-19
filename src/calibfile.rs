@@ -29,7 +29,8 @@ pub struct Config {
 #[derive(Deserialize)]
 pub struct InstrumentProperties {
     pub flat: String,
-    pub inpaint_mask: String
+    pub inpaint_mask: String,
+    pub mask: String
 }
 
 
@@ -45,7 +46,8 @@ pub struct MslCalData {
     pub rhaz_right: InstrumentProperties,
     pub rhaz_left: InstrumentProperties,
     pub mastcam_right: InstrumentProperties,
-    pub mastcam_left: InstrumentProperties
+    pub mastcam_left: InstrumentProperties,
+    pub chemcam: InstrumentProperties
 }
 
 #[allow(non_snake_case)]
@@ -129,7 +131,7 @@ pub fn calibration_file(calib_file_name:&str) -> error::Result<String> {
         constants::cal::M20_WATSON_INPAINT_MASK_PATH => Ok(locate_calibration_file(config.m20.watson.inpaint_mask).unwrap()),
         constants::cal::M20_WATSON_FLAT_PATH => Ok(locate_calibration_file(config.m20.watson.flat).unwrap()),
         constants::cal::M20_SCAM_FLAT_PATH => Ok(locate_calibration_file(config.m20.supercam_rmi.flat).unwrap()),
-        constants::cal::M20_SCAM_MASK_PATH => Ok(locate_calibration_file(config.m20.supercam_rmi.inpaint_mask).unwrap()),
+        constants::cal::M20_SCAM_MASK_PATH => Ok(locate_calibration_file(config.m20.supercam_rmi.mask).unwrap()),
 
         constants::cal::MSL_MAHLI_INPAINT_MASK_PATH => Ok(locate_calibration_file(config.msl.mahli.inpaint_mask).unwrap()),
         constants::cal::MSL_MAHLI_FLAT_PATH => Ok(locate_calibration_file(config.msl.mahli.flat).unwrap()),
@@ -145,6 +147,7 @@ pub fn calibration_file(calib_file_name:&str) -> error::Result<String> {
         constants::cal::MSL_RHAZ_LEFT_FLAT_PATH => Ok(locate_calibration_file(config.msl.rhaz_left.flat).unwrap()),
         constants::cal::MSL_MCAM_LEFT_INPAINT_PATH => Ok(locate_calibration_file(config.msl.mastcam_left.inpaint_mask).unwrap()),
         constants::cal::MSL_MCAM_RIGHT_INPAINT_PATH => Ok(locate_calibration_file(config.msl.mastcam_right.inpaint_mask).unwrap()),
+        constants::cal::MSL_CCAM_MASK_PATH => Ok(locate_calibration_file(config.msl.chemcam.mask).unwrap()),
         
         constants::cal::NSYT_IDC_FLAT_PATH => Ok(locate_calibration_file(config.nsyt.idc.flat).unwrap()),
         constants::cal::NSYT_ICC_FLAT_PATH => Ok(locate_calibration_file(config.nsyt.icc.flat).unwrap()),
