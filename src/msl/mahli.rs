@@ -40,6 +40,9 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     vprintln!("Flatfielding...");
     raw.flatfield().unwrap();
 
+    vprintln!("Cropping...");
+    raw.crop(0, 3, 1584, 1180).unwrap();
+
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
 
