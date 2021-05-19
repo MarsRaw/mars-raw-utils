@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
@@ -24,6 +24,7 @@ assets = [
     ["target/release/msl_mcam_calibrate", "usr/bin/", "755"],
     ["target/release/msl_ecam_calibrate", "usr/bin/", "755"],
     ["target/release/msl_ccam_calibrate", "usr/bin/", "755"],
+    ["target/release/msl_mardi_calibrate", "usr/bin/", "755"],
     ["target/release/m20_ecam_calibrate", "usr/bin/", "755"],
     ["target/release/m20_fetch_raw", "usr/bin/", "755"],
     ["target/release/m20_watson_calibrate", "usr/bin/", "755"],
@@ -58,6 +59,10 @@ path = "bin/msl_mcam_calibrate.rs"
 [[bin]]
 name = "msl_ccam_calibrate"
 path = "bin/msl_ccam_calibrate.rs"
+
+[[bin]]
+name = "msl_mardi_calibrate"
+path = "bin/msl_mardi_calibrate.rs"
 
 [[bin]]
 name = "m20_zcam_calibrate"
@@ -163,6 +168,7 @@ msl_fetch_raw = { path = "/usr/bin/msl_fetch_raw" }
 msl_mahli_calibrate = { path = "/usr/bin/msl_mahli_calibrate" }
 msl_mcam_calibrate = { path = "/usr/bin/msl_mcam_calibrate" }
 msl_ccam_calibrate = { path = "/usr/bin/msl_ccam_calibrate" }
+msl_mardi_calibrate = { path = "/usr/bin/msl_mardi_calibrate" }
 nsyt_icc_calibrate = { path = "/usr/bin/nsyt_icc_calibrate" }
 nsyt_idc_calibrate = { path = "/usr/bin/nsyt_idc_calibrate" }
 nsyt_fetch_raw = { path = "/usr/bin/nsyt_fetch_raw" }
@@ -189,7 +195,9 @@ crop = { path = "/usr/bin/crop" }
 "MSL_NRB_INPAINT_Sol3052_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_NRB_INPAINT_Sol3052_V1.png", mode = "644"}
 "MSL_RLB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_RLB_FLAT_V1.png", mode = "644"}
 "MSL_RRB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_RRB_FLAT_V1.png", mode = "644"}
-"MSL_CCAM_MASK_Sol3122_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_CCAM_MASK_Sol3122_V1.png", mode = "644"}
+"MSL_CCAM_MASK_Sol3122_V2.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_CCAM_MASK_Sol3122_V2.png", mode = "644"}
+"MSL_CCAM_FLAT_Sol32_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_CCAM_FLAT_Sol32_V1.png", mode = "644"}
+"FLAT_MD_0_RGB_V1.png" = { path =  "/usr/share/mars_raw_utils/data/FLAT_MD_0_RGB_V1.png", mode = "644"}
 "NSYT_FLAT_SN_0203.png" = { path =  "/usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0203.png", mode = "644"}
 "NSYT_FLAT_SN_0210.png" = { path =  "/usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0210.png", mode = "644"}
 "caldata.toml" = { path =  "/usr/share/mars_raw_utils/data/caldata.toml", mode = "644"}

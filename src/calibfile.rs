@@ -48,7 +48,8 @@ pub struct MslCalData {
     pub rhaz_left: InstrumentProperties,
     pub mastcam_right: InstrumentProperties,
     pub mastcam_left: InstrumentProperties,
-    pub chemcam: InstrumentProperties
+    pub chemcam: InstrumentProperties,
+    pub mardi: InstrumentProperties,
 }
 
 #[allow(non_snake_case)]
@@ -150,6 +151,7 @@ pub fn get_calibration_base_file_for_instrument(instrument:enums::Instrument, ca
         enums::Instrument::MslFrontHazRight => Ok(get_calibration_file_for_type(&config.msl.fhaz_right, cal_file_type)),
         enums::Instrument::MslRearHazLeft   => Ok(get_calibration_file_for_type(&config.msl.rhaz_left, cal_file_type)),
         enums::Instrument::MslRearHazRight  => Ok(get_calibration_file_for_type(&config.msl.rhaz_right, cal_file_type)),
+        enums::Instrument::MslMARDI         => Ok(get_calibration_file_for_type(&config.msl.mardi, cal_file_type)),
         enums::Instrument::MslChemCam       => Ok(get_calibration_file_for_type(&config.msl.chemcam, cal_file_type)),
         enums::Instrument::M20MastcamZLeft  => Ok(get_calibration_file_for_type(&config.m20.mastcamz_left, cal_file_type)),
         enums::Instrument::M20MastcamZRight => Ok(get_calibration_file_for_type(&config.m20.mastcamz_right, cal_file_type)),
