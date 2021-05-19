@@ -19,7 +19,7 @@ Implemented calibration steps include (varying per instrument):
 | Mars2020   | Watson      |           |         | &#9745;      |        |        |
 | Mars2020   | SuperCam    |           | &#9745; |              | &#9745;|        |
 | InSight    | IDC         | &#9745;   |         |              | &#9745;|        |
-| InSight    | ICC         | &#9745;   |         |              |        |        |
+| InSight    | ICC         | &#9745;   |         |              | &#9745;|        |
 
 
 \* Hot pixel detection and correction

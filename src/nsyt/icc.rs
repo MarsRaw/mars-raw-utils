@@ -26,14 +26,14 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         data_max = decompanding::get_max_for_instrument(enums::Instrument::NsytICC) as f32;
     }
 
-    //vprintln!("Flatfielding...");
-    //raw.flatfield().unwrap();
+    vprintln!("Flatfielding...");
+    raw.flatfield().unwrap();
 
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
 
     vprintln!("Cropping...");
-    raw.crop(0, 3, 1024, 1018).unwrap();
+    raw.crop(3, 3, 1018, 1018).unwrap();
 
     vprintln!("Normalizing...");
     raw.normalize_to_16bit_with_max(data_max).unwrap();
