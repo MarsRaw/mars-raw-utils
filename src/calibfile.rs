@@ -3,7 +3,8 @@ use std::env;
 use crate::{
     path,
     error,
-    constants
+    constants,
+    enums
 };
 
 
@@ -57,7 +58,13 @@ pub struct M20CalData {
     pub mastcamz_right: InstrumentProperties,
     pub mastcamz_left: InstrumentProperties,
     pub watson: InstrumentProperties,
-    pub supercam_rmi: InstrumentProperties
+    pub supercam_rmi: InstrumentProperties,
+    pub nav_left: InstrumentProperties,
+    pub nav_right: InstrumentProperties,
+    pub fhaz_right: InstrumentProperties, // We're gonna use ECAMs on RCE-A for now
+    pub fhaz_left: InstrumentProperties,
+    pub rhaz_right: InstrumentProperties,
+    pub rhaz_left: InstrumentProperties,
 }
 
 #[allow(non_snake_case)]
@@ -122,38 +129,53 @@ pub fn locate_calibration_file(file_path:String) -> error::Result<String> {
 
 
 
-pub fn calibration_file(calib_file_name:&str) -> error::Result<String> {
+pub fn get_calibration_file_for_type(inst_props:&InstrumentProperties, cal_file_type:enums::CalFileType) -> String {
+    match cal_file_type {
+        enums::CalFileType::FlatField => inst_props.flat.clone(),
+        enums::CalFileType::InpaintMask => inst_props.inpaint_mask.clone(),
+        enums::CalFileType::Mask => inst_props.mask.clone()
+    }
+}
+
+pub fn get_calibration_base_file_for_instrument(instrument:enums::Instrument, cal_file_type:enums::CalFileType) -> error::Result<String> {
     let config = load_caldata_mapping_file().unwrap();
 
-    match calib_file_name {
-        constants::cal::M20_INPAINT_MASK_RIGHT_PATH => Ok(locate_calibration_file(config.m20.mastcamz_right.inpaint_mask).unwrap()),
-        constants::cal::M20_INPAINT_MASK_LEFT_PATH => Ok(locate_calibration_file(config.m20.mastcamz_left.inpaint_mask).unwrap()),
-        constants::cal::M20_WATSON_INPAINT_MASK_PATH => Ok(locate_calibration_file(config.m20.watson.inpaint_mask).unwrap()),
-        constants::cal::M20_WATSON_FLAT_PATH => Ok(locate_calibration_file(config.m20.watson.flat).unwrap()),
-        constants::cal::M20_SCAM_FLAT_PATH => Ok(locate_calibration_file(config.m20.supercam_rmi.flat).unwrap()),
-        constants::cal::M20_SCAM_MASK_PATH => Ok(locate_calibration_file(config.m20.supercam_rmi.mask).unwrap()),
-
-        constants::cal::MSL_MAHLI_INPAINT_MASK_PATH => Ok(locate_calibration_file(config.msl.mahli.inpaint_mask).unwrap()),
-        constants::cal::MSL_MAHLI_FLAT_PATH => Ok(locate_calibration_file(config.msl.mahli.flat).unwrap()),
-
-        constants::cal::MSL_NCAM_RIGHT_INPAINT_PATH => Ok(locate_calibration_file(config.msl.nav_right.inpaint_mask).unwrap()),
-        constants::cal::MSL_NCAM_RIGHT_FLAT_PATH => Ok(locate_calibration_file(config.msl.nav_right.flat).unwrap()),
-
-        constants::cal::MSL_NCAM_LEFT_FLAT_PATH => Ok(locate_calibration_file(config.msl.nav_left.flat).unwrap()),
-
-        constants::cal::MSL_FHAZ_RIGHT_FLAT_PATH => Ok(locate_calibration_file(config.msl.fhaz_right.flat).unwrap()),
-        constants::cal::MSL_FHAZ_LEFT_FLAT_PATH => Ok(locate_calibration_file(config.msl.fhaz_left.flat).unwrap()),
-        constants::cal::MSL_RHAZ_RIGHT_FLAT_PATH => Ok(locate_calibration_file(config.msl.rhaz_right.flat).unwrap()),
-        constants::cal::MSL_RHAZ_LEFT_FLAT_PATH => Ok(locate_calibration_file(config.msl.rhaz_left.flat).unwrap()),
-        constants::cal::MSL_MCAM_LEFT_INPAINT_PATH => Ok(locate_calibration_file(config.msl.mastcam_left.inpaint_mask).unwrap()),
-        constants::cal::MSL_MCAM_RIGHT_INPAINT_PATH => Ok(locate_calibration_file(config.msl.mastcam_right.inpaint_mask).unwrap()),
-
-        constants::cal::MSL_CCAM_FLAT_PATH => Ok(locate_calibration_file(config.msl.chemcam.flat).unwrap()),
-        constants::cal::MSL_CCAM_MASK_PATH => Ok(locate_calibration_file(config.msl.chemcam.mask).unwrap()),
-        
-        constants::cal::NSYT_IDC_FLAT_PATH => Ok(locate_calibration_file(config.nsyt.idc.flat).unwrap()),
-        constants::cal::NSYT_ICC_FLAT_PATH => Ok(locate_calibration_file(config.nsyt.icc.flat).unwrap()),
-
-        _ => Err(constants::status::INVALID_CALIBRATION_FILE_ID)
+    match instrument {
+        enums::Instrument::MslMAHLI         => Ok(get_calibration_file_for_type(&config.msl.mahli, cal_file_type)),
+        enums::Instrument::MslMastcamLeft   => Ok(get_calibration_file_for_type(&config.msl.mastcam_left, cal_file_type)),
+        enums::Instrument::MslMastcamRight  => Ok(get_calibration_file_for_type(&config.msl.mastcam_right, cal_file_type)),
+        enums::Instrument::MslNavCamRight   => Ok(get_calibration_file_for_type(&config.msl.nav_right, cal_file_type)), // Limiting to RCE-B camera for ECAM. For now.
+        enums::Instrument::MslNavCamLeft    => Ok(get_calibration_file_for_type(&config.msl.nav_left, cal_file_type)),
+        enums::Instrument::MslFrontHazLeft  => Ok(get_calibration_file_for_type(&config.msl.fhaz_left, cal_file_type)),
+        enums::Instrument::MslFrontHazRight => Ok(get_calibration_file_for_type(&config.msl.fhaz_right, cal_file_type)),
+        enums::Instrument::MslRearHazLeft   => Ok(get_calibration_file_for_type(&config.msl.rhaz_left, cal_file_type)),
+        enums::Instrument::MslRearHazRight  => Ok(get_calibration_file_for_type(&config.msl.rhaz_right, cal_file_type)),
+        enums::Instrument::MslChemCam       => Ok(get_calibration_file_for_type(&config.msl.chemcam, cal_file_type)),
+        enums::Instrument::M20MastcamZLeft  => Ok(get_calibration_file_for_type(&config.m20.mastcamz_left, cal_file_type)),
+        enums::Instrument::M20MastcamZRight => Ok(get_calibration_file_for_type(&config.m20.mastcamz_right, cal_file_type)),
+        enums::Instrument::M20NavcamLeft    => Ok(get_calibration_file_for_type(&config.m20.nav_left, cal_file_type)),
+        enums::Instrument::M20NavcamRight   => Ok(get_calibration_file_for_type(&config.m20.nav_right, cal_file_type)),
+        enums::Instrument::M20FrontHazLeft  => Ok(get_calibration_file_for_type(&config.m20.fhaz_left, cal_file_type)),
+        enums::Instrument::M20FrontHazRight => Ok(get_calibration_file_for_type(&config.m20.fhaz_right, cal_file_type)),
+        enums::Instrument::M20RearHazLeft   => Ok(get_calibration_file_for_type(&config.m20.rhaz_left, cal_file_type)),
+        enums::Instrument::M20RearHazRight  => Ok(get_calibration_file_for_type(&config.m20.rhaz_left, cal_file_type)),
+        enums::Instrument::M20Watson        => Ok(get_calibration_file_for_type(&config.m20.watson, cal_file_type)),
+        enums::Instrument::M20SuperCam      => Ok(get_calibration_file_for_type(&config.m20.supercam_rmi, cal_file_type)),
+        enums::Instrument::NsytICC          => Ok(get_calibration_file_for_type(&config.nsyt.icc, cal_file_type)),
+        enums::Instrument::NsytIDC          => Ok(get_calibration_file_for_type(&config.nsyt.idc, cal_file_type)),
+        enums::Instrument::None             => Err(constants::status::UNSUPPORTED_INSTRUMENT)
     }
+}
+
+pub fn get_calibration_file_for_instrument(instrument:enums::Instrument, cal_file_type:enums::CalFileType) -> error::Result<String> {
+    match get_calibration_base_file_for_instrument(instrument, cal_file_type) {
+        Ok(file_name) => {
+            match file_name.len() {
+                0 => Err(constants::status::UNSUPPORTED_INSTRUMENT),
+                _ => locate_calibration_file(file_name)
+            }
+        },
+        Err(e) => Err(e)
+    }
+    
 }

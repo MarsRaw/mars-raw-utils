@@ -36,6 +36,13 @@ pub enum Instrument {
     None
 }
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum CalFileType {
+    FlatField,
+    InpaintMask,
+    Mask
+}
+
 // Image data value range. Doesn't enforce actual
 // value data types in the structs
 #[derive(Debug, Copy, Clone, PartialEq)]

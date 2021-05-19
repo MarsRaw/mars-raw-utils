@@ -1,6 +1,5 @@
 
 use crate::{
-        constants, 
         rgbimage::RgbImage, 
         error, 
         enums,
@@ -8,31 +7,8 @@ use crate::{
 };
 
 pub fn load_flat(instrument:enums::Instrument) -> error::Result<RgbImage> {
-    match instrument {
-        enums::Instrument::MslMAHLI => 
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_MAHLI_FLAT_PATH).unwrap(), instrument).unwrap()),
-        enums::Instrument::MslNavCamRight => 
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_NCAM_RIGHT_FLAT_PATH).unwrap(), instrument).unwrap()), 
-        enums::Instrument::MslNavCamLeft => 
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_NCAM_LEFT_FLAT_PATH).unwrap(), instrument).unwrap()),
-        enums::Instrument::MslFrontHazLeft => 
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_FHAZ_LEFT_FLAT_PATH).unwrap(), instrument).unwrap()),
-        enums::Instrument::MslFrontHazRight => 
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_FHAZ_RIGHT_FLAT_PATH).unwrap(), instrument).unwrap()),
-        enums::Instrument::MslRearHazLeft => 
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_RHAZ_LEFT_FLAT_PATH).unwrap(), instrument).unwrap()),
-        enums::Instrument::MslRearHazRight => 
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_RHAZ_RIGHT_FLAT_PATH).unwrap(), instrument).unwrap()),
-        enums::Instrument::MslChemCam => 
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::MSL_CCAM_FLAT_PATH).unwrap(), instrument).unwrap()),        
-        enums::Instrument::M20Watson =>
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::M20_WATSON_FLAT_PATH).unwrap(), instrument).unwrap()),
-        enums::Instrument::M20SuperCam =>
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::M20_SCAM_FLAT_PATH).unwrap(), instrument).unwrap()),
-        enums::Instrument::NsytIDC =>
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::NSYT_IDC_FLAT_PATH).unwrap(), instrument).unwrap()),
-        enums::Instrument::NsytICC =>
-                Ok(RgbImage::open(calibfile::calibration_file(constants::cal::NSYT_ICC_FLAT_PATH).unwrap(), instrument).unwrap()),
-        _ => Err(constants::status::UNSUPPORTED_INSTRUMENT)
+    match calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::FlatField) {
+        Ok(cal_file) => RgbImage::open(cal_file, instrument),
+        Err(e) => return Err(e)
     }
 }

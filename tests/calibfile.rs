@@ -5,7 +5,6 @@ use mars_raw_utils::{
 
 
 #[test]
-#[ignore]
 fn test_load_caldata_mapping_file() {
 
     let caldata_toml = calibfile::locate_calibration_file(String::from("caldata.toml")).unwrap();

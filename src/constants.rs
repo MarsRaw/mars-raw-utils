@@ -92,39 +92,3 @@ pub mod param {
     pub const PARAM_SCALE_FACTOR : &str = "factor";
     pub const PARAM_SCALE_FACTOR_SHORT : &str = "f";
 }
-
-pub mod cal {
-
-    pub const M20_INPAINT_MASK_RIGHT_PATH : &str = "M20_INPAINT_MASK_RIGHT_PATH";
-    pub const M20_INPAINT_MASK_LEFT_PATH : &str = "M20_INPAINT_MASK_LEFT_PATH";
-
-    pub const MSL_MAHLI_INPAINT_MASK_PATH : &str = "MSL_MAHLI_INPAINT_MASK_PATH";
-    pub const MSL_MAHLI_FLAT_PATH : &str = "MSL_MAHLI_FLAT_PATH";
-
-    pub const M20_WATSON_INPAINT_MASK_PATH : &str = "M20_WATSON_INPAINT_MASK_PATH";
-    pub const M20_WATSON_FLAT_PATH : &str = "M20_WATSON_FLAT_PATH";
-
-    pub const M20_SCAM_FLAT_PATH : &str = "M20_SCAM_FLAT_PATH";
-    pub const M20_SCAM_MASK_PATH : &str = "M20_SCAM_MASK_PATH";
-
-    // Limiting to navcams on RCE-B
-    pub const MSL_NCAM_RIGHT_INPAINT_PATH : &str = "MSL_NCAM_RIGHT_INPAINT_PATH";
-    pub const MSL_NCAM_RIGHT_FLAT_PATH : &str = "MSL_NCAM_RIGHT_FLAT_PATH";
-    pub const MSL_NCAM_LEFT_FLAT_PATH : &str = "MSL_NCAM_LEFT_FLAT_PATH";
-
-    pub const MSL_FHAZ_RIGHT_FLAT_PATH : &str = "MSL_FHAZ_RIGHT_FLAT_PATH";
-    pub const MSL_FHAZ_LEFT_FLAT_PATH : &str = "MSL_FHAZ_LEFT_FLAT_PATH";
-
-    pub const MSL_RHAZ_RIGHT_FLAT_PATH : &str = "MSL_RHAZ_RIGHT_FLAT_PATH";
-    pub const MSL_RHAZ_LEFT_FLAT_PATH : &str = "MSL_RHAZ_LEFT_FLAT_PATH";
-
-    pub const MSL_MCAM_LEFT_INPAINT_PATH : &str = "MSL_MCAM_LEFT_INPAINT_PATH";
-    pub const MSL_MCAM_RIGHT_INPAINT_PATH : &str = "MSL_MCAM_RIGHT_INPAINT_PATH";
-
-    pub const NSYT_IDC_FLAT_PATH : &str = "NSYT_IDC_FLAT_PATH";
-    pub const NSYT_ICC_FLAT_PATH : &str = "NSYT_ICC_FLAT_PATH";
-
-    pub const MSL_CCAM_FLAT_PATH : &str = "MSL_CCAM_FLAT_PATH";
-    pub const MSL_CCAM_MASK_PATH : &str = "MSL_CCAM_MASK_PATH";
-}
-

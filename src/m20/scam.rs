@@ -1,5 +1,4 @@
 use crate::{
-    constants, 
     vprintln, 
     rgbimage, 
     enums, 
@@ -19,8 +18,8 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     
     let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::M20SuperCam).unwrap();
     
-    vprintln!("Loading image mask from {}", constants::cal::M20_SCAM_MASK_PATH);
-    let mask = imagebuffer::ImageBuffer::from_file(calibfile::calibration_file(constants::cal::M20_SCAM_MASK_PATH).unwrap().as_str()).unwrap();
+    vprintln!("Loading image mask");
+    let mask = imagebuffer::ImageBuffer::from_file(calibfile::get_calibration_file_for_instrument(enums::Instrument::M20SuperCam, enums::CalFileType::Mask).unwrap().as_str()).unwrap();
     raw.apply_mask(&mask);
 
     let data_max = 255.0;

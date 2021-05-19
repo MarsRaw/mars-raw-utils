@@ -3,7 +3,6 @@ use crate::{
     rgbimage, 
     enums, 
     path,
-    constants,
     calibfile,
     imagebuffer
 };
@@ -19,8 +18,8 @@ pub fn process_file(input_file:&str, only_new:bool) {
 
     let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::MslChemCam).unwrap();
 
-    vprintln!("Loading image mask from {}", constants::cal::MSL_CCAM_MASK_PATH);
-    let mask = imagebuffer::ImageBuffer::from_file(calibfile::calibration_file(constants::cal::MSL_CCAM_MASK_PATH).unwrap().as_str()).unwrap();
+    vprintln!("Loading image mask");
+    let mask = imagebuffer::ImageBuffer::from_file(calibfile::get_calibration_file_for_instrument(enums::Instrument::MslChemCam, enums::CalFileType::Mask).unwrap().as_str()).unwrap();
     raw.apply_mask(&mask);
 
     let data_max = 255.0;

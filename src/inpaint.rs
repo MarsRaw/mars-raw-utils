@@ -31,27 +31,12 @@ struct RgbVec {
 const DEFAULT_WINDOW_SIZE : i32 = 3;
 
 fn determine_mask_file(instrument:enums::Instrument) -> error::Result<String> {
-    match instrument {
-        enums::Instrument::MslMAHLI => 
-                    calibfile::calibration_file(constants::cal::MSL_MAHLI_INPAINT_MASK_PATH),
-        enums::Instrument::M20MastcamZLeft => 
-                    calibfile::calibration_file(constants::cal::M20_INPAINT_MASK_LEFT_PATH),
-        enums::Instrument::M20MastcamZRight =>
-                    calibfile::calibration_file(constants::cal::M20_INPAINT_MASK_RIGHT_PATH),
-        enums::Instrument::MslNavCamRight =>
-                    calibfile::calibration_file(constants::cal::MSL_NCAM_RIGHT_INPAINT_PATH),
-        enums::Instrument::MslMastcamLeft =>
-                    calibfile::calibration_file(constants::cal::MSL_MCAM_LEFT_INPAINT_PATH),
-        enums::Instrument::MslMastcamRight =>
-                    calibfile::calibration_file(constants::cal::MSL_MCAM_RIGHT_INPAINT_PATH),            
-        enums::Instrument::M20Watson =>
-                    calibfile::calibration_file(constants::cal::M20_WATSON_INPAINT_MASK_PATH),
-        _ => Err(constants::status::UNSUPPORTED_INSTRUMENT)
-    }
+    calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::InpaintMask)
 }
 
 pub fn inpaint_supported_for_instrument(instrument:enums::Instrument) -> bool {
     let r = determine_mask_file(instrument);
+
     match r {
         Ok(_) => true,
         Err(_) => false
