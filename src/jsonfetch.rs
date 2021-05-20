@@ -84,7 +84,7 @@ pub mod cahvor_format {
         Serializer
     };
 
-    use crate::cahvor::Cahvor;
+    use crate::cahvor;
 
     use crate::jsonfetch::{
         str_to_vec,
@@ -94,7 +94,7 @@ pub mod cahvor_format {
     use crate::vector::Vector;
 
     pub fn serialize<S>(
-        cahvor_opt: &Option<Cahvor>,
+        cahvor_opt: &Option<cahvor::Cahvor>,
         serializer: S,
     ) -> Result<S::Ok, S::Error>
     where
@@ -105,23 +105,18 @@ pub mod cahvor_format {
                 serializer.serialize_unit()
             },
             Some(cahvor) => {
-
-                // Find a more reasonable way to pass the damn vec to vec_to_str...
-                let c = vec_to_str(&cahvor.c.to_owned().unwrap().to_vec());
-                let a = vec_to_str(&cahvor.a.to_owned().unwrap().to_vec());
-                let h = vec_to_str(&cahvor.h.to_owned().unwrap().to_vec());
-                let v = vec_to_str(&cahvor.v.to_owned().unwrap().to_vec());
-
-                match cahvor.o {
-                    Some(_) => {
-                        let o = vec_to_str(&cahvor.o.to_owned().unwrap().to_vec());
-                        let r = vec_to_str(&cahvor.r.to_owned().unwrap().to_vec());
-                        
+                let c = vec_to_str(&cahvor.c.to_vec());
+                let a = vec_to_str(&cahvor.a.to_vec());
+                let h = vec_to_str(&cahvor.h.to_vec());
+                let v = vec_to_str(&cahvor.v.to_vec());
+                let o = vec_to_str(&cahvor.o.to_vec());
+                let r = vec_to_str(&cahvor.r.to_vec());
+                match cahvor.mode {
+                    cahvor::Mode::Cahvor => {
                         let s = format!("{};{};{};{};{};{}", c, a, h, v, o, r);
-        
                         serializer.serialize_str(&s)
                     },
-                    None => {
+                    cahvor::Mode::Cahv => {
                         let s = format!("{};{};{};{}", c, a, h, v);
                         serializer.serialize_str(&s)
                     }
@@ -130,7 +125,7 @@ pub mod cahvor_format {
         }
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Cahvor>, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<cahvor::Cahvor>, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -154,13 +149,14 @@ pub mod cahvor_format {
                     }
                 }
 
-                Ok(Some(Cahvor{
-                    c: Some(Vector::from_vec(&parts[0]).unwrap()),
-                    a: Some(Vector::from_vec(&parts[1]).unwrap()),
-                    h: Some(Vector::from_vec(&parts[2]).unwrap()),
-                    v: Some(Vector::from_vec(&parts[3]).unwrap()),
-                    o: if parts.len() >= 5 { Some(Vector::from_vec(&parts[4]).unwrap()) } else { None },
-                    r: if parts.len() >= 6 { Some(Vector::from_vec(&parts[5]).unwrap()) } else { None }
+                Ok(Some(cahvor::Cahvor{
+                    mode: if parts.len() == 4 { cahvor::Mode::Cahv } else { cahvor::Mode::Cahvor },
+                    c: Vector::from_vec(&parts[0]).unwrap(),
+                    a: Vector::from_vec(&parts[1]).unwrap(),
+                    h: Vector::from_vec(&parts[2]).unwrap(),
+                    v: Vector::from_vec(&parts[3]).unwrap(),
+                    o: if parts.len() >= 5 { Vector::from_vec(&parts[4]).unwrap() } else { Vector::default() },
+                    r: if parts.len() >= 6 { Vector::from_vec(&parts[5]).unwrap() } else { Vector::default() }
                 }))
             }
         }
@@ -237,37 +233,30 @@ pub mod vector_format {
     use crate::vector::Vector;
 
     pub fn serialize<S>(
-        vector_opt: &Option<Vector>,
+        vector: &Vector,
         serializer: S,
     ) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        match vector_opt {
-            None => {
-                serializer.serialize_unit()
-            },
-            Some(v) => {
-                let s = vec_to_str(&v.to_vec());
-                serializer.serialize_str(s.as_ref())
-            }
-        }
+        let s = vec_to_str(&vector.to_vec());
+        serializer.serialize_str(s.as_ref())
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Vector>, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vector, D::Error>
     where
         D: Deserializer<'de>,
     {
         let r :Result<&str, D::Error> = Deserialize::deserialize(deserializer);
         match r {
-            Err(_) => Ok(None),
+            Err(_) => Ok(Vector::default()),
             Ok(s) => {
                 match s {
-                    "UNK" => Ok(None),
+                    "UNK" => Ok(Vector::default()),
                     _ => {
                         let tuple_vec = str_to_vec(s).unwrap();
                         let vec = Vector::from_vec(&tuple_vec).unwrap();
-                        Ok(Some(vec))
+                        Ok(vec)
                     }
                 }
             }

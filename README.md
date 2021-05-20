@@ -561,3 +561,6 @@ https://doi.org/10.1007/s11214-020-00765-9
 Malin, M. C., et al. (2017), The Mars Science Laboratory (MSL) Mast cameras and Descent imager: Investigation and instrument descriptions, Earth and Space Science, 4, 506– 539, doi:10.1002/2016EA000252.
 https://doi.org/10.1002/2016EA000252
 
+
+Di, K., and Li, R. (2004), CAHVOR camera model and its photogrammetric conversion for planetary applications, J. Geophys. Res., 109, E04004, doi:10.1029/2003JE002199.
+https://doi.org/10.1029/2003JE002199
