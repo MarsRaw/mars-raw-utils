@@ -1,4 +1,13 @@
 
+
+pub fn radians(d:f64) -> f64 {
+    d * std::f64::consts::PI / 180.0
+}
+
+pub fn degrees(r:f64) -> f64 {
+    r * 180.0 / std::f64::consts::PI
+}
+
 //https://rust-lang-nursery.github.io/rust-cookbook/science/mathematics/statistics.html
 pub fn mean(data: &[f32]) -> Option<f32> {
     let sum = data.iter().sum::<f32>() as f32;
