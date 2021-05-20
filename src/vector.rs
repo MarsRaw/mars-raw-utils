@@ -1,7 +1,9 @@
 
 use crate::{
     stats::degrees,
-    stats::radians
+    stats::radians,
+    constants,
+    error
 };
 
 #[derive(Debug, Clone)]
@@ -38,6 +40,22 @@ impl Vector {
 
     pub fn new(x:f64, y:f64, z:f64) -> Vector {
         Vector{x, y, z}
+    }
+
+    pub fn from_vec(v:&Vec<f64>) -> error::Result<Vector> {
+        if v.len() != 3 {
+            Err(constants::status::ARRAY_SIZE_MISMATCH)
+        } else {
+            Ok(Vector{
+                x:v[0],
+                y:v[1],
+                z:v[2]
+            })
+        }
+    }
+
+    pub fn to_vec(&self) -> Vec<f64> {
+        vec![self.x, self.y, self.z]
     }
 
     pub fn copy_to(&self, other:&mut Vector) {

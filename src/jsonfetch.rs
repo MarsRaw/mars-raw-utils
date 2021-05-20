@@ -2,7 +2,12 @@
 use serde_json::{
     Value
 };
-use crate::{constants, error, httpfetch::HttpFetcher};
+use crate::{
+    constants, 
+    error, 
+    httpfetch::HttpFetcher
+};
+
 use string_builder::Builder;
 
 pub struct JsonFetcher {
@@ -41,9 +46,6 @@ impl JsonFetcher {
         }
     }
 }
-
-
-
 
 
 fn vec_to_str(v:&Vec<f64>) -> String {
@@ -89,6 +91,8 @@ pub mod cahvor_format {
         vec_to_str
     };
 
+    use crate::vector::Vector;
+
     pub fn serialize<S>(
         cahvor_opt: &Option<Cahvor>,
         serializer: S,
@@ -101,15 +105,17 @@ pub mod cahvor_format {
                 serializer.serialize_unit()
             },
             Some(cahvor) => {
-                let c = vec_to_str(&cahvor.c.clone().unwrap());
-                let a = vec_to_str(&cahvor.a.clone().unwrap());
-                let h = vec_to_str(&cahvor.h.clone().unwrap());
-                let v = vec_to_str(&cahvor.v.clone().unwrap());
+
+                // Find a more reasonable way to pass the damn vec to vec_to_str...
+                let c = vec_to_str(&cahvor.c.to_owned().unwrap().to_vec());
+                let a = vec_to_str(&cahvor.a.to_owned().unwrap().to_vec());
+                let h = vec_to_str(&cahvor.h.to_owned().unwrap().to_vec());
+                let v = vec_to_str(&cahvor.v.to_owned().unwrap().to_vec());
 
                 match cahvor.o {
                     Some(_) => {
-                        let o = vec_to_str(&cahvor.o.clone().unwrap());
-                        let r = vec_to_str(&cahvor.r.clone().unwrap());
+                        let o = vec_to_str(&cahvor.o.to_owned().unwrap().to_vec());
+                        let r = vec_to_str(&cahvor.r.to_owned().unwrap().to_vec());
                         
                         let s = format!("{};{};{};{};{};{}", c, a, h, v, o, r);
         
@@ -149,12 +155,12 @@ pub mod cahvor_format {
                 }
 
                 Ok(Some(Cahvor{
-                    c: Some(parts[0].to_owned()),
-                    a: Some(parts[1].to_owned()),
-                    h: Some(parts[2].to_owned()),
-                    v: Some(parts[3].to_owned()),
-                    o: if parts.len() >= 5 { Some(parts[4].to_owned()) } else { None },
-                    r: if parts.len() >= 6 { Some(parts[5].to_owned()) } else { None }
+                    c: Some(Vector::from_vec(&parts[0]).unwrap()),
+                    a: Some(Vector::from_vec(&parts[1]).unwrap()),
+                    h: Some(Vector::from_vec(&parts[2]).unwrap()),
+                    v: Some(Vector::from_vec(&parts[3]).unwrap()),
+                    o: if parts.len() >= 5 { Some(Vector::from_vec(&parts[4]).unwrap()) } else { None },
+                    r: if parts.len() >= 6 { Some(Vector::from_vec(&parts[5]).unwrap()) } else { None }
                 }))
             }
         }
@@ -214,6 +220,61 @@ pub mod tuple_format {
 }
 
 
+
+pub mod vector_format {
+    use serde::{
+        self,
+        Deserialize,
+        Deserializer,
+        Serializer
+    };
+
+    use crate::jsonfetch::{
+        str_to_vec,
+        vec_to_str
+    };
+
+    use crate::vector::Vector;
+
+    pub fn serialize<S>(
+        vector_opt: &Option<Vector>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match vector_opt {
+            None => {
+                serializer.serialize_unit()
+            },
+            Some(v) => {
+                let s = vec_to_str(&v.to_vec());
+                serializer.serialize_str(s.as_ref())
+            }
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Vector>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let r :Result<&str, D::Error> = Deserialize::deserialize(deserializer);
+        match r {
+            Err(_) => Ok(None),
+            Ok(s) => {
+                match s {
+                    "UNK" => Ok(None),
+                    _ => {
+                        let tuple_vec = str_to_vec(s).unwrap();
+                        let vec = Vector::from_vec(&tuple_vec).unwrap();
+                        Ok(Some(vec))
+                    }
+                }
+            }
+        }
+    }
+
+}
 
 
 
