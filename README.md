@@ -556,3 +556,8 @@ https://www.researchgate.net/publication/270045976_Malvar-He-Cutler_Linear_Image
 
 Maki, J.N., Gruel, D., McKinney, C. et al. The Mars 2020 Engineering Cameras and Microphone on the Perseverance Rover: A Next-Generation Imaging System for Mars Exploration. Space Sci Rev 216, 137 (2020). 
 https://doi.org/10.1007/s11214-020-00765-9
+
+
+Malin, M. C., et al. (2017), The Mars Science Laboratory (MSL) Mast cameras and Descent imager: Investigation and instrument descriptions, Earth and Space Science, 4, 506– 539, doi:10.1002/2016EA000252.
+https://doi.org/10.1002/2016EA000252
+
