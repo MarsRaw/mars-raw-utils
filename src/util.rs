@@ -26,6 +26,11 @@ pub fn string_is_valid_num<T:FromStr>(s:&str) -> bool {
     }
 }
 
+pub fn string_is_valid_f64(s:&str) -> bool {
+    string_is_valid_num::<f64>(s)
+}
+
+
 pub fn string_is_valid_f32(s:&str) -> bool {
     string_is_valid_num::<f32>(s)
 }

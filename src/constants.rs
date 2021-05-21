@@ -44,6 +44,7 @@ pub mod status {
     pub const ERROR_PARSING_JSON: &str = "Error parsing JSON";
     pub const INVALID_ENUM_VALUE: &str = "Invalid enum value";
     pub const INVALID_RAW_VALUE: &str = "Invalid raw image value";
+    pub const INVALID_FLOAT_VALUE: &str = "Invalid float value";
     pub const UNSUPPORTED_INSTRUMENT: &str = "Unsupported instrument";
     pub const EVEN_NUMBER_REQUIRED: &str = "Value error: Even number required";
     pub const REMOTE_SERVER_ERROR: &str = "Remote server error";

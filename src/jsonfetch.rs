@@ -5,7 +5,8 @@ use serde_json::{
 use crate::{
     constants, 
     error, 
-    httpfetch::HttpFetcher
+    httpfetch::HttpFetcher,
+    util::string_is_valid_f64
 };
 
 use string_builder::Builder;
@@ -70,7 +71,14 @@ fn str_to_vec(s:&str) -> error::Result<Vec<f64>> {
     s0.remove(0);s0.remove(s0.len()-1);
     let split = s0.split(",");
     for n in split {
-        tuple_vec.push(n.parse::<f64>().unwrap());
+        let n_t = n.trim();
+        if string_is_valid_f64(n_t) {
+            tuple_vec.push(n_t.parse::<f64>().unwrap());
+        } else {
+            eprintln!("Encoutered invalid float value string: {}", n_t);
+            return Err(constants::status::INVALID_FLOAT_VALUE);
+        }
+        
     }
     Ok(tuple_vec)
 }
