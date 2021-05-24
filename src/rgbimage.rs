@@ -44,9 +44,9 @@ impl RgbImage {
             _red:red,
             _green:green,
             _blue:blue,
-            width:width,
-            height:height,
-            instrument:instrument,
+            width,
+            height,
+            instrument,
             mode:enums::ImageMode::U8BIT
         })
     }
@@ -90,8 +90,8 @@ impl RgbImage {
             _blue:blue.clone(),
             width:red.width,
             height:red.height,
-            instrument:instrument,
-            mode:mode
+            instrument,
+            mode
         })
     }
 
@@ -112,9 +112,9 @@ impl RgbImage {
             self._red.put(x, y, r)?;
             self._green.put(x, y, g)?;
             self._blue.put(x, y, b)?;
-            return ok!();
+            ok!()
         } else {
-            return Err(constants::status::INVALID_PIXEL_COORDINATES);
+            Err(constants::status::INVALID_PIXEL_COORDINATES)
         }
     }
 
@@ -249,6 +249,7 @@ impl RgbImage {
         let g = self._green.get(x, y).unwrap();
         let b = self._blue.get(x, y).unwrap();
 
+        //consider comparing them within some margin of error: `(g - b).abs() < error_margin`
         r == g && g == b
     }
 
@@ -383,10 +384,10 @@ impl RgbImage {
         if path::parent_exists_and_writable(&to_file) {
             out_img.save(to_file).unwrap();
             vprintln!("File saved.");
-            return ok!();
+            ok!()
         } else {
             eprintln!("Parent does not exist or cannot be written: {}", path::get_parent(to_file));
-            return Err(constants::status::PARENT_NOT_EXISTS_OR_UNWRITABLE);
+            Err(constants::status::PARENT_NOT_EXISTS_OR_UNWRITABLE)
         }
     }
 
@@ -407,20 +408,20 @@ impl RgbImage {
         if path::parent_exists_and_writable(&to_file) {
             out_img.save(to_file).unwrap();
             vprintln!("File saved.");
-            return ok!();
+            ok!()
         } else {
             eprintln!("Parent does not exist or cannot be written: {}", path::get_parent(to_file));
-            return Err(constants::status::PARENT_NOT_EXISTS_OR_UNWRITABLE);
+            Err(constants::status::PARENT_NOT_EXISTS_OR_UNWRITABLE)
         }
     }
 
     pub fn save(&self, to_file:&str) -> error::Result<&str> {
         match self.mode {
             enums::ImageMode::U8BIT => {
-                return self.save_8bit(to_file);
+                self.save_8bit(to_file)
             },
             _ => {
-                return self.save_16bit(to_file);
+                self.save_16bit(to_file)
             }
         }
     }

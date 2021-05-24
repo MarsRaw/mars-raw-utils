@@ -36,7 +36,7 @@ pub struct MinMax {
 }
 
 // Implements a center crop
-fn crop_array<T:Copy>(arr:&Vec<T>, from_width:usize, from_height:usize, to_width:usize, to_height:usize) -> error::Result<Vec<T>> {
+fn crop_array<T:Copy>(arr:&[T], from_width:usize, from_height:usize, to_width:usize, to_height:usize) -> Vec<T> {
     let mut new_arr : Vec<T> = Vec::with_capacity(to_width * to_height);
  
     for y in 0..to_height {
@@ -51,10 +51,10 @@ fn crop_array<T:Copy>(arr:&Vec<T>, from_width:usize, from_height:usize, to_width
         }
     }
     
-    Ok(new_arr)
+    new_arr
 }
 
-fn subframe_array<T:Copy>(arr:&Vec<T>, from_width:usize, _from_height:usize, left_x:usize, top_y:usize, to_width:usize, to_height:usize) -> error::Result<Vec<T>> {
+fn subframe_array<T:Copy>(arr:&[T], from_width:usize, _from_height:usize, left_x:usize, top_y:usize, to_width:usize, to_height:usize) -> Vec<T> {
     let mut new_arr : Vec<T> = Vec::with_capacity(to_width * to_height);
 
     for y in 0..to_height {
@@ -63,7 +63,7 @@ fn subframe_array<T:Copy>(arr:&Vec<T>, from_width:usize, _from_height:usize, lef
             new_arr.push(arr[from_idx]);
         }
     }
-    Ok(new_arr)
+    new_arr
 }
 
 
@@ -77,8 +77,8 @@ impl ImageBuffer {
         v.resize(width * height, 0.0);
 
         Ok(ImageBuffer{buffer:v,
-            width:width,
-            height:height,
+            width,
+            height,
             empty:false,
             mask:None
         })
@@ -91,8 +91,8 @@ impl ImageBuffer {
         v.resize(width * height, 0.0);
 
         Ok(ImageBuffer{buffer:v,
-            width:width,
-            height:height,
+            width,
+            height,
             empty:false,
             mask: if *mask != None { Some(mask.as_ref().unwrap().to_owned()) } else { None }
         })
@@ -115,8 +115,8 @@ impl ImageBuffer {
         }
 
         Ok(ImageBuffer{buffer:v,
-                    width:width,
-                    height:height,
+                    width,
+                    height,
                     empty:false,
                     mask:None
         })
@@ -129,14 +129,14 @@ impl ImageBuffer {
             return Err(constants::status::DIMENSIONS_DO_NOT_MATCH_VECTOR_LENGTH);
         }
 
-        let mut v = vec![0.0 as f32; width * height];
+        let mut v = vec![0.0_f32; width * height];
         for i in 0..v_u8.len() {
             v[i] = v_u8[i] as f32;
         }
 
         Ok(ImageBuffer{buffer:v,
-                    width:width,
-                    height:height,
+                    width,
+                    height,
                     empty:false,
                     mask:None
         })
@@ -149,7 +149,7 @@ impl ImageBuffer {
             return Err(constants::status::DIMENSIONS_DO_NOT_MATCH_VECTOR_LENGTH);
         }
 
-        let mut v = vec![0.0 as f32; width * height];
+        let mut v = vec![0.0_f32; width * height];
         for i in 0..v_u8.len() {
             v[i] = v_u8[i] as f32;
         }
@@ -170,8 +170,8 @@ impl ImageBuffer {
         }
 
         Ok(ImageBuffer{buffer:v,
-                    width:width,
-                    height:height,
+                    width,
+                    height,
                     empty:false,
                     mask: if *mask != None { Some(mask.as_ref().unwrap().to_owned()) } else { None }
         })
@@ -238,7 +238,7 @@ impl ImageBuffer {
                 if idx >= b.len() {
                     return Err(constants::status::INVALID_PIXEL_COORDINATES);
                 }
-                return Ok(b[idx]);
+                Ok(b[idx])
             },
             None => Ok(true)
         }
@@ -251,7 +251,7 @@ impl ImageBuffer {
                     return Err(constants::status::INVALID_PIXEL_COORDINATES);
                 }
                 let msk_idx = self.width * y + x;
-                return Ok(b[msk_idx]);
+                Ok(b[msk_idx])
             },
             None => Ok(true)
         }
@@ -268,9 +268,9 @@ impl ImageBuffer {
 
     pub fn get_subframe(&self, left_x:usize, top_y:usize, width:usize, height:usize) -> error::Result<ImageBuffer> {
 
-        let subframed_buffer = subframe_array(&self.buffer, self.width, self.height, left_x, top_y, width, height).unwrap();
+        let subframed_buffer = subframe_array(&self.buffer, self.width, self.height, left_x, top_y, width, height);
         let subframed_mask = match &self.mask {
-            Some(m) => Some(subframe_array(&m, self.width, self.height, left_x, top_y, width, height).unwrap()),
+            Some(m) => Some(subframe_array(&m, self.width, self.height, left_x, top_y, width, height)),
             None => None,
         };
         ImageBuffer::from_vec_with_mask(subframed_buffer, width, height, &subframed_mask)
@@ -282,9 +282,9 @@ impl ImageBuffer {
                 return Ok(0.0);
             }
             let index = y * self.width + x;
-            return Ok(self.buffer[index]);
+            Ok(self.buffer[index])
         } else {
-            return Err(constants::status::INVALID_PIXEL_COORDINATES); // TODO: learn to throw exceptions
+            Err(constants::status::INVALID_PIXEL_COORDINATES) // TODO: learn to throw exceptions
         }
     }
 
@@ -302,9 +302,9 @@ impl ImageBuffer {
                 let index = y * self.width + x;
                 self.buffer[index] = val;
             }
-            return ok!();
+            ok!()
         } else {
-            return Err(constants::status::INVALID_PIXEL_COORDINATES);
+            Err(constants::status::INVALID_PIXEL_COORDINATES)
         }
     }
 
@@ -320,17 +320,17 @@ impl ImageBuffer {
                 if self.get_mask_at_point(x, y).unwrap() {
                     let pixel_value = self.get(x, y).unwrap();
                     if pixel_value > 0.0 {
-                        total = total + pixel_value;
-                        count = count + 1.0;
+                        total += pixel_value;
+                        count += 1.0;
                     }
                 }   
             }
         }
 
         if count > 0.0 { // Prevent divide-by-zero on fully-masked images
-            return total / count;
+            total / count
         } else {
-            return 0.0;
+            0.0
         }
     }
 
@@ -489,10 +489,10 @@ impl ImageBuffer {
 
 
     pub fn crop(&self, height:usize, width:usize) -> error::Result<ImageBuffer> {
-        let cropped_buffer = crop_array(&self.buffer, self.width, self.height, width, height).unwrap();
+        let cropped_buffer = crop_array(&self.buffer, self.width, self.height, width, height);
 
         let cropped_mask = match &self.mask {
-            Some(m) => Some(crop_array(&m, self.width, self.height, width, height).unwrap()),
+            Some(m) => Some(crop_array(&m, self.width, self.height, width, height)),
             None => None,
         };
         ImageBuffer::from_vec_with_mask(cropped_buffer, width, height, &cropped_mask)
@@ -517,7 +517,7 @@ impl ImageBuffer {
                 }
             }
         }
-        return Ok(shifted_buffer)
+        Ok(shifted_buffer)
     }
 
     pub fn get_min_max(&self) -> error::Result<MinMax> {
@@ -555,10 +555,10 @@ impl ImageBuffer {
         if path::parent_exists_and_writable(&to_file) {
             out_img.save(to_file).unwrap();
             vprintln!("File saved.");
-            return ok!();
+            ok!()
         } else {
             eprintln!("Parent does not exist or cannot be written: {}", path::get_parent(to_file));
-            return Err(constants::status::PARENT_NOT_EXISTS_OR_UNWRITABLE);
+            Err(constants::status::PARENT_NOT_EXISTS_OR_UNWRITABLE)
         }
     
     }
@@ -580,10 +580,10 @@ impl ImageBuffer {
         if path::parent_exists_and_writable(&to_file) {
             out_img.save(to_file).unwrap();
             vprintln!("File saved.");
-            return ok!();
+            ok!()
         } else {
             eprintln!("Parent does not exist or cannot be written: {}", path::get_parent(to_file));
-            return Err(constants::status::PARENT_NOT_EXISTS_OR_UNWRITABLE);
+            Err(constants::status::PARENT_NOT_EXISTS_OR_UNWRITABLE)
         }
     
     }
@@ -592,10 +592,10 @@ impl ImageBuffer {
 
         match mode {
             enums::ImageMode::U8BIT => {
-                return self.save_8bit(to_file);
+                self.save_8bit(to_file)
             },
             _ => {
-                return self.save_16bit(to_file);
+                self.save_16bit(to_file)
             }
         }
     }

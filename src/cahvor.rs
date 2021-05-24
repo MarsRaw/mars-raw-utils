@@ -77,8 +77,8 @@ impl Cahvor {
         let j = p.subtract(&self.c).dot_product(&self.v) / p.subtract(&self.c).dot_product(&self.a);
 
         Point{
-            i:i,
-            j:j
+            i,
+            j
         }
     } 
 }

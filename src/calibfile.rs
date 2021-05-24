@@ -94,23 +94,19 @@ pub fn load_caldata_mapping_file() -> error::Result<Config> {
 
 fn determine_data_dir() -> String {
     if cfg!(debug_assertions) {
-        return String::from("mars-raw-utils-data/caldata");
+        String::from("mars-raw-utils-data/caldata")
+    } else if cfg!(target_os = "macos") {
+        String::from("/usr/local/share/mars_raw_utils/data/")
+    } else if cfg!(target_os = "windows") {
+        String::from("mars-raw-utils-data/caldata") // C:/something/something/something/darkside/
     } else {
-
-        if cfg!(target_os = "macos") {
-            return String::from("/usr/local/share/mars_raw_utils/data/");
-        } else if cfg!(target_os = "windows") {
-            return String::from("mars-raw-utils-data/caldata"); // C:/something/something/something/darkside/
-        } else {
-            return String::from("/usr/share/mars_raw_utils/data/");
-        }
-        
+        String::from("/usr/share/mars_raw_utils/data/")
     }
 }
 
 pub fn locate_calibration_file(file_path:String) -> error::Result<String> {
 
-    let mut fp = file_path.to_owned();
+    let mut fp = file_path;
 
     match env::var("MARS_RAW_DATA") {
         Ok(d) => {

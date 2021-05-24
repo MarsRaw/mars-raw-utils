@@ -42,7 +42,7 @@ impl Vector {
         Vector{x, y, z}
     }
 
-    pub fn from_vec(v:&Vec<f64>) -> error::Result<Vector> {
+    pub fn from_vec(v:&[f64]) -> error::Result<Vector> {
         if v.len() != 3 {
             Err(constants::status::ARRAY_SIZE_MISMATCH)
         } else {
@@ -262,10 +262,7 @@ impl Vector {
         let b1 = pt1.subtract(pt2);
 
         let cp = b0.cross_product(&b1);
-
-        let n = cp.normalized();
-
-        n
+        cp.normalized()
     }
 
 }

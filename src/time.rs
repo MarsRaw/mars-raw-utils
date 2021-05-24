@@ -49,9 +49,7 @@ pub fn get_seconds_since_epoch() -> f64 {
     let unix_time = now.duration_since(UNIX_EPOCH).unwrap();
     let unix_secs =  unix_time.as_secs() as f64;
     let unix_millis = ((unix_time.as_nanos() % 1_000_000_000) as f64) / 1_000_000_000.0;
-    let unix_sec = unix_secs as f64 + unix_millis as f64;
-
-    unix_sec
+    unix_secs + unix_millis
 }
 
 
@@ -76,17 +74,17 @@ fn sin(v:f64) -> f64 {
 
 
 
-fn t_to_hms(t:f64) -> error::Result<Hms> {
+fn t_to_hms(t:f64) -> Hms {
     let hours = t.floor();
     let minutes_f = 60.0 * (t - hours);
     let minutes = minutes_f.floor();
     let seconds = 60.0 * (minutes_f - minutes);
 
-    Ok(Hms{
+    Hms{
         hours,
         minutes,
         seconds
-    })
+    }
 }
 
 // Based on m2020-bitbar which in turn is based on James Tauber's Mars Clock
@@ -130,9 +128,9 @@ pub fn get_lmst(sol_offset:f64, longitude:f64) -> error::Result<MissionTime> {
     let lmst = within_24(mtc - lambda * 24.0 / 360.0);
     let ltst = within_24(lmst + eot * 24.0 / 360.0);
 
-    let lmst_hms = t_to_hms(lmst).unwrap();
-    let ltst_hms = t_to_hms(ltst).unwrap();
-    let mtc_hms = t_to_hms(mtc).unwrap();
+    let lmst_hms = t_to_hms(lmst);
+    let ltst_hms = t_to_hms(ltst);
+    let mtc_hms = t_to_hms(mtc);
 
     // VALIDATE THIS SECTION. I'M JUST GUESSING
     // let unix_count = seconds_since_epoch - constants::time::M20_UNIX_COUNT_OFFSET;
@@ -147,16 +145,16 @@ pub fn get_lmst(sol_offset:f64, longitude:f64) -> error::Result<MissionTime> {
         ltst_display: ltst_string,
         mtc_display: mtc_string,
         sol: sol as i32,
-        lmst_hms: lmst_hms,
-        ltst_hms: ltst_hms,
-        sclk: 0 as i32,
-        msd: msd,
-        mtc: mtc,
-        mtc_hms: mtc_hms,
-        lmst: lmst,
-        ltst: ltst,
-        l_s: l_s,
-        nu: nu,
-        e: e
+        lmst_hms,
+        ltst_hms,
+        sclk: 0_i32,
+        msd,
+        mtc,
+        mtc_hms,
+        lmst,
+        ltst,
+        l_s,
+        nu,
+        e
     })
 }

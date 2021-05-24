@@ -23,7 +23,7 @@ pub fn get_parent(chk_path:&str) -> String {
 
 pub fn parent_exists(chk_path:&str) -> bool {
     let parent = get_parent(chk_path);
-    if parent.len() > 0 {
+    if !parent.is_empty() {
         file_exists(parent.as_str())
     } else {
         true // Cannot assume true on $CWD (or that it is $CWD)...
@@ -32,7 +32,7 @@ pub fn parent_exists(chk_path:&str) -> bool {
 
 pub fn parent_writable(chk_path:&str) -> bool {
     let parent = get_parent(chk_path);
-    if parent.len() > 0 {
+    if !parent.is_empty() {
         file_writable(parent.as_str())
     } else {
         true // Cannot assume true on $CWD (or that is is $CWD)...

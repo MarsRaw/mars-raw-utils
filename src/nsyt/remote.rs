@@ -110,7 +110,7 @@ fn process_results(results:&NsytApiResults, thumbnails:bool, list_only:bool, sea
         }
 
         // If we're searching for a substring and this image doesn't match, skip it.
-        if search != "" && image.imageid.find(&search) == None {
+        if !search.is_empty() && image.imageid.find(&search) == None {
             continue;
         }
 
@@ -142,7 +142,7 @@ pub fn make_instrument_map() -> InstrumentMap {
         ].iter().cloned().collect()}
 }
 
-fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32) -> error::Result<String> {
+fn submit_query(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32) -> error::Result<String> {
 
     let mut params = vec![
         stringvec("condition_1", "insight:mission"),
@@ -153,12 +153,9 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
         stringvec_b("condition_3", format!("{}:sol:lte", maxsol))
     ];
 
-    match page {
-        Some(p) => {
-            params.push(stringvec_b("page", format!("{}", p)));
-        },
-        None => ()
-    };
+    if let Some(p) = page {
+        params.push(stringvec_b("page", format!("{}", p)));
+    }
 
     let uri = constants::url::NSYT_RAW_WEBSERVICE_URL;
 
@@ -171,7 +168,7 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
     req.fetch_str()
 }
 
-pub fn fetch_page(cameras:&Vec<String>, num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+pub fn fetch_page(cameras:&[String], num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
     match submit_query(&cameras, num_per_page, Some(page), minsol, maxsol) {
         Ok(v) => {
             let res: NsytApiResults = serde_json::from_str(v.as_str()).unwrap();

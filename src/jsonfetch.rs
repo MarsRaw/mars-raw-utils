@@ -31,7 +31,7 @@ impl JsonFetcher {
         let json_text = self.fetcher.fetch_text();
 
         match json_text {
-            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
+            Err(_e) => Err(constants::status::REMOTE_SERVER_ERROR),
             Ok(v) => Ok(serde_json::from_str(&v).unwrap())
         }
     }
@@ -42,14 +42,14 @@ impl JsonFetcher {
         let json_text = self.fetcher.fetch_text();
 
         match json_text {
-            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
+            Err(_e) => Err(constants::status::REMOTE_SERVER_ERROR),
             Ok(v) => Ok(v)
         }
     }
 }
 
 
-fn vec_to_str(v:&Vec<f64>) -> String {
+fn vec_to_str(v:&[f64]) -> String {
     let mut b = Builder::default();
 
     for item in v {
@@ -57,7 +57,7 @@ fn vec_to_str(v:&Vec<f64>) -> String {
     }
 
     let mut s = b.string().unwrap();
-    if s.len() > 0 {
+    if !s.is_empty() {
         s.remove(s.len()-1);
     }
     
@@ -69,7 +69,7 @@ fn str_to_vec(s:&str) -> error::Result<Vec<f64>> {
     let mut tuple_vec:Vec<f64> = Vec::new();
     let mut s0 = String::from(s);
     s0.remove(0);s0.remove(s0.len()-1);
-    let split = s0.split(",");
+    let split = s0.split(',');
     for n in split {
         let n_t = n.trim();
         if string_is_valid_f64(n_t) {
@@ -144,11 +144,11 @@ pub mod cahvor_format {
 
                 let s0 = String::from(s);
                 
-                let split = s0.split(";");
+                let split = s0.split(';');
                 let mut parts:Vec<Vec<f64>> = Vec::new();
 
                 for n in split {
-                    match n.find("(") {
+                    match n.find('(') {
                         None => (),
                         Some(_i) => {
                             let v:Vec<f64> = str_to_vec(&n).unwrap();

@@ -133,7 +133,7 @@ fn process_results(results:&M20ApiResults, thumbnails:bool, list_only:bool, sear
         }
 
         // If we're searching for a substring and this image doesn't match, skip it.
-        if search != "" && image.imageid.find(&search) == None {
+        if !search.is_empty() && image.imageid.find(&search) == None {
             continue;
         }
 
@@ -173,7 +173,7 @@ pub fn make_instrument_map() -> InstrumentMap {
 
 
 
-fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool) -> error::Result<String> {
+fn submit_query(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool) -> error::Result<String> {
     let joined_cameras = cameras.join("|");
 
     let mut params = vec![
@@ -186,12 +186,10 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
         stringvec_b("condition_2", format!("{}:sol:gte", minsol)),
         stringvec_b("condition_3", format!("{}:sol:lte", maxsol))
     ];
-    match page {
-        Some(p) => {
-            params.push(stringvec_b("page", format!("{}", p)));
-        },
-        None => ()
-    };
+
+    if let Some(p) = page {
+        params.push(stringvec_b("page", format!("{}", p)));
+    }
 
     if thumbnails {
         params.push(stringvec("extended", "sample_type::thumbnail,"));
@@ -212,7 +210,7 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
     req.fetch_str()
 }
 
-pub fn fetch_page(cameras:&Vec<String>, num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+pub fn fetch_page(cameras:&[String], num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
     match submit_query(&cameras, num_per_page, Some(page), minsol, maxsol, thumbnails, movie_only) {
         Ok(v) => {
             let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
@@ -230,7 +228,7 @@ pub struct M20RemoteStats {
     pub total_images: i32
 }
 
-pub fn fetch_stats(cameras:&Vec<String>, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool) -> error::Result<M20RemoteStats> {
+pub fn fetch_stats(cameras:&[String], minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool) -> error::Result<M20RemoteStats> {
     match submit_query(&cameras, 0, Some(0), minsol, maxsol, thumbnails, movie_only) {
         Ok(v) => {
             let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
@@ -245,7 +243,7 @@ pub fn fetch_stats(cameras:&Vec<String>, minsol:i32, maxsol:i32, thumbnails:bool
     }
 }
 
-pub fn fetch_all(cameras:&Vec<String>, num_per_page:i32, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+pub fn fetch_all(cameras:&[String], num_per_page:i32, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
 
     let stats = match fetch_stats(&cameras, minsol, maxsol, thumbnails, movie_only) {
         Ok(s) => s,
@@ -258,7 +256,7 @@ pub fn fetch_all(cameras:&Vec<String>, num_per_page:i32, minsol:i32, maxsol:i32,
     for page in 0..pages {
         match fetch_page(&cameras, num_per_page, page, minsol, maxsol, thumbnails, movie_only, list_only, search, only_new) {
             Ok(c) => {
-                count = count + c;
+                count += c;
             },
             Err(e) => return Err(e)
         };
@@ -270,7 +268,7 @@ pub fn fetch_all(cameras:&Vec<String>, num_per_page:i32, minsol:i32, maxsol:i32,
     Ok(count)
 }
 
-pub fn remote_fetch(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+pub fn remote_fetch(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
     match page {
         Some(p) => {
             fetch_page(&cameras, num_per_page, p, minsol, maxsol, thumbnails, movie_only, list_only, search, only_new)

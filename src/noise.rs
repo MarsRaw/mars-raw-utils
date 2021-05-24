@@ -21,7 +21,7 @@ struct SplitLab {
     b: Vec<[u8; 3]>
 }
 
-fn split_lab_channels(lab_array:&Vec<Lab>) -> SplitLab {
+fn split_lab_channels(lab_array:&[Lab]) -> SplitLab {
     let mut l: Vec<[u8; 3]> = Vec::with_capacity(lab_array.len());
     l.resize(lab_array.len(), [0, 0, 0]);
 
@@ -45,7 +45,10 @@ fn split_lab_channels(lab_array:&Vec<Lab>) -> SplitLab {
         b[i][2] = lab_array[i].b as u8;
     }
 
-    SplitLab{l:l, a:a, b:b}
+    SplitLab{l, 
+        a, 
+        b
+    }
 }
 
 fn combine_lab_channels(splitlab:&SplitLab) -> Vec<Lab> {

@@ -33,13 +33,13 @@ impl HttpFetcher {
         let res = blocking::get(self.uri.as_str());
 
         match res {
-            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
+            Err(_e) => Err(constants::status::REMOTE_SERVER_ERROR),
             Ok(v) => {
                 if v.status() != StatusCode::OK {
                     // Should return a more specific error...
-                    return Err(constants::status::REMOTE_SERVER_ERROR);
+                    Err(constants::status::REMOTE_SERVER_ERROR)
                 } else {
-                    return Ok(v);
+                    Ok(v)
                 }
             }
         }
@@ -48,7 +48,7 @@ impl HttpFetcher {
     pub fn fetch_text(&self) -> error::Result<std::string::String> {
         let res = self.fetch();
         match res {
-            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
+            Err(_e) => Err(constants::status::REMOTE_SERVER_ERROR),
             Ok(v) => Ok(v.text().unwrap())
         }
     }
@@ -56,8 +56,8 @@ impl HttpFetcher {
     pub fn fetch_bin(&self) -> error::Result<Vec<u8>> {
         let res = self.fetch();
         match res {
-            Err(_e) => return Err(constants::status::REMOTE_SERVER_ERROR),
-            Ok(v) => Ok(v.bytes().unwrap().to_owned()[0..].to_vec()) // Kinda hacky...
+            Err(_e) => Err(constants::status::REMOTE_SERVER_ERROR),
+            Ok(v) => Ok(v.bytes().unwrap()[0..].to_vec()) // Kinda hacky...
         }
     }
 }

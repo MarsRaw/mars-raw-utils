@@ -36,11 +36,7 @@ fn determine_mask_file(instrument:enums::Instrument) -> error::Result<String> {
 
 pub fn inpaint_supported_for_instrument(instrument:enums::Instrument) -> bool {
     let r = determine_mask_file(instrument);
-
-    match r {
-        Ok(_) => true,
-        Err(_) => false
-    }
+    r.is_ok()
 }
 
 fn load_mask_file(filename:&str, instrument:enums::Instrument) -> error::Result<ImageBuffer> {
@@ -99,20 +95,17 @@ fn get_num_good_neighbors(mask:&ImageBuffer, x:i32, y:i32) -> u32 {
 fn find_starting_point(mask:&ImageBuffer) -> Option<Point> {
     for y in 0..mask.height {
         for x in 0..mask.width {
-            match mask.get(x, y) {
-                Ok(v) => {
-                    if v > 0.0 {
-                        return Some(Point{x:x, y:y, score:0});
-                    }
+            if let Ok(v) = mask.get(x, y) {
+                if v > 0.0 {
+                    return Some(Point{x, y, score:0});
                 }
-                _ => ()
             }
         }
     }
     None
 }
 
-fn isolate_window(buffer:&RgbVec, mask:&ImageBuffer, channel:usize, window_size:i32, x:usize, y:usize) -> error::Result<Vec<f32>> {
+fn isolate_window(buffer:&RgbVec, mask:&ImageBuffer, channel:usize, window_size:i32, x:usize, y:usize) -> Vec<f32> {
     let mut v:Vec<f32> = Vec::with_capacity(36);
     let start = window_size / 2 * -1;
     let end = window_size / 2 + 1;
@@ -130,13 +123,12 @@ fn isolate_window(buffer:&RgbVec, mask:&ImageBuffer, channel:usize, window_size:
             }
         }
     }
-    Ok(v)
+    v
 }
 
 fn predict_value(buffer:&RgbVec, mask:&ImageBuffer, channel:usize, x:usize, y:usize) -> f32 {
-    let window = isolate_window(&buffer, &mask, channel, DEFAULT_WINDOW_SIZE, x, y).unwrap();
-    let m = stats::mean(&window[0..]).unwrap();
-    m
+    let window = isolate_window(&buffer, &mask, channel, DEFAULT_WINDOW_SIZE, x, y);
+    stats::mean(&window[0..]).unwrap()
 }
 
 
@@ -153,17 +145,16 @@ fn get_point_and_score_at_xy(mask:&ImageBuffer, x:i32, y:i32) -> Option<Point> {
 
     let score = get_num_good_neighbors(&mask, x, y);
 
-    Some(Point{x:x as usize, y:y as usize, score:score})
+    Some(Point{x:x as usize, y:y as usize, score})
 }
 
 
-fn find_larger(left:Option<Point>, right:&Point) -> Option<Point> {
+fn find_larger(left:Option<Point>, right:&Point) -> Point {
     match left {
         Some(pt) => {
-            let m = if pt.score > right.score { pt } else { right.clone() };
-            Some(m)
+            if pt.score > right.score { pt } else { right.clone() }
         },
-        None => return Some(right.to_owned())
+        None => right.to_owned()
     }
 }
 
@@ -184,7 +175,7 @@ fn find_next_point(mask:&ImageBuffer, x:i32, y:i32) -> Option<Point> {
     for opt_pt in pts.iter() {
         match opt_pt {
             Some(pt) => {
-                largest_score = find_larger(largest_score, pt);
+                largest_score = Some(find_larger(largest_score, pt));
             },
             None => ()
         }

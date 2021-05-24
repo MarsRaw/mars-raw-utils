@@ -33,7 +33,7 @@ pub struct HpcResults {
 
 
 
-fn isolate_window(buffer:&ImageBuffer, window_size:i32, x:usize, y:usize) -> error::Result<Vec<f32>> {
+fn isolate_window(buffer:&ImageBuffer, window_size:i32, x:usize, y:usize) -> Vec<f32> {
     let mut v:Vec<f32> = Vec::with_capacity(36);
     let start = window_size / 2 * -1;
     let end = window_size / 2 + 1;
@@ -46,7 +46,7 @@ fn isolate_window(buffer:&ImageBuffer, window_size:i32, x:usize, y:usize) -> err
             }
         }
     }
-    Ok(v)
+    v
 }
 
 pub fn hot_pixel_detection(buffer:&ImageBuffer, window_size:i32, threshold:f32) -> error::Result<HpcResults> {
@@ -57,17 +57,17 @@ pub fn hot_pixel_detection(buffer:&ImageBuffer, window_size:i32, threshold:f32) 
     for y in 1..buffer.height - 1 {
         for x in 1..buffer.width -1 {
             let pixel_value = buffer.get(x, y).unwrap();
-            let window = isolate_window(buffer, window_size, x, y).unwrap();
-            let zscore = stats::z_score(pixel_value, &window[0..]).unwrap();
-            if zscore > threshold {
+            let window = isolate_window(buffer, window_size, x, y);
+            let z_score = stats::z_score(pixel_value, &window[0..]).unwrap();
+            if z_score > threshold {
                 let m = stats::mean(&window[0..]).unwrap();
                 map.put(x, y, m).unwrap();
 
                 replaced_pixels.push(ReplacedPixel{
-                    x:x,
-                    y:y,
-                    pixel_value: pixel_value,
-                    z_score: zscore
+                    x,
+                    y,
+                    pixel_value,
+                    z_score
                 });
 
             } else {
@@ -75,5 +75,5 @@ pub fn hot_pixel_detection(buffer:&ImageBuffer, window_size:i32, threshold:f32) 
             }
         }
     }
-    Ok(HpcResults{buffer:map, replaced_pixels:replaced_pixels})
+    Ok(HpcResults{buffer:map, replaced_pixels})
 }

@@ -132,7 +132,7 @@ fn process_results(results:&MslApiResults, thumbnails:bool, list_only:bool, sear
         }
 
         // If we're searching for a substring and this image doesn't match, skip it.
-        if search != "" && image.imageid.find(&search) == None {
+        if !search.is_empty() && image.imageid.find(&search) == None {
             continue;
         }
 
@@ -170,7 +170,7 @@ pub fn make_instrument_map() -> InstrumentMap {
 }
 
 
-fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32) -> error::Result<String> {
+fn submit_query(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32) -> error::Result<String> {
 
     let mut params = vec![
         stringvec("condition_1", "msl:mission"),
@@ -181,12 +181,9 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
         stringvec_b("condition_3", format!("{}:sol:lte", maxsol))
     ];
 
-    match page {
-        Some(p) => {
-            params.push(stringvec_b("page", format!("{}", p)));
-        },
-        None => ()
-    };
+    if let Some(p) = page {
+        params.push(stringvec_b("page", format!("{}", p)));
+    }
 
     let uri = constants::url::MSL_RAW_WEBSERVICE_URL;
 
@@ -200,7 +197,7 @@ fn submit_query(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol
 }
 
 
-pub fn fetch_page(cameras:&Vec<String>, num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+pub fn fetch_page(cameras:&[String], num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
     match submit_query(&cameras, num_per_page, Some(page), minsol, maxsol) {
         Ok(v) => {
             let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
@@ -218,7 +215,7 @@ pub struct MslRemoteStats {
     pub per_page: i32
 }
 
-pub fn fetch_stats(cameras:&Vec<String>, minsol:i32, maxsol:i32) -> error::Result<MslRemoteStats> {
+pub fn fetch_stats(cameras:&[String], minsol:i32, maxsol:i32) -> error::Result<MslRemoteStats> {
     match submit_query(&cameras, 0, Some(0), minsol, maxsol) {
         Ok(v) => {
             let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
@@ -233,7 +230,7 @@ pub fn fetch_stats(cameras:&Vec<String>, minsol:i32, maxsol:i32) -> error::Resul
     }
 }
 
-pub fn fetch_all(cameras:&Vec<String>, num_per_page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+pub fn fetch_all(cameras:&[String], num_per_page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
 
     let stats = match fetch_stats(&cameras, minsol, maxsol) {
         Ok(s) => s,
@@ -246,7 +243,7 @@ pub fn fetch_all(cameras:&Vec<String>, num_per_page:i32, minsol:i32, maxsol:i32,
     for page in 0..pages {
         match fetch_page(&cameras, num_per_page, page, minsol, maxsol, thumbnails, list_only, search, only_new) {
             Ok(c) => {
-                count = count + c;
+                count += c;
             },
             Err(e) => return Err(e)
         };
@@ -256,7 +253,7 @@ pub fn fetch_all(cameras:&Vec<String>, num_per_page:i32, minsol:i32, maxsol:i32,
 }
 
 
-pub fn remote_fetch(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
+pub fn remote_fetch(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool) -> error::Result<i32> {
     match page {
         Some(p) => {
             fetch_page(&cameras, num_per_page, p, minsol, maxsol, thumbnails, list_only, search, only_new)

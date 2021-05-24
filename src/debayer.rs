@@ -53,8 +53,8 @@ pub const Rb_BB_Br_RR : [f32; 25] = [
 
 fn extract_window(buffer:&ImageBuffer, x:usize, y:usize, data_5x5_window:&mut [f32; 25], mask_5x5_window : &mut [bool; 25]) {
 
-    for ny in -2..3 as i32 {
-        for nx in -2..3 as i32 {
+    for ny in -2..3_i32 {
+        for nx in -2..3_i32 {
             let bx = x as i32 + nx;
             let by = y as i32 + ny;
             
@@ -71,10 +71,10 @@ fn extract_window(buffer:&ImageBuffer, x:usize, y:usize, data_5x5_window:&mut [f
 fn solve(data_5x5_window:&[f32; 25], mask_5x5_window:&[bool; 25], coefficients:&[f32; 25]) -> f32 {
     let mut v = 0.0;
     let mut s = 0.0;
-    for i in 0..25 as usize {
+    for i in 0..25_usize {
         if mask_5x5_window[i] {
-            v = v + data_5x5_window[i] * coefficients[i];
-            s = s + coefficients[i];
+            v += data_5x5_window[i] * coefficients[i];
+            s += coefficients[i];
         }
     }
     v * (1.0/s)

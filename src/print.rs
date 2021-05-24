@@ -10,7 +10,7 @@ pub fn set_verbose(v:bool) {
 
 pub fn is_verbose() -> bool {
     unsafe {
-        return IS_VERBOSE;
+        IS_VERBOSE
     }
 }
 

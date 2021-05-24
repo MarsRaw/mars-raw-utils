@@ -20,10 +20,7 @@ use serde::{
 
 pub fn string_is_valid_num<T:FromStr>(s:&str) -> bool {
     let num = s.parse::<T>();
-    match num {
-        Ok(_) => true,
-        Err(_) => false
-    }
+    num.is_ok()
 }
 
 pub fn string_is_valid_f64(s:&str) -> bool {
@@ -57,7 +54,7 @@ pub struct InstrumentMap {
 
 impl InstrumentMap {
     pub fn is_name_a_remote_instrument(&self, instrument:&str) -> bool {
-        for (_key, rem_inst_list) in &self.map {
+        for rem_inst_list in self.map.values() {
             for s in rem_inst_list.iter() {
                 if &instrument == s {
                     return true;
@@ -80,14 +77,14 @@ impl InstrumentMap {
             
         }
     
-        if inst_list.len() > 0 {
-            return Ok(inst_list);
+        if !inst_list.is_empty() {
+            Ok(inst_list)
         } else {
-            return Err(constants::status::UNSUPPORTED_INSTRUMENT);
+            Err(constants::status::UNSUPPORTED_INSTRUMENT)
         }
     }
 
-    pub fn find_remote_instrument_names_fromlist(&self, instrument_inputs:&Vec<&str>) -> error::Result<Vec<String>> {
+    pub fn find_remote_instrument_names_fromlist(&self, instrument_inputs:&[&str]) -> error::Result<Vec<String>> {
         let mut inst_list : Vec<String> = Vec::new();
     
         for c in instrument_inputs.iter() {
@@ -99,10 +96,10 @@ impl InstrumentMap {
             inst_list.extend(res);
         }
     
-        if inst_list.len() > 0 {
-            return Ok(inst_list);
+        if !inst_list.is_empty() {
+            Ok(inst_list)
         } else {
-            return Err(constants::status::UNSUPPORTED_INSTRUMENT);
+            Err(constants::status::UNSUPPORTED_INSTRUMENT)
         }
     }
 
@@ -163,9 +160,9 @@ pub fn fetch_image(image_url:&str, only_new:bool) -> error::Result<&'static str>
     };
 
     match file.write_all(&image_data[..]) {
-        Ok(_) => return ok!(),
-        Err(_e) => return Err("Error writing image to filesystem")
-    };
+        Ok(_) => ok!(),
+        Err(_e) => Err("Error writing image to filesystem")
+    }
 }
 
 pub fn save_image_json<T:Serialize>(image_url:&str, item:&T, only_new:bool) -> error::Result<&'static str> {
@@ -192,7 +189,7 @@ pub fn save_image_json_from_string(image_url:&str, item:&String, only_new:bool) 
     };
 
     match file.write_all(item.as_bytes()) {
-        Ok(_) => return ok!(),
-        Err(_e) => return Err("Error writing metadata to filesystem")
-    };
+        Ok(_) => ok!(),
+        Err(_e) => Err("Error writing metadata to filesystem")
+    }
 }
