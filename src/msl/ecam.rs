@@ -4,7 +4,8 @@ use crate::{
     enums, 
     path,
     util,
-    inpaint
+    inpaint,
+    constants
 };
 
 
@@ -18,7 +19,7 @@ use crate::{
 // Also leaving in the ILT parameter until I iron out the cases in which it's needed
 // for ECAM. 
 pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, _no_ilt:bool, hpc_threshold:f32, only_new:bool) {
-    let out_file = input_file.replace(".jpg", "-rjcal.png").replace(".JPG", "-rjcal.png");
+    let out_file = util::append_file_name(input_file, constants::OUTPUT_FILENAME_APPEND);
     if path::file_exists(&out_file) && only_new {
         vprintln!("Output file exists, skipping. ({})", out_file);
         return;

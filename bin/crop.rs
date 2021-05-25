@@ -4,7 +4,8 @@ use mars_raw_utils::{
     vprintln, 
     rgbimage, 
     enums, 
-    path
+    path,
+    util
 };
 
 #[macro_use]
@@ -37,12 +38,7 @@ fn process_file(input_file:&str, x:usize, y:usize, width:usize, height:usize) {
         process::exit(2);
     }
 
-    let out_file = input_file.replace(".jpg", "-crop.png")
-                            .replace(".JPG", "-crop.png")
-                            .replace(".png", "-crop.png")
-                            .replace(".PNG", "-crop.png")
-                            .replace(".tif", "-crop.png")
-                            .replace(".TIF", "-crop.png");
+    let out_file = util::append_file_name(input_file, "crop");
 
 
     vprintln!("Cropping with x={}, y={}, width={}, height={}", x, y, width, height);

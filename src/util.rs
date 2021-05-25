@@ -193,3 +193,16 @@ pub fn save_image_json_from_string(image_url:&str, item:&String, only_new:bool) 
         Err(_e) => Err("Error writing metadata to filesystem")
     }
 }
+
+
+pub fn append_file_name(input_file:&str, append:&str) -> String {
+
+    let append_with_ext = format!("-{}.png", append);
+    let out_file = input_file.replace(".png", append_with_ext.as_str())
+                             .replace(".PNG", append_with_ext.as_str())
+                             .replace(".jpg", append_with_ext.as_str())
+                             .replace(".JPG", append_with_ext.as_str())
+                             .replace(".tif", append_with_ext.as_str())
+                             .replace(".TIF", append_with_ext.as_str());
+    String::from(out_file)
+}

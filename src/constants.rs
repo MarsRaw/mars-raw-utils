@@ -3,6 +3,8 @@ pub const DEFAULT_RED_WEIGHT : f32 = 1.0;
 pub const DEFAULT_GREEN_WEIGHT : f32 = 1.0;
 pub const DEFAULT_BLUE_WEIGHT : f32 = 1.0;
 
+pub const OUTPUT_FILENAME_APPEND : &str = "rjcal";
+
 pub mod url {
     pub const MSL_RAW_WEBSERVICE_URL : &str = "https://mars.nasa.gov/api/v1/raw_image_items/";
     pub const M20_RAW_WEBSERVICE_URL : &str = "https://mars.nasa.gov/rss/api/";

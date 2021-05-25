@@ -32,12 +32,7 @@ fn process_file(input_file:&str, hpc_threshold:f32, hpc_window_size:i32) {
 
     vprintln!("Writing to disk...");
 
-    let out_file = input_file.replace(".jpg", "-hpc.png")
-                            .replace(".JPG", "-hpc.png")
-                            .replace(".png", "-hpc.png")
-                            .replace(".PNG", "-hpc.png")
-                            .replace(".tif", "-hpc.png")
-                            .replace(".TIF", "-hpc.png");
+    let out_file = util::append_file_name(input_file, "hpc");
     raw.save(&out_file).unwrap();
 }
 

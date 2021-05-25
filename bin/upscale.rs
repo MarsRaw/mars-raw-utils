@@ -50,12 +50,7 @@ fn process_file(input_file:&str, scale_factor:usize) {
         }
     };
 
-    let out_file = input_file.replace(".jpg", "-inpaint.png")
-                                                .replace(".JPG", "-inpaint.png")
-                                                .replace(".png", "-inpaint.png")
-                                                .replace(".PNG", "-inpaint.png")
-                                                .replace(".tif", "-inpaint.png")
-                                                .replace(".TIF", "-inpaint.png");
+    let out_file = util::append_file_name(input_file, "upscale");
 
     vprintln!("Saving output to {}", out_file);
     match filled.save(&out_file) {

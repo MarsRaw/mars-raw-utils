@@ -4,13 +4,14 @@ use crate::{
     enums, 
     path, 
     imagebuffer,
-    calibfile
+    calibfile,
+    util,
+    constants
 };
 
 
 pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, _no_ilt:bool, only_new:bool) {
-    let out_file = input_file.replace(".jpg", "-rjcal.png").replace(".JPG", "-rjcal.png")
-                             .replace(".png", "-rjcal.png").replace(".PNG", "-rjcal.png");
+    let out_file = util::append_file_name(input_file, constants::OUTPUT_FILENAME_APPEND);
     if path::file_exists(&out_file) && only_new {
         vprintln!("Output file exists, skipping. ({})", out_file);
         return;

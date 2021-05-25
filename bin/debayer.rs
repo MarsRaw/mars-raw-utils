@@ -18,12 +18,7 @@ use std::process;
 fn process_file(input_file:&str, color_noise_reduction:i32) {
     let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::None).unwrap();
 
-    let out_file = input_file.replace(".jpg", "-debayer.png")
-                            .replace(".JPG", "-debayer.png")
-                            .replace(".png", "-debayer.png")
-                            .replace(".PNG", "-debayer.png")
-                            .replace(".tif", "-debayer.png")
-                            .replace(".TIF", "-debayer.png");
+    let out_file = util::append_file_name(input_file, "debayer");
 
     if !raw.is_grayscale() {
         vprintln!("WARNING: Image doesn't appear to be grayscale as would be expected.");
