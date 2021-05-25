@@ -109,10 +109,10 @@ pub fn print_header() {
 
 
 fn print_image(image:&Image) {
-    println!("{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7} {:10}", 
+    println!("{:54} {:25} {:<6} {:27} {:27} {:6} {:6} {:7} {:10}", 
                     image.imageid, 
                     image.camera.instrument,
-                    format!("{:6}", image.sol),
+                    format!("{:<6}", image.sol),
                     image.date_taken_utc,//[..16],
                     image.date_taken_mars,
                     format!("{:6}", image.site),

@@ -109,10 +109,10 @@ fn null_to_str<T:std::fmt::Display>(o:&Option<T>) -> String {
 }
 
 fn print_image(image:&Image) {
-    println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
+    println!("{:37} {:15} {:<6} {:20} {:27} {:6} {:6} {:7} {:10}", 
                     image.imageid, 
                     image.instrument,
-                    format!("{:6}", image.sol), // This is such a hack...
+                    format!("{:<6}", image.sol), // This is such a hack...
                     &image.date_taken[..16],
                     null_to_str(&image.extended.lmst),
                     format!("{:6}", null_to_str(&image.site)),

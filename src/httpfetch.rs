@@ -47,17 +47,27 @@ impl HttpFetcher {
 
     pub fn fetch_text(&self) -> error::Result<std::string::String> {
         let res = self.fetch();
-        match res {
-            Err(_e) => Err(constants::status::REMOTE_SERVER_ERROR),
-            Ok(v) => Ok(v.text().unwrap())
+        if let Ok(v) = res {
+            if let Ok(t) = v.text() {
+                Ok(t)
+            } else {
+                Err(constants::status::REMOTE_SERVER_ERROR)
+            }
+        } else {
+            Err(constants::status::REMOTE_SERVER_ERROR)
         }
     }
 
     pub fn fetch_bin(&self) -> error::Result<Vec<u8>> {
         let res = self.fetch();
-        match res {
-            Err(_e) => Err(constants::status::REMOTE_SERVER_ERROR),
-            Ok(v) => Ok(v.bytes().unwrap()[0..].to_vec()) // Kinda hacky...
+        if let Ok(v) = res {
+            if let Ok(b) = v.bytes() {
+                Ok(b.to_vec())
+            } else {
+                Err(constants::status::REMOTE_SERVER_ERROR)
+            }
+        } else {
+            Err(constants::status::REMOTE_SERVER_ERROR)
         }
     }
 }
