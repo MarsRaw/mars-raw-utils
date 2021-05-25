@@ -40,6 +40,7 @@ assets = [
     ["target/release/m20_date", "usr/bin/", "755"],
     ["target/release/nsyt_date", "usr/bin/", "755"],
     ["target/release/crop", "usr/bin/", "755"],
+    ["target/release/debayer", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
     ["mars-raw-utils-data/caldata/*jpg", "usr/share/mars_raw_utils/data/", "644"],
@@ -133,6 +134,9 @@ path = "bin/nsyt_date.rs"
 name = "crop"
 path = "bin/crop.rs"
 
+[[bin]]
+name = "debayer"
+path = "bin/debayer.rs"
 
 [features]
 
@@ -177,6 +181,7 @@ upscale = { path = "/usr/bin/upscale" }
 msl_date = { path = "/usr/bin/msl_date" }
 m20_date = { path = "/usr/bin/m20_date" }
 nsyt_date = { path = "/usr/bin/nsyt_date" }
+debayer = { path = "/usr/bin/debayer" }
 crop = { path = "/usr/bin/crop" }
 
 [package.metadata.rpm.files]

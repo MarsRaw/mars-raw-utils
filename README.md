@@ -446,6 +446,22 @@ OPTIONS:
     -i, --inputs <INPUT>...     Input
 ```
 
+## Debayer
+Apply Malvar Demosaicking (Debayer) on a grayscale bayer-pattern image. Optionally apply a color noise reduction.
+```
+USAGE:
+    debayer [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -c, --color_noise_reduction <COLOR_NOISE_REDUCTION>    Color noise reduction amount in pixels
+    -i, --inputs <INPUT>...                                Input
+```
+
 ## Mission Dates
 Mission time and sol are available for MSL, Mars2020, and InSight via `msl_date`, `m20_date`, and `nsyt_date`, respectively. 
 
