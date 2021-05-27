@@ -3,7 +3,8 @@ use crate::{
     jsonfetch, 
     error,
     util::*,
-    cahvor::Cahvor
+    cahvor::Cahvor,
+    metadata::ImageMetadata
 };
 
 use serde::{
@@ -42,6 +43,9 @@ pub struct ImageFiles {
     pub full_res: String,
     pub large: String
 }
+
+
+
 
 #[derive(Serialize, Deserialize)]
 pub struct Camera {
@@ -92,6 +96,49 @@ pub struct M20ApiResults {
     pub mission: String,
     pub total_images: u32
 }
+
+
+impl ImageMetadata for Image {
+    fn get_link(&self) -> String {
+        self.image_files.full_res.clone()
+    }
+
+    fn get_credit(&self) -> String {
+        self.credit.clone()
+    }
+
+    fn get_sol(&self) -> u32 {
+        self.sol
+    }
+
+    fn get_imageid(&self) -> String {
+        self.imageid.clone()
+    }
+
+    fn get_caption(&self) -> String {
+        self.caption.clone()
+    }
+
+    fn get_date_taken_utc(&self) -> String {
+        self.date_taken_utc.clone()
+    }
+
+    fn get_date_taken_mars(&self) -> Option<String> {
+        Some(self.date_taken_mars.clone())
+    }
+
+    fn get_subframe_rect(&self) -> Option<Vec<f64>> {
+        match self.extended.subframe_rect.as_ref() {
+            Some(v) => Some(v.clone()),
+            None => None
+        }
+    }
+
+    fn get_scale_factor(&self) -> u32 {
+        self.extended.scale_factor.parse::<u32>().unwrap()
+    }
+}
+
 
 pub fn print_header() {
     println!("{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7} {:10}", 
