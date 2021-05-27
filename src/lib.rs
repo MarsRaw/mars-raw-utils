@@ -26,3 +26,4 @@ pub mod jsonfetch;
 pub mod time;
 pub mod cahvor;
 pub mod vector;
+pub mod metadata;

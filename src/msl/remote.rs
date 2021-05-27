@@ -5,7 +5,8 @@ use crate::{
     jsonfetch, 
     error,
     util::*,
-    cahvor::Cahvor
+    cahvor::Cahvor,
+    metadata::ImageMetadata
 };
 
 use serde::{
@@ -81,6 +82,55 @@ pub struct MslApiResults {
     pub per_page: u32
 }
 
+
+impl ImageMetadata for Image {
+    fn get_link(&self) -> String {
+        self.url.clone()
+    }
+
+    fn get_credit(&self) -> String {
+        self.image_credit.clone()
+    }
+
+    fn get_sol(&self) -> u32 {
+        self.sol
+    }
+
+    fn get_imageid(&self) -> String {
+        self.imageid.clone()
+    }
+
+    fn get_caption(&self) -> String {
+        self.description.clone()
+    }
+
+    fn get_date_taken_utc(&self) -> String {
+        self.date_taken.clone()
+    }
+
+    fn get_date_taken_mars(&self) -> Option<String> {
+        self.extended.lmst.clone()
+    }
+
+    fn get_subframe_rect(&self) -> Option<Vec<f64>> {
+        match self.subframe_rect.as_ref() {
+            Some(v) => Some(v.clone()),
+            None => None
+        }
+    }
+
+    // Sigh, MastCam....
+    // fn get_dimension(&self) -> Option<&[f64]> {
+    //     self.extended.dimension
+    // }
+
+    fn get_scale_factor(&self) -> u32 {
+        match self.scale_factor {
+            Some(v) => v,
+            None => 1
+        }
+    }
+}
 
 pub fn print_header() {
     println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 
