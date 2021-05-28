@@ -4,7 +4,7 @@ use crate::{
     vprintln,
     path,
     cahvor::Cahvor,
-    metadata::ImageMetadata
+    metadata::*
 };
 
 use std::fs::File;
@@ -18,7 +18,7 @@ use serde::{
 
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Extended {
     pub lmst: Option<String>,
     pub bucket: String,
@@ -30,7 +30,7 @@ pub struct Extended {
     pub sample_type: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Image {
     pub extended: Extended,
     pub id: u32,
@@ -135,7 +135,7 @@ impl ImageMetadata for Image {
     }
 }
 
-pub fn load_metadata_file(file_path:String) -> error::Result<Image> {
+pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {
 
     vprintln!("Loading metadata file from {}", file_path);
 
@@ -154,5 +154,5 @@ pub fn load_metadata_file(file_path:String) -> error::Result<Image> {
 
     let res: Image = serde_json::from_str(&s.as_str()).unwrap();
 
-    Ok(res)
+    Ok(convert_to_std_metadata(&res))
 }

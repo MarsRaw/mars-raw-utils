@@ -23,14 +23,14 @@ pub fn print_header() {
 
 
 fn print_image(image:&Image) {
-    println!("{:54} {:25} {:<6} {:27} {:27} {:6} {:6} {:7} {:10}", 
+    println!("{:54} {:25} {:>6} {:27} {:27} {:>6} {:>6} {:7} {:10}", 
                     image.imageid, 
                     image.camera.instrument,
-                    format!("{:<6}", image.sol),
+                    format!("{:>6}", image.sol),
                     image.date_taken_utc,//[..16],
                     image.date_taken_mars,
-                    format!("{:6}", image.site),
-                    format!("{:6}", image.drive),
+                    format!("{:>6}", image.site),
+                    format!("{:>6}", image.drive),
                     if image.sample_type == "Thumbnail" { constants::status::YES } else { constants::status::NO },
                     if image_exists_on_filesystem(&image.image_files.full_res) { constants::status::YES } else { constants::status::NO }
                 );
@@ -80,7 +80,9 @@ pub fn make_instrument_map() -> InstrumentMap {
         ("NAVCAM", vec!["NAVCAM_LEFT", "NAVCAM_RIGHT"]),
         ("MASTCAM", vec!["MCZ_LEFT","MCZ_RIGHT"]),
         ("EDLCAM", vec!["EDL_DDCAM", "EDL_PUCAM1", "EDL_PUCAM2", "EDL_RUCAM", "EDL_RDCAM", "LCAM"]),
-        ("WATSON", vec!["SHERLOC_WATSON"])
+        ("WATSON", vec!["SHERLOC_WATSON"]),
+        ("HELI_NAV", vec!["HELI_NAV"]),
+        ("HELI_RTE", vec!["HELI_RTE"])
     ].iter().cloned().collect()}
 }
 
@@ -92,8 +94,9 @@ fn submit_query(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i3
 
     let mut params = vec![
         stringvec("feed", "raw_images"),
-        stringvec("category", "mars2020"),
+        stringvec("category", "mars2020,ingenuity"),
         stringvec("feedtype", "json"),
+        stringvec("ver", "1.2"),
         stringvec_b("num", format!("{}", num_per_page)),
         stringvec("order", "sol desc"),
         stringvec_b("search", joined_cameras),

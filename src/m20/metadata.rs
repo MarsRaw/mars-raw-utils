@@ -4,7 +4,7 @@ use crate::{
     vprintln,
     path,
     cahvor::Cahvor,
-    metadata::ImageMetadata
+    metadata::*
 };
 
 use std::fs::File;
@@ -16,7 +16,7 @@ use serde::{
     Serialize
 };
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Extended {
 
     #[serde(alias = "mastAz")]
@@ -40,7 +40,7 @@ pub struct Extended {
     pub dimension: Option<Vec<f64>>
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ImageFiles {
     pub medium: String,
     pub small: String, 
@@ -51,7 +51,7 @@ pub struct ImageFiles {
 
 
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Camera {
     pub filter_name: String,
 
@@ -67,7 +67,7 @@ pub struct Camera {
     pub camera_model_type: String
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Image {
     pub extended: Extended,
     pub sol: u32,
@@ -143,7 +143,7 @@ impl ImageMetadata for Image {
     }
 }
 
-pub fn load_metadata_file(file_path:String) -> error::Result<Image> {
+pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {
 
     vprintln!("Loading metadata file from {}", file_path);
 
@@ -162,5 +162,5 @@ pub fn load_metadata_file(file_path:String) -> error::Result<Image> {
 
     let res: Image = serde_json::from_str(&s.as_str()).unwrap();
 
-    Ok(res)
+    Ok(convert_to_std_metadata(&res))
 }

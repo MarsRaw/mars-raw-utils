@@ -25,7 +25,7 @@ pub struct Point {
     pub j: f64
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Cahvor {
     
     
