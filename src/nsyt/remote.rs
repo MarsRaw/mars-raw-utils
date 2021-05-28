@@ -3,79 +3,9 @@ use crate::{
     jsonfetch, 
     error,
     util::*,
-    cahvor::Cahvor
+    nsyt::metadata::*
 };
 
-use serde::{
-    Deserialize, 
-    Serialize
-};
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Extended {
-    pub localtime: String
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Image {
-    pub id: u32,
-    
-    #[serde(with = "crate::jsonfetch::tuple_format")]
-    pub camera_vector: Option<Vec<f64>>,
-
-    pub site: Option<u32>,
-    pub imageid: String,
-
-    #[serde(with = "crate::jsonfetch::tuple_format")]
-    pub subframe_rect: Option<Vec<f64>>,
-
-    pub sol: u32,
-    pub scale_factor: u32,
-
-    #[serde(with = "crate::jsonfetch::cahvor_format")]
-    pub camera_model_component_list: Option<Cahvor>,
-
-    pub instrument: String,
-    pub url: String,
-    pub spacecraft_clock: f64,
-
-    #[serde(with = "crate::jsonfetch::tuple_format")]
-    pub attitude: Option<Vec<f64>>,
-
-    #[serde(with = "crate::jsonfetch::tuple_format")]
-    pub camera_position: Option<Vec<f64>>,
-
-    pub camera_model_type: Option<String>,
-
-    pub drive: Option<u32>,
-
-    #[serde(with = "crate::jsonfetch::tuple_format")]
-    pub xyz: Option<Vec<f64>>,
-
-    pub created_at: String,
-    pub updated_at: String,
-    pub mission: String,
-    pub extended: Extended,
-    pub date_taken: String,
-    pub date_received: String,
-    pub instrument_sort: u32,
-    pub sample_type_sort: u32,
-    pub is_thumbnail: bool,
-    pub title: String,
-    pub description: String,
-    pub link: String,
-    pub image_credit: String,
-    pub https_url: String
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct NsytApiResults {
-    pub items: Vec<Image>,
-    pub more: bool,
-    pub total: u32,
-    pub page: u32,
-    pub per_page: u32
-}
 
 pub fn print_header() {
     println!("{:37} {:15} {:6} {:20} {:27} {:7} {:10}", 

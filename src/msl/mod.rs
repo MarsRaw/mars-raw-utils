@@ -5,3 +5,4 @@ pub mod remote;
 pub mod lmst;
 pub mod ccam;
 pub mod mardi;
+pub mod metadata;
