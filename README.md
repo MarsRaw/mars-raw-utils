@@ -19,6 +19,8 @@ Implemented calibration steps include (varying per instrument):
 | Mars2020   | Front Haz   |           | &#9745; |              |        |        |
 | Mars2020   | Watson      |           |         | &#9745;      |        |        |
 | Mars2020   | SuperCam    |           | &#9745; |              | &#9745;|        |
+| Ingenuity  | Nav         |           |         |              | &#9745;|        |
+| Ingenuity  | Color       |           |         |              | &#9745;|        |
 | InSight    | IDC         | &#9745;   |         |              | &#9745;|        |
 | InSight    | ICC         | &#9745;   |         |              | &#9745;|        |
 
@@ -333,6 +335,36 @@ OPTIONS:
     -G, --green <GREEN>        Green weight
     -i, --inputs <INPUT>...    Input
     -R, --red <RED>            Red weight
+```
+
+### Ingenuity Nav Camera:
+```
+USAGE:
+    m20_hnav_calibrate [FLAGS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --inputs <INPUT>...    Input
+```
+
+### Ingenuity Color Camera (RTE):
+```
+USAGE:
+    m20_hrte_calibrate [FLAGS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --inputs <INPUT>...    Input
 ```
 
 ## InSight
