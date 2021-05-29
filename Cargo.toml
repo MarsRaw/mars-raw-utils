@@ -42,6 +42,7 @@ assets = [
     ["target/release/nsyt_date", "usr/bin/", "755"],
     ["target/release/crop", "usr/bin/", "755"],
     ["target/release/debayer", "usr/bin/", "755"],
+    ["target/release/gen_mean_stack", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
     ["mars-raw-utils-data/caldata/*jpg", "usr/share/mars_raw_utils/data/", "644"],
@@ -143,6 +144,10 @@ path = "bin/crop.rs"
 name = "debayer"
 path = "bin/debayer.rs"
 
+[[bin]]
+name = "gen_mean_stack"
+path = "bin/gen_mean_stack.rs"
+
 [features]
 
 [dependencies]
@@ -189,6 +194,7 @@ m20_date = { path = "/usr/bin/m20_date" }
 nsyt_date = { path = "/usr/bin/nsyt_date" }
 debayer = { path = "/usr/bin/debayer" }
 crop = { path = "/usr/bin/crop" }
+gen_mean_stack = { path = "/usr/bin/gen_mean_stack" }
 
 [package.metadata.rpm.files]
 "M20_MCZ_LEFT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png", mode = "644"}

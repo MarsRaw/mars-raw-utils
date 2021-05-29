@@ -72,9 +72,14 @@ impl ImageBuffer {
 
     // Creates a new image buffer of the requested width and height
     pub fn new(width:usize, height:usize) -> error::Result<ImageBuffer> {
+        ImageBuffer::new_with_fill(width, height, 0.0)
+    }
+
+    // Creates a new image buffer of the requested width and height
+    pub fn new_with_fill(width:usize, height:usize, fill_value:f32) -> error::Result<ImageBuffer> {
 
         let mut v:Vec<f32> = Vec::with_capacity(width * height);
-        v.resize(width * height, 0.0);
+        v.resize(width * height, fill_value);
 
         Ok(ImageBuffer{buffer:v,
             width,

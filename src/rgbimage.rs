@@ -30,7 +30,8 @@ pub struct RgbImage {
     pub width: usize,
     pub height: usize,
     instrument: enums::Instrument,
-    mode: enums::ImageMode
+    mode: enums::ImageMode,
+    empty: bool
 }
 
 #[allow(dead_code)]
@@ -47,7 +48,21 @@ impl RgbImage {
             width,
             height,
             instrument,
-            mode:enums::ImageMode::U8BIT
+            mode:enums::ImageMode::U8BIT,
+            empty:false
+        })
+    }
+
+    pub fn new_empty() -> error::Result<RgbImage> {
+        Ok(RgbImage{
+            _red:ImageBuffer::new_empty().unwrap(),
+            _green:ImageBuffer::new_empty().unwrap(),
+            _blue:ImageBuffer::new_empty().unwrap(),
+            width:0,
+            height:0,
+            instrument:enums::Instrument::None,
+            mode:enums::ImageMode::U8BIT,
+            empty:true
         })
     }
 
@@ -91,8 +106,13 @@ impl RgbImage {
             width:red.width,
             height:red.height,
             instrument,
-            mode
+            mode,
+            empty:false
         })
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.empty
     }
 
     pub fn set_instrument(&mut self, instrument:enums::Instrument) {
@@ -105,6 +125,42 @@ impl RgbImage {
 
     pub fn get_instrument(&self) -> enums::Instrument {
         self.instrument
+    }
+
+    pub fn divide_from_each(&mut self, other:&ImageBuffer) -> error::Result<&str> {
+        if self.width != other.width || self.height != other.height {
+            return Err(constants::status::ARRAY_SIZE_MISMATCH);
+        }
+
+        self._red = self._red.divide(&other).unwrap();
+        self._green = self._green.divide(&other).unwrap();
+        self._blue = self._blue.divide(&other).unwrap();
+
+        ok!()
+    }
+
+    pub fn add_to_each(&mut self, other:&ImageBuffer) -> error::Result<&str> {
+        if self.width != other.width || self.height != other.height {
+            return Err(constants::status::ARRAY_SIZE_MISMATCH);
+        }
+
+        self._red = self._red.add(&other).unwrap();
+        self._green = self._green.add(&other).unwrap();
+        self._blue = self._blue.add(&other).unwrap();
+
+        ok!()
+    }
+
+    pub fn add(&mut self, other:&RgbImage) -> error::Result<&str> {
+        if self.width != other.width || self.height != other.height {
+            return Err(constants::status::ARRAY_SIZE_MISMATCH);
+        }
+
+        self._red = self._red.add(&other._red).unwrap();
+        self._green = self._green.add(&other._green).unwrap();
+        self._blue = self._blue.add(&other._blue).unwrap();
+
+        ok!()
     }
 
     pub fn put(&mut self, x:usize, y:usize, r:f32, g:f32, b:f32) -> error::Result<&str>{
