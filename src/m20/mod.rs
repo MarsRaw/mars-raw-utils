@@ -6,3 +6,4 @@ pub mod remote;
 pub mod lmst;
 pub mod metadata;
 pub mod helinav;
+pub mod helirte;
