@@ -67,3 +67,11 @@ impl ImageMode {
         }
     }
 }
+
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum Axis {
+    XAxis,
+    YAxis,
+    ZAxis
+}

@@ -3,7 +3,8 @@ use crate::{
     stats::degrees,
     stats::radians,
     constants,
-    error
+    error,
+    enums::Axis
 };
 
 #[derive(Debug, Clone)]
@@ -13,12 +14,7 @@ pub struct Vector {
     pub z: f64
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum Axis {
-    XAxis,
-    YAxis,
-    ZAxis
-}
+
 
 impl Vector {
 
