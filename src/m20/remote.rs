@@ -92,9 +92,14 @@ pub fn make_instrument_map() -> InstrumentMap {
 fn submit_query(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, movie_only:bool) -> error::Result<String> {
     let joined_cameras = cameras.join("|");
 
+    let mut category = "mars2020";
+    if cameras.contains(&String::from("HELI_NAV")) || cameras.contains(&String::from("HELI_RTE")) {
+        category = "mars2020,ingenuity";
+    }
+
     let mut params = vec![
         stringvec("feed", "raw_images"),
-        stringvec("category", "mars2020,ingenuity"),
+        stringvec("category", category),
         stringvec("feedtype", "json"),
         stringvec("ver", "1.2"),
         stringvec_b("num", format!("{}", num_per_page)),
