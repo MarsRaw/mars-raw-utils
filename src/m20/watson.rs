@@ -29,6 +29,11 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
 
     //vprintln!("Flatfielding...");
     //raw.flatfield().unwrap();
+    
+    if input_file.find("ECM") != None && raw.is_grayscale() {
+        vprintln!("Image appears to be grayscale, applying debayering...");
+        raw.debayer().unwrap();
+    }
 
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
