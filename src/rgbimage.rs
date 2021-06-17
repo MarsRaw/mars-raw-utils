@@ -244,6 +244,20 @@ impl RgbImage {
             }
 
         }
+
+        if self.instrument == enums::Instrument::MslMastcamLeft {
+
+            if self.width == 1328 && self.height == 1184 { //9
+                flat.crop(160, 16, 1328, 1184).unwrap();
+            }  else if self.width == 1152 && self.height == 432 {
+                flat.crop(305, 385, 1152, 432).unwrap();
+            }
+
+            if self.mode == enums::ImageMode::U8BIT {
+                flat.normalize_to_12bit_with_max(255.0).unwrap();
+                flat.compand().unwrap();
+            }
+        }
         
 
         // Crop the flatfield image if it's larger than the input image. 
