@@ -83,6 +83,35 @@ pub fn decompand_buffer(buffer:&mut ImageBuffer, instrument:enums::Instrument) -
     ok!()
 }
 
+// This method backs out the ILT table and is inefficient. Use sparingly
+fn get_lut_value_from_ilt_value(ilt_value:u32, instrument:enums::Instrument) -> u32 {
+    let ilt = get_ilt_for_instrument(instrument);
 
+    if ilt_value == 0 {
+        return 0;
+    }
+
+    for i in 1..ilt.len() {
+        if ilt_value == ilt[i] || (ilt_value < ilt[i] && ilt_value > ilt[i - 1]) {
+            return i as u32;
+        } 
+    }
+
+    0
+}
+
+// This method backs out the ILT table and is inefficient. Use sparingly
+pub fn compand_buffer(buffer:&mut ImageBuffer, instrument:enums::Instrument) -> error::Result<&str> {
+
+    for x in 0..buffer.width {
+        for y in 0..buffer.height {
+            let ilt_value = buffer.get(x, y).unwrap();
+            let lut_value = get_lut_value_from_ilt_value(ilt_value as u32, instrument);
+            buffer.put(x, y, lut_value as f32).unwrap();
+        }
+    }
+
+    ok!()
+}
 
 

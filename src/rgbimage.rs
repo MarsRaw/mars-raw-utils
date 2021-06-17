@@ -222,11 +222,29 @@ impl RgbImage {
     pub fn flatfield(&mut self) -> error::Result<&str> {
 
         let mut flat = flatfield::load_flat(self.instrument).unwrap();
+
+        // These instrument-specific crops don't really belong in here.
         if self.instrument == enums::Instrument::MslMAHLI && flat.width == 1632 && flat.height == 1200 {
             flat.crop(32, 16, 1584, 1184).unwrap();
         } 
         
-        // This isn't the final fix...
+        if self.instrument == enums::Instrument::MslMastcamRight {
+
+            if self.width == 1328 && self.height == 1184 {
+                //x160, y16
+                flat.crop(160, 16, 1328, 1184).unwrap();
+            } else if self.width == 848 && self.height == 848 {
+                //x400, y192
+                flat.crop(400, 192, 848, 848).unwrap();
+            }
+
+            if self.mode == enums::ImageMode::U8BIT {
+                flat.normalize_to_12bit_with_max(255.0).unwrap();
+                flat.compand().unwrap();
+            }
+
+        }
+        
 
         // Crop the flatfield image if it's larger than the input image. 
         // Sizes need to match
@@ -243,6 +261,14 @@ impl RgbImage {
             vprintln!("No inpaint available for flatfield image on {:?}", self.instrument);
         }
         self.apply_flat(flat).unwrap();
+        ok!()
+    }
+
+    pub fn compand(&mut self) -> error::Result<&str> {
+        decompanding::compand_buffer(&mut self._red, self.instrument).unwrap();
+        decompanding::compand_buffer(&mut self._green, self.instrument).unwrap();
+        decompanding::compand_buffer(&mut self._blue, self.instrument).unwrap();
+        self.mode = enums::ImageMode::U8BIT;
         ok!()
     }
 

@@ -48,9 +48,11 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         raw.apply_inpaint_fix().unwrap();
     }
     
-
-    //vprintln!("Flatfielding...");
-    //raw.flatfield().unwrap();
+    if instrument == enums::Instrument::MslMastcamRight {
+        vprintln!("Flatfielding...");
+        raw.flatfield().unwrap();
+    }
+    
 
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
@@ -62,6 +64,10 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     
     vprintln!("Normalizing...");
     raw.normalize_to_16bit_with_max(data_max).unwrap();
+
+    vprintln!("Cropping...");
+    raw.crop(3, 3, raw.width - 6, raw.height - 6).unwrap();
+
 
     vprintln!("Writing to disk...");
     raw.save(&out_file).unwrap();
