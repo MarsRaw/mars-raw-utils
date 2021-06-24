@@ -159,10 +159,10 @@ pub mod cahvor_format {
 
                 Ok(Some(cahvor::Cahvor{
                     mode: if parts.len() == 4 { cahvor::Mode::Cahv } else { cahvor::Mode::Cahvor },
-                    c: Vector::from_vec(&parts[0]).unwrap(),
-                    a: Vector::from_vec(&parts[1]).unwrap(),
-                    h: Vector::from_vec(&parts[2]).unwrap(),
-                    v: Vector::from_vec(&parts[3]).unwrap(),
+                    c: if parts.len() >= 1 { Vector::from_vec(&parts[0]).unwrap() } else { Vector::default() },
+                    a: if parts.len() >= 2 { Vector::from_vec(&parts[1]).unwrap() } else { Vector::default() },
+                    h: if parts.len() >= 3 { Vector::from_vec(&parts[2]).unwrap() } else { Vector::default() },
+                    v: if parts.len() >= 4 { Vector::from_vec(&parts[3]).unwrap() } else { Vector::default() },
                     o: if parts.len() >= 5 { Vector::from_vec(&parts[4]).unwrap() } else { Vector::default() },
                     r: if parts.len() >= 6 { Vector::from_vec(&parts[5]).unwrap() } else { Vector::default() }
                 }))
