@@ -141,6 +141,10 @@ impl ImageMetadata for Image {
     fn get_scale_factor(&self) -> u32 {
         self.extended.scale_factor.parse::<u32>().unwrap()
     }
+
+    fn get_instrument(&self) -> String {
+        self.camera.instrument.clone()
+    }
 }
 
 pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {

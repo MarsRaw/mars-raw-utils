@@ -122,6 +122,9 @@ impl ImageMetadata for Image {
         }
     }
 
+    fn get_instrument(&self) -> String {
+        self.instrument.clone()
+    }
     // Sigh, MastCam....
     // fn get_dimension(&self) -> Option<&[f64]> {
     //     self.extended.dimension

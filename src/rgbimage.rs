@@ -12,7 +12,9 @@ use crate::{
     ok,
     debayer,
     noise,
-    hotpixel
+    hotpixel,
+    metadata::*,
+    util
 };
 
 use image::{
@@ -31,7 +33,8 @@ pub struct RgbImage {
     pub height: usize,
     instrument: enums::Instrument,
     mode: enums::ImageMode,
-    empty: bool
+    empty: bool,
+    metadata: Option<Metadata>
 }
 
 #[allow(dead_code)]
@@ -49,7 +52,8 @@ impl RgbImage {
             height,
             instrument,
             mode:enums::ImageMode::U8BIT,
-            empty:false
+            empty:false,
+            metadata:None
         })
     }
 
@@ -62,7 +66,8 @@ impl RgbImage {
             height:0,
             instrument:enums::Instrument::None,
             mode:enums::ImageMode::U8BIT,
-            empty:true
+            empty:true,
+            metadata:None
         })
     }
 
@@ -76,7 +81,7 @@ impl RgbImage {
         }
 
         vprintln!("Loading image from {}", file_path);
-        let image_data = open(file_path).unwrap().into_rgb8();
+        let image_data = open(&file_path).unwrap().into_rgb8();
         let dims = image_data.dimensions();
 
         let width = dims.0 as usize;
@@ -95,6 +100,16 @@ impl RgbImage {
             }
         }
 
+        let metadata_file = util::replace_image_extension(&file_path.as_str(), "-metadata.json");
+        vprintln!("Checking for metadata file at {}", metadata_file);
+        if path::file_exists(metadata_file.as_str()) {
+            vprintln!("Metadata file exists for loaded image: {}", metadata_file);
+            rgbimage.metadata = match load_image_metadata(&metadata_file) {
+                Err(why) => panic!("couldn't open {}", why),
+                Ok(md) => Some(md)
+            };
+        }
+
         Ok(rgbimage)
     }
 
@@ -107,7 +122,8 @@ impl RgbImage {
             height:red.height,
             instrument,
             mode,
-            empty:false
+            empty:false,
+            metadata:None
         })
     }
 

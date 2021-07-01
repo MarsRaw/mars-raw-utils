@@ -1,4 +1,16 @@
 
+use serde::{
+    Deserialize, 
+    Serialize
+};
+
+use crate::{
+    error
+};
+
+use std::fs::File;
+use std::io::Read;
+
 pub trait ImageMetadata {
     fn get_link(&self) -> String;
     fn get_credit(&self) -> String;
@@ -10,9 +22,10 @@ pub trait ImageMetadata {
     fn get_subframe_rect(&self) -> Option<Vec<f64>>;
     //fn get_dimension(&self) -> Option<&[f64]>;
     fn get_scale_factor(&self) -> u32;
+    fn get_instrument(&self) -> String;
 }
 
-
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Metadata  {
     link:String,
     credit:String,
@@ -22,7 +35,8 @@ pub struct Metadata  {
     date_taken_utc:String,
     date_taken_mars:Option<String>,
     subframe_rect:Option<Vec<f64>>,
-    scale_factor:u32
+    scale_factor:u32,
+    instrument:String
 }
 
 pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
@@ -35,7 +49,8 @@ pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
         date_taken_utc:im.get_date_taken_utc(),
         date_taken_mars:im.get_date_taken_mars(),
         subframe_rect:im.get_subframe_rect(),
-        scale_factor:im.get_scale_factor()
+        scale_factor:im.get_scale_factor(),
+        instrument:im.get_instrument()
     }
 }
 
@@ -79,4 +94,24 @@ impl Metadata {
         self.scale_factor
     }
 
+    pub fn get_instrument(&self) -> String {
+        self.instrument.clone()
+    }
+
+}
+
+
+pub fn load_image_metadata(json_path:&String) -> error::Result<Metadata> {
+    let mut file = match File::open(&json_path) {
+        Err(why) => panic!("couldn't open {}", why),
+        Ok(file) => file,
+    };
+
+    let mut buf : Vec<u8> = Vec::default();
+    file.read_to_end(&mut buf).unwrap();
+    let json = String::from_utf8(buf).unwrap();
+
+    let metadata = serde_json::from_str(&json).unwrap();
+
+    Ok(metadata)
 }

@@ -5,7 +5,8 @@ use crate::{
     jsonfetch, 
     error,
     util::*,
-    msl::metadata::*
+    msl::metadata::*,
+    metadata::convert_to_std_metadata
 };
 
 pub fn print_header() {
@@ -70,7 +71,7 @@ fn process_results(results:&MslApiResults, thumbnails:bool, list_only:bool, sear
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };
-            match save_image_json(&image.url, &image, only_new){
+            match save_image_json(&image.url, &convert_to_std_metadata(image), only_new){
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };

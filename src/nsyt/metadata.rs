@@ -123,6 +123,10 @@ impl ImageMetadata for Image {
     fn get_scale_factor(&self) -> u32 {
         self.scale_factor
     }
+
+    fn get_instrument(&self) -> String {
+        self.instrument.clone()
+    }
 }
 
 

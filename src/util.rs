@@ -196,13 +196,24 @@ pub fn save_image_json_from_string(image_url:&str, item:&String, only_new:bool) 
 
 
 pub fn append_file_name(input_file:&str, append:&str) -> String {
-
     let append_with_ext = format!("-{}.png", append);
-    let out_file = input_file.replace(".png", append_with_ext.as_str())
-                             .replace(".PNG", append_with_ext.as_str())
-                             .replace(".jpg", append_with_ext.as_str())
-                             .replace(".JPG", append_with_ext.as_str())
-                             .replace(".tif", append_with_ext.as_str())
-                             .replace(".TIF", append_with_ext.as_str());
+    replace_image_extension(input_file, append_with_ext.as_str())
+    // let append_with_ext = format!("-{}.png", append);
+    // let out_file = input_file.replace(".png", append_with_ext.as_str())
+    //                          .replace(".PNG", append_with_ext.as_str())
+    //                          .replace(".jpg", append_with_ext.as_str())
+    //                          .replace(".JPG", append_with_ext.as_str())
+    //                          .replace(".tif", append_with_ext.as_str())
+    //                          .replace(".TIF", append_with_ext.as_str());
+    // String::from(out_file)
+}
+
+pub fn replace_image_extension(input_file:&str, append:&str) -> String {
+    let out_file = input_file.replace(".png", append)
+                             .replace(".PNG", append)
+                             .replace(".jpg", append)
+                             .replace(".JPG", append)
+                             .replace(".tif", append)
+                             .replace(".TIF", append);
     String::from(out_file)
 }

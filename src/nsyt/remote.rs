@@ -3,7 +3,8 @@ use crate::{
     jsonfetch, 
     error,
     util::*,
-    nsyt::metadata::*
+    nsyt::metadata::*,
+    metadata::convert_to_std_metadata
 };
 
 
@@ -52,7 +53,7 @@ fn process_results(results:&NsytApiResults, thumbnails:bool, list_only:bool, sea
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };
-            match save_image_json(&image.url, &image, only_new){
+            match save_image_json(&image.url, &convert_to_std_metadata(image), only_new){
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };

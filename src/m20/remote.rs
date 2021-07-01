@@ -3,7 +3,8 @@ use crate::{
     jsonfetch, 
     error,
     util::*,
-    m20::metadata::*
+    m20::metadata::*,
+    metadata::convert_to_std_metadata
 };
 
 
@@ -60,7 +61,7 @@ fn process_results(results:&M20ApiResults, thumbnails:bool, list_only:bool, sear
                 Err(e) => return Err(e)
             };
 
-            match save_image_json(&image.image_files.full_res, &image, only_new){
+            match save_image_json(&image.image_files.full_res, &convert_to_std_metadata(image), only_new){
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };
