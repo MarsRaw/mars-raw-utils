@@ -131,6 +131,14 @@ impl RgbImage {
         self.empty
     }
 
+    pub fn get_metadata(&self) -> Option<Metadata> {
+        self.metadata.clone()
+    }
+
+    pub fn has_metadata(&self) -> bool {
+        self.metadata.is_some()
+    }
+
     pub fn set_instrument(&mut self, instrument:enums::Instrument) {
         self.instrument = instrument;
     }

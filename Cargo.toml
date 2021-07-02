@@ -25,6 +25,7 @@ assets = [
     ["target/release/msl_ecam_calibrate", "usr/bin/", "755"],
     ["target/release/msl_ccam_calibrate", "usr/bin/", "755"],
     ["target/release/msl_mardi_calibrate", "usr/bin/", "755"],
+    ["target/release/m20_ecam_assemble", "usr/bin/", "755"],
     ["target/release/m20_ecam_calibrate", "usr/bin/", "755"],
     ["target/release/m20_fetch_raw", "usr/bin/", "755"],
     ["target/release/m20_watson_calibrate", "usr/bin/", "755"],
@@ -110,6 +111,10 @@ name = "hpc_filter"
 path = "bin/hpc_filter.rs"
 
 [[bin]]
+name = "m20_ecam_assemble"
+path = "bin/m20_ecam_assemble.rs"
+
+[[bin]]
 name = "m20_ecam_calibrate"
 path = "bin/m20_ecam_calibrate.rs"
 
@@ -185,6 +190,7 @@ m20_watson_calibrate = { path = "/usr/bin/m20_watson_calibrate" }
 m20_zcam_calibrate = { path = "/usr/bin/m20_zcam_calibrate" }
 m20_hnav_calibrate = { path = "/usr/bin/m20_hnav_calibrate" }
 m20_hrte_calibrate = { path = "/usr/bin/m20_hrte_calibrate" }
+msl_ecam_assemble = { path = "/usr/bin/msl_ecam_assemble" }
 msl_ecam_calibrate = { path = "/usr/bin/msl_ecam_calibrate" }
 msl_fetch_raw = { path = "/usr/bin/msl_fetch_raw" }
 msl_mahli_calibrate = { path = "/usr/bin/msl_mahli_calibrate" }
