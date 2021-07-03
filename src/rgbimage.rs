@@ -240,6 +240,10 @@ impl RgbImage {
         self._green = RgbImage::apply_flat_on_channel(&self._green, &flat.green()).unwrap();
         self._blue = RgbImage::apply_flat_on_channel(&self._blue, &flat.blue()).unwrap();
 
+        if let Some(ref mut md) = self.metadata {
+            md.flatfield = true;
+        }
+
         ok!()
     }
 
@@ -307,6 +311,10 @@ impl RgbImage {
         decompanding::compand_buffer(&mut self._green, self.instrument).unwrap();
         decompanding::compand_buffer(&mut self._blue, self.instrument).unwrap();
         self.mode = enums::ImageMode::U8BIT;
+
+        if let Some(ref mut md) = self.metadata {
+            md.decompand = false;
+        }
         ok!()
     }
 
@@ -315,6 +323,10 @@ impl RgbImage {
         decompanding::decompand_buffer(&mut self._green, self.instrument).unwrap();
         decompanding::decompand_buffer(&mut self._blue, self.instrument).unwrap();
         self.mode = enums::ImageMode::U12BIT;
+
+        if let Some(ref mut md) = self.metadata {
+            md.decompand = true;
+        }
         ok!()
     }
 
@@ -324,6 +336,10 @@ impl RgbImage {
         self._red = debayered.red().clone();
         self._green = debayered.green().clone();
         self._blue = debayered.blue().clone();
+
+        if let Some(ref mut md) = self.metadata {
+            md.debayer = true;
+        }
 
         ok!()
     }
@@ -344,6 +360,9 @@ impl RgbImage {
         self._green = self._green.scale(g_scalar).unwrap();
         self._blue = self._blue.scale(b_scalar).unwrap();
 
+        if let Some(ref mut md) = self.metadata {
+            md.radiometric = true;
+        }
         ok!()
     }
 
@@ -361,6 +380,11 @@ impl RgbImage {
         self._blue = self._blue.get_subframe(x, y, width, height).unwrap();
         self.width = width;
         self.height = height;
+
+        if let Some(ref mut md) = self.metadata {
+            md.cropped = true;
+        }
+
         ok!()
     }
 
@@ -407,6 +431,10 @@ impl RgbImage {
         self._red = new_r;
         self._green = new_g;
         self._blue = new_b;
+
+        if let Some(ref mut md) = self.metadata {
+            md.inpaint = true;
+        }
 
         ok!()
     }

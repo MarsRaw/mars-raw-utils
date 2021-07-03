@@ -114,11 +114,11 @@ impl Cahvor {
         self.r.x + self.r.y * t + self.r.z * t.powi(2)
     }
 
-    pub fn corrected_point(&self, P:&Vector) -> Vector {
-        let mut l = self.lambda(&P);
-        let m = self.mu(&P);
+    pub fn corrected_point(&self, p:&Vector) -> Vector {
+        let mut l = self.lambda(&p);
+        let m = self.mu(&p);
         l.scale(m);
-        P.add(&l)
+        p.add(&l)
     }
 
     fn rotation_matrix(&self, _w:f64, _o:f64, _k:f64) -> Matrix {

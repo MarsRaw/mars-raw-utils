@@ -36,7 +36,29 @@ pub struct Metadata  {
     date_taken_mars:Option<String>,
     subframe_rect:Option<Vec<f64>>,
     scale_factor:u32,
-    instrument:String
+    instrument:String,
+
+    #[serde(default = "default_step_status")]
+    pub decompand:bool,
+
+    #[serde(default = "default_step_status")]
+    pub debayer:bool,
+
+    #[serde(default = "default_step_status")]
+    pub flatfield:bool,
+
+    #[serde(default = "default_step_status")]
+    pub radiometric:bool,
+
+    #[serde(default = "default_step_status")]
+    pub inpaint:bool,
+
+    #[serde(default = "default_step_status")]
+    pub cropped:bool
+}
+
+fn default_step_status() -> bool {
+    false
 }
 
 pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
@@ -50,7 +72,13 @@ pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
         date_taken_mars:im.get_date_taken_mars(),
         subframe_rect:im.get_subframe_rect(),
         scale_factor:im.get_scale_factor(),
-        instrument:im.get_instrument()
+        instrument:im.get_instrument(),
+        decompand:default_step_status(),
+        debayer:default_step_status(),
+        flatfield:default_step_status(),
+        radiometric:default_step_status(),
+        inpaint:default_step_status(),
+        cropped:default_step_status()
     }
 }
 
