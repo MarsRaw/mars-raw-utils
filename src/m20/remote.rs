@@ -4,7 +4,8 @@ use crate::{
     error,
     util::*,
     m20::metadata::*,
-    metadata::convert_to_std_metadata
+    metadata::convert_to_std_metadata,
+    path
 };
 
 
@@ -61,7 +62,8 @@ fn process_results(results:&M20ApiResults, thumbnails:bool, list_only:bool, sear
                 Err(e) => return Err(e)
             };
 
-            match save_image_json(&image.image_files.full_res, &convert_to_std_metadata(image), only_new){
+            let image_base_name = path::basename(image.image_files.full_res.as_str());
+            match save_image_json(&image_base_name, &convert_to_std_metadata(image), only_new){
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };

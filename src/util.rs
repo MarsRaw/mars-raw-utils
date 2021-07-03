@@ -170,18 +170,18 @@ pub fn save_image_json<T:Serialize>(image_url:&str, item:&T, only_new:bool) -> e
     save_image_json_from_string(&image_url, &item_str, only_new)
 }
 
-pub fn save_image_json_from_string(image_url:&str, item:&String, only_new:bool) -> error::Result<&'static str> {
-    let bn = path::basename(image_url);
-
-    let out_file = bn.replace(".jpg", "-metadata.json").replace(".JPG", "-metadata.json")
+pub fn save_image_json_from_string(image_path:&str, item:&String, only_new:bool) -> error::Result<&'static str> {
+    let out_file = image_path.replace(".jpg", "-metadata.json").replace(".JPG", "-metadata.json")
                              .replace(".png", "-metadata.json").replace(".PNG", "-metadata.json");
 
     if path::file_exists(out_file.as_str()) && only_new {
-        vprintln!("Output file {} exists, skipping", bn);
+        vprintln!("Output file {} exists, skipping", image_path);
         return ok!();
     }
 
     let path = Path::new(out_file.as_str());
+
+    vprintln!("Writing metadata file to {}", path.to_str().unwrap());
 
     let mut file = match File::create(&path) {
         Err(why) => panic!("couldn't create {}", why),

@@ -4,7 +4,8 @@ use crate::{
     error,
     util::*,
     nsyt::metadata::*,
-    metadata::convert_to_std_metadata
+    metadata::convert_to_std_metadata,
+    path
 };
 
 
@@ -53,7 +54,8 @@ fn process_results(results:&NsytApiResults, thumbnails:bool, list_only:bool, sea
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };
-            match save_image_json(&image.url, &convert_to_std_metadata(image), only_new){
+            let image_base_name = path::basename(image.url.as_str());
+            match save_image_json(&image_base_name, &convert_to_std_metadata(image), only_new){
                 Ok(_) => (),
                 Err(e) => return Err(e)
             };

@@ -503,6 +503,15 @@ impl RgbImage {
         vprintln!("Writing image buffer to file at {}", to_file);
         if path::parent_exists_and_writable(&to_file) {
             out_img.save(to_file).unwrap();
+
+            match &self.metadata {
+                Some(md) => {
+                    vprintln!("Writing metadata file...");
+                    util::save_image_json(to_file, &md, false).unwrap();
+                },
+                None => {}
+            };
+
             vprintln!("File saved.");
             ok!()
         } else {
@@ -527,6 +536,14 @@ impl RgbImage {
         vprintln!("Writing image buffer to file at {}", to_file);
         if path::parent_exists_and_writable(&to_file) {
             out_img.save(to_file).unwrap();
+
+            match &self.metadata {
+                Some(md) => {
+                    util::save_image_json(to_file, &md, false).unwrap();
+                },
+                None => {}
+            };
+
             vprintln!("File saved.");
             ok!()
         } else {
