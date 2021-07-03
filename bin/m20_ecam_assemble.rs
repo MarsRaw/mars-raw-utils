@@ -4,7 +4,9 @@ use mars_raw_utils::{
     vprintln, 
     path,
     util,
-    m20
+    m20,
+    enums,
+    rgbimage
 };
 
 #[macro_use]
@@ -44,7 +46,14 @@ fn main() {
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
-            
+            let instrument = enums::Instrument::M20NavcamRight;
+            let img = rgbimage::RgbImage::open(String::from(*in_file), instrument).unwrap();
+            if ! img.has_metadata() {
+                eprintln!("ERROR: Metadata file not found for {}", in_file);
+                eprintln!("Each image must have the associated metadata");
+            }
+
+            // Do more stuff...
         } else {
             eprintln!("File not found: {}", in_file);
         }
