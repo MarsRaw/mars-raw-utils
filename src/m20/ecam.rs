@@ -69,7 +69,7 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     // Trim off border pixels
     let crop_to_width = raw.width - 4;
     let crop_to_height = raw.height - 4;
-    raw.crop(2, 2, crop_to_width, crop_to_height).unwrap();
+    //raw.crop(2, 2, crop_to_width, crop_to_height).unwrap();
 
     vprintln!("Writing to disk...");
     raw.save(&out_file).unwrap();

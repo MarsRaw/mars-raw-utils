@@ -27,16 +27,16 @@ pub trait ImageMetadata {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Metadata  {
-    link:String,
-    credit:String,
-    sol:u32,
-    imageid:String,
-    caption:String,
-    date_taken_utc:String,
-    date_taken_mars:Option<String>,
-    subframe_rect:Option<Vec<f64>>,
-    scale_factor:u32,
-    instrument:String,
+    pub link:String,
+    pub credit:String,
+    pub sol:u32,
+    pub imageid:String,
+    pub caption:String,
+    pub date_taken_utc:String,
+    pub date_taken_mars:Option<String>,
+    pub subframe_rect:Option<Vec<f64>>,
+    pub scale_factor:u32,
+    pub instrument:String,
 
     #[serde(default = "default_step_status")]
     pub decompand:bool,

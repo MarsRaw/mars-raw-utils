@@ -503,6 +503,25 @@ impl ImageBuffer {
         ImageBuffer::from_vec_with_mask(cropped_buffer, width, height, &cropped_mask)
     }
 
+    pub fn paste(&self, src:&ImageBuffer, tl_x:usize, tl_y:usize) -> error::Result<ImageBuffer> {
+        let mut new_buffer = ImageBuffer::from_vec_with_mask(self.buffer.clone(), self.width, self.height, &self.mask).unwrap();
+        for y in 0..src.height {
+            for x in 0..src.width {
+
+                let dest_x = tl_x + x;
+                let dest_y = tl_y + y;
+
+                match new_buffer.put(dest_x, dest_y, src.get(x, y).unwrap()) {
+                    Ok(_) => {},
+                    Err(_) => {}
+                };
+
+            }
+        }
+        Ok(new_buffer)
+    }
+
+
     pub fn shift(&self, horiz:i32, vert:i32) -> error::Result<ImageBuffer> {
 
         let mut shifted_buffer = ImageBuffer::new_with_mask(self.width, self.height, &self.mask).unwrap();

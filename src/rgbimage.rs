@@ -127,6 +127,20 @@ impl RgbImage {
         })
     }
 
+    pub fn new_with_size(width:usize, height:usize, instrument:enums::Instrument, mode:enums::ImageMode) -> error::Result<RgbImage> {
+        Ok(RgbImage{
+            _red:ImageBuffer::new(width, height).unwrap(),
+            _green:ImageBuffer::new(width, height).unwrap(),
+            _blue:ImageBuffer::new(width, height).unwrap(),
+            width:width,
+            height:height,
+            instrument,
+            mode,
+            empty:false,
+            metadata:None
+        })
+    }
+
     pub fn is_empty(&self) -> bool {
         self.empty
     }
@@ -196,6 +210,15 @@ impl RgbImage {
         } else {
             Err(constants::status::INVALID_PIXEL_COORDINATES)
         }
+    }
+
+    pub fn paste(&mut self, src:&RgbImage, tl_x:usize, tl_y:usize) -> error::Result<&str> {
+
+        self._red = self._red.paste(&src._red, tl_x, tl_y).unwrap();
+        self._green = self._green.paste(&src._green, tl_x, tl_y).unwrap();
+        self._blue = self._blue.paste(&src._blue, tl_x, tl_y).unwrap();
+
+        ok!()
     }
 
     pub fn apply_mask(&mut self, mask:&ImageBuffer) {
