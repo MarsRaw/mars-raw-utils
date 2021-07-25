@@ -49,7 +49,7 @@ pub struct Image {
     pub camera_model_component_list: Option<Cahvor>,
     pub instrument: String,
     pub url: String,
-    pub spacecraft_clock: Option<f32>,
+    pub spacecraft_clock: Option<f64>,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub attitude: Option<Vec<f64>>,
@@ -186,6 +186,10 @@ impl ImageMetadata for Image {
         } else {
             None
         }
+    }
+
+    fn get_sclk(&self) -> Option<f64> {
+        self.spacecraft_clock.clone()
     }
 }
 

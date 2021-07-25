@@ -190,6 +190,13 @@ impl ImageMetadata for Image {
             Err(_) => None
         }
     }
+
+    fn get_sclk(&self) -> Option<f64> {
+        match self.extended.sclk.parse::<f64>() {
+            Ok(v) => Some(v),
+            Err(_) => None
+        }
+    }
 }
 
 pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {

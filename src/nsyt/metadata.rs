@@ -163,6 +163,10 @@ impl ImageMetadata for Image {
     fn get_mast_el(&self) -> Option<f64> {
         None
     }
+
+    fn get_sclk(&self) -> Option<f64> {
+        Some(self.spacecraft_clock)
+    }
 }
 
 

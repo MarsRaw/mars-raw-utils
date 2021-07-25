@@ -33,6 +33,7 @@ pub trait ImageMetadata {
     fn get_drive(&self) -> Option<u32>;
     fn get_mast_az(&self) -> Option<f64>;
     fn get_mast_el(&self) -> Option<f64>;
+    fn get_sclk(&self) -> Option<f64>;
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -51,6 +52,7 @@ pub struct Metadata  {
     pub camera_vector:Option<Vec<f64>>,
     pub mast_az: Option<f64>,
     pub mast_el: Option<f64>,
+    pub sclk: Option<f64>,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub camera_position: Option<Vec<f64>>,
@@ -110,7 +112,8 @@ pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
         site:im.get_site(),
         drive:im.get_drive(),
         mast_el:im.get_mast_el(),
-        mast_az:im.get_mast_az()
+        mast_az:im.get_mast_az(),
+        sclk:im.get_sclk(),
     }
 }
 
