@@ -27,8 +27,12 @@ pub trait ImageMetadata {
     fn get_filter_name(&self) -> Option<String>;
     fn get_camera_vector(&self) -> Option<Vec<f64>>;
     fn get_camera_model_component_list(&self) -> Option<Cahvor>;
+    fn get_camera_position(&self) -> Option<Vec<f64>>;
+    fn get_camera_model_type(&self) -> Option<String>;
     fn get_site(&self) -> Option<u32>;
     fn get_drive(&self) -> Option<u32>;
+    fn get_mast_az(&self) -> Option<f64>;
+    fn get_mast_el(&self) -> Option<f64>;
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -45,6 +49,12 @@ pub struct Metadata  {
     pub instrument:String,
     pub filter_name: Option<String>,
     pub camera_vector:Option<Vec<f64>>,
+    pub mast_az: Option<f64>,
+    pub mast_el: Option<f64>,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub camera_position: Option<Vec<f64>>,
+    pub camera_model_type: Option<String>,
     pub site:Option<u32>,
     pub drive:Option<u32>,
 
@@ -95,8 +105,12 @@ pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
         cropped:default_step_status(),
         camera_vector:im.get_camera_vector(),
         camera_model_component_list:im.get_camera_model_component_list(),
+        camera_position:im.get_camera_position(),
+        camera_model_type:im.get_camera_model_type(),
         site:im.get_site(),
-        drive:im.get_drive()
+        drive:im.get_drive(),
+        mast_el:im.get_mast_el(),
+        mast_az:im.get_mast_az()
     }
 }
 

@@ -158,12 +158,34 @@ impl ImageMetadata for Image {
         self.camera.camera_model_component_list.clone()
     }
 
+    fn get_camera_position(&self) -> Option<Vec<f64>> {
+        self.camera.camera_position.clone()
+    }
+
+    fn get_camera_model_type(&self) -> Option<String> {
+        Some(self.camera.camera_model_type.clone())
+    }
+
     fn get_site(&self) -> Option<u32> {
         Some(self.site)
     }
 
     fn get_drive(&self) -> Option<u32> {
         match self.drive.parse::<u32>() {
+            Ok(v) => Some(v),
+            Err(_) => None
+        }
+    }
+
+    fn get_mast_az(&self) -> Option<f64> {
+        match self.extended.mast_az.parse::<f64>() {
+            Ok(v) => Some(v),
+            Err(_) => None
+        }
+    }
+
+    fn get_mast_el(&self) -> Option<f64> {
+        match self.extended.mast_el.parse::<f64>() {
             Ok(v) => Some(v),
             Err(_) => None
         }
