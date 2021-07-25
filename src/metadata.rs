@@ -5,7 +5,8 @@ use serde::{
 };
 
 use crate::{
-    error
+    error,
+    cahvor::Cahvor
 };
 
 use std::fs::File;
@@ -20,9 +21,14 @@ pub trait ImageMetadata {
     fn get_date_taken_utc(&self) -> String;
     fn get_date_taken_mars(&self) -> Option<String>;
     fn get_subframe_rect(&self) -> Option<Vec<f64>>;
-    //fn get_dimension(&self) -> Option<&[f64]>;
+    // fn get_dimension(&self) -> Option<&[f64]>;
     fn get_scale_factor(&self) -> u32;
     fn get_instrument(&self) -> String;
+    fn get_filter_name(&self) -> Option<String>;
+    fn get_camera_vector(&self) -> Option<Vec<f64>>;
+    fn get_camera_model_component_list(&self) -> Option<Cahvor>;
+    fn get_site(&self) -> Option<u32>;
+    fn get_drive(&self) -> Option<u32>;
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -37,6 +43,13 @@ pub struct Metadata  {
     pub subframe_rect:Option<Vec<f64>>,
     pub scale_factor:u32,
     pub instrument:String,
+    pub filter_name: Option<String>,
+    pub camera_vector:Option<Vec<f64>>,
+    pub site:Option<u32>,
+    pub drive:Option<u32>,
+
+    #[serde(with = "crate::jsonfetch::cahvor_format")]
+    pub camera_model_component_list: Option<Cahvor>,
 
     #[serde(default = "default_step_status")]
     pub decompand:bool,
@@ -73,59 +86,18 @@ pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
         subframe_rect:im.get_subframe_rect(),
         scale_factor:im.get_scale_factor(),
         instrument:im.get_instrument(),
+        filter_name:im.get_filter_name(),
         decompand:default_step_status(),
         debayer:default_step_status(),
         flatfield:default_step_status(),
         radiometric:default_step_status(),
         inpaint:default_step_status(),
-        cropped:default_step_status()
+        cropped:default_step_status(),
+        camera_vector:im.get_camera_vector(),
+        camera_model_component_list:im.get_camera_model_component_list(),
+        site:im.get_site(),
+        drive:im.get_drive()
     }
-}
-
-
-impl Metadata {
-
-
-    pub fn get_link(&self) -> String {
-        self.link.clone()
-    }
-
-    pub fn get_credit(&self) -> String {
-        self.credit.clone()
-    }
-
-    pub fn get_sol(&self) -> u32 {
-        self.sol
-    }
-
-    pub fn get_imageid(&self) -> String {
-        self.imageid.clone()
-    }
-
-    pub fn get_caption(&self) -> String {
-        self.caption.clone()
-    }
-
-    pub fn get_date_taken_utc(&self) -> String {
-        self.date_taken_utc.clone()
-    }
-
-    pub fn get_date_taken_mars(&self) -> Option<String> {
-        self.date_taken_mars.clone()
-    }
-
-    pub fn get_subframe_rect(&self) -> Option<Vec<f64>> {
-        self.subframe_rect.clone()
-    }
-
-    pub fn get_scale_factor(&self) -> u32 {
-        self.scale_factor
-    }
-
-    pub fn get_instrument(&self) -> String {
-        self.instrument.clone()
-    }
-
 }
 
 

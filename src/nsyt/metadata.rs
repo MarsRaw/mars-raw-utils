@@ -127,6 +127,26 @@ impl ImageMetadata for Image {
     fn get_instrument(&self) -> String {
         self.instrument.clone()
     }
+
+    fn get_filter_name(&self) -> Option<String> {
+        Some(String::from(""))
+    }
+
+    fn get_camera_vector(&self) -> Option<Vec<f64>> {
+        self.camera_vector.clone()
+    }
+
+    fn get_camera_model_component_list(&self) -> Option<Cahvor> {
+        self.camera_model_component_list.clone()
+    }
+
+    fn get_site(&self) -> Option<u32> {
+        self.site.clone()
+    }
+
+    fn get_drive(&self) -> Option<u32> {
+        self.drive.clone()
+    }
 }
 
 

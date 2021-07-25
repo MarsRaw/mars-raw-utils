@@ -145,6 +145,29 @@ impl ImageMetadata for Image {
     fn get_instrument(&self) -> String {
         self.camera.instrument.clone()
     }
+
+    fn get_filter_name(&self) -> Option<String> {
+        Some(self.camera.filter_name.clone())
+    }
+
+    fn get_camera_vector(&self) -> Option<Vec<f64>> {
+        self.camera.camera_vector.clone()
+    }
+
+    fn get_camera_model_component_list(&self) -> Option<Cahvor> {
+        self.camera.camera_model_component_list.clone()
+    }
+
+    fn get_site(&self) -> Option<u32> {
+        Some(self.site)
+    }
+
+    fn get_drive(&self) -> Option<u32> {
+        match self.drive.parse::<u32>() {
+            Ok(v) => Some(v),
+            Err(_) => None
+        }
+    }
 }
 
 pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {
