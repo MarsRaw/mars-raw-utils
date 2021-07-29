@@ -39,6 +39,11 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         raw.debayer().unwrap();
     }
 
+
+    if raw.width == 1536 {
+        raw.crop(161, 0, 1328, raw.height).unwrap();
+    }
+
     // Only inpaint with the same size as the mask until we can reliably determine
     // subframing sensor location.
     if raw.width == 1328 && raw.height == 1184 {

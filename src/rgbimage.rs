@@ -320,11 +320,11 @@ impl RgbImage {
             flat.crop(x, y, self.width, self.height).unwrap();
         }
 
-        if inpaint::inpaint_supported_for_instrument(self.instrument) {
-            flat.apply_inpaint_fix().unwrap();
-        } else {
-            vprintln!("No inpaint available for flatfield image on {:?}", self.instrument);
-        }
+        // if inpaint::inpaint_supported_for_instrument(self.instrument) {
+        //     flat.apply_inpaint_fix().unwrap();
+        // } else {
+        //     vprintln!("No inpaint available for flatfield image on {:?}", self.instrument);
+        // }
         self.apply_flat(flat).unwrap();
         ok!()
     }
