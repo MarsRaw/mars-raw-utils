@@ -216,7 +216,7 @@ gen_mean_stack = { path = "/usr/bin/gen_mean_stack" }
 "M20_WATSON_FLAT_V0.png" = { path =  "/usr/share/mars_raw_utils/data/M20_WATSON_FLAT_V0.png", mode = "644"}
 "M20_WATSON_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_WATSON_INPAINT_MASK_V1.png", mode = "644"}
 "M20_HELI_NAV_FLAT_Sol76_V1.jpg" = { path =  "/usr/share/mars_raw_utils/data/M20_HELI_NAV_FLAT_Sol76_V1.jpg", mode = "644"}
-"M20_HELI_RTE_FLAT_V1.jpg" = { path =  "/usr/share/mars_raw_utils/data/M20_HELI_RTE_FLAT_V1.jpg", mode = "644"}
+"M20_HELI_RTE_FLAT_V2.png" = { path =  "/usr/share/mars_raw_utils/data/M20_HELI_RTE_FLAT_V2.png", mode = "644"}
 "MSL_FLB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_FLB_FLAT_V1.png", mode = "644"}
 "MSL_FRB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_FRB_FLAT_V1.png", mode = "644"}
 "MSL_MAHLI_FLAT_Sol2904_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_MAHLI_FLAT_Sol2904_V1.png", mode = "644"}
