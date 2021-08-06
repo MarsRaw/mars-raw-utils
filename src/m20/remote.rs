@@ -85,7 +85,8 @@ pub fn make_instrument_map() -> InstrumentMap {
         ("EDLCAM", vec!["EDL_DDCAM", "EDL_PUCAM1", "EDL_PUCAM2", "EDL_RUCAM", "EDL_RDCAM", "LCAM"]),
         ("WATSON", vec!["SHERLOC_WATSON"]),
         ("HELI_NAV", vec!["HELI_NAV"]),
-        ("HELI_RTE", vec!["HELI_RTE"])
+        ("HELI_RTE", vec!["HELI_RTE"]),
+        ("CACHECAM", vec!["CACHECAM"]),
     ].iter().cloned().collect()}
 }
 
