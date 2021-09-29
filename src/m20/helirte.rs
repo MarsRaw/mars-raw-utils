@@ -7,7 +7,7 @@ use crate::{
     util
 };
 
-pub fn process_file(input_file:&str,  only_new:bool) {
+pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, only_new:bool) {
     let out_file = util::append_file_name(input_file, constants::OUTPUT_FILENAME_APPEND);
     if path::file_exists(&out_file) && only_new {
         vprintln!("Output file exists, skipping. ({})", out_file);
@@ -27,6 +27,9 @@ pub fn process_file(input_file:&str,  only_new:bool) {
 
     vprintln!("Flatfielding...");
     raw.flatfield().unwrap();
+
+    vprintln!("Applying color weights...");
+    raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
 
     vprintln!("Normalizing...");
     raw.normalize_to_16bit_with_max(data_max).unwrap();

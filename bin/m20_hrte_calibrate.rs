@@ -3,12 +3,15 @@ use mars_raw_utils::{
     print, 
     vprintln, 
     path, 
-    m20
+    m20,
+    util
 };
 
 #[macro_use]
 extern crate clap;
 use clap::{Arg, App};
+
+use std::process;
 
 fn main() {
     
@@ -22,6 +25,27 @@ fn main() {
                         .help("Input")
                         .required(true)
                         .multiple(true)
+                        .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_RED_WEIGHT)
+                        .short(constants::param::PARAM_RED_WEIGHT_SHORT)
+                        .long(constants::param::PARAM_RED_WEIGHT)
+                        .value_name("RED")
+                        .help("Red weight")
+                        .required(false)
+                        .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_GREEN_WEIGHT)
+                        .short(constants::param::PARAM_GREEN_WEIGHT_SHORT)
+                        .long(constants::param::PARAM_GREEN_WEIGHT)
+                        .value_name("GREEN")
+                        .help("Green weight")
+                        .required(false)
+                        .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_BLUE_WEIGHT)
+                        .short(constants::param::PARAM_BLUE_WEIGHT_SHORT)
+                        .long(constants::param::PARAM_BLUE_WEIGHT)
+                        .value_name("BLUE")
+                        .help("Blue weight")
+                        .required(false)
                         .takes_value(true))
                     .arg(Arg::with_name(constants::param::PARAM_VERBOSE)
                         .short(constants::param::PARAM_VERBOSE)
@@ -40,12 +64,47 @@ fn main() {
         only_new = true;
     }
 
+    let mut red_scalar = constants::DEFAULT_RED_WEIGHT;
+    let mut green_scalar = constants::DEFAULT_GREEN_WEIGHT;
+    let mut blue_scalar = constants::DEFAULT_BLUE_WEIGHT;
+
+    // Check formatting and handle it
+    if matches.is_present(constants::param::PARAM_RED_WEIGHT) {
+        let s = matches.value_of(constants::param::PARAM_RED_WEIGHT).unwrap();
+        if util::string_is_valid_f32(&s) {
+            red_scalar = s.parse::<f32>().unwrap();
+        } else {
+            eprintln!("Error: Invalid number specified for red scalar");
+            process::exit(1);
+        }
+    }
+
+    if matches.is_present(constants::param::PARAM_GREEN_WEIGHT) {
+        let s = matches.value_of(constants::param::PARAM_GREEN_WEIGHT).unwrap();
+        if util::string_is_valid_f32(&s) {
+            green_scalar = s.parse::<f32>().unwrap();
+        } else {
+            eprintln!("Error: Invalid number specified for green scalar");
+            process::exit(1);
+        }
+    }
+
+    if matches.is_present(constants::param::PARAM_BLUE_WEIGHT) {
+        let s = matches.value_of(constants::param::PARAM_BLUE_WEIGHT).unwrap();
+        if util::string_is_valid_f32(&s) {
+            blue_scalar = s.parse::<f32>().unwrap();
+        } else {
+            eprintln!("Error: Invalid number specified for blue scalar");
+            process::exit(1);
+        }
+    }
+
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
-            m20::helirte::process_file(in_file, only_new);
+            m20::helirte::process_file(in_file, red_scalar, green_scalar, blue_scalar, only_new);
         } else {
             eprintln!("File not found: {}", in_file);
         }
