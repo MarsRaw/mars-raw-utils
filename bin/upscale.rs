@@ -34,9 +34,9 @@ fn process_file(input_file:&str, scale_factor:usize) {
     for y in 0..(raw.height * scale_factor) {
         for x in 0..(raw.width * scale_factor) {
             if y % scale_factor == 0 && x % scale_factor == 0 {
-                let r = raw.get_band(0).unwrap().get(x / scale_factor, y / scale_factor).unwrap();
-                let g = raw.get_band(1).unwrap().get(x / scale_factor, y / scale_factor).unwrap();
-                let b = raw.get_band(2).unwrap().get(x / scale_factor, y / scale_factor).unwrap();
+                let r = raw.get_band(0).get(x / scale_factor, y / scale_factor).unwrap();
+                let g = raw.get_band(1).get(x / scale_factor, y / scale_factor).unwrap();
+                let b = raw.get_band(2).get(x / scale_factor, y / scale_factor).unwrap();
                 upscaled.put(x, y, r, 0);
                 upscaled.put(x, y, g, 1);
                 upscaled.put(x, y, b, 2);

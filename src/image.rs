@@ -46,7 +46,7 @@ impl MarsImage {
         }
 
         vprintln!("Loading image from {}", file_path);
-
+        
         MarsImage {
             image:RgbImage::open(&file_path).unwrap(),
             instrument:instrument,
@@ -66,7 +66,8 @@ impl MarsImage {
                 Ok(md) => Some(md)
             }
         } else {
-            panic!("Metadata file not found: {}", metadata_file);
+            None
+            //panic!("Metadata file not found: {}", metadata_file);
         }
     }
 
@@ -128,7 +129,7 @@ impl MarsImage {
 
 
     fn apply_flat(&mut self, flat:&RgbImage)  {
-        self.apply_flat(&flat);
+        self.image.apply_flat(&flat);
 
         if let Some(ref mut md) = self.metadata {
             md.flatfield = true;
