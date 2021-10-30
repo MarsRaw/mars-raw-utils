@@ -4,13 +4,16 @@
 use mars_raw_utils::{
     constants, 
     print, 
-    vprintln, 
-    rgbimage, 
-    enums, 
+    vprintln,
     path,
+    util
+};
+
+use sciimg::{
+    rgbimage,
     inpaint,
     imagebuffer,
-    util
+    enums::ImageMode
 };
 
 #[macro_use]
@@ -23,20 +26,22 @@ use std::process;
 
 fn process_file(input_file:&str, scale_factor:usize) {
 
-    let raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::None).unwrap();
+    let raw = rgbimage::RgbImage::open(&String::from(input_file)).unwrap();
 
-    let mut upscaled = rgbimage::RgbImage::new(raw.width * scale_factor, raw.height * scale_factor, enums::Instrument::None).unwrap();
+    let mut upscaled = rgbimage::RgbImage::new(raw.width * scale_factor, raw.height * scale_factor, ImageMode::U8BIT).unwrap();
     let mut fill_mask = imagebuffer::ImageBuffer::new(raw.width * scale_factor, raw.height * scale_factor).unwrap();
 
     for y in 0..(raw.height * scale_factor) {
         for x in 0..(raw.width * scale_factor) {
             if y % scale_factor == 0 && x % scale_factor == 0 {
-                let r = raw.red().get(x / scale_factor, y / scale_factor).unwrap();
-                let g = raw.green().get(x / scale_factor, y / scale_factor).unwrap();
-                let b = raw.blue().get(x / scale_factor, y / scale_factor).unwrap();
-                upscaled.put(x, y, r, g, b).unwrap();
+                let r = raw.get_band(0).unwrap().get(x / scale_factor, y / scale_factor).unwrap();
+                let g = raw.get_band(1).unwrap().get(x / scale_factor, y / scale_factor).unwrap();
+                let b = raw.get_band(2).unwrap().get(x / scale_factor, y / scale_factor).unwrap();
+                upscaled.put(x, y, r, 0);
+                upscaled.put(x, y, g, 1);
+                upscaled.put(x, y, b, 2);
             } else {
-                fill_mask.put(x, y, 255.0).unwrap();
+                fill_mask.put(x, y, 255.0);
             }
         }
     }
@@ -53,16 +58,7 @@ fn process_file(input_file:&str, scale_factor:usize) {
     let out_file = util::append_file_name(input_file, "upscale");
 
     vprintln!("Saving output to {}", out_file);
-    match filled.save(&out_file) {
-        Ok(_) => {
-            vprintln!("Process completed");
-        },
-        Err(e) => {
-            eprintln!("Error saving file: {}", e);
-            process::exit(3);
-        }
-    }
-
+    filled.save(&out_file);
 }
 
 

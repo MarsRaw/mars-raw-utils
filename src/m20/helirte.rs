@@ -1,6 +1,6 @@
 use crate::{
     vprintln, 
-    rgbimage, 
+    image::MarsImage, 
     enums, 
     path,
     constants,
@@ -14,7 +14,7 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         return;
     }
     
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::M20HeliRte).unwrap();
+    let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20HeliRte);
     
 
     let data_max = 255.0;
@@ -26,14 +26,14 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     //}
 
     vprintln!("Flatfielding...");
-    raw.flatfield().unwrap();
+    raw.flatfield();
 
     vprintln!("Applying color weights...");
-    raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
+    raw.apply_weight(red_scalar, green_scalar, blue_scalar);
 
     vprintln!("Normalizing...");
-    raw.normalize_to_16bit_with_max(data_max).unwrap();
+    raw.image.normalize_to_16bit_with_max(data_max);
 
     vprintln!("Writing to disk...");
-    raw.save(&out_file).unwrap();
+    raw.save(&out_file);
 }

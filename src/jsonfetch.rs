@@ -92,14 +92,14 @@ pub mod cahvor_format {
         Serializer
     };
 
-    use crate::cahvor;
+    use sciimg::cahvor;
 
     use crate::jsonfetch::{
         str_to_vec,
         vec_to_str
     };
 
-    use crate::vector::Vector;
+    use sciimg::vector::Vector;
 
     pub fn serialize<S>(
         cahvor_opt: &Option<cahvor::Cahvor>,
@@ -225,53 +225,6 @@ pub mod tuple_format {
 
 
 
-pub mod vector_format {
-    use serde::{
-        self,
-        Deserialize,
-        Deserializer,
-        Serializer
-    };
-
-    use crate::jsonfetch::{
-        str_to_vec,
-        vec_to_str
-    };
-
-    use crate::vector::Vector;
-
-    pub fn serialize<S>(
-        vector: &Vector,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s = vec_to_str(&vector.to_vec());
-        serializer.serialize_str(s.as_ref())
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vector, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let r :Result<&str, D::Error> = Deserialize::deserialize(deserializer);
-        match r {
-            Err(_) => Ok(Vector::default()),
-            Ok(s) => {
-                match s {
-                    "UNK" => Ok(Vector::default()),
-                    _ => {
-                        let tuple_vec = str_to_vec(s).unwrap();
-                        let vec = Vector::from_vec(&tuple_vec).unwrap();
-                        Ok(vec)
-                    }
-                }
-            }
-        }
-    }
-
-}
 
 
 

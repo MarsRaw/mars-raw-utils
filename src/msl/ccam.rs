@@ -1,13 +1,14 @@
 use crate::{
     vprintln, 
-    rgbimage, 
+    image::MarsImage, 
     enums, 
     path,
     calibfile,
-    imagebuffer,
     util,
     constants
 };
+
+use sciimg::imagebuffer;
 
 
 pub fn process_file(input_file:&str, only_new:bool) {
@@ -17,7 +18,7 @@ pub fn process_file(input_file:&str, only_new:bool) {
         return;
     }
 
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::MslChemCam).unwrap();
+    let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslChemCam);
 
     vprintln!("Loading image mask");
     let mask = imagebuffer::ImageBuffer::from_file(calibfile::get_calibration_file_for_instrument(enums::Instrument::MslChemCam, enums::CalFileType::Mask).unwrap().as_str()).unwrap();
@@ -29,7 +30,7 @@ pub fn process_file(input_file:&str, only_new:bool) {
         vprintln!("Image appears to be in standard contrast");
         
         vprintln!("Flatfielding...");
-        raw.flatfield().unwrap();
+        raw.flatfield();
 
     } else if input_file.find("EDR") != None {
         vprintln!("Image appears to be in enhanced contrast");
@@ -38,9 +39,9 @@ pub fn process_file(input_file:&str, only_new:bool) {
     }
 
     vprintln!("Normalizing...");
-    raw.normalize_to_16bit_with_max(data_max).unwrap();
+    raw.image.normalize_to_16bit_with_max(data_max);
 
     vprintln!("Writing to disk...");
-    raw.save(&out_file).unwrap();
+    raw.save(&out_file);
 
 }

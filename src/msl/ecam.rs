@@ -1,10 +1,10 @@
 use crate::{
     vprintln, 
-    rgbimage, 
+    image::MarsImage, 
     enums, 
     path,
     util,
-    inpaint,
+    inpaintmask,
     constants
 };
 
@@ -48,19 +48,19 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         }
     }
 
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), instrument).unwrap();
+    let mut raw = MarsImage::open(String::from(input_file), instrument);
 
     // Exclude subframed images for now...
-    if inpaint::inpaint_supported_for_instrument(instrument) && raw.height >= 1022 {
+    if inpaintmask::inpaint_supported_for_instrument(instrument) && raw.image.height >= 1022 {
         vprintln!("Inpainting...");
-        raw.apply_inpaint_fix().unwrap();
+        raw.apply_inpaint_fix();
     } else {
         vprintln!("Inpainting not supported for instrument {:?}", instrument);
     }
 
     if hpc_threshold > 0.0 {
         vprintln!("Hot pixel correction with variance threshold {}...", hpc_threshold);
-        raw.hot_pixel_correction(3, hpc_threshold).unwrap();
+        raw.hot_pixel_correction(3, hpc_threshold);
     }
     
     let data_max = 255.0;
@@ -72,23 +72,23 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     // }
     
     // Exclude subframed images for now...
-    if raw.height >= 1022 {
+    if raw.image.height >= 1022 {
         vprintln!("Flatfielding...");
-        raw.flatfield().unwrap();
+        raw.flatfield();
     }
     
     
     vprintln!("Applying color weights...");
-    raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
+    raw.apply_weight(red_scalar, green_scalar, blue_scalar);
 
     vprintln!("Normalizing...");
-    raw.normalize_to_16bit_with_max(data_max).unwrap();
+    raw.image.normalize_to_16bit_with_max(data_max);
 
     // Trim off border pixels
-    let crop_to_width = raw.width - 2;
-    let crop_to_height = raw.height - 2;
-    raw.crop(1, 1, crop_to_width, crop_to_height).unwrap();
+    let crop_to_width = raw.image.width - 2;
+    let crop_to_height = raw.image.height - 2;
+    raw.image.crop(1, 1, crop_to_width, crop_to_height);
 
     vprintln!("Writing to disk...");
-    raw.save(&out_file).unwrap();
+    raw.save(&out_file);
 }

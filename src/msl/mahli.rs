@@ -1,6 +1,6 @@
 use crate::{
     vprintln, 
-    rgbimage, 
+    image::MarsImage, 
     enums, 
     path, 
     decompanding,
@@ -16,41 +16,41 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         return;
     }
 
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::MslMAHLI).unwrap();
+    let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslMAHLI);
 
-    if raw.width == 1632 && raw.height == 1200 {
+    if raw.image.width == 1632 && raw.image.height == 1200 {
         vprintln!("Cropping...");
-        raw.crop(32, 16, 1584, 1184).unwrap();
-    } else if raw.width == 1648 && raw.height == 1200 {
+        raw.image.crop(32, 16, 1584, 1184);
+    } else if raw.image.width == 1648 && raw.image.height == 1200 {
         vprintln!("Cropping...");
-        raw.crop(48, 16, 1584, 1184).unwrap();
+        raw.image.crop(48, 16, 1584, 1184);
     }
-    vprintln!("Image width/height after cropping: {}x{}", raw.width, raw.height);
+    vprintln!("Image width/height after cropping: {}x{}", raw.image.width, raw.image.height);
 
     //1648, 1200
     vprintln!("Inpainting...");
-    raw.apply_inpaint_fix().unwrap();
+    raw.apply_inpaint_fix();
 
     let mut data_max = 255.0;
 
     if ! no_ilt {
         vprintln!("Decompanding...");
-        raw.decompand().unwrap();
+        raw.decompand(&decompanding::get_ilt_for_instrument(enums::Instrument::MslMAHLI));
         data_max = decompanding::get_max_for_instrument(enums::Instrument::MslMAHLI) as f32;
     }
 
     vprintln!("Flatfielding...");
-    raw.flatfield().unwrap();
+    raw.flatfield();
 
     vprintln!("Cropping...");
-    raw.crop(0, 3, 1584, 1180).unwrap();
+    raw.image.crop(0, 3, 1584, 1180);
 
     vprintln!("Applying color weights...");
-    raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
+    raw.apply_weight(red_scalar, green_scalar, blue_scalar);
 
     vprintln!("Normalizing...");
-    raw.normalize_to_16bit_with_max(data_max).unwrap();
+    raw.image.normalize_to_16bit_with_max(data_max);
 
     vprintln!("Writing to disk...");
-    raw.save(&out_file).unwrap();
+    raw.save(&out_file);
 }

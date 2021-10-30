@@ -1,10 +1,12 @@
 use mars_raw_utils::{
     constants, 
     print, 
-    vprintln, 
-    rgbimage, 
-    enums, 
-    path,
+    vprintln,
+    path
+};
+
+use sciimg::{
+    rgbimage,
     imagebuffer
 };
 
@@ -56,7 +58,7 @@ fn main() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
             
-            let raw = rgbimage::RgbImage::open(String::from(*in_file), enums::Instrument::None).unwrap();
+            let raw = rgbimage::RgbImage::open(&String::from(*in_file)).unwrap();
 
             if mean.is_empty() {
                 mean = raw;
@@ -69,7 +71,7 @@ fn main() {
                     process::exit(1);
                 }
 
-                mean.add(&raw).unwrap();
+                mean.add(&raw);
             }
 
             count = count.add(&ones).unwrap();
@@ -79,11 +81,11 @@ fn main() {
     }
 
     if !mean.is_empty() {
-        mean.divide_from_each(&count).unwrap();
+        mean.divide_from_each(&count);
 
         if path::parent_exists_and_writable(output) {
             vprintln!("Writing image to {}", output);
-            mean.save(output).unwrap();
+            mean.save(output);
         } else {
             eprintln!("Unable to write output image, parent doesn't exist or is not writable");
         }

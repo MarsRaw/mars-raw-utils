@@ -1,5 +1,5 @@
 
-use crate::{imagebuffer::ImageBuffer, constants, enums, error, ok};
+use crate::enums;
 
 pub const ILT : [u32; 256] = [0, 2, 3, 3, 4, 5, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16,
                                 18, 19, 20, 22, 24, 25, 27, 29, 31, 33, 35, 37, 39, 41,
@@ -52,7 +52,7 @@ pub const NSYT_ILT : [u32; 256] = [
                                 4025, 4060, 4095];
 
 
-fn get_ilt_for_instrument(instrument:enums::Instrument) -> [u32; 256] {
+pub fn get_ilt_for_instrument(instrument:enums::Instrument) -> [u32; 256] {
 
     match instrument {
         enums::Instrument::NsytICC => NSYT_ILT,
@@ -65,53 +65,4 @@ pub fn get_max_for_instrument(instrument:enums::Instrument) -> u32 {
     let ilt = get_ilt_for_instrument(instrument);
     ilt[255]
 }
-
-pub fn decompand_buffer(buffer:&mut ImageBuffer, instrument:enums::Instrument) -> error::Result<&str> {
-
-    let ilt = get_ilt_for_instrument(instrument);
-
-    for x in 0..buffer.width {
-        for y in 0..buffer.height {
-            let raw_value = buffer.get(x, y).unwrap() as usize;
-            if raw_value > 255 {
-                return Err(constants::status::INVALID_RAW_VALUE);
-            }
-            let ilt_value = ilt[raw_value];
-            buffer.put(x, y, ilt_value as f32).unwrap();
-        }
-    }
-    ok!()
-}
-
-// This method backs out the ILT table and is inefficient. Use sparingly
-fn get_lut_value_from_ilt_value(ilt_value:u32, instrument:enums::Instrument) -> u32 {
-    let ilt = get_ilt_for_instrument(instrument);
-
-    if ilt_value == 0 {
-        return 0;
-    }
-
-    for i in 1..ilt.len() {
-        if ilt_value == ilt[i] || (ilt_value < ilt[i] && ilt_value > ilt[i - 1]) {
-            return i as u32;
-        } 
-    }
-
-    0
-}
-
-// This method backs out the ILT table and is inefficient. Use sparingly
-pub fn compand_buffer(buffer:&mut ImageBuffer, instrument:enums::Instrument) -> error::Result<&str> {
-
-    for x in 0..buffer.width {
-        for y in 0..buffer.height {
-            let ilt_value = buffer.get(x, y).unwrap();
-            let lut_value = get_lut_value_from_ilt_value(ilt_value as u32, instrument);
-            buffer.put(x, y, lut_value as f32).unwrap();
-        }
-    }
-
-    ok!()
-}
-
 

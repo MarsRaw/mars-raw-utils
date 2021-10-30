@@ -3,9 +3,10 @@ use crate::{
     error,
     vprintln,
     path,
-    cahvor::Cahvor,
     metadata::*
 };
+
+use sciimg::cahvor::Cahvor;
 
 use std::fs::File;
 use std::io::Read;

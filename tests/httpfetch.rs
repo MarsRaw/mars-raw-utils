@@ -18,6 +18,7 @@ fn test_text_fetch() {
 ");
 }
 
+
 #[test]
 #[ignore]
 fn test_text_fetch_with_params() {

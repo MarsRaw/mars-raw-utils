@@ -1,6 +1,6 @@
 use crate::{
     vprintln, 
-    rgbimage, 
+    image::MarsImage, 
     enums, 
     path,
     decompanding,
@@ -15,30 +15,30 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         return;
     }
 
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::NsytIDC).unwrap();
+    let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::NsytIDC);
 
     let mut data_max = 255.0;
 
     if ! no_ilt {
         vprintln!("Decompanding...");
-        raw.decompand().unwrap();
+        raw.decompand(&decompanding::get_ilt_for_instrument(enums::Instrument::NsytIDC));
         data_max = decompanding::get_max_for_instrument(enums::Instrument::NsytIDC) as f32;
     }
 
     vprintln!("Flatfielding...");
-    raw.flatfield().unwrap();
+    raw.flatfield();
 
     vprintln!("Applying color weights...");
-    raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
+    raw.apply_weight(red_scalar, green_scalar, blue_scalar);
 
     vprintln!("Cropping...");
-    raw.crop(0, 3, 1024, 1018).unwrap();
+    raw.image.crop(0, 3, 1024, 1018);
 
     vprintln!("Normalizing...");
-    raw.normalize_to_16bit_with_max(data_max).unwrap();
+    raw.image.normalize_to_16bit_with_max(data_max);
 
     vprintln!("Writing to disk...");
-    raw.save(&out_file).unwrap();
+    raw.save(&out_file);
 }
 
 

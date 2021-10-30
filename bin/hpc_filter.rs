@@ -2,11 +2,11 @@ use mars_raw_utils::{
     constants, 
     print, 
     vprintln, 
-    rgbimage, 
-    enums, 
     path,
     util
 };
+
+use sciimg::rgbimage;
 
 #[macro_use]
 extern crate clap;
@@ -17,23 +17,23 @@ use std::process;
 
 fn process_file(input_file:&str, hpc_threshold:f32, hpc_window_size:i32) {
 
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::None).unwrap();
+    let mut raw = rgbimage::RgbImage::open(&String::from(input_file)).unwrap();
 
     if hpc_threshold > 0.0 {
         vprintln!("Hot pixel correction with variance threshold {}...", hpc_threshold);
-        raw.hot_pixel_correction(hpc_window_size, hpc_threshold).unwrap();
+        raw.hot_pixel_correction(hpc_window_size, hpc_threshold);
     }
     
     // DON'T ASSUME THIS!
     let data_max = 255.0;
 
     vprintln!("Normalizing...");
-    raw.normalize_to_16bit_with_max(data_max).unwrap();
+    raw.normalize_to_16bit_with_max(data_max);
 
     vprintln!("Writing to disk...");
 
     let out_file = util::append_file_name(input_file, "hpc");
-    raw.save(&out_file).unwrap();
+    raw.save(&out_file);
 }
 
 

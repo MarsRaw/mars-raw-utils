@@ -2,11 +2,11 @@ use mars_raw_utils::{
     constants, 
     print, 
     vprintln, 
-    rgbimage, 
-    enums, 
     path,
     util
 };
+
+use sciimg::rgbimage;
 
 #[macro_use]
 extern crate clap;
@@ -16,7 +16,7 @@ use clap::{Arg, App};
 use std::process;
 
 fn process_file(input_file:&str, color_noise_reduction:i32) {
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::None).unwrap();
+    let mut raw = rgbimage::RgbImage::open(&String::from(input_file)).unwrap();
 
     let out_file = util::append_file_name(input_file, "debayer");
 
@@ -26,21 +26,15 @@ fn process_file(input_file:&str, color_noise_reduction:i32) {
     }
 
     vprintln!("Debayering image...");
-    if !raw.debayer().is_ok() {
-        eprintln!("Error debayering image");
-        process::exit(1);
-    }
+    raw.debayer();
 
     if color_noise_reduction > 0 {
         vprintln!("Color noise reduction...");
-        if !raw.reduce_color_noise(color_noise_reduction).is_ok() {
-            eprintln!("Error in color noise reduction");
-            process::exit(2);
-        }
+        raw.reduce_color_noise(color_noise_reduction);
     }
 
     vprintln!("Writing to disk...");
-    raw.save(&out_file).unwrap();
+    raw.save(&out_file);
 }
 
 fn main() {

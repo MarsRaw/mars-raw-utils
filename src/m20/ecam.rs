@@ -1,12 +1,13 @@
 use crate::{
     vprintln, 
-    rgbimage, 
+    image::MarsImage, 
     enums, 
     path,
     util,
     constants
 };
 
+use sciimg::rgbimage;
 
 
 pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, _no_ilt:bool, only_new:bool) {
@@ -39,7 +40,7 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         }
     }
 
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), instrument).unwrap();
+    let mut raw = MarsImage::open(String::from(input_file), instrument);
 
     let data_max = 255.0;
 
@@ -50,9 +51,9 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     // }
 
     // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
-    if raw.is_grayscale() {
+    if raw.image.is_grayscale() {
         vprintln!("Debayering...");
-        raw.debayer().unwrap();
+        raw.debayer();
     }
 
     // We're going to need a reliable way of figuring out what part of the sensor
@@ -61,16 +62,16 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     //raw.apply_inpaint_fix().unwrap();
 
     vprintln!("Applying color weights...");
-    raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
+    raw.apply_weight(red_scalar, green_scalar, blue_scalar);
 
     vprintln!("Normalizing...");
-    raw.normalize_to_16bit_with_max(data_max).unwrap();
+    raw.image.normalize_to_16bit_with_max(data_max);
 
     // Trim off border pixels
-    let crop_to_width = raw.width - 4;
-    let crop_to_height = raw.height - 4;
+    let crop_to_width = raw.image.width - 4;
+    let crop_to_height = raw.image.height - 4;
     //raw.crop(2, 2, crop_to_width, crop_to_height).unwrap();
 
     vprintln!("Writing to disk...");
-    raw.save(&out_file).unwrap();
+    raw.save(&out_file);
 }

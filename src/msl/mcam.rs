@@ -1,6 +1,6 @@
 use crate::{
     vprintln, 
-    rgbimage, 
+    image::MarsImage, 
     enums, 
     path,
     util,
@@ -24,52 +24,52 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         vprintln!("Processing for Mastcam Left") ;
     }
 
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), instrument).unwrap();
+    let mut raw = MarsImage::open(String::from(input_file), instrument);
 
     let mut data_max = 255.0;
     
     if ! no_ilt {
         vprintln!("Decompanding...");
-        raw.decompand().unwrap();
+        raw.decompand(&decompanding::get_ilt_for_instrument(instrument));
         data_max = decompanding::get_max_for_instrument(instrument) as f32;
     }
 
-    if /*util::filename_char_at_pos(&input_file, 22) == 'E' &&*/ raw.is_grayscale() {
+    if /*util::filename_char_at_pos(&input_file, 22) == 'E' &&*/ raw.image.is_grayscale() {
         vprintln!("Image appears to be grayscale, applying debayering...");
-        raw.debayer().unwrap();
+        raw.debayer();
     }
 
 
-    if raw.width == 1536 {
-        raw.crop(161, 0, 1328, raw.height).unwrap();
+    if raw.image.width == 1536 {
+        raw.image.crop(161, 0, 1328, raw.image.height);
     }
 
     // Only inpaint with the same size as the mask until we can reliably determine
     // subframing sensor location.
-    if raw.width == 1328 && raw.height == 1184 {
+    if raw.image.width == 1328 && raw.image.height == 1184 {
         vprintln!("Inpainting...");
-        raw.apply_inpaint_fix().unwrap();
+        raw.apply_inpaint_fix();
     }
     
     vprintln!("Flatfielding...");
-    raw.flatfield().unwrap();
+    raw.flatfield();
 
     vprintln!("Applying color weights...");
-    raw.apply_weight(red_scalar, green_scalar, blue_scalar).unwrap();
+    raw.apply_weight(red_scalar, green_scalar, blue_scalar);
 
     if color_noise_reduction > 0 {
         vprintln!("Color noise reduction...");
-        raw.reduce_color_noise(color_noise_reduction).unwrap();
+        raw.image.reduce_color_noise(color_noise_reduction);
     }
     
     vprintln!("Normalizing...");
-    raw.normalize_to_16bit_with_max(data_max).unwrap();
+    raw.image.normalize_to_16bit_with_max(data_max);
 
     vprintln!("Cropping...");
-    raw.crop(3, 3, raw.width - 6, raw.height - 6).unwrap();
+    raw.image.crop(3, 3, raw.image.width - 6, raw.image.height - 6);
 
 
     vprintln!("Writing to disk...");
-    raw.save(&out_file).unwrap();
+    raw.save(&out_file);
 }
 

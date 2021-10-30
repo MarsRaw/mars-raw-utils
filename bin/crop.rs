@@ -2,11 +2,11 @@ use mars_raw_utils::{
     constants, 
     print, 
     vprintln, 
-    rgbimage, 
-    enums, 
     path,
     util
 };
+
+use sciimg::rgbimage;
 
 #[macro_use]
 extern crate clap;
@@ -16,7 +16,7 @@ use clap::{Arg, App};
 use std::process;
 
 fn process_file(input_file:&str, x:usize, y:usize, width:usize, height:usize) {
-    let mut raw = rgbimage::RgbImage::open(String::from(input_file), enums::Instrument::None).unwrap();
+    let mut raw = rgbimage::RgbImage::open(&String::from(input_file)).unwrap();
 
     if x >= raw.width {
         eprintln!("X parameter is out of bounds: {}. Must be between 0 and {}", x, raw.width - 1);
@@ -42,19 +42,11 @@ fn process_file(input_file:&str, x:usize, y:usize, width:usize, height:usize) {
 
 
     vprintln!("Cropping with x={}, y={}, width={}, height={}", x, y, width, height);
-    raw.crop(x, y, width, height).unwrap();
+    raw.crop(x, y, width, height);
 
     vprintln!("Saving output to {}", out_file);
 
-    match raw.save(&out_file) {
-        Ok(_) => {
-            vprintln!("Process completed");
-        },
-        Err(e) => {
-            eprintln!("Error saving file: {}", e);
-            process::exit(3);
-        }
-    }
+    raw.save(&out_file);
 
 }
 
