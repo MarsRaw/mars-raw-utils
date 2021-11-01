@@ -7,9 +7,6 @@ use crate::{
     constants
 };
 
-use sciimg::rgbimage;
-
-
 pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, _no_ilt:bool, only_new:bool) {
     let out_file = util::append_file_name(input_file, constants::OUTPUT_FILENAME_APPEND);
     if path::file_exists(&out_file) && only_new {
@@ -68,8 +65,8 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     raw.image.normalize_to_16bit_with_max(data_max);
 
     // Trim off border pixels
-    let crop_to_width = raw.image.width - 4;
-    let crop_to_height = raw.image.height - 4;
+    //let crop_to_width = raw.image.width - 4;
+    //let crop_to_height = raw.image.height - 4;
     //raw.crop(2, 2, crop_to_width, crop_to_height).unwrap();
 
     vprintln!("Writing to disk...");
