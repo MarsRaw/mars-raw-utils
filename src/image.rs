@@ -210,26 +210,13 @@ impl MarsImage {
     pub fn apply_inpaint_fix(&mut self) {
 
         let mask = inpaintmask::load_mask(self.instrument).unwrap();
-        let fixed = inpaint::apply_inpaint_to_buffer(&self.image, &mask).unwrap();
-
+        let mut fixed = inpaint::apply_inpaint_to_buffer(&self.image, &mask).unwrap();
+        fixed.set_mode(self.image.get_mode());
         self.image = fixed;
-        // let mut new_r = fixed.red().clone();
-        // self._red.copy_mask_to(&mut new_r);
-
-        // let mut new_g = fixed.green().clone();
-        // self._green.copy_mask_to(&mut new_g);
-
-        // let mut new_b = fixed.blue().clone();
-        // self._blue.copy_mask_to(&mut new_b);
-
-        // self._red = new_r;
-        // self._green = new_g;
-        // self._blue = new_b;
 
         if let Some(ref mut md) = self.metadata {
             md.inpaint = true;
         }
-
     }
 
     pub fn hot_pixel_correction(&mut self, window_size:i32, threshold:f32) {
