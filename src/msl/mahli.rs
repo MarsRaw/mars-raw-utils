@@ -5,7 +5,8 @@ use crate::{
     path, 
     decompanding,
     util,
-    constants
+    constants,
+    flatfield
 };
 
 
@@ -40,7 +41,21 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     }
 
     vprintln!("Flatfielding...");
-    raw.flatfield();
+    let mut flat = flatfield::load_flat(enums::Instrument::MslMAHLI).unwrap();
+    if flat.image.width == 1632 && flat.image.height == 1200 {
+        flat.image.crop(32, 16, 1584, 1184);
+    } 
+    flat.apply_inpaint_fix();
+
+    if flat.image.width > raw.image.width {
+        let x = (flat.image.width - raw.image.width) / 2;
+        let y = (flat.image.height - raw.image.height) / 2;
+        vprintln!("Cropping flat with x/y/width/height: {},{} {}x{}", x, y, raw.image.width, raw.image.height);
+        flat.image.crop(x, y, raw.image.width, raw.image.height);
+    }
+
+    raw.flatfield_with_flat(&flat);
+    
 
     vprintln!("Cropping...");
     raw.image.crop(0, 3, 1584, 1180);
