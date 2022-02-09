@@ -135,6 +135,11 @@ impl MarsImage {
     }
 
 
+    pub fn flatfield_with_flat(&mut self, flat:&MarsImage) {
+
+        self.apply_flat(&flat.image);
+
+    }
 
     pub fn flatfield(&mut self) {
 
