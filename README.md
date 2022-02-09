@@ -494,6 +494,25 @@ OPTIONS:
     -i, --inputs <INPUT>...                                Input
 ```
 
+
+## Levels
+Apply levels adjustments to an image. Analogous to 'Levels' in Photoshop or GIMP. 
+```
+USAGE:
+    levels [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -b, --blacklevel <BLACK_LEVEL>    Black level
+    -g, --gamma <PARAM_GAMMA>         Gamma
+    -i, --inputs <INPUT>...           Input
+    -w, --whitelevel <WHITE_LEVEL>    White level
+```
+
 ## Mission Dates
 Mission time and sol are available for MSL, Mars2020, and InSight via `msl_date`, `m20_date`, and `nsyt_date`, respectively. 
 
