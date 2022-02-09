@@ -94,4 +94,16 @@ pub mod param {
 
     pub const PARAM_SCALE_FACTOR : &str = "factor";
     pub const PARAM_SCALE_FACTOR_SHORT : &str = "f";
+
+    pub const PARAM_LEVELS_WHITE_LEVEL : &str = "whitelevel";
+    pub const PARAM_LEVELS_WHITE_LEVEL_SHORT : &str = "w";
+
+    pub const PARAM_LEVELS_BLACK_LEVEL : &str = "blacklevel";
+    pub const PARAM_LEVELS_BLACK_LEVEL_SHORT : &str = "b";
+
+    pub const PARAM_GAMMA : &str = "gamma";
+    pub const PARAM_GAMMA_SHORT : &str = "g";
+    
 }
+
+
