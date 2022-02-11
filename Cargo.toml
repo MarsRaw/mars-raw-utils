@@ -162,6 +162,10 @@ path = "bin/gen_mean_stack.rs"
 name = "levels"
 path = "bin/levels.rs"
 
+[[bin]]
+name = "diffgif"
+path = "bin/diffgif.rs"
+
 [features]
 
 [dependencies]
@@ -178,6 +182,8 @@ serde = { version = "1.0.125", features = ["derive"] }
 sscanf = "0.2.1"
 string-builder = "0.2.0"
 sciimg = "0.1.9"
+weezl = "0.1.5"
+gif = "0.11.3"
 
 [package.metadata.rpm]
 package = "mars_raw_utils"

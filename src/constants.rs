@@ -103,6 +103,9 @@ pub mod param {
 
     pub const PARAM_GAMMA : &str = "gamma";
     pub const PARAM_GAMMA_SHORT : &str = "g";
+
+    pub const PARAM_DELAY : &str = "delay";
+    pub const PARAM_DELAY_SHORT : &str = "d";
     
 }
 
