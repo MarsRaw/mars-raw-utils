@@ -8,11 +8,11 @@ use mars_raw_utils::{
 
 use sciimg::{
     rgbimage,
-    imagebuffer
+    imagebuffer,
+    blur
 };
 
 use gif;
-use gif::{Frame, Encoder, Repeat};
 
 use std::fs::File;
 
@@ -37,25 +37,6 @@ fn imagebuffer_to_vec_v8(buff:&imagebuffer::ImageBuffer) -> Vec<u8> {
     f
 }
 
-fn rgbimage_to_vec_u8(inp_img:&rgbimage::RgbImage) -> Vec<u8> {
-    let mut f : Vec<u8> = vec!(0; inp_img.width * inp_img.height * inp_img.num_bands());
-
-    
-    for y in 0..inp_img.height {
-        for x in 0..inp_img.width {
-            let idx = (y * inp_img.width + x) * inp_img.num_bands();
-            for b in 0..inp_img.num_bands() {
-                let i = idx + b;
-                let value = (inp_img.get_band(b).get(x, y).unwrap()).round() as u8;
-                f[i] = value;
-            }
-        }
-    }
-
-
-    f
-}
-
 fn generate_mean_stack(input_files:&Vec<&str>) -> rgbimage::RgbImage {
 
     let mut mean : rgbimage::RgbImage = rgbimage::RgbImage::new_empty().unwrap();
@@ -66,9 +47,9 @@ fn generate_mean_stack(input_files:&Vec<&str>) -> rgbimage::RgbImage {
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
-            vprintln!("Processing File: {}", in_file);
+            vprintln!("Adding file to stack: {}", in_file);
             
-            let raw = rgbimage::RgbImage::open(&String::from(*in_file)).unwrap();
+            let raw = rgbimage::RgbImage::open16(&String::from(*in_file)).unwrap();
 
             if mean.is_empty() {
                 mean = raw;
@@ -131,7 +112,7 @@ fn main() {
                         .short(constants::param::PARAM_DELAY_SHORT)
                         .long(constants::param::PARAM_DELAY)
                         .value_name("PARAM_DELAY")
-                        .help("Interframe Delay")
+                        .help("Interframe delay in increments of 10ms")
                         .required(false)
                         .takes_value(true))
                     .arg(Arg::with_name(constants::param::PARAM_GAMMA)
@@ -141,9 +122,16 @@ fn main() {
                         .help("Gamma")
                         .required(false)
                         .takes_value(true))
-                    .arg(Arg::with_name("output")
-                        .short("o")
-                        .long("output")
+                    .arg(Arg::with_name(constants::param::PARAM_BLUR)
+                        .short(constants::param::PARAM_BLUR_SHORT)
+                        .long(constants::param::PARAM_BLUR)
+                        .value_name("PARAM_BLUR")
+                        .help("Gaussian blur kernel size on differential output")
+                        .required(false)
+                        .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_OUTPUT)
+                        .short(constants::param::PARAM_OUTPUT_SHORT)
+                        .long(constants::param::PARAM_OUTPUT)
                         .value_name("OUTPUT")
                         .help("Output")
                         .required(true)
@@ -158,7 +146,7 @@ fn main() {
         true => {
             let s = matches.value_of(constants::param::PARAM_LEVELS_BLACK_LEVEL).unwrap();
             if util::string_is_valid_f32(&s) {
-                s.parse::<f32>().unwrap()
+                s.parse::<f32>().unwrap() / 100.0
             } else {
                 eprintln!("Error: Invalid number specified for black level");
                 process::exit(1);
@@ -175,7 +163,7 @@ fn main() {
         true => {
             let s = matches.value_of(constants::param::PARAM_LEVELS_WHITE_LEVEL).unwrap();
             if util::string_is_valid_f32(&s) {
-                s.parse::<f32>().unwrap()
+                s.parse::<f32>().unwrap() / 100.0
             } else {
                 eprintln!("Error: Invalid number specified for white level");
                 process::exit(1);
@@ -201,18 +189,33 @@ fn main() {
         }
     };
 
-    let delay : f32 = match matches.is_present(constants::param::PARAM_DELAY) {
+    let delay : u16 = match matches.is_present(constants::param::PARAM_DELAY) {
         true => {
             let s = matches.value_of(constants::param::PARAM_DELAY).unwrap();
-            if util::string_is_valid_f32(&s) {
-                s.parse::<f32>().unwrap()
+            if util::string_is_valid_u16(&s) {
+                s.parse::<u16>().unwrap()
             } else {
                 eprintln!("Error: Invalid number specified for interframe delay");
                 process::exit(1);
             }
         },
         false => {
-            0.2
+            10
+        }
+    };
+
+    let blur_kernel_size : f32 = match matches.is_present(constants::param::PARAM_BLUR) {
+        true => {
+            let s = matches.value_of(constants::param::PARAM_BLUR).unwrap();
+            if util::string_is_valid_f32(&s) {
+                s.parse::<f32>().unwrap()
+            } else {
+                eprintln!("Error: Invalid number specified for blur kernel size");
+                process::exit(1);
+            }
+        },
+        false => {
+            0.0
         }
     };
 
@@ -230,54 +233,104 @@ fn main() {
         process::exit(1);
     }
 
-    if white_level > 1.0 || black_level > 1.0 {
-        eprintln!("Levels cannot exceed 1.0");
-        process::exit(1);
-    }
+    // if white_level > 1.0 || black_level > 1.0 {
+    //     eprintln!("Levels cannot exceed 1.0");
+    //     process::exit(1);
+    // }
 
     if gamma <= 0.0 {
         eprintln!("Gamma cannot be zero or negative");
         process::exit(1);
     }
 
-    if delay < 0.0 {
-        eprintln!("Interframe delay cannot be negative");
+    if blur_kernel_size < 0.0 {
+        eprintln!("Blur kernel size cannot be negative");
         process::exit(1);
     }
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    let mut mean_stack = generate_mean_stack(&input_files);
-    let (mm_min, mm_max) = mean_stack.get_min_max_all_channel();
-    vprintln!("Min: {}, Max: {}", mm_min, mm_max);
-    //mean_stack.normalize_16bit_to_8bit();
-    mean_stack.save("test.png");
-
-
-    //let mut first_pixels: Vec<u8> = imagebuffer_to_vec_v8(&mean_stack.get_band(0));
-    //let first_frame = gif::Frame::from_rgb(mean_stack.width as u16, mean_stack.height as u16, &mut *first_pixels);
+    let mean_stack = generate_mean_stack(&input_files);
 
     let mut image = File::create(output).unwrap();
     let mut encoder = gif::Encoder::new(&mut image, mean_stack.width as u16, mean_stack.height as u16, &[]).unwrap();
-    encoder.set_repeat(Repeat::Infinite).unwrap();
+    encoder.set_repeat(gif::Repeat::Infinite).unwrap();
     
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
-            vprintln!("Processing File: {}", in_file);
+            vprintln!("Processing frame differential on file: {}", in_file);
 
-            let raw = rgbimage::RgbImage::open(&String::from(*in_file)).unwrap();
+            let raw = rgbimage::RgbImage::open16(&String::from(*in_file)).unwrap();
 
             let b0 = raw.get_band(0);
             let m0 = mean_stack.get_band(0);
             
-            let mut d = b0.subtract(m0).unwrap();
-            let mm = d.get_min_max().unwrap();
-            let norm_min = (255.0 * black_level) + mm.min;
-            let norm_max = (255.0 * white_level) + mm.min;
+            let diff = b0.subtract(m0).unwrap();
+            let mut d = diff.clone();
 
+            // Convert for absolute value difference
+            for y in 0..d.height {
+                for x in 0..d.width {
+                    let v = d.get(x, y).unwrap();
+                    d.put(x, y, v.abs());
+                }
+            }
+
+            let mm = d.get_min_max().unwrap();
+            let rng = 65535.0;
+            let norm_min = (rng * black_level) + mm.min;
+            let norm_max = (rng * white_level) + mm.min;
+            
             d.clip_mut(norm_min, norm_max);
             d.power_mut(gamma);
-            let n = d.normalize(mm.min, mm.max).unwrap();
+
+            let mut n = d.normalize(0.0, 65535.0).unwrap();
+
+            for y in 0..d.height {
+                for x in 0..d.width {
+                    let mult = match diff.get(x, y).unwrap() >= 0.0 {
+                        true => 1.0,
+                        false => -1.0
+                    };
+                    n.put(x, y, n.get(x, y).unwrap() * mult);
+                }
+            }
+
+            let blurred = match blur_kernel_size == 0.0 {
+                true => n.clone(),
+                false => {
+                    // This method is lossy. Get over it.
+                    // So if we're dealing with negative numbers here, we
+                    // will need to scale them to within range of a u16.
+                    // To do that, we will scale all values by half, then
+                    // add the absolute value of the lowest value. 
+                    // Then do the blur
+                    // Then undo that offset and scaling. 
+                    // We lose precision by about half
+                    
+                    let mnmx = n.get_min_max().unwrap();
+                    let init_mn = mnmx.min;
+                    if init_mn < 0.0 {
+                        n.scale_mut(0.5);
+                        n.add_across_mut(init_mn.abs() * 0.5);
+                    }
+                    
+                    let mut b = blur::blur_imagebuffer(&n, blur_kernel_size);
+
+                    if init_mn < 0.0 {
+                        b.subtract_across_mut(init_mn.abs() * 0.5);
+                        b.scale_mut(2.0);
+                    }
+                    
+                    b
+                }
+            };
+
+
+            
+
+            let mut merged = m0.add(&blurred).unwrap();
+            merged.clip_mut(0.0, 65355.0);
 
             // TODO:
             // _ Absolute difference
@@ -285,10 +338,12 @@ fn main() {
             // _ Multiband (RGB)
             // _ Refactor for cleanliness
 
-            let mut pixels = imagebuffer_to_vec_v8(&n);
-            let frame = gif::Frame::from_rgb_speed(raw.width as u16, raw.height as u16, &mut *pixels, 10);
+            merged.normalize_mut(0.0, 255.0);
+            let mut pixels = imagebuffer_to_vec_v8(&merged);
+            let mut frame = gif::Frame::from_rgb(raw.width as u16, raw.height as u16, &mut *pixels);
+            frame.delay = delay;
             encoder.write_frame(&frame).unwrap();
-            //process_file(in_file, black_level, white_level, gamma);
+            
         } else {
             eprintln!("File not found: {}", in_file);
         }

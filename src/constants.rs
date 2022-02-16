@@ -107,6 +107,8 @@ pub mod param {
     pub const PARAM_DELAY : &str = "delay";
     pub const PARAM_DELAY_SHORT : &str = "d";
     
+    pub const PARAM_BLUR : &str = "blur";
+    pub const PARAM_BLUR_SHORT : &str = "B";
 }
 
 

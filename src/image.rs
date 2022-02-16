@@ -23,7 +23,6 @@ use sciimg::{
 pub struct MarsImage {
     pub image: RgbImage,
     instrument: enums::Instrument,
-    empty: bool,
     metadata: Option<Metadata>
 }
 
@@ -33,7 +32,6 @@ impl MarsImage {
         MarsImage {
             image:RgbImage::new_with_bands(width, height, 3, ImageMode::U8BIT).unwrap(),
             instrument:instrument,
-            empty:false,
             metadata:None
         }
     }
@@ -48,7 +46,6 @@ impl MarsImage {
         MarsImage {
             image:RgbImage::open(&file_path).unwrap(),
             instrument:instrument,
-            empty:false,
             metadata:MarsImage::load_image_metadata(&file_path)
         }
 

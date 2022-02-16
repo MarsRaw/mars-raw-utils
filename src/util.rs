@@ -8,7 +8,9 @@ use crate::{
     httpfetch
 };
 
-use std::str::FromStr;
+
+use sciimg::util as sciutil;
+
 use std::collections::HashMap;
 use std::path::Path;
 use std::fs::File;
@@ -18,27 +20,25 @@ use serde::{
     Serialize
 };
 
-pub fn string_is_valid_num<T:FromStr>(s:&str) -> bool {
-    let num = s.parse::<T>();
-    num.is_ok()
-}
-
 pub fn string_is_valid_f64(s:&str) -> bool {
-    string_is_valid_num::<f64>(s)
+    sciutil::string_is_valid_f64(s)
 }
 
 
 pub fn string_is_valid_f32(s:&str) -> bool {
-    string_is_valid_num::<f32>(s)
+    sciutil::string_is_valid_f32(s)
 }
 
 pub fn string_is_valid_i32(s:&str) -> bool {
-    string_is_valid_num::<i32>(s)
+    sciutil::string_is_valid_i32(s)
+}
+
+pub fn string_is_valid_u16(s:&str) -> bool {
+    sciutil::string_is_valid_u16(s)
 }
 
 pub fn filename_char_at_pos(filename:&str, pos:usize) -> char {
-    let bn = path::basename(&filename);
-    bn.chars().nth(pos).unwrap()
+    sciutil::filename_char_at_pos(filename, pos)
 }
 
 #[macro_export]

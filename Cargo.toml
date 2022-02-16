@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
@@ -175,13 +175,13 @@ serde_json = "1.0.64"
 const_format = "0.2.14"
 reqwest = { version = "0.11.2", features = ["blocking"] }
 platforms = "2.0.0"
-fastblur = "0.1.1"
 lab = "0.11.0"
 toml = "0.5.8"
 serde = { version = "1.0.125", features = ["derive"] }
 sscanf = "0.2.1"
 string-builder = "0.2.0"
-sciimg = "0.1.9"
+sciimg = "0.2.1"
+#sciimg = { path = "../sciimg" }
 weezl = "0.1.5"
 gif = "0.11.3"
 
