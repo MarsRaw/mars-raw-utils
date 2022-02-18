@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
@@ -12,7 +12,7 @@ exclude = ["mars-raw-utils-data"]
 
 [package.metadata.deb]
 maintainer = "Kevin M. Gill <apoapsys@gmail.com>"
-copyright = "2021, Kevin M. Gill <apoapsys@gmail.com>"
+copyright = "2022, Kevin M. Gill <apoapsys@gmail.com>"
 license-file = ["LICENSE", "2"]
 extended-description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images" 
 depends = "$auto"
@@ -45,6 +45,8 @@ assets = [
     ["target/release/crop", "usr/bin/", "755"],
     ["target/release/debayer", "usr/bin/", "755"],
     ["target/release/gen_mean_stack", "usr/bin/", "755"],
+    ["target/release/levels", "usr/bin/", "755"],
+    ["target/release/diffgif", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
     ["mars-raw-utils-data/caldata/*jpg", "usr/share/mars_raw_utils/data/", "644"],
@@ -178,7 +180,6 @@ platforms = "2.0.0"
 lab = "0.11.0"
 toml = "0.5.8"
 serde = { version = "1.0.125", features = ["derive"] }
-sscanf = "0.2.1"
 string-builder = "0.2.0"
 sciimg = "0.2.1"
 #sciimg = { path = "../sciimg" }
@@ -201,7 +202,7 @@ m20_watson_calibrate = { path = "/usr/bin/m20_watson_calibrate" }
 m20_zcam_calibrate = { path = "/usr/bin/m20_zcam_calibrate" }
 m20_hnav_calibrate = { path = "/usr/bin/m20_hnav_calibrate" }
 m20_hrte_calibrate = { path = "/usr/bin/m20_hrte_calibrate" }
-msl_ecam_assemble = { path = "/usr/bin/msl_ecam_assemble" }
+m20_ecam_assemble = { path = "/usr/bin/m20_ecam_assemble" }
 msl_ecam_calibrate = { path = "/usr/bin/msl_ecam_calibrate" }
 msl_fetch_raw = { path = "/usr/bin/msl_fetch_raw" }
 msl_mahli_calibrate = { path = "/usr/bin/msl_mahli_calibrate" }
@@ -218,6 +219,8 @@ nsyt_date = { path = "/usr/bin/nsyt_date" }
 debayer = { path = "/usr/bin/debayer" }
 crop = { path = "/usr/bin/crop" }
 gen_mean_stack = { path = "/usr/bin/gen_mean_stack" }
+diffgif = { path = "/usr/bin/diffgif" }
+levels = { path = "/usr/bin/levels" }
 
 [package.metadata.rpm.files]
 "M20_MCZ_LEFT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png", mode = "644"}

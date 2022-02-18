@@ -31,7 +31,7 @@ rm -rf %{buildroot}
 %{_bindir}/*
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_MCZ_RIGHT_INPAINT_MASK_V1.png
-%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_SCAM_FLAT_Sol1_V1.png
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_SCAM_FLAT_RGB_Sol77_V2.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_SCAM_MASK_Sol1_V1.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_WATSON_FLAT_V0.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_WATSON_INPAINT_MASK_V1.png
@@ -45,3 +45,11 @@ rm -rf %{buildroot}
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/MSL_NRB_INPAINT_Sol3052_V1.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/MSL_RLB_FLAT_V1.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/MSL_RRB_FLAT_V1.png
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/FLAT_MD_0_RGB_V1.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_HELI_NAV_FLAT_Sol76_V1.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_HELI_RTE_FLAT_V3.png
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/MSL_CCAM_FLAT_Sol32_V1.png
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/MSL_CCAM_MASK_Sol3122_V2.png
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0203.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0210.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/caldata.toml

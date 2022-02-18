@@ -1,4 +1,4 @@
-FROM rust:1.51.0
+FROM rust:1.58.1
 
 WORKDIR /mars
 
@@ -7,7 +7,7 @@ COPY . .
 
 RUN cargo deb
 
-RUN apt install ./target/debian/mars_raw_utils_0.2.0_amd64.deb 
+RUN apt install ./target/debian/mars_raw_utils_0.2.4_amd64.deb 
 
 WORKDIR /data
 

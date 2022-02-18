@@ -222,21 +222,3 @@ pub mod tuple_format {
         }
     }
 }
-
-
-
-
-
-
-// fn from_triplet<'de, D>(deserializer: D) -> Result<Option<Triplet>, D::Error>
-// where
-//     D: Deserializer<'de>,
-// {
-//     let s: &str = Deserialize::deserialize(deserializer)?;
-//     match sscanf::scanf!(s, "{{{},{},{}}}", f64, f64, f64) {
-//         None => Ok(None),
-//         Some(parsed) => {
-//             Ok(Some(Triplet{x:parsed.0, y:parsed.1, z:parsed.2}))
-//         }
-//     }
-// }

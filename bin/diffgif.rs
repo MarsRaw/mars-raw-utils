@@ -156,7 +156,7 @@ fn process_file(encoder:&mut gif::Encoder<&mut std::fs::File>, in_file:&String, 
 
     let mut processed_band_0 = process_band(&raw.get_band(0), &mean_stack.get_band(0), black_level, white_level, gamma, blur_kernel_size);
     let mut processed_band_1 = process_band(&raw.get_band(1), &mean_stack.get_band(1), black_level, white_level, gamma, blur_kernel_size);
-    let mut processed_band_2 = process_band(&raw.get_band(2), &mean_stack.get_band(1), black_level, white_level, gamma, blur_kernel_size);
+    let mut processed_band_2 = process_band(&raw.get_band(2), &mean_stack.get_band(2), black_level, white_level, gamma, blur_kernel_size);
 
     // TODO:
     // _ Absolute difference
