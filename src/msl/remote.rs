@@ -7,7 +7,11 @@ use crate::{
     util::*,
     msl::metadata::*,
     metadata::convert_to_std_metadata,
-    path
+    path,
+    msl::latest::{
+        Latest,
+        LatestData
+    }
 };
 
 pub fn print_header() {
@@ -155,6 +159,23 @@ pub fn fetch_stats(cameras:&[String], minsol:i32, maxsol:i32) -> error::Result<M
                 page:res.page as i32,
                 per_page:res.per_page as i32
             })
+        },
+        Err(e) => Err(e)
+    }
+}
+
+pub fn fetch_latest() -> error::Result<LatestData> {
+    let uri = constants::url::MSL_LATEST_WEBSERVICE_URL;
+
+    let req = jsonfetch::JsonFetcher::new(uri);
+    match req.fetch_str() {
+        Ok(v) => {
+            let res: Latest = serde_json::from_str(v.as_str()).unwrap();
+            if res.success {
+                Ok(res.latest_data)
+            } else {
+                Err("Server error")
+            }
         },
         Err(e) => Err(e)
     }

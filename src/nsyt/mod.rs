@@ -3,3 +3,4 @@ pub mod idc;
 pub mod lmst;
 pub mod remote;
 pub mod metadata;
+pub mod latest;

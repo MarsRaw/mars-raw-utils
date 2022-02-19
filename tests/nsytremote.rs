@@ -1,4 +1,16 @@
-use mars_raw_utils::nsyt::remote::remote_fetch;
+use mars_raw_utils::nsyt::{
+    latest::LatestData,
+    remote::remote_fetch,
+    remote::fetch_latest
+};
+
+#[test]
+#[ignore]
+fn test_msl_latest() {
+    let latest:LatestData = fetch_latest().expect("Failed to fetch latest data");
+    assert_eq!(latest.latest, "2022-02-14T15:11:15Z");
+    assert_eq!(latest.latest_sols.len(), 1);
+}
 
 
 #[test]

@@ -4,6 +4,7 @@ use crate::{
     error,
     util::*,
     m20::metadata::*,
+    m20::latest,
     metadata::convert_to_std_metadata,
     path
 };
@@ -202,5 +203,20 @@ pub fn remote_fetch(cameras:&[String], num_per_page:i32, page:Option<i32>, minso
         None => {
             fetch_all(&cameras, num_per_page, minsol, maxsol, thumbnails, movie_only, list_only, search, only_new)
         }
+    }
+}
+
+
+
+pub fn fetch_latest() -> error::Result<latest::LatestData> {
+    let uri = constants::url::M20_LATEST_WEBSERVICE_URL;
+
+    let req = jsonfetch::JsonFetcher::new(uri);
+    match req.fetch_str() {
+        Ok(v) => {
+            let res: latest::LatestData = serde_json::from_str(v.as_str()).unwrap();
+            Ok(res)
+        },
+        Err(e) => Err(e)
     }
 }

@@ -7,8 +7,11 @@ pub const OUTPUT_FILENAME_APPEND : &str = "rjcal";
 
 pub mod url {
     pub const MSL_RAW_WEBSERVICE_URL : &str = "https://mars.nasa.gov/api/v1/raw_image_items/";
+    pub const MSL_LATEST_WEBSERVICE_URL : &str = "https://mars.nasa.gov/api/v1/raw_image_items/msl/latest/";
     pub const M20_RAW_WEBSERVICE_URL : &str = "https://mars.nasa.gov/rss/api/";
+    pub const M20_LATEST_WEBSERVICE_URL : &str = "https://mars.nasa.gov/rss/api/?feed=raw_images&category=mars2020,ingenuity&feedtype=json&ver=1.2&latest=true";
     pub const NSYT_RAW_WEBSERVICE_URL : &str = "https://mars.nasa.gov/api/v1/raw_image_items/";
+    pub const NSYT_LATEST_WEBSERVICE_URL : &str = "https://mars.nasa.gov/api/v1/raw_image_items/insight/latest/";
 }
 
 pub mod time {

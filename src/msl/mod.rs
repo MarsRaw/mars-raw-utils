@@ -6,3 +6,4 @@ pub mod lmst;
 pub mod ccam;
 pub mod mardi;
 pub mod metadata;
+pub mod latest;

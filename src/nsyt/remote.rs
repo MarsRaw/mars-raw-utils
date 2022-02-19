@@ -4,6 +4,7 @@ use crate::{
     error,
     util::*,
     nsyt::metadata::*,
+    nsyt::latest,
     metadata::convert_to_std_metadata,
     path
 };
@@ -165,5 +166,23 @@ pub fn remote_fetch(cameras:&Vec<String>, num_per_page:i32, page:Option<i32>, mi
         None => {
             fetch_all(&cameras, num_per_page, minsol, maxsol, thumbnails, list_only, search, only_new)
         }
+    }
+}
+
+
+pub fn fetch_latest() -> error::Result<latest::LatestData> {
+    let uri = constants::url::NSYT_LATEST_WEBSERVICE_URL;
+
+    let req = jsonfetch::JsonFetcher::new(uri);
+    match req.fetch_str() {
+        Ok(v) => {
+            let res: latest::Latest = serde_json::from_str(v.as_str()).unwrap();
+            if res.success {
+                Ok(res.latest_data)
+            } else {
+                Err("Server error")
+            }
+        },
+        Err(e) => Err(e)
     }
 }
