@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.2.5"
+version = "0.2.6"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
@@ -200,6 +200,7 @@ sciimg = "0.2.1"
 #sciimg = { path = "../sciimg" }
 weezl = "0.1.5"
 gif = "0.11.3"
+rayon = "1.5.1"
 
 [package.metadata.rpm]
 package = "mars_raw_utils"

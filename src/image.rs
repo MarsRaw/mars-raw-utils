@@ -6,8 +6,7 @@ use crate::{
     util,
     path,
     vprintln,
-    flatfield, 
-    decompanding,
+    flatfield,
     inpaintmask
 };
 
@@ -141,43 +140,6 @@ impl MarsImage {
     pub fn flatfield(&mut self) {
 
         let mut flat = flatfield::load_flat(self.instrument).unwrap();
-
-        // These instrument-specific crops don't really belong in here.
-        if self.instrument == enums::Instrument::MslMAHLI && flat.image.width == 1632 && flat.image.height == 1200 {
-            flat.image.crop(32, 16, 1584, 1184);
-        } 
-        
-        if self.instrument == enums::Instrument::MslMastcamRight {
-
-            if self.image.width == 1328 && self.image.height == 1184 {
-                //x160, y16
-                flat.image.crop(160, 16, 1328, 1184);
-            } else if self.image.width == 848 && self.image.height == 848 {
-                //x400, y192
-                flat.image.crop(400, 192, 848, 848);
-            }
-
-            if self.image.get_mode() == ImageMode::U8BIT {
-                flat.image.normalize_to_12bit_with_max(decompanding::get_max_for_instrument(self.instrument) as f32, 255.0);
-                flat.compand(&decompanding::get_ilt_for_instrument(self.instrument));
-            }
-
-        }
-
-        if self.instrument == enums::Instrument::MslMastcamLeft {
-
-            if self.image.width == 1328 && self.image.height == 1184 { //9
-                flat.image.crop(160, 16, 1328, 1184);
-            }  else if self.image.width == 1152 && self.image.height == 432 {
-                flat.image.crop(305, 385, 1152, 432);
-            }
-
-            if self.image.get_mode() == ImageMode::U8BIT {
-                flat.image.normalize_to_12bit_with_max(decompanding::get_max_for_instrument(self.instrument) as f32, 255.0);
-                flat.compand(&decompanding::get_ilt_for_instrument(self.instrument));
-            }
-        }
-        
 
         // Crop the flatfield image if it's larger than the input image. 
         // Sizes need to match
