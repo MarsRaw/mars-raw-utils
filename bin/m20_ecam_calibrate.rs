@@ -10,6 +10,8 @@ use mars_raw_utils::{
 #[macro_use]
 extern crate clap;
 
+use rayon::prelude::*;
+
 use std::process;
 
 use clap::{Arg, App};
@@ -111,14 +113,15 @@ fn main() {
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    for in_file in input_files.iter() {
+    let num_files = input_files.len();
+    input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
         if path::file_exists(in_file) {
-            vprintln!("Processing File: {}", in_file);
+            vprintln!("Processing File: {} (#{} of {})", in_file, idx, num_files);
             m20::ecam::process_file(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, only_new);
         } else {
             eprintln!("File not found: {}", in_file);
         }
-    }
+    });
 
     
 }
