@@ -201,6 +201,7 @@ sciimg = "0.2.1"
 weezl = "0.1.5"
 gif = "0.11.3"
 rayon = "1.5.1"
+chrono = "0.4.19"
 
 [package.metadata.rpm]
 package = "mars_raw_utils"
