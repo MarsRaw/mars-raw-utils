@@ -172,8 +172,11 @@ impl MarsImage {
 
 
     pub fn apply_inpaint_fix(&mut self) {
-
         let mask = inpaintmask::load_mask(self.instrument).unwrap();
+        self.apply_inpaint_fix_with_mask(&mask);
+    }
+
+    pub fn apply_inpaint_fix_with_mask(&mut self, mask:&ImageBuffer) {
         let mut fixed = inpaint::apply_inpaint_to_buffer(&self.image, &mask).unwrap();
         fixed.set_mode(self.image.get_mode());
         self.image = fixed;

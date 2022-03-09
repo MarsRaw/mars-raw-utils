@@ -6,7 +6,8 @@ use crate::{
     util,
     decompanding,
     constants,
-    flatfield
+    flatfield,
+    inpaintmask
 };
 
 use sciimg::{
@@ -45,6 +46,10 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     }
 
 
+    let mut inpaint_mask = inpaintmask::load_mask(instrument).unwrap();
+    let mut flat = flatfield::load_flat(instrument).unwrap();
+
+
     if raw.image.width == 1536 {
         raw.image.crop(161, 0, 1328, raw.image.height);
     }
@@ -53,24 +58,25 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
         raw.image.crop(125, 13, 1328, 1184);
     }
 
-    // Only inpaint with the same size as the mask until we can reliably determine
-    // subframing sensor location.
-    //if raw.image.width == 1328 && raw.image.height == 1184 {
-        vprintln!("Inpainting...");
-        raw.apply_inpaint_fix();
-    //}
+
     
     vprintln!("Flatfielding...");
-    let mut flat = flatfield::load_flat(instrument).unwrap();
+    
 
     if instrument == enums::Instrument::MslMastcamRight {
 
         if raw.image.width == 1328 && raw.image.height == 1184 {
             //x160, y16
             flat.image.crop(160, 16, 1328, 1184);
+            inpaint_mask = inpaint_mask.get_subframe(160, 16, 1328, 1184).unwrap();
         } else if raw.image.width == 848 && raw.image.height == 848 {
             //x400, y192
             flat.image.crop(400, 192, 848, 848);
+            inpaint_mask = inpaint_mask.get_subframe(400, 192, 848, 848).unwrap();
+        } else if raw.image.width == 1344 && raw.image.height == 1200 {
+            //x400, y192
+            flat.image.crop(160, 0, 1344, 1200);
+            inpaint_mask = inpaint_mask.get_subframe(160, 0, 1344, 1200).unwrap();
         }
 
         if raw.image.get_mode() == ImageMode::U8BIT {
@@ -84,10 +90,16 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
 
         if raw.image.width == 1328 && raw.image.height == 1184 { //9
             flat.image.crop(160, 16, 1328, 1184);
+            inpaint_mask = inpaint_mask.get_subframe(160, 16, 1328, 1184).unwrap();
         }  else if raw.image.width == 1152 && raw.image.height == 432 {
             flat.image.crop(305, 385, 1152, 432);
+            inpaint_mask = inpaint_mask.get_subframe(305, 385, 1152, 432).unwrap();
         } else if raw.image.width == 1600 && raw.image.height == 1200 {
             flat.image.crop(33, 0, 1600, 1200);
+            inpaint_mask = inpaint_mask.get_subframe(33, 0, 1600, 1200).unwrap();
+        } else if raw.image.width == 1456 && raw.image.height == 640 {
+            flat.image.crop(96, 280, 1456, 640);
+            inpaint_mask = inpaint_mask.get_subframe(96, 280, 1456, 640).unwrap();
         }
 
         if raw.image.get_mode() == ImageMode::U8BIT {
@@ -98,18 +110,27 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
 
     vprintln!("Raw: {}/{}, Flat: {}/{}", raw.image.width, raw.image.height, flat.image.width, flat.image.height);
 
+    // Catch some subframing edge cases
     if flat.image.width > raw.image.width {
         let x = (flat.image.width - raw.image.width) / 2;
         let y = (flat.image.height - raw.image.height) / 2;
-        vprintln!("Cropping flat with x/y/width/height: {},{} {}x{}", x, y, raw.image.width, raw.image.height);
+        vprintln!("Cropping flat/inpaint mask with x/y/width/height: {},{} {}x{}", x, y, raw.image.width, raw.image.height);
         flat.image.crop(x, y, raw.image.width, raw.image.height);
+        inpaint_mask = inpaint_mask.get_subframe(x, y, raw.image.width, raw.image.height).unwrap();
     }
 
-    flat.apply_inpaint_fix();
+    flat.apply_inpaint_fix_with_mask(&inpaint_mask);
 
     vprintln!("Raw: {}/{}, Flat: {}/{}", raw.image.width, raw.image.height, flat.image.width, flat.image.height);
 
     raw.flatfield_with_flat(&flat);
+
+    // Only inpaint with the same size as the mask until we can reliably determine
+    // subframing sensor location.
+    //if raw.image.width == 1328 && raw.image.height == 1184 {
+        vprintln!("Inpainting...");
+        raw.apply_inpaint_fix_with_mask(&inpaint_mask);
+    //}
 
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar);
