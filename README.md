@@ -33,7 +33,7 @@ Additional instruments will be implemented more or less whenever I get to them..
 ## Building from source:
 A working Rust (https://www.rust-lang.org/) installation is required for building.
 
-So far I've only tested building on Ubuntu 20.04, both natively and within the Windows Subsystem for Linux on Windows 10 and on MacOSX Catalina. Within the project folder, the software can be built for testing via `cargo build` and individual binaries can be run in debug mode via, for example, `cargo run --bin m20_fetch_raw -- -i`
+So far I've only tested building on Ubuntu 21.10, natively and within the Windows Subsystem for Linux on Windows 10, and on MacOSX Catalina. Within the project folder, the software can be built for testing via `cargo build` and individual binaries can be run in debug mode via, for example, `cargo run --bin m20_fetch_raw -- -i`
 
 To build successfully on Linux, you'll likely need the following packages installed via apt:
 * libssl-dev (Ubuntu)
@@ -48,6 +48,8 @@ git submodule update
 ```
 
 ### Install via cargo:
+This is the easiest installation method for *nix-based systems. It has not been tested in Windows.
+
 ```
 cargo install --path .
 export MARS_RAW_DATA=$PWD/mars-raw-utils-data/caldata
@@ -69,7 +71,7 @@ cp -v mars-raw-utils-data/caldata/* .rpm/
 cargo rpm build -v
 rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.1.3-1.el8.x86_64.rpm
 ```
-NOTE: Adjust the output rpm package filename to what is outputted by build.
+NOTE: Adjust the output rpm package filename to what is created by build.
 
 ### Docker:
 The dockerfile demonstrates a method for building an installable debian package, or you can use the container itself:
@@ -81,6 +83,9 @@ docker exec -it mars_raw_utils bash
 ```
 
 Builds for MacOSX (maybe via Homebrew?) and Windows are in the plan. Though the project has built and run from MacOSX and Windows, I haven't worked out the installation method in a way that handles the calibration data.
+
+### Building RPMs using Docker
+CentOS targetted RPMs can be built using `dockerbuild.sh` which will result in the build artifacts being placed into the `target` directory.
 
 ## Specifying Calibration Data Location:
 By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can set the calibration file directory by using the `MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
@@ -147,10 +152,15 @@ OPTIONS:
     -i, --inputs <INPUT>...    Input
     -R, --red <RED>            Red weight
 ```
-#### Recommended Color Correction Multiples:
+#### Common Color Correction Multiples:
 * RED: 1.16
 * GREEN: 1.00
 * BLUE: 1.05
+
+#### Common Color Correction Multiples (White Balanced):
+* RED: 0.8
+* GREEN: 1.0
+* BLUE: 1.543
 
 #### Examples:
 Calibrate a directory of JPEGs, applying color correction values:
@@ -178,14 +188,14 @@ OPTIONS:
 ```
 
 #### Recommended Color Correction Multiples:
-* RED: 1.20
-* GREEN: 1.00
-* BLUE: 1.26
+* RED: 0.965
+* GREEN: 0.985
+* BLUE: 1.155
 
 #### Examples:
 Calibrate a directory of JPEGs, applying color correction values:
 ```
-msl_mcam_calibrate -i *jpg -v -R 1.20 -G 1.0 -B 1.26
+msl_mcam_calibrate -i *jpg -v -R 0.965 -G 0.985 -B 1.155
 ```
 
 Calibrate a directory of JPEGs, skipping ILT conversion (decompanding):
@@ -446,7 +456,7 @@ OPTIONS:
     -i, --inputs <INPUT>...    Input
 ```
 
-## Upscale Experiment
+## Upscale Experiment (Deprecated)
 An experiment in smooth image upscaling using the median-based inpainting algorithm.
 
 ```
@@ -560,6 +570,38 @@ msl_ecam_calibrate -i *JPG -v -t 2.0
 
 diffgif -i *NCAM00551*-rjcal.png -o CloudZenith_3325.gif -v -b 0 -w 3.0 -g 1.0 -B 1.5 -d 20
 ```
+
+## Data Update Checks
+Fetches information as to the latest updated sols.
+
+Example Output:
+```
+$ msl_latest
+Latest data: 2022-02-23T18:30:03Z
+Latest sol: 3395
+Latest sols: [3365, 3374, 3376, 3378, 3390, 3393, 3394, 3395]
+New Count: 364
+Sol Count: 225
+Total: 894201
+
+$ m20_latest
+Latest data: 2022-02-23T10:22:33Z
+Latest sol: 359
+Latest sols: [349]
+New Count: 270
+Sol Count: 99
+Total: 217981
+
+$ nsyt_latest
+Latest data: 2022-02-14T15:11:15Z
+Latest sol: 1144
+Latest sols: [1144]
+New Count: 2
+Sol Count: 2
+Total: 6353
+```
+
+
 
 ## Mission Dates
 Mission time and sol are available for MSL, Mars2020, and InSight via `msl_date`, `m20_date`, and `nsyt_date`, respectively. 
