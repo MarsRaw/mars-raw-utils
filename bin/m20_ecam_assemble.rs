@@ -1,28 +1,30 @@
-// use mars_raw_utils::{
-//     constants, 
-//     print, 
-//     vprintln, 
-//     path,
-//     util,
-//     m20,
-//     enums,
-//     error,
-//     metadata,
-//     max,
-//     min
-// };
+use mars_raw_utils::{
+    constants, 
+    print, 
+    vprintln, 
+    path,
+    util,
+    m20,
+    enums,
+    error,
+    metadata,
+    max,
+    min,
+    image
+};
 
-// use sciimg::{
-//     enums::ImageMode,
-//     rgbimage
-// };
+use sciimg::{
+    enums::ImageMode,
+    rgbimage,
+    imagebuffer
+};
 
-// #[macro_use]
-// extern crate clap;
+#[macro_use]
+extern crate clap;
 
-// use std::process;
+use std::process;
 
-// use clap::{Arg, App};
+use clap::{Arg, App};
 
 // /*
 //   "subframe_rect": [
@@ -473,6 +475,173 @@
 
 // }
 
-fn main() {
 
+
+struct Tile {
+    pub source_path:String,
+    pub image:image::MarsImage,
+    pub top_left_x:usize,
+    pub top_left_y:usize,
+    pub bottom_right_x:usize,
+    pub bottom_right_y:usize,
+    pub scale:u32
+
+}
+
+impl Tile {
+    pub fn new(source_path:&str) -> Self {
+        let instrument = enums::Instrument::M20NavcamLeft;
+        let image = image::MarsImage::open(String::from(&source_path.to_owned()), instrument);
+        
+        match image.metadata.clone() {
+            Some(md) => {
+                let scale = md.scale_factor;
+                if let Some(ref sf) = md.subframe_rect {
+                    if sf.len() != 4 {
+                        panic!("Subframe rect field an invalid length");
+                    }
+                    let tl_x = (sf[0] / scale as f64).floor() as usize + 2;
+                    let tl_y = (sf[1] / scale as f64).floor() as usize + 2;
+                    let right_x = tl_x + image.image.width;
+                    let bottom_y = tl_y + image.image.height;
+
+                    Tile {
+                        source_path:source_path.to_string(),
+                        image:image,
+                        top_left_x: tl_x,
+                        top_left_y: tl_y,
+                        bottom_right_x: right_x,
+                        bottom_right_y: bottom_y,
+                        scale:scale
+                    }
+                } else {
+                    panic!("Subframe rect field is empty");
+                }
+            },
+            None => {
+                panic!("Metadata not found for image {}", source_path);
+            }
+        }
+    }
+}
+
+
+struct Composite {
+
+    pub scale:u32,
+    pub width:usize,
+    pub height:usize,
+    composite_image:rgbimage::RgbImage
+}
+
+impl Composite {
+    pub fn new(tiles:&Vec<Tile>) -> Self {
+
+        if tiles.len() == 0 {
+            panic!("Cannot assemble composite with no tiles!");
+        }
+
+        let scale = tiles[0].scale;
+
+        let (max_x, max_y) = Composite::determine_composite_size(&tiles);
+
+        let composite_image = rgbimage::RgbImage::new_with_bands(max_x, max_y, 3, ImageMode::U16BIT).unwrap();
+
+        vprintln!("Composite has width {}px, height {}px, and scale factor of {}", max_x, max_y, scale);
+        
+        Composite {
+            scale:scale,
+            width:max_x,
+            height:max_y,
+            composite_image:composite_image
+        }
+    }
+
+    fn determine_composite_size(tiles:&Vec<Tile>) -> (usize, usize) {
+
+        let mut max_x : usize = 0;
+        let mut max_y : usize = 0;
+
+        tiles.iter().for_each(|t| {
+
+            max_x = if t.bottom_right_x > max_x { t.bottom_right_x } else { max_x };
+            max_y = if t.bottom_right_y > max_y { t.bottom_right_y } else { max_y };
+
+        });
+
+        (max_x, max_y)
+    }
+
+    pub fn paste_tiles(&mut self, tiles:&Vec<Tile>) {
+        tiles.iter().for_each(|t| { 
+            self.paste_tile(&t);
+        });
+    }
+
+    pub fn paste_tile(&mut self, tile:&Tile) {
+        self.composite_image.paste(&tile.image.image, tile.top_left_x, tile.top_left_y);
+    }
+
+    pub fn finalize_and_save(&mut self, output_path:&str) {
+        self.composite_image.normalize_to_16bit();
+        self.composite_image.save(output_path);
+    }
+
+}
+
+fn main() {
+    let matches = App::new(crate_name!())
+                    .version(crate_version!())
+                    .author(crate_authors!())
+                    .arg(Arg::with_name(constants::param::PARAM_INPUTS)
+                        .short(constants::param::PARAM_INPUTS_SHORT)
+                        .long(constants::param::PARAM_INPUTS)
+                        .value_name("INPUT")
+                        .help("Input")
+                        .required(true)
+                        .multiple(true)
+                        .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_OUTPUT)
+                        .short(constants::param::PARAM_OUTPUT_SHORT)
+                        .long(constants::param::PARAM_OUTPUT)
+                        .value_name("OUTPUT")
+                        .help("Output")
+                        .required(true)
+                        .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_VERBOSE)
+                        .short(constants::param::PARAM_VERBOSE)
+                        .help("Show verbose output"))
+                    .get_matches();
+
+
+    if matches.is_present(constants::param::PARAM_VERBOSE) {
+        print::set_verbose(true);
+    }
+
+    let output_file = matches.value_of(constants::param::PARAM_OUTPUT).unwrap();
+
+    let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
+
+    let mut tiles:Vec<Tile> = vec!();
+
+    for in_file in input_files.iter() {
+        if ! path::file_exists(in_file) {
+            eprintln!("File not found: {}", in_file);
+            process::exit(1);
+        }
+        let tile = Tile::new(&in_file);
+        tiles.push(tile);
+    }
+
+    
+
+    // TODO: This is bad form.
+    vprintln!("Creating composite structure");
+    let mut composite = Composite::new(&tiles);
+
+    vprintln!("Adding {} tiles to composite", tiles.len());
+    composite.paste_tiles(&mut tiles);
+
+    vprintln!("Saving composite to {}", output_file);
+    composite.finalize_and_save(&output_file);
 }

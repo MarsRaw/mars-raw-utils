@@ -21,8 +21,8 @@ use sciimg::{
 #[derive(Debug, Clone)]
 pub struct MarsImage {
     pub image: RgbImage,
-    instrument: enums::Instrument,
-    metadata: Option<Metadata>
+    pub instrument: enums::Instrument,
+    pub metadata: Option<Metadata>
 }
 
 impl MarsImage {
