@@ -79,7 +79,7 @@ fn generate_mean_stack(input_files:&Vec<&str>) -> rgbimage::RgbImage {
 }
 
 
-fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuffer, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32) -> imagebuffer::ImageBuffer {
+fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuffer, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, add_back_to_mean:bool) -> imagebuffer::ImageBuffer {
     let diff = band.subtract(mean_band).unwrap();
     let mut d = diff.clone();
 
@@ -141,22 +141,26 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
         }
     };
 
-
-    
-
-    let mut merged = mean_band.add(&blurred).unwrap();
-    merged.clip_mut(0.0, 65355.0);
-    merged
+    match add_back_to_mean {
+        true => {
+            let mut merged = mean_band.add(&blurred).unwrap();
+            merged.clip_mut(0.0, 65355.0);
+            merged
+        },
+        false => {
+            blurred.clip(0.0, 65355.0).unwrap()
+        }
+    }
 }
 
-fn process_file(encoder:&mut gif::Encoder<&mut std::fs::File>, in_file:&String, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, delay:u16) {
+fn process_file(encoder:&mut gif::Encoder<&mut std::fs::File>, in_file:&String, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, delay:u16, add_back_to_mean:bool) {
     vprintln!("Processing frame differential on file: {}", in_file);
 
     let raw = rgbimage::RgbImage::open16(&in_file).unwrap();
 
-    let mut processed_band_0 = process_band(&raw.get_band(0), &mean_stack.get_band(0), black_level, white_level, gamma, blur_kernel_size);
-    let mut processed_band_1 = process_band(&raw.get_band(1), &mean_stack.get_band(1), black_level, white_level, gamma, blur_kernel_size);
-    let mut processed_band_2 = process_band(&raw.get_band(2), &mean_stack.get_band(2), black_level, white_level, gamma, blur_kernel_size);
+    let mut processed_band_0 = process_band(&raw.get_band(0), &mean_stack.get_band(0), black_level, white_level, gamma, blur_kernel_size, add_back_to_mean);
+    let mut processed_band_1 = process_band(&raw.get_band(1), &mean_stack.get_band(1), black_level, white_level, gamma, blur_kernel_size, add_back_to_mean);
+    let mut processed_band_2 = process_band(&raw.get_band(2), &mean_stack.get_band(2), black_level, white_level, gamma, blur_kernel_size, add_back_to_mean);
 
     // TODO:
     // _ Absolute difference
@@ -231,12 +235,20 @@ fn main() {
                         .value_name("OUTPUT")
                         .help("Output")
                         .required(true)
-                        .takes_value(true))     
+                        .takes_value(true)) 
+                    .arg(Arg::with_name(constants::param::PARAM_DIFFONLY)
+                        .short(constants::param::PARAM_DIFFONLY_SHORT)
+                        .help("Only produce differentials")
+                        .long(constants::param::PARAM_DIFFONLY)
+                        .value_name("DIFFONLY")  
+                        .takes_value(false))
                     .get_matches();
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
         print::set_verbose(true);
     }
+
+    let add_back_to_mean = ! matches.is_present(constants::param::PARAM_DIFFONLY);
 
     let black_level : f32 = match matches.is_present(constants::param::PARAM_LEVELS_BLACK_LEVEL) {
         true => {
@@ -354,7 +366,7 @@ fn main() {
     
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
-            process_file(&mut encoder, &String::from(*in_file), &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay);
+            process_file(&mut encoder, &String::from(*in_file), &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, add_back_to_mean);
         } else {
             eprintln!("File not found: {}", in_file);
         }
