@@ -188,7 +188,7 @@ fn process_frame_3channel(raw:&rgbimage::RgbImage, mean_stack:&rgbimage::RgbImag
     processed_band_1.normalize_mut(0.0, 255.0);
     processed_band_2.normalize_mut(0.0, 255.0);
 
-    rgbimage::RgbImage::new_from_buffers_rgb(&processed_band_0, &processed_band_0, &processed_band_0, ImageMode::U16BIT).unwrap()   
+    rgbimage::RgbImage::new_from_buffers_rgb(&processed_band_0, &processed_band_1, &processed_band_2, ImageMode::U16BIT).unwrap()   
 }
 
 fn process_file(encoder:&mut gif::Encoder<&mut std::fs::File>, in_file:&String, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, delay:u16, product_type:ProductType) {
