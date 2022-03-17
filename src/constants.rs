@@ -113,8 +113,8 @@ pub mod param {
     pub const PARAM_BLUR : &str = "blur";
     pub const PARAM_BLUR_SHORT : &str = "B";
 
-    pub const PARAM_DIFFONLY : &str = "diffonly";
-    pub const PARAM_DIFFONLY_SHORT : &str = "D";
+    pub const PARAM_PRODUCT_TYPE : &str = "prodtype";
+    pub const PARAM_PRODUCT_TYPE_SHORT : &str = "p";
 }
 
 

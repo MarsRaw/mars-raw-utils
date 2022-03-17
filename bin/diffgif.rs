@@ -9,7 +9,8 @@ use mars_raw_utils::{
 use sciimg::{
     rgbimage,
     imagebuffer,
-    blur
+    blur,
+    enums::ImageMode
 };
 
 use gif;
@@ -22,6 +23,23 @@ extern crate clap;
 use clap::{Arg, App};
 use std::process;
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+enum ProductType {
+    STANDARD,
+    DIFFERENTIAL,
+    STACKED
+}
+
+impl ProductType {
+    pub fn from_str(s:&str) -> Option<ProductType> {
+        match s {
+            "std" => Some(ProductType::STANDARD),
+            "diff" => Some(ProductType::DIFFERENTIAL),
+            "stacked" => Some(ProductType::STACKED),
+            _ => None
+        }
+    }
+}
 
 fn imagebuffer_to_vec_v8(buff_0:&imagebuffer::ImageBuffer, buff_1:&imagebuffer::ImageBuffer, buff_2:&imagebuffer::ImageBuffer) -> Vec<u8> {
     let mut f : Vec<u8> = vec!(0; buff_0.width * buff_0.height * 3);
@@ -35,6 +53,14 @@ fn imagebuffer_to_vec_v8(buff_0:&imagebuffer::ImageBuffer, buff_1:&imagebuffer::
     }
 
     f
+}
+
+
+fn rgbimage_to_vec_v8(img3band:&rgbimage::RgbImage) -> Vec<u8> {
+    let b0 = img3band.get_band(0);
+    let b1 = img3band.get_band(1);
+    let b2 = img3band.get_band(2);
+    imagebuffer_to_vec_v8(&b0, &b1, &b2)
 }
 
 fn generate_mean_stack(input_files:&Vec<&str>) -> rgbimage::RgbImage {
@@ -153,27 +179,39 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
     }
 }
 
-fn process_file(encoder:&mut gif::Encoder<&mut std::fs::File>, in_file:&String, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, delay:u16, add_back_to_mean:bool) {
-    vprintln!("Processing frame differential on file: {}", in_file);
-
-    let raw = rgbimage::RgbImage::open16(&in_file).unwrap();
-
-    let mut processed_band_0 = process_band(&raw.get_band(0), &mean_stack.get_band(0), black_level, white_level, gamma, blur_kernel_size, add_back_to_mean);
-    let mut processed_band_1 = process_band(&raw.get_band(1), &mean_stack.get_band(1), black_level, white_level, gamma, blur_kernel_size, add_back_to_mean);
-    let mut processed_band_2 = process_band(&raw.get_band(2), &mean_stack.get_band(2), black_level, white_level, gamma, blur_kernel_size, add_back_to_mean);
-
-    // TODO:
-    // _ Absolute difference
-    // _ Add back to the mean
-    // _ Multiband (RGB)
-    // _ Refactor for cleanliness
+fn process_frame_3channel(raw:&rgbimage::RgbImage, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, delay:u16, product_type:ProductType) -> rgbimage::RgbImage {
+    let mut processed_band_0 = process_band(&raw.get_band(0), &mean_stack.get_band(0), black_level, white_level, gamma, blur_kernel_size, product_type == ProductType::STANDARD);
+    let mut processed_band_1 = process_band(&raw.get_band(1), &mean_stack.get_band(1), black_level, white_level, gamma, blur_kernel_size, product_type == ProductType::STANDARD);
+    let mut processed_band_2 = process_band(&raw.get_band(2), &mean_stack.get_band(2), black_level, white_level, gamma, blur_kernel_size, product_type == ProductType::STANDARD);
 
     processed_band_0.normalize_mut(0.0, 255.0);
     processed_band_1.normalize_mut(0.0, 255.0);
     processed_band_2.normalize_mut(0.0, 255.0);
 
-    let mut pixels = imagebuffer_to_vec_v8(&processed_band_0, &processed_band_1, &processed_band_2);
-    let mut frame = gif::Frame::from_rgb(raw.width as u16, raw.height as u16, &mut *pixels);
+    rgbimage::RgbImage::new_from_buffers_rgb(&processed_band_0, &processed_band_0, &processed_band_0, ImageMode::U16BIT).unwrap()   
+}
+
+fn process_file(encoder:&mut gif::Encoder<&mut std::fs::File>, in_file:&String, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, delay:u16, product_type:ProductType) {
+    vprintln!("Processing frame differential on file: {}", in_file);
+
+    let raw = rgbimage::RgbImage::open16(&in_file).unwrap();
+
+    let (mut pixels, height) = match product_type {
+        ProductType::STACKED => {
+            let img_std = process_frame_3channel(&raw, &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, ProductType::STANDARD);
+            let img_diff = process_frame_3channel(&raw, &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, ProductType::DIFFERENTIAL);
+            let mut stacked = rgbimage::RgbImage::new_with_bands(img_std.width, img_std.height * 2, 3, ImageMode::U16BIT).unwrap();
+            stacked.paste(&img_diff, 0, 0);
+            stacked.paste(&img_std, 0, img_std.height);
+            (rgbimage_to_vec_v8(&stacked), img_std.height * 2)
+        },
+        _ => {
+            let img = process_frame_3channel(&raw, &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, product_type);
+            (rgbimage_to_vec_v8(&img), img.height)
+        }
+    };
+
+    let mut frame = gif::Frame::from_rgb(raw.width as u16, height as u16, &mut *pixels);
     frame.delay = delay;
     encoder.write_frame(&frame).unwrap();
 }
@@ -236,19 +274,18 @@ fn main() {
                         .help("Output")
                         .required(true)
                         .takes_value(true)) 
-                    .arg(Arg::with_name(constants::param::PARAM_DIFFONLY)
-                        .short(constants::param::PARAM_DIFFONLY_SHORT)
-                        .help("Only produce differentials")
-                        .long(constants::param::PARAM_DIFFONLY)
-                        .value_name("DIFFONLY")  
-                        .takes_value(false))
+                    .arg(Arg::with_name(constants::param::PARAM_PRODUCT_TYPE)
+                        .short(constants::param::PARAM_PRODUCT_TYPE_SHORT)
+                        .long(constants::param::PARAM_PRODUCT_TYPE)
+                        .value_name("PARAM_PRODUCT_TYPE")
+                        .help("Product type (std, diff, stacked)")
+                        .required(false)
+                        .takes_value(true))
                     .get_matches();
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
         print::set_verbose(true);
     }
-
-    let add_back_to_mean = ! matches.is_present(constants::param::PARAM_DIFFONLY);
 
     let black_level : f32 = match matches.is_present(constants::param::PARAM_LEVELS_BLACK_LEVEL) {
         true => {
@@ -327,6 +364,21 @@ fn main() {
         }
     };
 
+    let product_type = match matches.is_present(constants::param::PARAM_PRODUCT_TYPE) {
+        true => {
+            let s = matches.value_of(constants::param::PARAM_PRODUCT_TYPE).unwrap();
+            match ProductType::from_str(&s) {
+                None => {
+                    eprintln!("Invalid output product type {}. Must be 'std', 'diff', or 'stacked'", s);
+                    process::exit(1);
+                },
+                Some(pt) => pt
+            }
+        },
+        false => ProductType::STANDARD
+    };
+
+
     let output = matches.value_of("output").unwrap();
 
     // Some rules on the parameters
@@ -359,14 +411,19 @@ fn main() {
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
     let mean_stack = generate_mean_stack(&input_files);
+    let height = match product_type {
+        ProductType::STACKED => mean_stack.height * 2,
+        _ => mean_stack.height
+    };
 
+    
     let mut image = File::create(output).unwrap();
-    let mut encoder = gif::Encoder::new(&mut image, mean_stack.width as u16, mean_stack.height as u16, &[]).unwrap();
+    let mut encoder = gif::Encoder::new(&mut image, mean_stack.width as u16, height as u16, &[]).unwrap();
     encoder.set_repeat(gif::Repeat::Infinite).unwrap();
     
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
-            process_file(&mut encoder, &String::from(*in_file), &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, add_back_to_mean);
+            process_file(&mut encoder, &String::from(*in_file), &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, product_type);
         } else {
             eprintln!("File not found: {}", in_file);
         }
