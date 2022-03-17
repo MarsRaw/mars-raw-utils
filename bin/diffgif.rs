@@ -137,7 +137,7 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
         }
     }
 
-    let blurred = match blur_kernel_size == 0.0 {
+    let mut blurred = match blur_kernel_size == 0.0 {
         true => n.clone(),
         false => {
             // This method is lossy. Get over it.
@@ -174,6 +174,7 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
             merged
         },
         false => {
+            blurred.add_across_mut(32767.0);
             blurred.clip(0.0, 65355.0).unwrap()
         }
     }
