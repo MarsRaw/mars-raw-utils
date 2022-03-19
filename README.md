@@ -536,13 +536,15 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -b, --blacklevel <BLACK_LEVEL>    Black level
-    -B, --blur <PARAM_BLUR>           Gaussian blur kernel size on differential output
-    -d, --delay <PARAM_DELAY>         Interframe delay in increments of 10ms
-    -g, --gamma <PARAM_GAMMA>         Gamma
-    -i, --inputs <INPUT>...           Input
-    -o, --output <OUTPUT>             Output
-    -w, --whitelevel <WHITE_LEVEL>    White level
+    -b, --blacklevel <BLACK_LEVEL>         Black level
+    -d, --delay <PARAM_DELAY>              Interframe delay in increments of 10ms
+    -g, --gamma <PARAM_GAMMA>              Gamma
+    -i, --inputs <INPUT>...                Input
+    -l, --lowpass <PARAM_LOWPASS>          Lowpass window size
+    -o, --output <OUTPUT>                  Output
+    -p, --prodtype <PARAM_PRODUCT_TYPE>    Product type (std, diff, stacked)
+    -w, --whitelevel <WHITE_LEVEL>         White level
+
 ```
 
 ### Examples
@@ -552,7 +554,7 @@ msl_fetch_raw -c NAV_RIGHT_B -s 3372 -S NCAM00595
 
 msl_ecam_calibrate -i *JPG -v -t 2.0
 
-diffgif -i *NCAM00595*-rjcal.png -o DustDevilMovie_Sol3372.gif -v -b 0 -w 2.0 -g 2.5 -B 1.5 -d 20
+diffgif -i *NCAM00595*-rjcal.png -o DustDevilMovie_Sol3372.gif -v -b 0 -w 2.0 -g 2.5 -l 5 -d 20
 ```
 #### Cloud motion and shadows, MSL Sol 3325, Seq id NCAM00556:
 ```
@@ -560,7 +562,7 @@ msl_fetch_raw -c NAV_RIGHT -s 3325
 
 msl_ecam_calibrate -i *JPG -v -t 2.0
 
-diffgif -i *NCAM00556*-rjcal.png -o CloudShadow_3325.gif -v -b 0 -w 1.0 -g 2.5 -B 1.5 -d 20
+diffgif -i *NCAM00556*-rjcal.png -o CloudShadow_3325.gif -v -b 0 -w 1.0 -g 2.5 -l 5 -d 20
 ```
 #### Clouds, zenith movie, MSL Sol 3325, Seq id NCAM00551:
 ```
@@ -568,7 +570,7 @@ msl_fetch_raw -c NAV_RIGHT -s 3325
 
 msl_ecam_calibrate -i *JPG -v -t 2.0
 
-diffgif -i *NCAM00551*-rjcal.png -o CloudZenith_3325.gif -v -b 0 -w 3.0 -g 1.0 -B 1.5 -d 20
+diffgif -i *NCAM00551*-rjcal.png -o CloudZenith_3325.gif -v -b 0 -w 3.0 -g 1.0 -l 5 -d 20
 ```
 
 ## Data Update Checks
