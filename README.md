@@ -723,3 +723,5 @@ https://doi.org/10.1002/2016EA000252
 
 Di, K., and Li, R. (2004), CAHVOR camera model and its photogrammetric conversion for planetary applications, J. Geophys. Res., 109, E04004, doi:10.1029/2003JE002199.
 https://doi.org/10.1029/2003JE002199
+
+Castano, A., Fukunaga, A., Biesiadecki, J. et al. Automatic detection of dust devils and clouds on Mars. Machine Vision and Applications 19, 467–482 (2008). https://doi.org/10.1007/s00138-007-0081-3
