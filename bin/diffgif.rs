@@ -9,7 +9,7 @@ use mars_raw_utils::{
 use sciimg::{
     rgbimage,
     imagebuffer,
-    blur,
+    lowpass,
     enums::ImageMode
 };
 
@@ -105,7 +105,7 @@ fn generate_mean_stack(input_files:&Vec<&str>) -> rgbimage::RgbImage {
 }
 
 
-fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuffer, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, add_back_to_mean:bool) -> imagebuffer::ImageBuffer {
+fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuffer, black_level:f32, white_level:f32, gamma:f32, lowpass_window_size:u8, add_back_to_mean:bool) -> imagebuffer::ImageBuffer {
     let diff = band.subtract(mean_band).unwrap();
     let mut d = diff.clone();
 
@@ -137,7 +137,7 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
         }
     }
 
-    let mut blurred = match blur_kernel_size == 0.0 {
+    let mut blurred = match lowpass_window_size == 0 {
         true => n.clone(),
         false => {
             // This method is lossy. Get over it.
@@ -156,7 +156,8 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
                 n.add_across_mut(init_mn.abs() * 0.5);
             }
             
-            let mut b = blur::blur_imagebuffer(&n, blur_kernel_size);
+            //let mut b = blur::blur_imagebuffer(&n, blur_kernel_size);
+            let mut b = lowpass::lowpass_imagebuffer(&n, lowpass_window_size as usize);
 
             if init_mn < 0.0 {
                 b.subtract_across_mut(init_mn.abs() * 0.5);
@@ -180,10 +181,10 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
     }
 }
 
-fn process_frame_3channel(raw:&rgbimage::RgbImage, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, delay:u16, product_type:ProductType) -> rgbimage::RgbImage {
-    let mut processed_band_0 = process_band(&raw.get_band(0), &mean_stack.get_band(0), black_level, white_level, gamma, blur_kernel_size, product_type == ProductType::STANDARD);
-    let mut processed_band_1 = process_band(&raw.get_band(1), &mean_stack.get_band(1), black_level, white_level, gamma, blur_kernel_size, product_type == ProductType::STANDARD);
-    let mut processed_band_2 = process_band(&raw.get_band(2), &mean_stack.get_band(2), black_level, white_level, gamma, blur_kernel_size, product_type == ProductType::STANDARD);
+fn process_frame_3channel(raw:&rgbimage::RgbImage, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, lowpass_window_size:u8, product_type:ProductType) -> rgbimage::RgbImage {
+    let mut processed_band_0 = process_band(&raw.get_band(0), &mean_stack.get_band(0), black_level, white_level, gamma, lowpass_window_size, product_type == ProductType::STANDARD);
+    let mut processed_band_1 = process_band(&raw.get_band(1), &mean_stack.get_band(1), black_level, white_level, gamma, lowpass_window_size, product_type == ProductType::STANDARD);
+    let mut processed_band_2 = process_band(&raw.get_band(2), &mean_stack.get_band(2), black_level, white_level, gamma, lowpass_window_size, product_type == ProductType::STANDARD);
 
     processed_band_0.normalize_mut(0.0, 255.0);
     processed_band_1.normalize_mut(0.0, 255.0);
@@ -192,22 +193,22 @@ fn process_frame_3channel(raw:&rgbimage::RgbImage, mean_stack:&rgbimage::RgbImag
     rgbimage::RgbImage::new_from_buffers_rgb(&processed_band_0, &processed_band_1, &processed_band_2, ImageMode::U16BIT).unwrap()   
 }
 
-fn process_file(encoder:&mut gif::Encoder<&mut std::fs::File>, in_file:&String, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, blur_kernel_size:f32, delay:u16, product_type:ProductType) {
+fn process_file(encoder:&mut gif::Encoder<&mut std::fs::File>, in_file:&String, mean_stack:&rgbimage::RgbImage, black_level:f32, white_level:f32, gamma:f32, lowpass_window_size:u8, delay:u16, product_type:ProductType) {
     vprintln!("Processing frame differential on file: {}", in_file);
 
     let raw = rgbimage::RgbImage::open16(&in_file).unwrap();
 
     let (mut pixels, height) = match product_type {
         ProductType::STACKED => {
-            let img_std = process_frame_3channel(&raw, &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, ProductType::STANDARD);
-            let img_diff = process_frame_3channel(&raw, &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, ProductType::DIFFERENTIAL);
+            let img_std = process_frame_3channel(&raw, &mean_stack, black_level, white_level, gamma, lowpass_window_size, ProductType::STANDARD);
+            let img_diff = process_frame_3channel(&raw, &mean_stack, black_level, white_level, gamma, lowpass_window_size, ProductType::DIFFERENTIAL);
             let mut stacked = rgbimage::RgbImage::new_with_bands(img_std.width, img_std.height * 2, 3, ImageMode::U16BIT).unwrap();
             stacked.paste(&img_diff, 0, 0);
             stacked.paste(&img_std, 0, img_std.height);
             (rgbimage_to_vec_v8(&stacked), img_std.height * 2)
         },
         _ => {
-            let img = process_frame_3channel(&raw, &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, product_type);
+            let img = process_frame_3channel(&raw, &mean_stack, black_level, white_level, gamma, lowpass_window_size, product_type);
             (rgbimage_to_vec_v8(&img), img.height)
         }
     };
@@ -261,11 +262,11 @@ fn main() {
                         .help("Gamma")
                         .required(false)
                         .takes_value(true))
-                    .arg(Arg::with_name(constants::param::PARAM_BLUR)
-                        .short(constants::param::PARAM_BLUR_SHORT)
-                        .long(constants::param::PARAM_BLUR)
-                        .value_name("PARAM_BLUR")
-                        .help("Gaussian blur kernel size on differential output")
+                    .arg(Arg::with_name(constants::param::PARAM_LOWPASS)
+                        .short(constants::param::PARAM_LOWPASS_SHORT)
+                        .long(constants::param::PARAM_LOWPASS)
+                        .value_name("PARAM_LOWPASS")
+                        .help("Lowpass window size")
                         .required(false)
                         .takes_value(true))
                     .arg(Arg::with_name(constants::param::PARAM_OUTPUT)
@@ -350,18 +351,18 @@ fn main() {
         }
     };
 
-    let blur_kernel_size : f32 = match matches.is_present(constants::param::PARAM_BLUR) {
+    let lowpass_window_size : u8 = match matches.is_present(constants::param::PARAM_LOWPASS) {
         true => {
-            let s = matches.value_of(constants::param::PARAM_BLUR).unwrap();
-            if util::string_is_valid_f32(&s) {
-                s.parse::<f32>().unwrap()
+            let s = matches.value_of(constants::param::PARAM_LOWPASS).unwrap();
+            if util::string_is_valid_u16(&s) {
+                s.parse::<u8>().unwrap()
             } else {
-                eprintln!("Error: Invalid number specified for blur kernel size");
+                eprintln!("Error: Invalid number specified for lowpass window size");
                 process::exit(1);
             }
         },
         false => {
-            0.0
+            0
         }
     };
 
@@ -404,11 +405,6 @@ fn main() {
         process::exit(1);
     }
 
-    if blur_kernel_size < 0.0 {
-        eprintln!("Blur kernel size cannot be negative");
-        process::exit(1);
-    }
-
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
     let mean_stack = generate_mean_stack(&input_files);
@@ -424,7 +420,7 @@ fn main() {
     
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
-            process_file(&mut encoder, &String::from(*in_file), &mean_stack, black_level, white_level, gamma, blur_kernel_size, delay, product_type);
+            process_file(&mut encoder, &String::from(*in_file), &mean_stack, black_level, white_level, gamma, lowpass_window_size, delay, product_type);
         } else {
             eprintln!("File not found: {}", in_file);
         }

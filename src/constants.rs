@@ -110,8 +110,8 @@ pub mod param {
     pub const PARAM_DELAY : &str = "delay";
     pub const PARAM_DELAY_SHORT : &str = "d";
     
-    pub const PARAM_BLUR : &str = "blur";
-    pub const PARAM_BLUR_SHORT : &str = "B";
+    pub const PARAM_LOWPASS : &str = "lowpass";
+    pub const PARAM_LOWPASS_SHORT : &str = "l";
 
     pub const PARAM_PRODUCT_TYPE : &str = "prodtype";
     pub const PARAM_PRODUCT_TYPE_SHORT : &str = "p";
