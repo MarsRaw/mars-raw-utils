@@ -19,3 +19,4 @@ pub mod jsonfetch;
 pub mod time;
 pub mod metadata;
 pub mod image;
+pub mod diffgif;
