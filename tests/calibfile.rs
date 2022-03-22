@@ -5,6 +5,7 @@ use mars_raw_utils::{
 
 
 #[test]
+#[ignore]
 fn test_load_caldata_mapping_file() {
     let caldata_toml = calibfile::locate_calibration_file(&String::from("caldata.toml")).unwrap();
     assert_eq!(caldata_toml, "mars-raw-utils-data/caldata/caldata.toml");
@@ -14,6 +15,7 @@ fn test_load_caldata_mapping_file() {
 }
 
 #[test]
+#[ignore]
 fn test_locate_without_extention() {
     let caldata_toml = calibfile::locate_calibration_file_no_extention(&"caldata".to_string(), &".toml".to_string()).unwrap();
     assert_eq!(caldata_toml, "mars-raw-utils-data/caldata/caldata.toml");
