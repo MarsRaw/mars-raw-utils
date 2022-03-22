@@ -5,7 +5,6 @@ use crate::{
     path,
     util,
     decompanding,
-    constants,
     flatfield,
     inpaintmask
 };
@@ -14,8 +13,8 @@ use sciimg::{
     enums::ImageMode
 };
 
-pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, color_noise_reduction:i32, no_ilt:bool, only_new:bool) {
-    let out_file = util::append_file_name(input_file, constants::OUTPUT_FILENAME_APPEND);
+pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, color_noise_reduction:i32, no_ilt:bool, only_new:bool, filename_suffix:&String) {
+    let out_file = util::append_file_name(input_file, filename_suffix);
     if path::file_exists(&out_file) && only_new {
         vprintln!("Output file exists, skipping. ({})", out_file);
         return;

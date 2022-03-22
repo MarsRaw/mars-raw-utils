@@ -7,7 +7,7 @@ use crate::{
     enums
 };
 
-
+extern crate dirs;
 
 use std::fs::File;
 use std::io::Read;
@@ -79,7 +79,7 @@ pub struct NsytCalData {
 }
 
 pub fn load_caldata_mapping_file() -> error::Result<Config> {
-    let caldata_toml = locate_calibration_file(String::from("caldata.toml")).unwrap();
+    let caldata_toml = locate_calibration_file(&String::from("caldata.toml")).unwrap();
     let mut file = match File::open(&caldata_toml) {
         Err(why) => panic!("couldn't open {}", why),
         Ok(file) => file,
@@ -94,36 +94,59 @@ pub fn load_caldata_mapping_file() -> error::Result<Config> {
     Ok(config)
 }
 
-fn determine_data_dir() -> String {
-    if cfg!(debug_assertions) {
-        String::from("mars-raw-utils-data/caldata")
-    } else if cfg!(target_os = "macos") {
-        String::from("/usr/local/share/mars_raw_utils/data/")
-    } else if cfg!(target_os = "windows") {
-        String::from("mars-raw-utils-data/caldata") // C:/something/something/something/darkside/
-    } else {
-        String::from("/usr/share/mars_raw_utils/data/")
+// Allows the user to specify files without an extension as a shortcut. Still needs to be able
+// to guess an extension, though
+pub fn locate_calibration_file_no_extention(file_path:&String, extension:&String) -> error::Result<String> {
+    match locate_calibration_file(file_path) {
+        Ok(fp) => Ok(fp),
+        Err(_) => {
+            let with_ext = format!("{}{}", file_path, extension);
+            locate_calibration_file(&with_ext)
+        }
     }
 }
 
-pub fn locate_calibration_file(file_path:String) -> error::Result<String> {
+pub fn locate_calibration_file(file_path:&String) -> error::Result<String> {
 
-    let mut fp = file_path;
+    // If the file exists as-is, return it
+    if path::file_exists(&file_path) {
+        return Ok(file_path.clone());
+    }
 
-    match env::var("MARS_RAW_DATA") {
-        Ok(d) => {
-            fp = format!("{}/{}", d, fp); 
+    // Some default locations
+    let mut locations = vec![
+        String::from("mars-raw-utils-data/caldata"), // Running within the repo directory (dev: cargo run --bin ...)
+        String::from("/usr/local/share/mars_raw_utils/data/"), // macos
+        String::from("/usr/share/mars_raw_utils/data/") // Linux, installed via apt or rpm
+    ];
+
+    // Prepend a home directory if known
+    match dirs::home_dir() {
+        Some(dir) => {
+            let homedatadir = format!("{}/.marsdata", dir.to_str().unwrap());
+            locations.insert(0, homedatadir);
         },
-        Err(_) => {
-            let d = determine_data_dir();
-            fp = format!("{}/{}", d, fp);
-        }
+        None => {}
     };
 
-    match path::file_exists(&fp) {
-        true => Ok(fp),
-        false => Err(constants::status::FILE_NOT_FOUND)
-    }   
+    // Prepend a location specified by environment variable 
+    match env::var("MARS_RAW_DATA") {
+        Ok(dir) => {
+            locations.insert(0, dir);
+        },
+        Err(_) => { }
+    };
+
+    // First match wins
+    for loc in locations.iter() {
+        let full_file_path = format!("{}/{}", loc, file_path);
+        if path::file_exists(&full_file_path) {
+            return Ok(full_file_path);
+        }
+    }
+
+    // Oh nos!
+    Err(constants::status::FILE_NOT_FOUND)
 }
 
 
@@ -174,7 +197,7 @@ pub fn get_calibration_file_for_instrument(instrument:enums::Instrument, cal_fil
         Ok(file_name) => {
             match file_name.len() {
                 0 => Err(constants::status::UNSUPPORTED_INSTRUMENT),
-                _ => locate_calibration_file(file_name)
+                _ => locate_calibration_file(&file_name)
             }
         },
         Err(e) => Err(e)

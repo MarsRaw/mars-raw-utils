@@ -52,9 +52,10 @@ This is the easiest installation method for *nix-based systems. It has not been 
 
 ```
 cargo install --path .
-export MARS_RAW_DATA=$PWD/mars-raw-utils-data/caldata
+mkdir ~/.marsdata
+cp mars-raw-utils-data/caldata/* ~/.marsdata
 ```
-NOTE: You'll want to set $MARS_RAW_DATA in ~/.bash_profile using the absolute path.
+NOTE: You can set $MARS_RAW_DATA in ~/.bash_profile if a custom data directory is required.
 
 ### Install via apt (Debian, Ubuntu, ...):
 ```
@@ -88,7 +89,22 @@ Builds for MacOSX (maybe via Homebrew?) and Windows are in the plan. Though the 
 CentOS targetted RPMs can be built using `dockerbuild.sh` which will result in the build artifacts being placed into the `target` directory.
 
 ## Specifying Calibration Data Location:
-By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can set the calibration file directory by using the `MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
+By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can use the default `~/.marsdata` or set the calibration file directory by using the `MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
+
+## Calibration Profiles
+Calibration files are used to specify commonly used parameters for the various instruments and output product types. The files are in toml format and if not specified by their absolute path, need to be discoverable in a known calibration folder.
+
+An example profile 
+```
+apply_ilt = true
+red_scalar = 1.16
+green_scalar = 1.0
+blue_scalar = 1.05
+color_noise_reduction = false
+color_noise_reduction_amount = 0
+hot_pixel_detection_threshold = 0
+filename_suffix = "rjcal-rad"
+```
 
 ## Mars Science Laboratory (Curiosity):
 ### Fetch Raws:
@@ -142,15 +158,17 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
     -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>          Blue weight
-    -G, --green <GREEN>        Green weight
-    -i, --inputs <INPUT>...    Input
-    -R, --red <RED>            Red weight
+    -B, --blue <BLUE>                    Blue weight
+    -G, --green <GREEN>                  Green weight
+    -i, --inputs <INPUT>...              Input
+    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
+    -R, --red <RED>                      Red weight
 ```
 #### Common Color Correction Multiples:
 * RED: 1.16
@@ -175,6 +193,7 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
     -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
@@ -184,6 +203,7 @@ OPTIONS:
     -c, --color_noise_reduction <COLOR_NOISE_REDUCTION>    Color noise reduction amount in pixels
     -G, --green <GREEN>                                    Green weight
     -i, --inputs <INPUT>...                                Input
+    -P, --profile <PARAM_CAL_PROFILE>                      Calibration profile file path
     -R, --red <RED>                                        Red weight
 ```
 
@@ -221,11 +241,12 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>                  Blue weight
-    -G, --green <GREEN>                Green weight
-    -t, --hpc_threshold <THRESHOLD>    Hot pixel correction variance threshold
-    -i, --inputs <INPUT>...            Input
-    -R, --red <RED>                    Red weight
+    -B, --blue <BLUE>                    Blue weight
+    -G, --green <GREEN>                  Green weight
+    -t, --hpc_threshold <THRESHOLD>      Hot pixel correction variance threshold
+    -i, --inputs <INPUT>...              Input
+    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
+    -R, --red <RED>                      Red weight
 ```
 
 #### Examples:
@@ -284,15 +305,17 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
     -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>          Blue weight
-    -G, --green <GREEN>        Green weight
-    -i, --inputs <INPUT>...    Input
-    -R, --red <RED>            Red weight
+    -B, --blue <BLUE>                    Blue weight
+    -G, --green <GREEN>                  Green weight
+    -i, --inputs <INPUT>...              Input
+    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
+    -R, --red <RED>                      Red weight
 ```
 ### Watson:
 ```
@@ -301,32 +324,36 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
     -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>          Blue weight
-    -G, --green <GREEN>        Green weight
-    -i, --inputs <INPUT>...    Input
-    -R, --red <RED>            Red weight
+    -B, --blue <BLUE>                    Blue weight
+    -G, --green <GREEN>                  Green weight
+    -i, --inputs <INPUT>...              Input
+    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
+    -R, --red <RED>                      Red weight
 ```
 ### Engineering Cameras (Navcam, FHAZ, RHAZ):
 ```
-USAGE:
+SAGE:
     m20_ecam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
 
 FLAGS:
     -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
     -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>          Blue weight
-    -G, --green <GREEN>        Green weight
-    -i, --inputs <INPUT>...    Input
-    -R, --red <RED>            Red weight
+    -B, --blue <BLUE>                    Blue weight
+    -G, --green <GREEN>                  Green weight
+    -i, --inputs <INPUT>...              Input
+    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
+    -R, --red <RED>                      Red weight
 ```
 ### SuperCam
 ```
@@ -341,10 +368,11 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>          Blue weight
-    -G, --green <GREEN>        Green weight
-    -i, --inputs <INPUT>...    Input
-    -R, --red <RED>            Red weight
+    -B, --blue <BLUE>                    Blue weight
+    -G, --green <GREEN>                  Green weight
+    -i, --inputs <INPUT>...              Input
+    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
+    -R, --red <RED>                      Red weight
 ```
 
 ### Ingenuity Nav Camera:
@@ -365,7 +393,7 @@ OPTIONS:
 ### Ingenuity Color Camera (RTE):
 ```
 USAGE:
-    m20_hrte_calibrate [FLAGS] --inputs <INPUT>...
+    m20_hrte_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
 
 FLAGS:
     -h, --help       Prints help information
@@ -374,7 +402,11 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -i, --inputs <INPUT>...    Input
+    -B, --blue <BLUE>                    Blue weight
+    -G, --green <GREEN>                  Green weight
+    -i, --inputs <INPUT>...              Input
+    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
+    -R, --red <RED>                      Red weight
 ```
 
 ## InSight
@@ -387,15 +419,17 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
     -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>          Blue weight
-    -G, --green <GREEN>        Green weight
-    -i, --inputs <INPUT>...    Input
-    -R, --red <RED>            Red weight
+    -B, --blue <BLUE>                    Blue weight
+    -G, --green <GREEN>                  Green weight
+    -i, --inputs <INPUT>...              Input
+    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
+    -R, --red <RED>                      Red weight
 ```
 
 ### Instrument Deployment Camera (IDC):
@@ -405,15 +439,17 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
     -r, --raw        Raw color, skip ILT
     -v               Show verbose output
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>          Blue weight
-    -G, --green <GREEN>        Green weight
-    -i, --inputs <INPUT>...    Input
-    -R, --red <RED>            Red weight
+    -B, --blue <BLUE>                    Blue weight
+    -G, --green <GREEN>                  Green weight
+    -i, --inputs <INPUT>...              Input
+    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
+    -R, --red <RED>                      Red weight
 ```
 
 ## Hot Pixel Correction Filter

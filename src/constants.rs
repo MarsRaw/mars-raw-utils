@@ -80,6 +80,9 @@ pub mod param {
     pub const PARAM_COLOR_NOISE_REDUCTION : &str = "color_noise_reduction";
     pub const PARAM_COLOR_NOISE_REDUCTION_SHORT : &str = "c";
 
+    pub const PARAM_CAL_PROFILE : &str = "profile";
+    pub const PARAM_CAL_PROFILE_SHORT : &str = "P";
+
     // Don't apply ILT
     pub const PARAM_RAW_COLOR : &str = "raw";
     pub const PARAM_RAW_COLOR_SHORT : &str = "r";

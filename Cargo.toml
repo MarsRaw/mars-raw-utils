@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.2.6"
+version = "0.3.0"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
@@ -53,7 +53,7 @@ assets = [
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
     ["mars-raw-utils-data/caldata/*jpg", "usr/share/mars_raw_utils/data/", "644"],
-    ["mars-raw-utils-data/caldata/caldata.toml", "usr/share/mars_raw_utils/data/", "644"],
+    ["mars-raw-utils-data/caldata/*.toml", "usr/share/mars_raw_utils/data/", "644"],
 ]
 
 [lib]
@@ -202,6 +202,7 @@ weezl = "0.1.5"
 gif = "0.11.3"
 rayon = "1.5.1"
 chrono = "0.4.19"
+dirs = "4.0.0"
 
 [package.metadata.rpm]
 package = "mars_raw_utils"
@@ -267,5 +268,10 @@ levels = { path = "/usr/bin/levels" }
 "NSYT_FLAT_SN_0203.jpg" = { path =  "/usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0203.jpg", mode = "644"}
 "NSYT_FLAT_SN_0210.jpg" = { path =  "/usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0210.jpg", mode = "644"}
 "caldata.toml" = { path =  "/usr/share/mars_raw_utils/data/caldata.toml", mode = "644"}
-
-
+"msl_mcam_bay.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mcam_bay.toml", mode = "644"}
+"msl_mcam_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mcam_ilt.toml", mode = "644"}
+"msl_mcam_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mcam_rad.toml", mode = "644"}
+"msl_mahli_bay.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_bay.toml", mode = "644"}
+"msl_mahli_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_ilt.toml", mode = "644"}
+"msl_mahli_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_rad.toml", mode = "644"}
+"msl_mahli_cwb.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_cwb.toml", mode = "644"}

@@ -4,7 +4,8 @@ use mars_raw_utils::{
     vprintln, 
     path, 
     m20,
-    util
+    util,
+    calprofile
 };
 
 use rayon::prelude::*;
@@ -55,6 +56,13 @@ fn main() {
                     .arg(Arg::with_name(constants::param::PARAM_ONLY_NEW)
                         .short(constants::param::PARAM_ONLY_NEW_SHORT)
                         .help("Only new images. Skipped processed images."))
+                    .arg(Arg::with_name(constants::param::PARAM_CAL_PROFILE)
+                        .short(constants::param::PARAM_CAL_PROFILE_SHORT)
+                        .long(constants::param::PARAM_CAL_PROFILE)
+                        .value_name("PARAM_CAL_PROFILE")
+                        .help("Calibration profile file path")
+                        .required(false)
+                        .takes_value(true)) 
                     .get_matches();
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
@@ -69,6 +77,7 @@ fn main() {
     let mut red_scalar = constants::DEFAULT_RED_WEIGHT;
     let mut green_scalar = constants::DEFAULT_GREEN_WEIGHT;
     let mut blue_scalar = constants::DEFAULT_BLUE_WEIGHT;
+    let mut filename_suffix: String = String::from(constants::OUTPUT_FILENAME_APPEND);
 
     // Check formatting and handle it
     if matches.is_present(constants::param::PARAM_RED_WEIGHT) {
@@ -101,13 +110,30 @@ fn main() {
         }
     }
 
+    if matches.is_present(constants::param::PARAM_CAL_PROFILE) {
+        let cal_profile_path = matches.value_of(constants::param::PARAM_CAL_PROFILE).unwrap();
+
+        match calprofile::load_calibration_profile(&cal_profile_path.to_string()) {
+            Ok(profile) => {
+                red_scalar = profile.red_scalar;
+                green_scalar = profile.green_scalar;
+                blue_scalar = profile.blue_scalar;
+                filename_suffix = profile.filename_suffix;
+            },
+            Err(why) => {
+                eprintln!("Error loading calibration profile: {}", why);
+                process::exit(1);
+            }
+        }
+    }
+
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
     let num_files = input_files.len();
     input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {} (#{} of {})", in_file, idx, num_files);
-            m20::helirte::process_file(in_file, red_scalar, green_scalar, blue_scalar, only_new);
+            m20::helirte::process_file(in_file, red_scalar, green_scalar, blue_scalar, only_new, &filename_suffix);
         } else {
             eprintln!("File not found: {}", in_file);
         }

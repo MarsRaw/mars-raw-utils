@@ -15,6 +15,6 @@ WORKDIR /build
 COPY . .
 RUN cp -v mars-raw-utils-data/caldata/* .rpm/
 RUN cargo rpm build -v
-RUN rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.2.5-1.el8.x86_64.rpm
+RUN rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.3.0-1.el8.x86_64.rpm
 
 WORKDIR /data

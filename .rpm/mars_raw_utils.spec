@@ -53,3 +53,10 @@ rm -rf %{buildroot}
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0203.jpg
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0210.jpg
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/caldata.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mahli_bay.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mahli_cwb.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mahli_ilt.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mahli_rad.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_bay.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_ilt.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_rad.toml
