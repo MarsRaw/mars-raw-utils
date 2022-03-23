@@ -25,6 +25,14 @@ fn main() {
                         .required(true)
                         .multiple(true)
                         .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_CAL_PROFILE)
+                        .short(constants::param::PARAM_CAL_PROFILE_SHORT)
+                        .long(constants::param::PARAM_CAL_PROFILE)
+                        .value_name("PARAM_CAL_PROFILE")
+                        .help("Calibration profile file path")
+                        .required(false)
+                        .multiple(true)
+                        .takes_value(true)) 
                     .arg(Arg::with_name(constants::param::PARAM_ONLY_NEW)
                         .short(constants::param::PARAM_ONLY_NEW_SHORT)
                         .help("Only new images. Skipped processed images."))
@@ -44,13 +52,17 @@ fn main() {
 
     let filename_suffix: String = String::from(constants::OUTPUT_FILENAME_APPEND);
 
+    let profiles: Vec<&str> = match matches.values_of(constants::param::PARAM_CAL_PROFILE) {
+        Some(profiles) => profiles.collect(),
+        None => vec!()
+    };
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
     let num_files = input_files.len();
     input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {} (#{} of {})", in_file, idx, num_files);
-            msl::ccam::process_file(in_file, only_new, &filename_suffix);
+            msl::ccam::process_with_profiles(in_file, only_new, &filename_suffix, &profiles);
         } else {
             eprintln!("File not found: {}", in_file);
         }

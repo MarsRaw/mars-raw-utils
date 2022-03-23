@@ -4,8 +4,7 @@ use mars_raw_utils::{
     vprintln, 
     path,
     util,
-    msl,
-    calprofile
+    msl
 };
 
 use rayon::prelude::*;
@@ -71,6 +70,7 @@ fn main() {
                         .value_name("PARAM_CAL_PROFILE")
                         .help("Calibration profile file path")
                         .required(false)
+                        .multiple(true)
                         .takes_value(true)) 
                     .arg(Arg::with_name(constants::param::PARAM_ONLY_NEW)
                         .short(constants::param::PARAM_ONLY_NEW_SHORT)
@@ -86,7 +86,7 @@ fn main() {
     let mut blue_scalar = constants::DEFAULT_BLUE_WEIGHT;
     let mut hpc_threshold = 0.0;
     let mut no_ilt = false;
-    let mut filename_suffix: String = String::from(constants::OUTPUT_FILENAME_APPEND);
+    let filename_suffix: String = String::from(constants::OUTPUT_FILENAME_APPEND);
     
     let mut only_new = false;
     if matches.is_present(constants::param::PARAM_ONLY_NEW) {
@@ -138,24 +138,10 @@ fn main() {
         no_ilt = true;
     }
 
-    if matches.is_present(constants::param::PARAM_CAL_PROFILE) {
-        let cal_profile_path = matches.value_of(constants::param::PARAM_CAL_PROFILE).unwrap();
-
-        match calprofile::load_calibration_profile(&cal_profile_path.to_string()) {
-            Ok(profile) => {
-                red_scalar = profile.red_scalar;
-                green_scalar = profile.green_scalar;
-                blue_scalar = profile.blue_scalar;
-                no_ilt = !profile.apply_ilt;
-                hpc_threshold = profile.hot_pixel_detection_threshold;
-                filename_suffix = profile.filename_suffix;
-            },
-            Err(why) => {
-                eprintln!("Error loading calibration profile: {}", why);
-                process::exit(1);
-            }
-        }
-    }
+    let profiles: Vec<&str> = match matches.values_of(constants::param::PARAM_CAL_PROFILE) {
+        Some(profiles) => profiles.collect(),
+        None => vec!()
+    };
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
@@ -163,7 +149,7 @@ fn main() {
     input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {} (#{} of {})", in_file, idx, num_files);
-            msl::ecam::process_file(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, hpc_threshold, only_new, &filename_suffix);
+            msl::ecam::process_with_profiles(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, hpc_threshold, only_new, &filename_suffix, &profiles);
         } else {
             eprintln!("File not found: {}", in_file);
         }

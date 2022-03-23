@@ -4,8 +4,7 @@ use mars_raw_utils::{
     vprintln, 
     path, 
     m20,
-    util,
-    calprofile
+    util
 };
 
 use rayon::prelude::*;
@@ -62,6 +61,7 @@ fn main() {
                         .value_name("PARAM_CAL_PROFILE")
                         .help("Calibration profile file path")
                         .required(false)
+                        .multiple(true)
                         .takes_value(true)) 
                     .get_matches();
 
@@ -77,7 +77,7 @@ fn main() {
     let mut red_scalar = constants::DEFAULT_RED_WEIGHT;
     let mut green_scalar = constants::DEFAULT_GREEN_WEIGHT;
     let mut blue_scalar = constants::DEFAULT_BLUE_WEIGHT;
-    let mut filename_suffix: String = String::from(constants::OUTPUT_FILENAME_APPEND);
+    let filename_suffix: String = String::from(constants::OUTPUT_FILENAME_APPEND);
 
     // Check formatting and handle it
     if matches.is_present(constants::param::PARAM_RED_WEIGHT) {
@@ -110,22 +110,10 @@ fn main() {
         }
     }
 
-    if matches.is_present(constants::param::PARAM_CAL_PROFILE) {
-        let cal_profile_path = matches.value_of(constants::param::PARAM_CAL_PROFILE).unwrap();
-
-        match calprofile::load_calibration_profile(&cal_profile_path.to_string()) {
-            Ok(profile) => {
-                red_scalar = profile.red_scalar;
-                green_scalar = profile.green_scalar;
-                blue_scalar = profile.blue_scalar;
-                filename_suffix = profile.filename_suffix;
-            },
-            Err(why) => {
-                eprintln!("Error loading calibration profile: {}", why);
-                process::exit(1);
-            }
-        }
-    }
+    let profiles: Vec<&str> = match matches.values_of(constants::param::PARAM_CAL_PROFILE) {
+        Some(profiles) => profiles.collect(),
+        None => vec!()
+    };
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
@@ -133,7 +121,7 @@ fn main() {
     input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {} (#{} of {})", in_file, idx, num_files);
-            m20::helirte::process_file(in_file, red_scalar, green_scalar, blue_scalar, only_new, &filename_suffix);
+            m20::helirte::process_with_profiles(in_file, red_scalar, green_scalar, blue_scalar, only_new, &filename_suffix, &profiles);
         } else {
             eprintln!("File not found: {}", in_file);
         }
