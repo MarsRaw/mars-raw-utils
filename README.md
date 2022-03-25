@@ -8,7 +8,7 @@ Implemented calibration steps include (varying per instrument):
 | Mission    |     Camera  | Decompand | Debayer | Inpaint      | Flats  | HPC*   |
 | ---------- |:-----------:|:---------:|:-------:|:------------:|:------:|:------:|
 | MSL        | MastCam     | &#9745;   | &#9745; |              |        |        |
-| MSL        | MAHLI       | &#9745;   |         | &#9745;      | &#9745;|        |
+| MSL        | MAHLI       | &#9745;   |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | NavCam      |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | Rear Haz    |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | Front Haz   |           |         | &#9745;      | &#9745;| &#9745;|
