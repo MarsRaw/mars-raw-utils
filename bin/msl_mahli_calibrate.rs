@@ -68,6 +68,13 @@ fn main() {
                         .required(false)
                         .multiple(true)
                         .takes_value(true)) 
+                    .arg(Arg::with_name(constants::param::PARAM_HPC_THRESHOLD)
+                        .short(constants::param::PARAM_HPC_THRESHOLD_SHORT)
+                        .long(constants::param::PARAM_HPC_THRESHOLD)
+                        .value_name("THRESHOLD")
+                        .help("Hot pixel correction variance threshold")
+                        .required(false)
+                        .takes_value(true))
                     .get_matches();
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
@@ -77,6 +84,7 @@ fn main() {
     let mut red_scalar = constants::DEFAULT_RED_WEIGHT;
     let mut green_scalar = constants::DEFAULT_GREEN_WEIGHT;
     let mut blue_scalar = constants::DEFAULT_BLUE_WEIGHT;
+    let mut hpc_threshold = 0.0;
     let mut no_ilt = false;
     let filename_suffix: String = String::from(constants::OUTPUT_FILENAME_APPEND);
 
@@ -120,6 +128,16 @@ fn main() {
         }
     }
 
+    if matches.is_present(constants::param::PARAM_HPC_THRESHOLD) {
+        let s = matches.value_of(constants::param::PARAM_HPC_THRESHOLD).unwrap();
+        if util::string_is_valid_f32(&s) {
+            hpc_threshold = s.parse::<f32>().unwrap();
+        } else {
+            eprintln!("Error: Invalid number specified for HPC variance threshold");
+            process::exit(1);
+        }
+    }
+
     let profiles: Vec<&str> = match matches.values_of(constants::param::PARAM_CAL_PROFILE) {
         Some(profiles) => profiles.collect(),
         None => vec!()
@@ -131,7 +149,7 @@ fn main() {
     input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {} (#{} of {})", in_file, idx, num_files);
-            msl::mahli::process_with_profiles(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, only_new, &filename_suffix, &profiles);
+            msl::mahli::process_with_profiles(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, hpc_threshold, only_new, &filename_suffix, &profiles);
         } else {
             eprintln!("File not found: {}", in_file);
         }
