@@ -55,6 +55,9 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     } else if raw.image.width == 1648 && raw.image.height == 1200 {
         vprintln!("Cropping...");
         raw.image.crop(48, 16, 1584, 1184);
+    } else if raw.image.width == 1584 && raw.image.height == 1184 {
+        vprintln!("Cropping...");
+        raw.image.crop(48, 16, 1584, 1184);
     }
     vprintln!("Image width/height after cropping: {}x{}", raw.image.width, raw.image.height);
 
@@ -92,7 +95,7 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     }
 
     vprintln!("Cropping...");
-    raw.image.crop(0, 3, 1584, 1180);
+    raw.image.crop(2, 3, 1580, 1180);
 
     vprintln!("Applying color weights...");
     raw.apply_weight(red_scalar, green_scalar, blue_scalar);
