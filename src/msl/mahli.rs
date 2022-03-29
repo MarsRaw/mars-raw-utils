@@ -55,9 +55,6 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     } else if raw.image.width == 1648 && raw.image.height == 1200 {
         vprintln!("Cropping...");
         raw.image.crop(48, 16, 1584, 1184);
-    } else if raw.image.width == 1584 && raw.image.height == 1184 {
-        vprintln!("Cropping...");
-        raw.image.crop(48, 16, 1584, 1184);
     }
     vprintln!("Image width/height after cropping: {}x{}", raw.image.width, raw.image.height);
 
