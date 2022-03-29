@@ -183,6 +183,10 @@ path = "bin/levels.rs"
 name = "diffgif"
 path = "bin/diffgif.rs"
 
+[[bin]]
+name = "focusmerge"
+path = "bin/focusmerge.rs"
+
 [features]
 
 [dependencies]
