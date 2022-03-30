@@ -673,6 +673,27 @@ Local True Solar Time:  15:24:47.833 LTST
 Solar Longitude:        47.041708238462114
 ```
 
+## Focus Merge
+A tool for focus stacking a series of images taken on the same scene but at different focal distances with the intent of simulating a greater depth of field. This is commonly done with MSL MAHLI (usually stacked on-board the rover then downlinked with an derived depth map).
+
+The tool takes an input of 2+ images and an output location. An optional parameter allows for tuning the window size when determining the quality sigma value (default: 15).
+
+
+```
+USAGE:
+    focusmerge [FLAGS] [OPTIONS] --inputs <INPUT>... --output <OUTPUT>
+
+FLAGS:
+    -h, --help       Prints help information
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --inputs <INPUT>...               Input
+    -o, --output <OUTPUT>                 Output
+    -w, --window <QUALITY_WINDOW_SIZE>    Quality determination window size (pixels)
+```
+
 ## References:
 
 Bell, J. F. et al. (2017), The Mars Science Laboratory Curiosity rover
