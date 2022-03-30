@@ -31,14 +31,19 @@ fn isolate_window(buffer:&imagebuffer::ImageBuffer, window_size:usize, x:usize, 
     v
 }
 
-pub fn get_point_quality_estimation_on_buffer(image:&imagebuffer::ImageBuffer, window_size:usize, x: usize, y: usize) -> f32 {
-    let blurred = apply_blur(&image, 5);
-    let diff = blurred.subtract(&image).unwrap();
+pub fn get_point_quality_estimation_on_diff_buffer(diff:&imagebuffer::ImageBuffer, window_size:usize, x: usize, y: usize) -> f32 {
     let window = isolate_window(&diff, window_size, x, y);
     match stats::std_deviation(&window) {
         Some(sd) => sd,
         None => 0.0
     }
+}
+
+
+pub fn get_point_quality_estimation_on_buffer(image:&imagebuffer::ImageBuffer, window_size:usize, x: usize, y: usize) -> f32 {
+    let blurred = apply_blur(&image, 5);
+    let diff = blurred.subtract(&image).unwrap();
+    get_point_quality_estimation_on_diff_buffer(&diff, window_size, x, y)
 }
 
 pub fn get_point_quality_estimation(image:&rgbimage::RgbImage, window_size:usize, x: usize, y: usize) -> f32 {

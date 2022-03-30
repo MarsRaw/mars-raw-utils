@@ -118,6 +118,9 @@ pub mod param {
 
     pub const PARAM_PRODUCT_TYPE : &str = "prodtype";
     pub const PARAM_PRODUCT_TYPE_SHORT : &str = "p";
+
+    pub const PARAM_QUALITY_WINDOW_SIZE : &str = "window";
+    pub const PARAM_QUALITY_WINDOW_SIZE_SHORT : &str = "w";
 }
 
 
