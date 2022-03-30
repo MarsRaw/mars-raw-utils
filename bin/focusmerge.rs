@@ -1,7 +1,6 @@
 use mars_raw_utils::{
     constants, 
     print, 
-    quality,
     path,
     vprintln,
     util
@@ -11,7 +10,8 @@ use sciimg::{
     rgbimage,
     imagebuffer,
     lowpass,
-    stats
+    stats,
+    quality
 };
 
 #[macro_use]

@@ -21,4 +21,3 @@ pub mod metadata;
 pub mod image;
 pub mod diffgif;
 pub mod calprofile;
-pub mod quality;
