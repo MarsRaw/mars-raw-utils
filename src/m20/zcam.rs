@@ -180,7 +180,7 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
 
     if raw.image.width == 1648 {
         vprintln!("Cropping...");
-        raw.image.crop(24, 4, 1600, 1192);
+        raw.image.crop(29, 9, 1590, 1182);
     }
 
     vprintln!("Writing to disk...");
