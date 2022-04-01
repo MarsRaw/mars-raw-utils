@@ -13,7 +13,7 @@ Implemented calibration steps include (varying per instrument):
 | MSL        | Rear Haz    |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | Front Haz   |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | ChemCam RMI |           |         |              | &#9745;|        |
-| Mars2020   | Mastcam-Z   | &#9745;   | &#9745; | &#9745;      |        |        |
+| Mars2020   | Mastcam-Z   | &#9745;   | &#9745; | &#9745;      | &#9745;|        |
 | Mars2020   | NavCam      |           | &#9745; |              |        |        |
 | Mars2020   | Rear Haz    |           | &#9745; |              |        |        |
 | Mars2020   | Front Haz   |           | &#9745; |              |        |        |
@@ -722,13 +722,6 @@ L. J. Lipkaman, G. M. Krezoski, M. J. McBride, T. L. Jones, B. E. Nixon, J. K. V
 MSL MAHLI Technical Report 0001 (version 1: 19 June 2015; version 2: 05 October 2015).
 doi:10.13140/RG.2.1.3798.5447
 https://doi.org/10.13140/RG.2.1.3798.5447
-
-
-Bell, J. F. et al. (2017), The Mars Science Laboratory Curiosity rover
-Mastcam instruments: Preflight and in‐flight calibration, validation,
-and data archiving, Earth and Space Science, 4, 396– 452,
-doi:10.1002/2016EA000219.
-https://doi.org/10.1002/2016EA000219
 
 
 Deen, R., Zamani, P., Abarca, H., Maki, J. InSight (NSYT)
