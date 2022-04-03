@@ -121,6 +121,9 @@ pub mod param {
 
     pub const PARAM_QUALITY_WINDOW_SIZE : &str = "window";
     pub const PARAM_QUALITY_WINDOW_SIZE_SHORT : &str = "w";
+
+    pub const PARAM_LIST : &str = "list";
+    pub const PARAM_LIST_SHORT : &str = "l";
 }
 
 
