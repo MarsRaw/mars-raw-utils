@@ -23,7 +23,7 @@ fn test_m20_instrument_fetches() {
 
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
-        remote::remote_fetch(&vec![String::from(i)], 5, Some(0), 70, 79, false, false, true, "", false).unwrap();
+        remote::remote_fetch(&vec![String::from(i)], 5, Some(0), 70, 79, false, false, true, "", false, "").unwrap();
     }
 
 }

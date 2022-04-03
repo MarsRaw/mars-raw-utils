@@ -1,9 +1,18 @@
 
 use std::path::Path;
+use std::env;
 
 // Checks if file exists.
 pub fn file_exists(chk_path:&str) -> bool {
     Path::new(&chk_path).exists()
+}
+
+pub fn is_file(chk_path:&str) -> bool {
+    Path::new(&chk_path).is_file()
+}
+
+pub fn is_dir(chk_path:&str) -> bool {
+    Path::new(&chk_path).is_dir()
 }
 
 pub fn basename(chk_path:&str) -> String {
@@ -42,4 +51,11 @@ pub fn parent_writable(chk_path:&str) -> bool {
 
 pub fn parent_exists_and_writable(chk_path:&str) -> bool {
     parent_exists(chk_path) && parent_writable(chk_path)
+}
+
+pub fn cwd() -> String {
+    match env::current_dir().unwrap().as_os_str().to_str() {
+        Some(d) => String::from(d),
+        None => String::from("./")
+    }
 }

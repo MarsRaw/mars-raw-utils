@@ -163,17 +163,21 @@ pub fn stringvec_b(a:&str, b:String) -> Vec<String> {
 
 
 pub fn image_exists_on_filesystem(image_url:&str) -> bool {
-    //let image_url = &image["image_files"]["full_res"].as_str().unwrap();
     let bn = path::basename(image_url);
     path::file_exists(bn.as_str())
 }
 
-pub fn fetch_image(image_url:&str, only_new:bool) -> error::Result<&'static str> {
-    //let image_url = &image["url"].as_str().unwrap();
-    let bn = path::basename(image_url);
+pub fn fetch_image(image_url:&str, only_new:bool, output_path:Option<&str>) -> error::Result<&'static str> {
+    let write_to = match output_path {
+        Some(p) => {
+            let bn = path::basename(image_url);
+            format!("{}/{}", p, bn)
+        },
+        None => String::from(image_url)
+    };
 
-    if image_exists_on_filesystem(&image_url) && only_new {
-        vprintln!("Output file {} exists, skipping", bn);
+    if image_exists_on_filesystem(&write_to) && only_new {
+        vprintln!("Output file {} exists, skipping", write_to);
         return ok!();
     }
 
@@ -182,7 +186,8 @@ pub fn fetch_image(image_url:&str, only_new:bool) -> error::Result<&'static str>
         Err(e) => return Err(e)
     };
     
-    let path = Path::new(bn.as_str());
+    let path = Path::new(write_to.as_str());
+    vprintln!("Writing image data to {}", write_to);
 
     let mut file = match File::create(&path) {
         Err(why) => panic!("couldn't create {}", why),
@@ -195,9 +200,18 @@ pub fn fetch_image(image_url:&str, only_new:bool) -> error::Result<&'static str>
     }
 }
 
-pub fn save_image_json<T:Serialize>(image_url:&str, item:&T, only_new:bool) -> error::Result<&'static str> {
+pub fn save_image_json<T:Serialize>(image_url:&str, item:&T, only_new:bool, output_path:Option<&str>) -> error::Result<&'static str> {
     let item_str = serde_json::to_string_pretty(item).unwrap();
-    save_image_json_from_string(&image_url, &item_str, only_new)
+
+    let write_to = match output_path {
+        Some(p) => {
+            let bn = path::basename(image_url);
+            format!("{}/{}", p, bn)
+        },
+        None => String::from(image_url)
+    };
+
+    save_image_json_from_string(&write_to, &item_str, only_new)
 }
 
 pub fn save_image_json_from_string(image_path:&str, item:&String, only_new:bool) -> error::Result<&'static str> {

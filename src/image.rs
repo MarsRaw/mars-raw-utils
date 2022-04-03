@@ -73,7 +73,7 @@ impl MarsImage {
         if path::parent_exists_and_writable(&to_file) {
             match &self.metadata {
                 Some(md) => {
-                    util::save_image_json(to_file, &md, false).unwrap();
+                    util::save_image_json(to_file, &md, false, None).unwrap();
                 },
                 None => {}
             };

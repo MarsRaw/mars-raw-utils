@@ -91,6 +91,13 @@ fn main() {
                     .help("List camera instrument and exit")
                     .takes_value(false)
                     .required(false)) 
+                .arg(Arg::with_name(constants::param::PARAM_OUTPUT)
+                    .short(constants::param::PARAM_OUTPUT_SHORT)
+                    .long(constants::param::PARAM_OUTPUT)
+                    .value_name("OUTPUT")
+                    .help("Output directory")
+                    .required(false)
+                    .takes_value(true)) 
                 .arg(Arg::with_name(constants::param::PARAM_ONLY_NEW)
                     .short(constants::param::PARAM_ONLY_NEW_SHORT)
                     .help("Only new images. Skipped processed images."))
@@ -200,13 +207,28 @@ fn main() {
         }
     }
 
+    let output_directory = match matches.is_present(constants::param::PARAM_OUTPUT) {
+        true => {
+            let o = matches.value_of(constants::param::PARAM_OUTPUT).unwrap();
+            if path::file_exists(o) && path::file_writable(o) && path::is_dir(o) {
+                String::from(o)
+            } else {
+                eprintln!("Output path does not exist, is not writable, or is not a directory: {}", o);
+                process::exit(1);
+            }
+        },
+        false => {
+            path::cwd()
+        }
+    };
+
     if sol >= 0 {
         minsol = sol;
         maxsol = sol;
     }
 
     m20::remote::print_header();
-    match m20::remote::remote_fetch(&cameras, num_per_page, page, minsol, maxsol, thumbnails, movie_only, list_only, search, only_new) {
+    match m20::remote::remote_fetch(&cameras, num_per_page, page, minsol, maxsol, thumbnails, movie_only, list_only, search, only_new, &output_directory.as_str()) {
         Ok(c) => println!("{} images found", c),
         Err(e) => eprintln!("Error: {}", e)
     };
