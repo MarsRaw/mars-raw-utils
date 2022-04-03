@@ -5,7 +5,9 @@ use crate::{
     path,
     util,
     decompanding,
-    calprofile
+    calprofile,
+    inpaintmask,
+    flatfield
 };
 
 pub fn process_with_profiles(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, no_ilt:bool, only_new:bool, filename_suffix:&String, profile_names:&Vec<&str>) {
@@ -48,8 +50,7 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     
     let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20Watson);
     
-    vprintln!("Inpainting...");
-    raw.apply_inpaint_fix();
+
 
     let mut data_max = 255.0;
 
@@ -59,9 +60,20 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
        data_max = decompanding::get_max_for_instrument(enums::Instrument::M20Watson) as f32;
     }
 
-    //vprintln!("Flatfielding...");
-    //raw.flatfield().unwrap();
+    vprintln!("Flatfielding...");
+    let mut flat = flatfield::load_flat(enums::Instrument::M20Watson).unwrap();
+    if raw.image.width == 1584 && raw.image.height == 1184 {
+        flat.image.crop(32, 16, 1584, 1184);
+    }
+    raw.flatfield_with_flat(&flat);
     
+    vprintln!("Inpainting...");
+    let mut inpaint_mask = inpaintmask::load_mask(enums::Instrument::M20Watson).unwrap();
+    if raw.image.width == 1584 && raw.image.height == 1184 {
+        inpaint_mask = inpaint_mask.get_subframe(32, 16, 1584, 1184).unwrap();
+    }
+    raw.apply_inpaint_fix_with_mask(&inpaint_mask);
+
     if input_file.find("ECM") != None && raw.image.is_grayscale() {
         vprintln!("Image appears to be grayscale, applying debayering...");
         raw.debayer();
