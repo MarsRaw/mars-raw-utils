@@ -1,12 +1,14 @@
 use crate::{
     constants, 
-    error,
     vprintln,
     path,
     metadata::*
 };
 
-use sciimg::cahvor::Cahvor;
+use sciimg::{
+    cahvor::Cahvor,
+    error
+};
 
 use std::fs::File;
 use std::io::Read;

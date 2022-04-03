@@ -1,7 +1,8 @@
 use crate::{
-    constants,
-    error
+    constants
 };
+
+use sciimg::error;
 
 use std::time::{
     SystemTime, 

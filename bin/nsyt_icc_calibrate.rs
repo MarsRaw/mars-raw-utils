@@ -1,11 +1,4 @@
-use mars_raw_utils::{
-    constants, 
-    print, 
-    vprintln, 
-    path,
-    util,
-    nsyt
-};
+use mars_raw_utils::prelude::*;
 
 use rayon::prelude::*;
 

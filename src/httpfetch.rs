@@ -4,7 +4,13 @@ use reqwest::blocking::Client;
 
 
 use std::time::Duration;
-use crate::{constants, vprintln, error};
+use crate::{
+    constants, 
+    vprintln
+};
+
+use sciimg::error;
+
 use std::string::String;
 
 pub struct HttpFetcher {

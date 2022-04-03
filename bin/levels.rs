@@ -1,12 +1,6 @@
-use mars_raw_utils::{
-    constants, 
-    print, 
-    vprintln, 
-    path,
-    util
-};
+use mars_raw_utils::prelude::*;
 
-use sciimg::rgbimage;
+use sciimg::rgbimage::RgbImage;
 
 #[macro_use]
 extern crate clap;
@@ -16,7 +10,7 @@ use std::process;
 
 
 fn process_file(input_file:&str, black_level:f32, white_level:f32, gamma:f32) {
-    let mut raw = rgbimage::RgbImage::open(&String::from(input_file)).unwrap();
+    let mut raw = RgbImage::open(&String::from(input_file)).unwrap();
 
     vprintln!("Black: {}, White: {}, Gamma: {}, {}", black_level, white_level, gamma, input_file);
     raw.levels(black_level, white_level, gamma);

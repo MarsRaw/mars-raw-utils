@@ -2,7 +2,6 @@
 extern crate clap;
 
 pub mod print;
-pub mod error;
 pub mod m20;
 pub mod msl;
 pub mod nsyt;
@@ -22,3 +21,4 @@ pub mod image;
 pub mod diffgif;
 pub mod calprofile;
 pub mod focusmerge;
+pub mod prelude;

@@ -1,13 +1,7 @@
-use mars_raw_utils::{
-    constants, 
-    print, 
-    vprintln, 
-    path,
-    util
-};
+use mars_raw_utils::prelude::*;
 
 use sciimg::{
-    rgbimage,
+    prelude::*,
     inpaint
 };
 
@@ -20,7 +14,7 @@ use std::process;
 
 fn process_file(input_file:&str) {
 
-    let raw = rgbimage::RgbImage::open(&String::from(input_file)).unwrap();
+    let raw = RgbImage::open(&String::from(input_file)).unwrap();
     
     vprintln!("Generating mask from red pixels...");
     let mask = inpaint::make_mask_from_red(&raw).unwrap();

@@ -1,19 +1,11 @@
 /*
     Imaging upscale experiment using inpainting
 */
-use mars_raw_utils::{
-    constants, 
-    print, 
-    vprintln,
-    path,
-    util
-};
+use mars_raw_utils::prelude::*;
 
 use sciimg::{
-    rgbimage,
-    inpaint,
-    imagebuffer,
-    enums::ImageMode
+    prelude::*,
+    inpaint
 };
 
 #[macro_use]
@@ -26,10 +18,10 @@ use std::process;
 
 fn process_file(input_file:&str, scale_factor:usize) {
 
-    let raw = rgbimage::RgbImage::open(&String::from(input_file)).unwrap();
+    let raw = RgbImage::open(&String::from(input_file)).unwrap();
 
-    let mut upscaled = rgbimage::RgbImage::new(raw.width * scale_factor, raw.height * scale_factor, ImageMode::U8BIT).unwrap();
-    let mut fill_mask = imagebuffer::ImageBuffer::new(raw.width * scale_factor, raw.height * scale_factor).unwrap();
+    let mut upscaled = RgbImage::new(raw.width * scale_factor, raw.height * scale_factor, ImageMode::U8BIT).unwrap();
+    let mut fill_mask = ImageBuffer::new(raw.width * scale_factor, raw.height * scale_factor).unwrap();
 
     for y in 0..(raw.height * scale_factor) {
         for x in 0..(raw.width * scale_factor) {

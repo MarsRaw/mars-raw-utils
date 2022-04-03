@@ -1,10 +1,11 @@
 
 use crate::{
-    error,
     calibfile,
     vprintln,
     constants
 };
+
+use sciimg::error;
 
 use serde::{
     Deserialize, 

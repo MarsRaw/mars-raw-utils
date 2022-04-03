@@ -1,6 +1,4 @@
-use mars_raw_utils::{
-    nsyt
-};
+use mars_raw_utils::prelude::*;
 
 use std::process;
 

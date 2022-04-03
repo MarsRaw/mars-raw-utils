@@ -1,12 +1,6 @@
-use mars_raw_utils::{
-    constants, 
-    print, 
-    vprintln, 
-    path,
-    util
-};
+use mars_raw_utils::prelude::*;
 
-use sciimg::rgbimage;
+use sciimg::prelude::*;
 
 #[macro_use]
 extern crate clap;
@@ -16,7 +10,7 @@ use clap::{Arg, App};
 use std::process;
 
 fn process_file(input_file:&str, x:usize, y:usize, width:usize, height:usize) {
-    let mut raw = rgbimage::RgbImage::open(&String::from(input_file)).unwrap();
+    let mut raw = RgbImage::open(&String::from(input_file)).unwrap();
 
     if x >= raw.width {
         eprintln!("X parameter is out of bounds: {}. Must be between 0 and {}", x, raw.width - 1);

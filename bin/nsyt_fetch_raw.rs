@@ -1,9 +1,4 @@
-use mars_raw_utils::{
-    constants, 
-    print,
-    util,
-    nsyt
-};
+use mars_raw_utils::prelude::*;
 
 #[macro_use]
 extern crate clap;

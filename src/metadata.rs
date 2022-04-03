@@ -4,11 +4,11 @@ use serde::{
     Serialize
 };
 
-use crate::{
+
+use sciimg::{
+    cahvor::Cahvor,
     error
 };
-
-use sciimg::cahvor::Cahvor;
 
 use std::fs::File;
 use std::io::Read;

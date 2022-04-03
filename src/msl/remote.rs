@@ -3,7 +3,6 @@
 use crate::{
     constants, 
     jsonfetch, 
-    error,
     util::*,
     msl::metadata::*,
     metadata::convert_to_std_metadata,
@@ -13,6 +12,8 @@ use crate::{
         LatestData
     }
 };
+
+use sciimg::error;
 
 pub fn print_header() {
     println!("{:37} {:15} {:6} {:20} {:27} {:6} {:6} {:7} {:10}", 

@@ -6,12 +6,12 @@ use crate::{
     decompanding,
     util,
     calprofile,
-    error,
     calibfile
 };
 
 use sciimg::{
-    cahvor::Cahvor
+    cahvor::Cahvor,
+    error
 };
 
 pub const MASTCAMZ_PIXEL_SIZE_MM:f32 = 0.0074;

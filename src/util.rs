@@ -2,12 +2,14 @@
 use crate::{
     path,
     constants,
-    error,
-    ok,
     vprintln,
     httpfetch
 };
 
+use sciimg::{
+    error,
+    ok
+};
 
 use sciimg::util as sciutil;
 

@@ -1,7 +1,6 @@
 use crate::{
     constants, 
     jsonfetch, 
-    error,
     util::*,
     nsyt::metadata::*,
     nsyt::latest,
@@ -9,6 +8,7 @@ use crate::{
     path
 };
 
+use sciimg::error;
 
 pub fn print_header() {
     println!("{:37} {:15} {:6} {:20} {:27} {:7} {:10}", 

@@ -2,10 +2,11 @@ use std::env;
 
 use crate::{
     path,
-    error,
     constants,
     enums
 };
+
+use sciimg::error;
 
 extern crate dirs;
 

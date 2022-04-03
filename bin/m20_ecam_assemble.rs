@@ -1,17 +1,4 @@
-use mars_raw_utils::{
-    constants, 
-    print, 
-    vprintln, 
-    path,
-    util,
-    m20,
-    enums,
-    error,
-    metadata,
-    max,
-    min,
-    image
-};
+use mars_raw_utils::prelude::*;
 
 use sciimg::{
     enums::ImageMode,

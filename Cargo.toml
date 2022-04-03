@@ -201,7 +201,7 @@ lab = "0.11.0"
 toml = "0.5.8"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
-sciimg = "0.2.3"
+sciimg = "0.2.4"
 #sciimg = { path = "../sciimg" }
 weezl = "0.1.5"
 gif = "0.11.3"

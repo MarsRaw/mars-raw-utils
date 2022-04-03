@@ -1,6 +1,4 @@
-use mars_raw_utils::{
-    msl
-};
+use mars_raw_utils::prelude::*;
 
 fn main() {
     match msl::lmst::get_lmst() {

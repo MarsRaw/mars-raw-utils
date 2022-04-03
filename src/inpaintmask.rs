@@ -5,14 +5,14 @@
 use crate::{
     constants, 
     path, 
-    error, 
     enums, 
     vprintln,
     calibfile
 };
 
 use sciimg::{
-    imagebuffer::ImageBuffer
+    imagebuffer::ImageBuffer,
+    error
 };
 
 fn determine_mask_file(instrument:enums::Instrument) -> error::Result<String> {

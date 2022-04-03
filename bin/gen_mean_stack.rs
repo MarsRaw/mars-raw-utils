@@ -1,14 +1,5 @@
-use mars_raw_utils::{
-    constants, 
-    print, 
-    vprintln,
-    path
-};
-
-use sciimg::{
-    rgbimage,
-    imagebuffer
-};
+use mars_raw_utils::prelude::*;
+use sciimg::prelude::*;
 
 #[macro_use]
 extern crate clap;
@@ -50,20 +41,20 @@ fn main() {
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    let mut mean : rgbimage::RgbImage = rgbimage::RgbImage::new_empty().unwrap();
-    let mut count : imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
-    let mut ones : imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
+    let mut mean : RgbImage = RgbImage::new_empty().unwrap();
+    let mut count : ImageBuffer = ImageBuffer::new_empty().unwrap();
+    let mut ones : ImageBuffer = ImageBuffer::new_empty().unwrap();
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
             
-            let raw = rgbimage::RgbImage::open(&String::from(*in_file)).unwrap();
+            let raw = RgbImage::open(&String::from(*in_file)).unwrap();
 
             if mean.is_empty() {
                 mean = raw;
-                count = imagebuffer::ImageBuffer::new(mean.width, mean.height).unwrap();
-                ones = imagebuffer::ImageBuffer::new_with_fill(mean.width, mean.height, 1.0).unwrap();
+                count = ImageBuffer::new(mean.width, mean.height).unwrap();
+                ones = ImageBuffer::new_with_fill(mean.width, mean.height, 1.0).unwrap();
             } else {
 
                 if raw.width != mean.width || raw.height != mean.height {

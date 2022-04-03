@@ -3,11 +3,12 @@ use serde_json::{
     Value
 };
 use crate::{
-    constants, 
-    error, 
+    constants,  
     httpfetch::HttpFetcher,
     util::string_is_valid_f64
 };
+
+use sciimg::error;
 
 use string_builder::Builder;
 
