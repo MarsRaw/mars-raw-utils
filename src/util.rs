@@ -162,6 +162,7 @@ pub fn stringvec_b(a:&str, b:String) -> Vec<String> {
 }
 
 
+#[deprecated]
 pub fn image_exists_on_filesystem(image_url:&str) -> bool {
     let bn = path::basename(image_url);
     path::file_exists(bn.as_str())
@@ -176,28 +177,30 @@ pub fn fetch_image(image_url:&str, only_new:bool, output_path:Option<&str>) -> e
         None => String::from(image_url)
     };
 
-    if image_exists_on_filesystem(&write_to) && only_new {
+    if path::file_exists(&write_to) && only_new {
         vprintln!("Output file {} exists, skipping", write_to);
         return ok!();
-    }
-
-    let image_data = match httpfetch::simple_fetch_bin(image_url) {
-        Ok(i) => i,
-        Err(e) => return Err(e)
-    };
+    } else {
+        let image_data = match httpfetch::simple_fetch_bin(image_url) {
+            Ok(i) => i,
+            Err(e) => return Err(e)
+        };
+        
+        let path = Path::new(write_to.as_str());
+        vprintln!("Writing image data to {}", write_to);
     
-    let path = Path::new(write_to.as_str());
-    vprintln!("Writing image data to {}", write_to);
-
-    let mut file = match File::create(&path) {
-        Err(why) => panic!("couldn't create {}", why),
-        Ok(file) => file,
-    };
-
-    match file.write_all(&image_data[..]) {
-        Ok(_) => ok!(),
-        Err(_e) => Err("Error writing image to filesystem")
+        let mut file = match File::create(&path) {
+            Err(why) => panic!("couldn't create {}", why),
+            Ok(file) => file,
+        };
+    
+        match file.write_all(&image_data[..]) {
+            Ok(_) => ok!(),
+            Err(_e) => Err("Error writing image to filesystem")
+        }
     }
+
+    
 }
 
 pub fn save_image_json<T:Serialize>(image_url:&str, item:&T, only_new:bool, output_path:Option<&str>) -> error::Result<&'static str> {
