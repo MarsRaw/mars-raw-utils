@@ -20,6 +20,7 @@ Implemented calibration steps include (varying per instrument):
 | Mars2020   | Watson      | &#9745;   | &#9745; | &#9745;      |        |        |
 | Mars2020   | SuperCam    |           | &#9745; |              | &#9745;|        |
 | Mars2020   | PIXL MCC    |           |         |              | &#9745;|        |
+| Mars2020   | SkyCam      |           |         |              | &#9745;|        |
 | Ingenuity  | Nav         |           |         |              | &#9745;|        |
 | Ingenuity  | Color       |           |         |              | &#9745;|        |
 | InSight    | IDC         | &#9745;   |         |              | &#9745;|        |
@@ -391,6 +392,25 @@ OPTIONS:
     -i, --inputs <INPUT>...                 Input
     -P, --profile <PARAM_CAL_PROFILE>...    Calibration profile file path
 ```
+
+### MEDA SkyCam
+```
+USAGE:
+    m20_skycam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -t, --hpc_threshold <THRESHOLD>         Hot pixel correction variance threshold
+    -w, --hpc_window <WINDOW_SIZE>          Hot pixel correction window size
+    -i, --inputs <INPUT>...                 Input
+    -P, --profile <PARAM_CAL_PROFILE>...    Calibration profile file path
+```
+
 
 ### Ingenuity Nav Camera:
 ```
