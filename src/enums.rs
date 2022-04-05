@@ -33,6 +33,7 @@ pub enum Instrument {
     M20Watson,
     M20SuperCam,
     M20Pixl,
+    M20SkyCam,
     M20HeliNav,
     M20HeliRte,
     NsytICC,

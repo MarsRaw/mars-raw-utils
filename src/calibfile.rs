@@ -69,7 +69,8 @@ pub struct M20CalData {
     pub rhaz_left: InstrumentProperties,
     pub heli_nav: InstrumentProperties,
     pub heli_rte: InstrumentProperties,
-    pub pixl_mcc: InstrumentProperties
+    pub pixl_mcc: InstrumentProperties,
+    pub skycam: InstrumentProperties
 }
 
 #[allow(non_snake_case)]
@@ -189,6 +190,7 @@ pub fn get_calibration_base_file_for_instrument(instrument:enums::Instrument, ca
         enums::Instrument::M20HeliNav       => Ok(get_calibration_file_for_type(&config.m20.heli_nav, cal_file_type)),
         enums::Instrument::M20HeliRte       => Ok(get_calibration_file_for_type(&config.m20.heli_rte, cal_file_type)),
         enums::Instrument::M20Pixl          => Ok(get_calibration_file_for_type(&config.m20.pixl_mcc, cal_file_type)),
+        enums::Instrument::M20SkyCam        => Ok(get_calibration_file_for_type(&config.m20.skycam, cal_file_type)),
         enums::Instrument::NsytICC          => Ok(get_calibration_file_for_type(&config.nsyt.icc, cal_file_type)),
         enums::Instrument::NsytIDC          => Ok(get_calibration_file_for_type(&config.nsyt.idc, cal_file_type)),
         enums::Instrument::None             => Err(constants::status::UNSUPPORTED_INSTRUMENT)
