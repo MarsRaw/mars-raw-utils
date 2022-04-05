@@ -90,6 +90,7 @@ pub fn make_instrument_map() -> InstrumentMap {
         ("HELI_NAV", vec!["HELI_NAV"]),
         ("HELI_RTE", vec!["HELI_RTE"]),
         ("CACHECAM", vec!["CACHECAM"]),
+        ("PIXL", vec!["PIXL_MCC"])
     ].iter().cloned().collect()}
 }
 

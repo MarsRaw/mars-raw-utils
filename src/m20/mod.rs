@@ -8,3 +8,4 @@ pub mod metadata;
 pub mod helinav;
 pub mod helirte;
 pub mod latest;
+pub mod pixlmcc;

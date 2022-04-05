@@ -19,6 +19,7 @@ Implemented calibration steps include (varying per instrument):
 | Mars2020   | Front Haz   |           | &#9745; |              |        |        |
 | Mars2020   | Watson      | &#9745;   | &#9745; | &#9745;      |        |        |
 | Mars2020   | SuperCam    |           | &#9745; |              | &#9745;|        |
+| Mars2020   | PIXL MCC    |           |         |              | &#9745;|        |
 | Ingenuity  | Nav         |           |         |              | &#9745;|        |
 | Ingenuity  | Color       |           |         |              | &#9745;|        |
 | InSight    | IDC         | &#9745;   |         |              | &#9745;|        |
@@ -373,6 +374,22 @@ OPTIONS:
     -i, --inputs <INPUT>...              Input
     -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
     -R, --red <RED>                      Red weight
+```
+
+### PIXL Micro Context Camera
+```
+USAGE:
+    m20_pixl_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --inputs <INPUT>...                 Input
+    -P, --profile <PARAM_CAL_PROFILE>...    Calibration profile file path
 ```
 
 ### Ingenuity Nav Camera:
@@ -775,3 +792,8 @@ Di, K., and Li, R. (2004), CAHVOR camera model and its photogrammetric conversio
 https://doi.org/10.1029/2003JE002199
 
 Castano, A., Fukunaga, A., Biesiadecki, J. et al. Automatic detection of dust devils and clouds on Mars. Machine Vision and Applications 19, 467–482 (2008). https://doi.org/10.1007/s00138-007-0081-3
+
+
+Allwood, Abigail C., Joel A. Hurowitz, Benton C. Clark, Luca Cinquini, Scott Davidoff, Robert W. Denise,
+W. Timothy Elam, et al. "The PIXL Instrument on the Mars 2020 Perseverance Rover." arXiv preprint
+arXiv:2103.07001 (2021). https://arxiv.org/abs/2103.07001
