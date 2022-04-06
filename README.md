@@ -20,7 +20,7 @@ Implemented calibration steps include (varying per instrument):
 | Mars2020   | Watson      | &#9745;   | &#9745; | &#9745;      |        |        |
 | Mars2020   | SuperCam    |           | &#9745; |              | &#9745;|        |
 | Mars2020   | PIXL MCC    |           |         |              | &#9745;|        |
-| Mars2020   | SkyCam      |           |         |              | &#9745;|        |
+| Mars2020   | SkyCam      |           |         |              | &#9745;| &#9745;|
 | Ingenuity  | Nav         |           |         |              | &#9745;|        |
 | Ingenuity  | Color       |           |         |              | &#9745;|        |
 | InSight    | IDC         | &#9745;   |         |              | &#9745;|        |
