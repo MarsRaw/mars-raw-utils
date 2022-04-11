@@ -75,7 +75,7 @@ function update_on_sol() {
     cd $INSTROOT
 
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        m20_zcam_calibrate -i *J0?.png -v -P m20_zcam_bay m20_zcam_ilt m20_zcam_rad m20_zcam_cwb
+        m20_zcam_calibrate -i *J0?.png -v -P m20_zcam_bay m20_zcam_ilt m20_zcam_rad m20_zcam_cwb m20_zcam_cb2
     fi
 
     if [ `ls *rjcal-bay* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -96,6 +96,11 @@ function update_on_sol() {
     if [ `ls *rjcal-cwb* 2> /dev/null | wc -l ` -gt 0 ]; then
         mkdir -p CWB
         mv *rjcal-cwb* CWB 
+    fi
+
+    if [ `ls *rjcal-cb2* 2> /dev/null | wc -l ` -gt 0 ]; then
+        mkdir -p CB2
+        mv *rjcal-cb2* CB2 
     fi
 
     ##############
