@@ -466,7 +466,7 @@ use clap::{Arg, App};
 
 struct Tile {
     pub source_path:String,
-    pub image:image::MarsImage,
+    pub image:MarsImage,
     pub top_left_x:usize,
     pub top_left_y:usize,
     pub bottom_right_x:usize,
@@ -477,8 +477,8 @@ struct Tile {
 
 impl Tile {
     pub fn new(source_path:&str) -> Self {
-        let instrument = enums::Instrument::M20NavcamLeft;
-        let image = image::MarsImage::open(String::from(&source_path.to_owned()), instrument);
+        let instrument = Instrument::M20NavcamLeft;
+        let image = MarsImage::open(String::from(&source_path.to_owned()), instrument);
         
         match image.metadata.clone() {
             Some(md) => {
