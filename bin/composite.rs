@@ -1,7 +1,6 @@
 use mars_raw_utils::prelude::*;
 use sciimg::{
     prelude::*,
-    cahvor::*,
     vector::Vector//,
     // matrix::Matrix,
     // enums::Axis,
@@ -13,12 +12,13 @@ use clap::{Arg, App};
 use std::process;
 
 
-fn get_cahvor(img:&MarsImage) -> Option<Cahvor> {
+fn get_cahvor(img:&MarsImage) -> Option<CameraModel> {
     match &img.metadata {
         Some(md) => {
-            match &md.camera_model_component_list {
-                Some(c) => Some(c.clone()),
-                None => None
+            if md.camera_model_component_list.is_valid() {
+                Some(md.camera_model_component_list.clone())
+            } else {
+                None
             }
         },
         None => {
@@ -75,20 +75,26 @@ fn intersect_to_sphere(lv:&LookVector, radius:f64) -> Vector {
     lv.look_direction.normalized().scale(radius).add(&lv.origin)
 }
 
-static SPHERE_RADIUS:f64 = 1000.0;
+fn vector_to_cylindrical(v:&Vector) -> LatLon {
+    // let rho = (v.x * v.x + v.y * v.y).sqrt();
+    // let theta = (v.y / v.x).atan().to_degrees();
+    LatLon{
+        lat:v.z.atan2((v.x * v.x + v.y * v.y).sqrt()).to_degrees(),
+        lon:v.y.atan2(v.x).to_degrees() + 180.0
+    }
+}
 
-fn get_lat_lon(c:&Cahvor, x:usize, y:usize) -> error::Result<LatLon> {
+fn lookvector_to_cylindrical(lv:&LookVector) -> LatLon {
+    let ray = intersect_to_sphere(&lv, SPHERE_RADIUS);
+    vector_to_cylindrical(&ray)
+}
+
+static SPHERE_RADIUS:f64 = 100000.0;
+
+fn get_lat_lon(c:&CameraModel, x:usize, y:usize) -> error::Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample:x as f64 }) {
         Ok(lv) => {
-            let ray = intersect_to_sphere(&lv, SPHERE_RADIUS);
-
-            let lat = ray.z.atan2((ray.x * ray.x + ray.y * ray.y).sqrt()).to_degrees();
-            let lon =  ray.y.atan2(ray.x).to_degrees() + 180.0;
-
-            Ok(LatLon{
-                lat:lat,
-                lon:lon
-            })
+            Ok(lookvector_to_cylindrical(&lv))
         },
         Err(e) => {
             Err(e)
@@ -209,7 +215,7 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
 
     match get_cahvor(&img) {
         Some(c) => {
-            vprintln!("CAHVOR: {:?}", c);
+            //vprintln!("CAHVOR: {:?}", c);
             let center_az = get_az(&img);
             let center_el = get_el(&img);
             vprintln!("Mast Az/El: {}/{}", center_az, center_el);
@@ -221,11 +227,9 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
 
                     match c.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample: x as f64 }) {
                         Ok(lv) => {
-                            let ray = intersect_to_sphere(&lv, SPHERE_RADIUS);
-                            
-                            let lat = ray.z.atan2((ray.x * ray.x + ray.y * ray.y).sqrt()).to_degrees();
-                            let lon = ray.y.atan2(ray.x).to_degrees() + 180.0;
-
+                            let ll = lookvector_to_cylindrical(&lv);
+                            let lat = ll.lat;
+                            let lon = ll.lon;
                             let out_y_f = (lat - map_context.bottom_lat) / (map_context.top_lat - map_context.bottom_lat) * map_context.height as f64;
                             let out_x_f = (lon - map_context.left_lon) / (map_context.right_lon - map_context.left_lon) * map_context.width as f64;
 
@@ -403,6 +407,13 @@ fn main() {
     vprintln!("FOV Vertical: {}", map_context.top_lat - map_context.bottom_lat);
     vprintln!("FOV Horizontal: {}", map_context.right_lon - map_context.left_lon);
 
+    if map_context.width == 0 {
+        eprintln!("Output expected to have zero width. Cannot continue with that. Exiting...");
+        process::exit(1);
+    } else if map_context.height == 0 {
+        eprintln!("Output expected to have zero height. Cannot continue with that. Exiting...");
+        process::exit(1);
+    }
     // let map_context = MapContext{
     //     top_lat : 90.0,
     //     bottom_lat : -90.0,

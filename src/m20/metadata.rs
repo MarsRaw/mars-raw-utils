@@ -5,10 +5,7 @@ use crate::{
     metadata::*
 };
 
-use sciimg::{
-    error,
-    cahvor::Cahvor
-};
+use sciimg::prelude::*;
 
 use std::fs::File;
 use std::io::Read;
@@ -62,7 +59,7 @@ pub struct Camera {
     pub camera_vector: Option<Vec<f64>>,
 
     #[serde(with = "crate::jsonfetch::cahvor_format")]
-    pub camera_model_component_list: Option<Cahvor>,
+    pub camera_model_component_list: CameraModel,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub camera_position: Option<Vec<f64>>,
@@ -166,7 +163,7 @@ impl ImageMetadata for Image {
         self.camera.camera_vector.clone()
     }
 
-    fn get_camera_model_component_list(&self) -> Option<Cahvor> {
+    fn get_camera_model_component_list(&self) -> CameraModel {
         self.camera.camera_model_component_list.clone()
     }
 

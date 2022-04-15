@@ -18,7 +18,7 @@ use sciimg::{
 };
 
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct MarsImage {
     pub image: RgbImage,
     pub instrument: enums::Instrument,

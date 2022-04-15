@@ -5,15 +5,12 @@ use serde::{
 };
 
 
-use sciimg::{
-    cahvor::Cahvor,
-    error
-};
+use sciimg::prelude::*;
 
 use std::fs::File;
 use std::io::Read;
 
-pub trait ImageMetadata {
+pub trait ImageMetadata{
     fn get_link(&self) -> String;
     fn get_credit(&self) -> String;
     fn get_sol(&self) -> u32;
@@ -27,7 +24,7 @@ pub trait ImageMetadata {
     fn get_instrument(&self) -> String;
     fn get_filter_name(&self) -> Option<String>;
     fn get_camera_vector(&self) -> Option<Vec<f64>>;
-    fn get_camera_model_component_list(&self) -> Option<Cahvor>;
+    fn get_camera_model_component_list(&self) -> CameraModel;
     fn get_camera_position(&self) -> Option<Vec<f64>>;
     fn get_camera_model_type(&self) -> Option<String>;
     fn get_site(&self) -> Option<u32>;
@@ -37,7 +34,7 @@ pub trait ImageMetadata {
     fn get_sclk(&self) -> Option<f64>;
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Metadata  {
     pub link:String,
     pub credit:String,
@@ -62,7 +59,7 @@ pub struct Metadata  {
     pub drive:Option<u32>,
 
     #[serde(with = "crate::jsonfetch::cahvor_format")]
-    pub camera_model_component_list: Option<Cahvor>,
+    pub camera_model_component_list: CameraModel,
 
     #[serde(default = "default_step_status")]
     pub decompand:bool,
