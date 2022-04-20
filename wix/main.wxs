@@ -1,0 +1,530 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<!--
+  Copyright (C) 2017 Christopher R. Field.
+  Copyright (C) 2022 Kevin M. Gill
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!--
+  The "cargo wix" subcommand provides a variety of predefined variables available
+  for customization of this template. The values for each variable are set at
+  installer creation time. The following variables are available:
+
+  TargetTriple      = The rustc target triple name.
+  TargetEnv         = The rustc target environment. This is typically either
+                      "msvc" or "gnu" depending on the toolchain downloaded and
+                      installed.
+  TargetVendor      = The rustc target vendor. This is typically "pc", but Rust
+                      does support other vendors, like "uwp".
+  CargoTargetBinDir = The complete path to the binary (exe). The default would
+                      be "target\release\<BINARY_NAME>.exe" where
+                      "<BINARY_NAME>" is replaced with the name of each binary
+                      target defined in the package's manifest (Cargo.toml). If
+                      a different rustc target triple is used than the host,
+                      i.e. cross-compiling, then the default path would be
+                      "target\<CARGO_TARGET>\<CARGO_PROFILE>\<BINARY_NAME>.exe",
+                      where "<CARGO_TARGET>" is replaced with the "CargoTarget"
+                      variable value and "<CARGO_PROFILE>" is replaced with the
+                      value from the `CargoProfile` variable.
+  CargoTargetDir    = The path to the directory for the build artifacts, i.e.
+                      "target".
+  CargoProfile      = Either "debug" or `release` depending on the build
+                      profile. The default is "release".
+  Version           = The version for the installer. The default is the
+                      "Major.Minor.Fix" semantic versioning number of the Rust
+                      package.
+-->
+
+<!-- 
+
+    Mars Raw Utils:
+
+    TODO:
+    * Review defaults
+    * Add calibration data to installer
+    * Ensure the executables can find the calibration data
+    * Create Start Menu / Desktop icons for
+        - PowerShell with notification at startup indicating use of MRU. 
+        - Uninstaller
+        - Link to help / documentation
+    * Graphics, icons
+
+-->
+
+<!--
+  Please do not remove these pre-processor If-Else blocks. These are used with
+  the `cargo wix` subcommand to automatically determine the installation
+  destination for 32-bit versus 64-bit installers. Removal of these lines will
+  cause installation errors.
+-->
+<?if $(sys.BUILDARCH) = x64 or $(sys.BUILDARCH) = arm64 ?>
+    <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+<?else ?>
+    <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+<?endif ?>
+
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+
+    <Product
+        Id='*'
+        Name='Mars Raw Utils'
+        UpgradeCode='EA950E3E-6F71-4180-9D72-1D81E16841F3'
+        Manufacturer='Kevin M. Gill'
+        Language='1033'
+        Codepage='1252'
+        Version='$(var.Version)'>
+
+        <Package Id='*'
+            Keywords='Installer'
+            Description='Utilities for working with publicly available raw MSL, Mars2020, and InSight images'
+            Manufacturer='Kevin M. Gill'
+            InstallerVersion='450'
+            Languages='1033'
+            Compressed='yes'
+            InstallScope='perMachine'
+            SummaryCodepage='1252'
+            />
+
+        <MajorUpgrade
+            Schedule='afterInstallInitialize'
+            DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
+
+        <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
+        <Property Id='DiskPrompt' Value='mars_raw_utils Installation'/>
+
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+            <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
+                <Directory Id='APPLICATIONFOLDER' Name='mars_raw_utils'>
+                    <!--
+                      Disabling the license sidecar file in the installer is a two step process:
+
+                      1. Comment out or remove the `Component` tag along with its contents.
+                      2. Comment out or remove the `ComponentRef` tag with the "License" Id
+                         attribute value further down in this file.
+                    -->
+                    <Component Id='License' Guid='*'>
+                        <File Id='LicenseFile'
+                            Name='License.rtf'
+                            DiskId='1'
+                            Source='wix\License.rtf'
+                            KeyPath='yes'/>
+                    </Component>
+                    
+                    <Directory Id='Bin' Name='bin'>
+                        <Component Id='Path' Guid='082C8E4E-D68C-4503-B203-C1EF590AB1C7' KeyPath='yes'>
+                            <Environment
+                                Id='PATH'
+                                Name='PATH'
+                                Value='[Bin]'
+                                Permanent='no'
+                                Part='last'
+                                Action='set'
+                                System='yes'/>
+                        </Component>
+                        <Component Id='binary0' Guid='*'>
+                            <File
+                                Id='exe0'
+                                Name='msl_mahli_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\msl_mahli_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary1' Guid='*'>
+                            <File
+                                Id='exe1'
+                                Name='msl_mcam_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\msl_mcam_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary2' Guid='*'>
+                            <File
+                                Id='exe2'
+                                Name='msl_ccam_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\msl_ccam_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary3' Guid='*'>
+                            <File
+                                Id='exe3'
+                                Name='msl_mardi_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\msl_mardi_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary4' Guid='*'>
+                            <File
+                                Id='exe4'
+                                Name='m20_zcam_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_zcam_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary5' Guid='*'>
+                            <File
+                                Id='exe5'
+                                Name='m20_hnav_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_hnav_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary6' Guid='*'>
+                            <File
+                                Id='exe6'
+                                Name='m20_hrte_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_hrte_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary7' Guid='*'>
+                            <File
+                                Id='exe7'
+                                Name='m20_pixl_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_pixl_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary8' Guid='*'>
+                            <File
+                                Id='exe8'
+                                Name='m20_skycam_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_skycam_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary9' Guid='*'>
+                            <File
+                                Id='exe9'
+                                Name='msl_fetch_raw.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\msl_fetch_raw.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary10' Guid='*'>
+                            <File
+                                Id='exe10'
+                                Name='msl_latest.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\msl_latest.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary11' Guid='*'>
+                            <File
+                                Id='exe11'
+                                Name='m20_fetch_raw.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_fetch_raw.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary12' Guid='*'>
+                            <File
+                                Id='exe12'
+                                Name='m20_latest.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_latest.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary13' Guid='*'>
+                            <File
+                                Id='exe13'
+                                Name='nsyt_fetch_raw.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\nsyt_fetch_raw.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary14' Guid='*'>
+                            <File
+                                Id='exe14'
+                                Name='nsyt_latest.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\nsyt_latest.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary15' Guid='*'>
+                            <File
+                                Id='exe15'
+                                Name='nsyt_icc_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\nsyt_icc_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary16' Guid='*'>
+                            <File
+                                Id='exe16'
+                                Name='nsyt_idc_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\nsyt_idc_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary17' Guid='*'>
+                            <File
+                                Id='exe17'
+                                Name='msl_ecam_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\msl_ecam_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary18' Guid='*'>
+                            <File
+                                Id='exe18'
+                                Name='hpc_filter.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\hpc_filter.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary19' Guid='*'>
+                            <File
+                                Id='exe19'
+                                Name='m20_ecam_assemble.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_ecam_assemble.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary20' Guid='*'>
+                            <File
+                                Id='exe20'
+                                Name='m20_ecam_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_ecam_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary21' Guid='*'>
+                            <File
+                                Id='exe21'
+                                Name='m20_watson_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_watson_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary22' Guid='*'>
+                            <File
+                                Id='exe22'
+                                Name='m20_scam_calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_scam_calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary23' Guid='*'>
+                            <File
+                                Id='exe23'
+                                Name='inpaint_filter.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\inpaint_filter.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary24' Guid='*'>
+                            <File
+                                Id='exe24'
+                                Name='upscale.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\upscale.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary25' Guid='*'>
+                            <File
+                                Id='exe25'
+                                Name='msl_date.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\msl_date.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary26' Guid='*'>
+                            <File
+                                Id='exe26'
+                                Name='m20_date.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\m20_date.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary27' Guid='*'>
+                            <File
+                                Id='exe27'
+                                Name='nsyt_date.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\nsyt_date.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary28' Guid='*'>
+                            <File
+                                Id='exe28'
+                                Name='crop.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\crop.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary29' Guid='*'>
+                            <File
+                                Id='exe29'
+                                Name='debayer.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\debayer.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary30' Guid='*'>
+                            <File
+                                Id='exe30'
+                                Name='gen_mean_stack.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\gen_mean_stack.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary31' Guid='*'>
+                            <File
+                                Id='exe31'
+                                Name='levels.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\levels.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary32' Guid='*'>
+                            <File
+                                Id='exe32'
+                                Name='diffgif.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\diffgif.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary33' Guid='*'>
+                            <File
+                                Id='exe33'
+                                Name='focusmerge.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\focusmerge.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <Feature
+            Id='Binaries'
+            Title='Application'
+            Description='Installs all binaries and the license.'
+            Level='1'
+            ConfigurableDirectory='APPLICATIONFOLDER'
+            AllowAdvertise='no'
+            Display='expand'
+            Absent='disallow'>
+            <!--
+              Comment out or remove the following `ComponentRef` tag to remove
+              the license sidecar file from the installer.
+            -->
+            <ComponentRef Id='License'/>
+            
+            <ComponentRef Id='binary0'/>
+            <ComponentRef Id='binary1'/>
+            <ComponentRef Id='binary2'/>
+            <ComponentRef Id='binary3'/>
+            <ComponentRef Id='binary4'/>
+            <ComponentRef Id='binary5'/>
+            <ComponentRef Id='binary6'/>
+            <ComponentRef Id='binary7'/>
+            <ComponentRef Id='binary8'/>
+            <ComponentRef Id='binary9'/>
+            <ComponentRef Id='binary10'/>
+            <ComponentRef Id='binary11'/>
+            <ComponentRef Id='binary12'/>
+            <ComponentRef Id='binary13'/>
+            <ComponentRef Id='binary14'/>
+            <ComponentRef Id='binary15'/>
+            <ComponentRef Id='binary16'/>
+            <ComponentRef Id='binary17'/>
+            <ComponentRef Id='binary18'/>
+            <ComponentRef Id='binary19'/>
+            <ComponentRef Id='binary20'/>
+            <ComponentRef Id='binary21'/>
+            <ComponentRef Id='binary22'/>
+            <ComponentRef Id='binary23'/>
+            <ComponentRef Id='binary24'/>
+            <ComponentRef Id='binary25'/>
+            <ComponentRef Id='binary26'/>
+            <ComponentRef Id='binary27'/>
+            <ComponentRef Id='binary28'/>
+            <ComponentRef Id='binary29'/>
+            <ComponentRef Id='binary30'/>
+            <ComponentRef Id='binary31'/>
+            <ComponentRef Id='binary32'/>
+            <ComponentRef Id='binary33'/>
+
+            <Feature
+                Id='Environment'
+                Title='PATH Environment Variable'
+                Description='Add the install location of the [ProductName] executable to the PATH system environment variable. This allows the [ProductName] executable to be called from any location.'
+                Level='1'
+                Absent='allow'>
+                <ComponentRef Id='Path'/>
+            </Feature>
+        </Feature>
+
+        <SetProperty Id='ARPINSTALLLOCATION' Value='[APPLICATIONFOLDER]' After='CostFinalize'/>
+
+        
+        <!--
+          Uncomment the following `Icon` and `Property` tags to change the product icon.
+
+          The product icon is the graphic that appears in the Add/Remove
+          Programs control panel for the application.
+        -->
+        <!--<Icon Id='ProductICO' SourceFile='wix\Product.ico'/>-->
+        <!--<Property Id='ARPPRODUCTICON' Value='ProductICO' />-->
+
+        <Property Id='ARPHELPLINK' Value='https://github.com/kmgill/mars-raw-utils'/>
+        
+        <UI>
+            <UIRef Id='WixUI_FeatureTree'/>
+            <!--
+              Disabling the EULA dialog in the installer is a two step process:
+
+                 1. Uncomment the following two `Publish` tags
+                 2. Comment out or remove the `<WiXVariable Id='WixUILicenseRtf'...` tag further down
+
+            -->
+            <!--<Publish Dialog='WelcomeDlg' Control='Next' Event='NewDialog' Value='CustomizeDlg' Order='99'>1</Publish>-->
+            <!--<Publish Dialog='CustomizeDlg' Control='Back' Event='NewDialog' Value='WelcomeDlg' Order='99'>1</Publish>-->
+            
+        </UI>
+
+        <!--
+          Disabling the EULA dialog in the installer requires commenting out
+          or removing the following `WixVariable` tag
+        -->
+        <WixVariable Id='WixUILicenseRtf' Value='wix\License.rtf'/>
+        
+        
+        <!--
+          Uncomment the next `WixVaraible` tag to customize the installer's
+          Graphical User Interface (GUI) and add a custom banner image across
+          the top of each screen. See the WiX Toolset documentation for details
+          about customization.
+
+          The banner BMP dimensions are 493 x 58 pixels.
+        -->
+        <WixVariable Id='WixUIBannerBmp' Value='wix\Banner.bmp'/>
+
+        
+        <!--
+          Uncomment the next `WixVariable` tag to customize the installer's
+          Graphical User Interface (GUI) and add a custom image to the first
+          dialog, or screen. See the WiX Toolset documentation for details about
+          customization.
+
+          The dialog BMP dimensions are 493 x 312 pixels.
+        -->
+        <!--<WixVariable Id='WixUIDialogBmp' Value='wix\Dialog.bmp'/>-->
+
+    </Product>
+
+</Wix>
