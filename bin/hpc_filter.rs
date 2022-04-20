@@ -62,7 +62,7 @@ fn main() {
                         .help("Hot pixel correction window size")
                         .required(false)
                         .takes_value(true))
-                    .get_matches();
+                    .get_matches_from(wild::args());
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
         print::set_verbose(true);

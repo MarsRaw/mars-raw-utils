@@ -33,7 +33,7 @@ fn main() {
                     .arg(Arg::with_name(constants::param::PARAM_ONLY_NEW)
                         .short(constants::param::PARAM_ONLY_NEW_SHORT)
                         .help("Only new images. Skipped processed images."))
-                    .get_matches();
+                    .get_matches_from(wild::args());
 
     if matches.is_present(constants::param::PARAM_VERBOSE) {
         print::set_verbose(true);
