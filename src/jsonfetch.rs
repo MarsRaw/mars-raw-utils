@@ -118,6 +118,7 @@ pub mod cahvor_format {
             let v = vec_to_str(&model_opt.v().to_vec());
             let o = vec_to_str(&model_opt.o().to_vec());
             let r = vec_to_str(&model_opt.r().to_vec());
+            let e = vec_to_str(&model_opt.e().to_vec());
 
             match model_opt.model_type() {
                 ModelType::CAHVOR => {
@@ -126,6 +127,10 @@ pub mod cahvor_format {
                 },
                 ModelType::CAHV => {
                     let s = format!("{};{};{};{}", c, a, h, v);
+                    serializer.serialize_str(&s)
+                },
+                ModelType::CAHVORE => {
+                    let s = format!("{};{};{};{};{};{};{}", c, a, h, v, o, r, e); // not complete
                     serializer.serialize_str(&s)
                 }
             }

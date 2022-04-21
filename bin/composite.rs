@@ -89,7 +89,7 @@ fn lookvector_to_cylindrical(lv:&LookVector) -> LatLon {
     vector_to_cylindrical(&ray)
 }
 
-static SPHERE_RADIUS:f64 = 100000.0;
+static SPHERE_RADIUS:f64 = 1.0;
 
 fn get_lat_lon(c:&CameraModel, x:usize, y:usize) -> error::Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample:x as f64 }) {
@@ -214,151 +214,70 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
     let img = MarsImage::open(String::from(input_file), Instrument::M20MastcamZLeft);
 
     match get_cahvor(&img) {
-        Some(c) => {
+        Some(input_model) => {
             //vprintln!("CAHVOR: {:?}", c);
             let center_az = get_az(&img);
             let center_el = get_el(&img);
             vprintln!("Mast Az/El: {}/{}", center_az, center_el);
             
-        
+            let output_model = input_model.linearize(img.image.width, img.image.height, map_r.width, map_r.height).unwrap();
+            vprintln!("output model: {:?}", output_model);
+            
+            for y in 0..map_context.height {
+                for x in 0..map_context.width {
 
+                    if let Ok(lv) = output_model.ls_to_look_vector(&ImageCoordinate{line: y as f64, sample: x as f64}) {
+
+                        //vprintln!("lv -> {:?}", lv.look_direction);
+                        let ray = intersect_to_sphere(&lv, SPHERE_RADIUS);
+                        //vprintln!("ray -> {:?}", ray);
+
+                        let ls_in = input_model.xyz_to_ls(&ray, false);
+                        //vprintln!("{}, {} -> Line: {}, Sample: {}", y, x, ls_in.line, ls_in.sample);
+
+                        let in_x = ls_in.sample.round() as usize;
+                        let in_y = ls_in.line.round() as usize;
+
+                        if in_x < img.image.width && in_y < img.image.height {
+                            map_r.put(x, y, img.image.get_band(0).get(in_x, in_y).unwrap());
+                            map_g.put(x, y, img.image.get_band(1).get(in_x, in_y).unwrap());
+                            map_b.put(x, y, img.image.get_band(2).get(in_x, in_y).unwrap());
+                        }
+                    }
+
+                }
+            }
+            
+
+            /*
             for x in 0..img.image.width {
                 for y in 0..img.image.height {
-
-                    match c.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample: x as f64 }) {
-                        Ok(lv) => {
-                            let ll = lookvector_to_cylindrical(&lv);
-                            let lat = ll.lat;
-                            let lon = ll.lon;
-                            let out_y_f = (lat - map_context.bottom_lat) / (map_context.top_lat - map_context.bottom_lat) * map_context.height as f64;
-                            let out_x_f = (lon - map_context.left_lon) / (map_context.right_lon - map_context.left_lon) * map_context.width as f64;
-
-                            let out_x = out_x_f.round() as usize;
-                            let out_y = out_y_f.round() as usize;
-
-                            if out_x < map_r.width && out_y < map_r.height {
-                                map_r.put(out_x, out_y, img.image.get_band(0).get(x, y).unwrap());
-                                map_g.put(out_x, out_y, img.image.get_band(1).get(x, y).unwrap());
-                                map_b.put(out_x, out_y, img.image.get_band(2).get(x, y).unwrap());
-                            }
-                            
-                        },
-                        Err(_) => {}
+                    let lv = match output_model.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample: x as f64 }) {
+                        Ok(lv) => lv,
+                        Err(_) => continue
                     };
 
+                    let ll = lookvector_to_cylindrical(&lv);
+                    let lat = ll.lat;
+                    let lon = ll.lon;
+                    let out_y_f = (lat - map_context.bottom_lat) / (map_context.top_lat - map_context.bottom_lat) * map_context.height as f64;
+                    let out_x_f = (lon - map_context.left_lon) / (map_context.right_lon - map_context.left_lon) * map_context.width as f64;
+
+                    let out_x = out_x_f.round() as usize;
+                    let out_y = out_y_f.round() as usize;
+
+
+
+                    if out_x < map_r.width && out_y < map_r.height {
+                        map_r.put(out_x, out_y, img.image.get_band(0).get(x, y).unwrap());
+                        map_g.put(out_x, out_y, img.image.get_band(1).get(x, y).unwrap());
+                        map_b.put(out_x, out_y, img.image.get_band(2).get(x, y).unwrap());
+                    }
                 }
 
             }
-
-            // let min_x = ((360.0 * size_mult as f64) - ((360.0 - (center_az - fov_horiz)) * size_mult as f64)) as usize;
-            // let max_x = ((360.0 * size_mult as f64) - ((360.0 - (center_az + fov_horiz)) * size_mult as f64)) as usize;
-
-            // let min_y = ((90.0 * size_mult as f64) - (center_el + fov_vert) * (size_mult as f64)) as usize;
-            // let max_y = ((90.0 * size_mult as f64) - (center_el - fov_vert) * (size_mult as f64)) as usize;
-
-            // vprintln!("X Range: {} - {}", min_x, max_x);
-            // vprintln!("Y Range: {} - {}  -- {} - {}", min_y, max_y, (90.0 - min_y as f64 * size_mult_div), (90.0 - max_y as f64 * size_mult_div));
-            // for x in min_x..max_x {
-            //     let az = x as f64 * size_mult_div;
-
-            //     for y in min_y..max_y {
-            //     //for y in 0..720 {
-            // //         //let y = 360;
-
-            //         let el = 90.0 - y as f64 * size_mult_div;
-            //         //println!("{}, {}   --  {}, {}", center_az, az, center_el, el);
-
-            //         if (az - center_az).abs() < fov_horiz  && (el - center_el).abs() < fov_vert {
-            //             let src_x_f = ((img.image.width as f64 / 2.0) + (az - center_az) / ang_horiz).floor();
-            //             let src_y_f = ((img.image.height as f64 / 2.0) - (el - center_el) / ang_vert).floor();
-
-            //             let src_x = src_x_f as usize;
-            //             let src_y = src_y_f as usize;
-            //             //println!("{}, {} -- {}, {} -- {}, {} -- {}, {}", center_az, center_el, az, el, src_x, src_y, ang_horiz, ang_vert);
-            //             //vprintln!("X/Y: {}, {} -- {}, {}", x, y, src_x, src_y);
-            //             if src_x_f >= 0.0 && src_x < img.image.width &&  src_y_f >= 0.0 && src_y < img.image.height {
-            //                 map_r.put(x, y, img.image.get_band(0).get(src_x, src_y).unwrap());
-            //                 map_g.put(x, y, img.image.get_band(1).get(src_x, src_y).unwrap());
-            //                 map_b.put(x, y, img.image.get_band(2).get(src_x, src_y).unwrap());
-            //             }
-            //         }
-
-
-            //     }
-            // }
-
-
-            // for j in 0..img.image.height { 
-            //     for i in 0..img.image.width {
-
-            //         match c.ls_to_look_vector(&ImageCoordinate{ sample:i as f64, line:j as f64 }) {
-            //             Ok(lv) => {
-            //                 let v = intersect_ray(&lv.origin, &lv.look_direction, 10000.0);
-            //                 let ls = c.xyz_to_ls(&v, false);
-            //                 vprintln!("Out: j, i: {}, {}  Src: j, i: {}, {}", j, i, ls.line.to_degrees(), ls.sample.to_degrees());
-            //             },
-            //             Err(_) => {}
-            //         };
-
-            //     }
-            // }
-
-
-
-    //         for x in 0..1440 {
-    //             let az = x as f64 * 0.25;
-
-    //             //for y in 380..400 {
-    //             for y in 0..720 {
-    //         //         //let y = 360;
-
-    //                 let el = y as f64 * 0.25;
-
-    //                 let mut mast_vec = Vector::z_axis_vector();
-    //                 mast_vec = mast_vec.scale(1000000.0);
-
-    //                 let q = Quaternion::from_pitch_roll_yaw(el.to_radians(), 0.0, az.to_radians());
-    //                 mast_vec = q.rotate_vector(&mast_vec);
-
-    //                 let pt = c.project_object_to_image_point(&mast_vec);
-    //                 //let line = ;
-    //                 //let samp = pt.i.to_degrees();
-
-    //                 let ls = c.xyz_to_ls(&mast_vec, true);
-    //                 match c.ls_to_look_vector(&ls) {
-    //                     Ok(lv) => {
-    //                         let v = intersect_ray(&lv.origin, &lv.look_direction, 10000.0);
-    //                         vprintln!("Ray: {:?}", v);
-    //                     },
-    //                     Err(_) => {}
-    //                 };
-
-                    
-    //                 // let line = ls.line.to_degrees();
-    //                 // let samp = ls.sample.to_degrees();
-
-    //                 // let hc = img.image.width / 2;
-    //                 // let vc = img.image.height / 2;
-    //                 // let x0 = hc - img.image.width / 2;
-    //                 // let y0 = img.image.height / 2 - vc;
-
-    //                 // let img_x = ((pt.i.to_degrees() - (img.image.width / 2) as f64) - x0 as f64).round() as usize;
-    //                 // let img_y = (((img.image.height / 2) as f64 - pt.j.to_degrees()) - y0 as f64).round() as usize;
-
-    //                 let img_x = (img.image.width as f64 / 2.0 + pt.i) as usize;
-    //                 let img_y = (img.image.height as f64 / 2.0 + pt.j) as usize;
-
-    //                 //vprintln!("L/S: {}, {}, {}", line, samp, img_x);
-    //                 if  img_y < img.image.height && img_x < img.image.width  {
-
-    //                     map_r.put(x, y, img.image.get_band(0).get(img_x, img_y).unwrap());
-    //                     map_g.put(x, y, img.image.get_band(1).get(img_x, img_y).unwrap());
-    //                     map_b.put(x, y, img.image.get_band(2).get(img_x, img_y).unwrap());
-    //                 }
-
-    //             }
-
-    //         }
+            */
+                   
         },
         None => {
             eprintln!("CAHVOR not found for image, cannot continue");
@@ -402,27 +321,27 @@ fn main() {
     let output = matches.value_of("output").unwrap();
 
 
-    let map_context = determine_map_context(&input_files);
-    vprintln!("Map Context: {:?}", map_context);
-    vprintln!("FOV Vertical: {}", map_context.top_lat - map_context.bottom_lat);
-    vprintln!("FOV Horizontal: {}", map_context.right_lon - map_context.left_lon);
+    // let map_context = determine_map_context(&input_files);
+    // vprintln!("Map Context: {:?}", map_context);
+    // vprintln!("FOV Vertical: {}", map_context.top_lat - map_context.bottom_lat);
+    // vprintln!("FOV Horizontal: {}", map_context.right_lon - map_context.left_lon);
 
-    if map_context.width == 0 {
-        eprintln!("Output expected to have zero width. Cannot continue with that. Exiting...");
-        process::exit(1);
-    } else if map_context.height == 0 {
-        eprintln!("Output expected to have zero height. Cannot continue with that. Exiting...");
-        process::exit(1);
-    }
-    // let map_context = MapContext{
-    //     top_lat : 90.0,
-    //     bottom_lat : -90.0,
-    //     left_lon : 0.0,
-    //     right_lon : 360.0,
-    //     degrees_per_pixel : 0.03125,
-    //     height: 5760,
-    //     width: 11520
-    // };
+    // if map_context.width == 0 {
+    //     eprintln!("Output expected to have zero width. Cannot continue with that. Exiting...");
+    //     process::exit(1);
+    // } else if map_context.height == 0 {
+    //     eprintln!("Output expected to have zero height. Cannot continue with that. Exiting...");
+    //     process::exit(1);
+    // }
+    let map_context = MapContext{
+        top_lat : -90.0,
+        bottom_lat : 90.0,
+        left_lon: 360.0,
+        right_lon: -360.0,
+        width: 1592,
+        height: 1182,
+        degrees_per_pixel: 0.0
+    };
     let mut map_r = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 100.0, ImageMode::U16BIT).unwrap();
     let mut map_g = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
     let mut map_b = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
