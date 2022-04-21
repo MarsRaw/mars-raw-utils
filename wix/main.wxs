@@ -51,13 +51,13 @@
     Mars Raw Utils:
 
     TODO:
-    * Review defaults
-    * Add calibration data to installer
-    * Ensure the executables can find the calibration data
-    * Create Start Menu / Desktop icons for
-        - PowerShell with notification at startup indicating use of MRU. 
-        - Uninstaller
-        - Link to help / documentation
+    x Review defaults
+    x Add calibration data to installer
+    x Ensure the executables can find the calibration data
+    x Create Start Menu / Desktop icons for
+        x CLI link in Start Menu. 
+        x Uninstaller
+        x Link to help / documentation
     * Graphics, icons
 
 -->
@@ -74,7 +74,8 @@
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
 <?endif ?>
 
-<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'
+    xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
     <Product
         Id='*'
@@ -104,6 +105,9 @@
         <Property Id='DiskPrompt' Value='mars_raw_utils Installation'/>
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="Mars Raw Utils"/>
+            </Directory>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
                 <Directory Id='APPLICATIONFOLDER' Name='mars_raw_utils'>
                     <!--
@@ -907,6 +911,27 @@
             </Directory>
         </Directory>
 
+        
+        <DirectoryRef Id="ApplicationProgramsFolder">
+            <Component Id="ApplicationShortcut" Guid="d2605572-c281-41ee-9016-be6c540e22a1">
+                <Shortcut Id="ApplicationStartMenuShortcut" 
+                    Name="Mars Raw Utils (CLI)" 
+                    Description="Command Line Interface"
+                    Target="[SystemFolder]CMD.exe"
+                    WorkingDirectory="PersonalFolder"/>
+                <Shortcut Id="UninstallProduct"             
+                    Name="Uninstall Mars Raw Utils"
+                    Target="[SystemFolder]msiexec.exe"
+                    Arguments="/x [ProductCode]"
+                    Description="Uninstalls Mars Raw Utils" />  
+                <util:InternetShortcut Id="OnlineDocumentationShortcut"
+                        Name="Project Homepage on GitHub"
+                               Target="https://github.com/kmgill/mars-raw-utils"/>
+                <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+                <RegistryValue Root="HKCU" Key="Software\Apoapsys\MarsRawUtils" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+           </Component>
+        </DirectoryRef>
+
         <Feature
             Id='Binaries'
             Title='Application'
@@ -921,7 +946,7 @@
               the license sidecar file from the installer.
             -->
             <ComponentRef Id='License'/>
-            
+            <ComponentRef Id="ApplicationShortcut" />
             <ComponentRef Id='binary0'/>
             <ComponentRef Id='binary1'/>
             <ComponentRef Id='binary2'/>
