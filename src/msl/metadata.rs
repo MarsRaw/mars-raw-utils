@@ -5,10 +5,7 @@ use crate::{
     metadata::*
 };
 
-use sciimg::{
-    cahvor::Cahvor,
-    error
-};
+use sciimg::prelude::*;
 
 use std::fs::File;
 use std::io::Read;
@@ -21,7 +18,7 @@ use serde::{
 
 
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Extended {
     pub lmst: Option<String>,
     pub bucket: String,
@@ -33,7 +30,7 @@ pub struct Extended {
     pub sample_type: String
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Image {
     pub extended: Extended,
     pub id: u32,
@@ -49,7 +46,7 @@ pub struct Image {
     pub scale_factor: Option<u32>,
 
     #[serde(with = "crate::jsonfetch::cahvor_format")]
-    pub camera_model_component_list: Option<Cahvor>,
+    pub camera_model_component_list: CameraModel,
     pub instrument: String,
     pub url: String,
     pub spacecraft_clock: Option<f64>,
@@ -79,7 +76,7 @@ pub struct Image {
     pub https_url: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct MslApiResults {
     pub items: Vec<Image>,
     pub more: bool,
@@ -149,7 +146,7 @@ impl ImageMetadata for Image {
         self.camera_vector.clone()
     }
 
-    fn get_camera_model_component_list(&self) -> Option<Cahvor> {
+    fn get_camera_model_component_list(&self) -> CameraModel {
         self.camera_model_component_list.clone()
     }
 

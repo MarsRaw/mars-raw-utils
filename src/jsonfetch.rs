@@ -8,7 +8,7 @@ use crate::{
     util::string_is_valid_f64
 };
 
-use sciimg::error;
+use sciimg::prelude::*;
 
 use string_builder::Builder;
 
@@ -49,7 +49,6 @@ impl JsonFetcher {
     }
 }
 
-
 fn vec_to_str(v:&[f64]) -> String {
     let mut b = Builder::default();
 
@@ -65,6 +64,7 @@ fn vec_to_str(v:&[f64]) -> String {
 
     format!("({})", s)
 }
+
 
 fn str_to_vec(s:&str) -> error::Result<Vec<f64>> {
     let mut tuple_vec:Vec<f64> = Vec::new();
@@ -93,54 +93,57 @@ pub mod cahvor_format {
         Serializer
     };
 
-    use sciimg::cahvor;
+    use sciimg::prelude::*;
 
     use crate::jsonfetch::{
         str_to_vec,
         vec_to_str
     };
-
+    
     use sciimg::vector::Vector;
 
     pub fn serialize<S>(
-        cahvor_opt: &Option<cahvor::Cahvor>,
+        model_opt: &CameraModel,
         serializer: S,
     ) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        match cahvor_opt {
-            None => {
-                serializer.serialize_unit()
-            },
-            Some(cahvor) => {
-                let c = vec_to_str(&cahvor.c.to_vec());
-                let a = vec_to_str(&cahvor.a.to_vec());
-                let h = vec_to_str(&cahvor.h.to_vec());
-                let v = vec_to_str(&cahvor.v.to_vec());
-                let o = vec_to_str(&cahvor.o.to_vec());
-                let r = vec_to_str(&cahvor.r.to_vec());
-                match cahvor.mode {
-                    cahvor::Mode::Cahvor => {
-                        let s = format!("{};{};{};{};{};{}", c, a, h, v, o, r);
-                        serializer.serialize_str(&s)
-                    },
-                    cahvor::Mode::Cahv => {
-                        let s = format!("{};{};{};{}", c, a, h, v);
-                        serializer.serialize_str(&s)
-                    }
+        if ! model_opt.is_valid() {
+            serializer.serialize_unit()
+        } else {
+            let c = vec_to_str(&model_opt.c().to_vec());
+            let a = vec_to_str(&model_opt.a().to_vec());
+            let h = vec_to_str(&model_opt.h().to_vec());
+            let v = vec_to_str(&model_opt.v().to_vec());
+            let o = vec_to_str(&model_opt.o().to_vec());
+            let r = vec_to_str(&model_opt.r().to_vec());
+            let e = vec_to_str(&model_opt.e().to_vec());
+
+            match model_opt.model_type() {
+                ModelType::CAHVOR => {
+                    let s = format!("{};{};{};{};{};{}", c, a, h, v, o, r);
+                    serializer.serialize_str(&s)
+                },
+                ModelType::CAHV => {
+                    let s = format!("{};{};{};{}", c, a, h, v);
+                    serializer.serialize_str(&s)
+                },
+                ModelType::CAHVORE => {
+                    let s = format!("{};{};{};{};{};{};{}", c, a, h, v, o, r, e); // not complete
+                    serializer.serialize_str(&s)
                 }
             }
         }
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<cahvor::Cahvor>, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<CameraModel, D::Error>
     where
         D: Deserializer<'de>,
     {
         let r :Result<&str, D::Error> = Deserialize::deserialize(deserializer);
         match r {
-            Err(_) => Ok(None),
+            Err(_) => Ok(CameraModel::default()),
             Ok(s) => {
 
                 let s0 = String::from(s);
@@ -157,16 +160,34 @@ pub mod cahvor_format {
                         }
                     }
                 }
-
-                Ok(Some(cahvor::Cahvor{
-                    mode: if parts.len() == 4 { cahvor::Mode::Cahv } else { cahvor::Mode::Cahvor },
-                    c: if parts.len() >= 1 { Vector::from_vec(&parts[0]).unwrap() } else { Vector::default() },
-                    a: if parts.len() >= 2 { Vector::from_vec(&parts[1]).unwrap() } else { Vector::default() },
-                    h: if parts.len() >= 3 { Vector::from_vec(&parts[2]).unwrap() } else { Vector::default() },
-                    v: if parts.len() >= 4 { Vector::from_vec(&parts[3]).unwrap() } else { Vector::default() },
-                    o: if parts.len() >= 5 { Vector::from_vec(&parts[4]).unwrap() } else { Vector::default() },
-                    r: if parts.len() >= 6 { Vector::from_vec(&parts[5]).unwrap() } else { Vector::default() }
-                }))
+                
+                match parts.len() {
+                    4 => {              // CAHV
+                        Ok(
+                            CameraModel::new(Box::new(Cahv{
+                                c: if parts.len() >= 1 { Vector::from_vec(&parts[0]).unwrap() } else { Vector::default() },
+                                a: if parts.len() >= 2 { Vector::from_vec(&parts[1]).unwrap() } else { Vector::default() },
+                                h: if parts.len() >= 3 { Vector::from_vec(&parts[2]).unwrap() } else { Vector::default() },
+                                v: if parts.len() >= 4 { Vector::from_vec(&parts[3]).unwrap() } else { Vector::default() },
+                            }))
+                        )
+                    },
+                    6 => {              // CAHVOR
+                        Ok(
+                            CameraModel::new(Box::new(Cahvor{
+                                c: if parts.len() >= 1 { Vector::from_vec(&parts[0]).unwrap() } else { Vector::default() },
+                                a: if parts.len() >= 2 { Vector::from_vec(&parts[1]).unwrap() } else { Vector::default() },
+                                h: if parts.len() >= 3 { Vector::from_vec(&parts[2]).unwrap() } else { Vector::default() },
+                                v: if parts.len() >= 4 { Vector::from_vec(&parts[3]).unwrap() } else { Vector::default() },
+                                o: if parts.len() >= 5 { Vector::from_vec(&parts[4]).unwrap() } else { Vector::default() },
+                                r: if parts.len() >= 6 { Vector::from_vec(&parts[5]).unwrap() } else { Vector::default() }
+                            }))
+                        )
+                    },
+                    _ => {
+                        Ok(CameraModel::default())
+                    }
+                }
             }
         }
     }

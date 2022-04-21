@@ -9,10 +9,7 @@ use crate::{
     calibfile
 };
 
-use sciimg::{
-    cahvor::Cahvor,
-    error
-};
+use sciimg::prelude::*;
 
 pub const MASTCAMZ_PIXEL_SIZE_MM:f32 = 0.0074;
 pub const FOCAL_STOPS:[f32; 7] = [26.0, 34.0, 48.0, 63.0, 79.0, 100.0, 110.0];
@@ -66,10 +63,11 @@ pub fn focal_length_from_file_name(filename:&str) -> error::Result<f32> {
     }   
 }
 
-fn focal_length_from_cahvor(cahvor:&Option<Cahvor>) -> error::Result<f32> {
-    match cahvor {
-        Some(c) => Ok(c.f() as f32 * MASTCAMZ_PIXEL_SIZE_MM),
-        None => Err("No CAHVOR data")
+fn focal_length_from_cahvor(cahvor:&CameraModel) -> error::Result<f32> {
+    if cahvor.is_valid() {
+        Ok(cahvor.f() as f32) // Reconcile the type difference.
+    } else {
+        Err("No CAHVOR data")
     }
 }
 
