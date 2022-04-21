@@ -82,19 +82,28 @@ pub struct NsytCalData {
 }
 
 pub fn load_caldata_mapping_file() -> error::Result<Config> {
-    let caldata_toml = locate_calibration_file(&String::from("caldata.toml")).unwrap();
-    let mut file = match File::open(&caldata_toml) {
-        Err(why) => panic!("couldn't open {}", why),
-        Ok(file) => file,
-    };
+    let cal_file_path = locate_calibration_file(&String::from("caldata.toml"));
 
-    let mut buf : Vec<u8> = Vec::default();
-    file.read_to_end(&mut buf).unwrap();
-    let toml = String::from_utf8(buf).unwrap();
-
-    let config: Config = toml::from_str(&toml).unwrap();
-
-    Ok(config)
+    match cal_file_path {
+        Ok(caldata_toml) => {
+            let mut file = match File::open(&caldata_toml) {
+                Err(why) => panic!("couldn't open {}", why),
+                Ok(file) => file,
+            };
+        
+            let mut buf : Vec<u8> = Vec::default();
+            file.read_to_end(&mut buf).unwrap();
+            let toml = String::from_utf8(buf).unwrap();
+        
+            let config: Config = toml::from_str(&toml).unwrap();
+        
+            Ok(config)
+        },
+        Err(_) => {
+            panic!("Unable to locate calibration configuration file")
+        }
+    }
+    
 }
 
 // Allows the user to specify files without an extension as a shortcut. Still needs to be able
@@ -122,6 +131,32 @@ pub fn locate_calibration_file(file_path:&String) -> error::Result<String> {
         String::from("/usr/local/share/mars_raw_utils/data/"), // macos
         String::from("/usr/share/mars_raw_utils/data/") // Linux, installed via apt or rpm
     ];
+
+    match std::env::current_exe() {
+        Ok(exe_path) => {
+            if cfg!(windows) {
+                // I'm not even a little comfortable with this...
+                // So, to figure out the installation path, we get the path to the running executable, then get the path, and then 
+                // append 'data' to it to get to the calibration files. We also have to get rid of those quotation marks.
+                if let Some(filename) = exe_path.parent() {
+                    locations.insert(0, format!("{:?}", filename.with_file_name("data").as_os_str()).replace("\"", ""));
+                }
+                
+            }
+        },
+        Err(_) => { }
+    };
+
+    match std::env::current_exe() {
+        Ok(exe_path) => {
+            if cfg!(windows) {
+                let bn = format!("{:?}/../data/", exe_path.file_name());
+                locations.insert(0, bn);
+            }
+        },
+        Err(_) => { }
+    };
+
 
     // Prepend a home directory if known
     match dirs::home_dir() {

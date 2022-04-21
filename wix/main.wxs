@@ -121,6 +121,504 @@
                             KeyPath='yes'/>
                     </Component>
                     
+                    <Directory Id='Data' Name='data'>
+
+
+                        <Component Id='caldata0' Guid='*'>
+                            <File
+                                Id='data0'
+                                Name='FLAT_MD_0_RGB_V1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FLAT_MD_0_RGB_V1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata1' Guid='*'>
+                            <File
+                                Id='data1'
+                                Name='FLAT_ML_filter0_0-rjcal.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FLAT_ML_filter0_0-rjcal.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata2' Guid='*'>
+                            <File
+                                Id='data2'
+                                Name='FLAT_MR_filter0_0-rjcal.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FLAT_MR_filter0_0-rjcal.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata3' Guid='*'>
+                            <File
+                                Id='data3'
+                                Name='L0_-motorcount-_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\L0_-motorcount-_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata4' Guid='*'>
+                            <File
+                                Id='data4'
+                                Name='L0_0000_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\L0_0000_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata5' Guid='*'>
+                            <File
+                                Id='data5'
+                                Name='L0_2448_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\L0_2448_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata6' Guid='*'>
+                            <File
+                                Id='data6'
+                                Name='L0_3834_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\L0_3834_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata7' Guid='*'>
+                            <File
+                                Id='data7'
+                                Name='L0_5196_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\L0_5196_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata8' Guid='*'>
+                            <File
+                                Id='data8'
+                                Name='L0_6720_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\L0_6720_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata9' Guid='*'>
+                            <File
+                                Id='data9'
+                                Name='L0_8652_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\L0_8652_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata10' Guid='*'>
+                            <File
+                                Id='data10'
+                                Name='L0_9600_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\L0_9600_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata11' Guid='*'>
+                            <File
+                                Id='data11'
+                                Name='M20_FLAT_SN_5001.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_FLAT_SN_5001.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata12' Guid='*'>
+                            <File
+                                Id='data12'
+                                Name='M20_HELI_NAV_FLAT_Sol76_V1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_HELI_NAV_FLAT_Sol76_V1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata13' Guid='*'>
+                            <File
+                                Id='data13'
+                                Name='M20_HELI_RTE_FLAT_V3.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_HELI_RTE_FLAT_V3.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata14' Guid='*'>
+                            <File
+                                Id='data14'
+                                Name='M20_MCZ_LEFT_INPAINT_MASK_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_MCZ_LEFT_INPAINT_MASK_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata15' Guid='*'>
+                            <File
+                                Id='data15'
+                                Name='M20_MCZ_RIGHT_INPAINT_MASK_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_MCZ_RIGHT_INPAINT_MASK_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata16' Guid='*'>
+                            <File
+                                Id='data16'
+                                Name='M20_SCAM_FLAT_RGB_Sol77_V2.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_SCAM_FLAT_RGB_Sol77_V2.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata17' Guid='*'>
+                            <File
+                                Id='data17'
+                                Name='M20_SCAM_MASK_Sol1_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_SCAM_MASK_Sol1_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata18' Guid='*'>
+                            <File
+                                Id='data18'
+                                Name='M20_WATSON_FLAT_V0.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_WATSON_FLAT_V0.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata19' Guid='*'>
+                            <File
+                                Id='data19'
+                                Name='M20_WATSON_INPAINT_MASK_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_WATSON_INPAINT_MASK_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata20' Guid='*'>
+                            <File
+                                Id='data20'
+                                Name='M20_WATSON_PREFLIGHT_FLAT_RGB_FOCUS_11958_V1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\M20_WATSON_PREFLIGHT_FLAT_RGB_FOCUS_11958_V1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata21' Guid='*'>
+                            <File
+                                Id='data21'
+                                Name='MSL_CCAM_FLAT_Sol32_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_CCAM_FLAT_Sol32_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata22' Guid='*'>
+                            <File
+                                Id='data22'
+                                Name='MSL_CCAM_MASK_Sol3122_V2.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_CCAM_MASK_Sol3122_V2.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata23' Guid='*'>
+                            <File
+                                Id='data23'
+                                Name='MSL_FLB_FLAT_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_FLB_FLAT_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata24' Guid='*'>
+                            <File
+                                Id='data24'
+                                Name='MSL_FRB_FLAT_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_FRB_FLAT_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata25' Guid='*'>
+                            <File
+                                Id='data25'
+                                Name='MSL_MAHLI_FLAT_Sol2904_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_MAHLI_FLAT_Sol2904_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata26' Guid='*'>
+                            <File
+                                Id='data26'
+                                Name='MSL_MAHLI_INPAINT_Sol2904_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_MAHLI_INPAINT_Sol2904_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata27' Guid='*'>
+                            <File
+                                Id='data27'
+                                Name='MSL_MCAM_LEFT_INPAINT_Sol3082_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_MCAM_LEFT_INPAINT_Sol3082_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata28' Guid='*'>
+                            <File
+                                Id='data28'
+                                Name='MSL_MCAM_RIGHT_INPAINT_Sol3101_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_MCAM_RIGHT_INPAINT_Sol3101_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata29' Guid='*'>
+                            <File
+                                Id='data29'
+                                Name='MSL_NLB_FLAT_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_NLB_FLAT_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata30' Guid='*'>
+                            <File
+                                Id='data30'
+                                Name='MSL_NRB_FLAT_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_NRB_FLAT_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata31' Guid='*'>
+                            <File
+                                Id='data31'
+                                Name='MSL_NRB_INPAINT_Sol3052_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_NRB_INPAINT_Sol3052_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata32' Guid='*'>
+                            <File
+                                Id='data32'
+                                Name='MSL_RLB_FLAT_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_RLB_FLAT_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata33' Guid='*'>
+                            <File
+                                Id='data33'
+                                Name='MSL_RRB_FLAT_V1.png'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\MSL_RRB_FLAT_V1.png'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata34' Guid='*'>
+                            <File
+                                Id='data34'
+                                Name='NSYT_FLAT_SN_0203.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\NSYT_FLAT_SN_0203.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata35' Guid='*'>
+                            <File
+                                Id='data35'
+                                Name='NSYT_FLAT_SN_0210.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\NSYT_FLAT_SN_0210.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata36' Guid='*'>
+                            <File
+                                Id='data36'
+                                Name='R0_-motorcount-_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\R0_-motorcount-_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata37' Guid='*'>
+                            <File
+                                Id='data37'
+                                Name='R0_0000_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\R0_0000_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata38' Guid='*'>
+                            <File
+                                Id='data38'
+                                Name='R0_2448_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\R0_2448_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata39' Guid='*'>
+                            <File
+                                Id='data39'
+                                Name='R0_3834_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\R0_3834_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata40' Guid='*'>
+                            <File
+                                Id='data40'
+                                Name='R0_5196_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\R0_5196_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata41' Guid='*'>
+                            <File
+                                Id='data41'
+                                Name='R0_6720_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\R0_6720_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata42' Guid='*'>
+                            <File
+                                Id='data42'
+                                Name='R0_8652_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\R0_8652_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata43' Guid='*'>
+                            <File
+                                Id='data43'
+                                Name='R0_9600_cont_v1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\R0_9600_cont_v1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata44' Guid='*'>
+                            <File
+                                Id='data44'
+                                Name='caldata.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\caldata.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata45' Guid='*'>
+                            <File
+                                Id='data45'
+                                Name='m20_watson_bay.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_watson_bay.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata46' Guid='*'>
+                            <File
+                                Id='data46'
+                                Name='m20_watson_ilt.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_watson_ilt.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata47' Guid='*'>
+                            <File
+                                Id='data47'
+                                Name='m20_watson_rad.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_watson_rad.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata48' Guid='*'>
+                            <File
+                                Id='data48'
+                                Name='m20_zcam_bay.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_zcam_bay.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata49' Guid='*'>
+                            <File
+                                Id='data49'
+                                Name='m20_zcam_cb2.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_zcam_cb2.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata50' Guid='*'>
+                            <File
+                                Id='data50'
+                                Name='m20_zcam_cwb.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_zcam_cwb.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata51' Guid='*'>
+                            <File
+                                Id='data51'
+                                Name='m20_zcam_ilt.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_zcam_ilt.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata52' Guid='*'>
+                            <File
+                                Id='data52'
+                                Name='m20_zcam_rad.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_zcam_rad.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata53' Guid='*'>
+                            <File
+                                Id='data53'
+                                Name='meda_rad_flat_padded.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\meda_rad_flat_padded.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata54' Guid='*'>
+                            <File
+                                Id='data54'
+                                Name='msl_mahli_bay.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mahli_bay.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata55' Guid='*'>
+                            <File
+                                Id='data55'
+                                Name='msl_mahli_cwb.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mahli_cwb.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata56' Guid='*'>
+                            <File
+                                Id='data56'
+                                Name='msl_mahli_ilt.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mahli_ilt.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata57' Guid='*'>
+                            <File
+                                Id='data57'
+                                Name='msl_mahli_rad.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mahli_rad.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata58' Guid='*'>
+                            <File
+                                Id='data58'
+                                Name='msl_mcam_bay.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mcam_bay.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata59' Guid='*'>
+                            <File
+                                Id='data59'
+                                Name='msl_mcam_ilt.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mcam_ilt.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata60' Guid='*'>
+                            <File
+                                Id='data60'
+                                Name='msl_mcam_rad.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mcam_rad.toml'
+                                KeyPath='yes'/>
+                        </Component>
+
+
+
+
+
+                    </Directory>
+
                     <Directory Id='Bin' Name='bin'>
                         <Component Id='Path' Guid='082C8E4E-D68C-4503-B203-C1EF590AB1C7' KeyPath='yes'>
                             <Environment
@@ -458,6 +956,68 @@
             <ComponentRef Id='binary31'/>
             <ComponentRef Id='binary32'/>
             <ComponentRef Id='binary33'/>
+
+            <ComponentRef Id='caldata0'/>
+            <ComponentRef Id='caldata1'/>
+            <ComponentRef Id='caldata2'/>
+            <ComponentRef Id='caldata3'/>
+            <ComponentRef Id='caldata4'/>
+            <ComponentRef Id='caldata5'/>
+            <ComponentRef Id='caldata6'/>
+            <ComponentRef Id='caldata7'/>
+            <ComponentRef Id='caldata8'/>
+            <ComponentRef Id='caldata9'/>
+            <ComponentRef Id='caldata10'/>
+            <ComponentRef Id='caldata11'/>
+            <ComponentRef Id='caldata12'/>
+            <ComponentRef Id='caldata13'/>
+            <ComponentRef Id='caldata14'/>
+            <ComponentRef Id='caldata15'/>
+            <ComponentRef Id='caldata16'/>
+            <ComponentRef Id='caldata17'/>
+            <ComponentRef Id='caldata18'/>
+            <ComponentRef Id='caldata19'/>
+            <ComponentRef Id='caldata20'/>
+            <ComponentRef Id='caldata21'/>
+            <ComponentRef Id='caldata22'/>
+            <ComponentRef Id='caldata23'/>
+            <ComponentRef Id='caldata24'/>
+            <ComponentRef Id='caldata25'/>
+            <ComponentRef Id='caldata26'/>
+            <ComponentRef Id='caldata27'/>
+            <ComponentRef Id='caldata28'/>
+            <ComponentRef Id='caldata29'/>
+            <ComponentRef Id='caldata30'/>
+            <ComponentRef Id='caldata31'/>
+            <ComponentRef Id='caldata32'/>
+            <ComponentRef Id='caldata33'/>
+            <ComponentRef Id='caldata34'/>
+            <ComponentRef Id='caldata35'/>
+            <ComponentRef Id='caldata36'/>
+            <ComponentRef Id='caldata37'/>
+            <ComponentRef Id='caldata38'/>
+            <ComponentRef Id='caldata39'/>
+            <ComponentRef Id='caldata40'/>
+            <ComponentRef Id='caldata41'/>
+            <ComponentRef Id='caldata42'/>
+            <ComponentRef Id='caldata43'/>
+            <ComponentRef Id='caldata44'/>
+            <ComponentRef Id='caldata45'/>
+            <ComponentRef Id='caldata46'/>
+            <ComponentRef Id='caldata47'/>
+            <ComponentRef Id='caldata48'/>
+            <ComponentRef Id='caldata49'/>
+            <ComponentRef Id='caldata50'/>
+            <ComponentRef Id='caldata51'/>
+            <ComponentRef Id='caldata52'/>
+            <ComponentRef Id='caldata53'/>
+            <ComponentRef Id='caldata54'/>
+            <ComponentRef Id='caldata55'/>
+            <ComponentRef Id='caldata56'/>
+            <ComponentRef Id='caldata57'/>
+            <ComponentRef Id='caldata58'/>
+            <ComponentRef Id='caldata59'/>
+            <ComponentRef Id='caldata60'/>
 
             <Feature
                 Id='Environment'
