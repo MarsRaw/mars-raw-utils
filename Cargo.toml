@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
@@ -300,3 +300,28 @@ focusmerge = { path = "/usr/bin/focusmerge" }
 "msl_mahli_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_ilt.toml", mode = "644"}
 "msl_mahli_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_rad.toml", mode = "644"}
 "msl_mahli_cwb.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_cwb.toml", mode = "644"}
+"msl_watson_bay.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_watson_bay.toml", mode = "644"}
+"msl_watson_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_watson_ilt.toml", mode = "644"}
+"msl_watson_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_watson_rad.toml", mode = "644"}
+"msl_zcam_bay.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_bay.toml", mode = "644"}
+"msl_zcam_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_ilt.toml", mode = "644"}
+"msl_zcam_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_rad.toml", mode = "644"}
+"msl_zcam_cwb.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_cwb.toml", mode = "644"}
+"msl_zcam_cb2.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_cb2.toml", mode = "644"}
+"L0_-motorcount-_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_-motorcount-_cont_v1.jpg", mode = "644"}
+"L0_0000_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_0000_cont_v1.jpg", mode = "644"}
+"L0_2448_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_2448_cont_v1.jpg", mode = "644"}
+"L0_3834_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_3834_cont_v1.jpg", mode = "644"}
+"L0_5196_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_5194_cont_v1.jpg", mode = "644"}
+"L0_6720_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_6720_cont_v1.jpg", mode = "644"}
+"L0_8652_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_8652_cont_v1.jpg", mode = "644"}
+"L0_9600_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_9600_cont_v1.jpg", mode = "644"}
+"R0_-motorcount-_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_-motorcount-_cont_v1.jpg", mode = "644"}
+"R0_0000_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_0000_cont_v1.jpg", mode = "644"}
+"R0_2448_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_2448_cont_v1.jpg", mode = "644"}
+"R0_3834_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_3834_cont_v1.jpg", mode = "644"}
+"R0_5196_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_5194_cont_v1.jpg", mode = "644"}
+"R0_6720_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_6720_cont_v1.jpg", mode = "644"}
+"R0_8652_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_8652_cont_v1.jpg", mode = "644"}
+"R0_9600_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_9600_cont_v1.jpg", mode = "644"}
+

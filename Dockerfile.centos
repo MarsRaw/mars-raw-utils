@@ -1,4 +1,4 @@
-FROM centos:latest
+FROM fedora:latest
 
 RUN yum group install -y "Development Tools"
 
@@ -8,13 +8,13 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN yum install -y openssl-devel 
 
-RUN cargo install cargo-rpm
+RUN cargo install cargo-rpm 
 
 WORKDIR /build
 
 COPY . .
 RUN cp -v mars-raw-utils-data/caldata/* .rpm/
 RUN cargo rpm build -v
-RUN rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.3.0-1.el8.x86_64.rpm
+RUN rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.3.2-1.el8.x86_64.rpm
 
 WORKDIR /data
