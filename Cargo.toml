@@ -243,8 +243,8 @@ m20_hnav_calibrate = { path = "/usr/bin/m20_hnav_calibrate" }
 m20_hrte_calibrate = { path = "/usr/bin/m20_hrte_calibrate" }
 m20_ecam_assemble = { path = "/usr/bin/m20_ecam_assemble" }
 msl_ecam_calibrate = { path = "/usr/bin/msl_ecam_calibrate" }
-msl_pixl_calibrate = { path = "/usr/bin/msl_pixl_calibrate" }
-msl_skycam_calibrate = { path = "/usr/bin/msl_skycam_calibrate" }
+m20_pixl_calibrate = { path = "/usr/bin/m20_pixl_calibrate" }
+m20_skycam_calibrate = { path = "/usr/bin/m20_skycam_calibrate" }
 msl_fetch_raw = { path = "/usr/bin/msl_fetch_raw" }
 msl_latest = { path = "/usr/bin/msl_latest" }
 msl_mahli_calibrate = { path = "/usr/bin/msl_mahli_calibrate" }
@@ -289,6 +289,10 @@ focusmerge = { path = "/usr/bin/focusmerge" }
 "MSL_RRB_FLAT_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_RRB_FLAT_V1.png", mode = "644"}
 "MSL_CCAM_MASK_Sol3122_V2.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_CCAM_MASK_Sol3122_V2.png", mode = "644"}
 "MSL_CCAM_FLAT_Sol32_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_CCAM_FLAT_Sol32_V1.png", mode = "644"}
+"M20_WATSON_PREFLIGHT_FLAT_RGB_FOCUS_11958_V1.jpg" = { path =  "/usr/share/mars_raw_utils/data/M20_WATSON_PREFLIGHT_FLAT_RGB_FOCUS_11958_V1.jpg", mode = "644"}
+"MSL_MCAM_RIGHT_INPAINT_Sol3101_V1.png" = { path =  "/usr/share/mars_raw_utils/data/MSL_MCAM_RIGHT_INPAINT_Sol3101_V1.png", mode = "644"}
+"FLAT_ML_filter0_0-rjcal.jpg" = { path =  "/usr/share/mars_raw_utils/data/FLAT_ML_filter0_0-rjcal.jpg", mode = "644"}
+"FLAT_MR_filter0_0-rjcal.jpg" = { path =  "/usr/share/mars_raw_utils/data/FLAT_MR_filter0_0-rjcal.jpg", mode = "644"}
 "FLAT_MD_0_RGB_V1.jpg" = { path =  "/usr/share/mars_raw_utils/data/FLAT_MD_0_RGB_V1.jpg", mode = "644"}
 "NSYT_FLAT_SN_0203.jpg" = { path =  "/usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0203.jpg", mode = "644"}
 "NSYT_FLAT_SN_0210.jpg" = { path =  "/usr/share/mars_raw_utils/data/NSYT_FLAT_SN_0210.jpg", mode = "644"}
@@ -300,14 +304,14 @@ focusmerge = { path = "/usr/bin/focusmerge" }
 "msl_mahli_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_ilt.toml", mode = "644"}
 "msl_mahli_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_rad.toml", mode = "644"}
 "msl_mahli_cwb.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_mahli_cwb.toml", mode = "644"}
-"msl_watson_bay.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_watson_bay.toml", mode = "644"}
-"msl_watson_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_watson_ilt.toml", mode = "644"}
-"msl_watson_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_watson_rad.toml", mode = "644"}
-"msl_zcam_bay.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_bay.toml", mode = "644"}
-"msl_zcam_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_ilt.toml", mode = "644"}
-"msl_zcam_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_rad.toml", mode = "644"}
-"msl_zcam_cwb.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_cwb.toml", mode = "644"}
-"msl_zcam_cb2.toml" = { path =  "/usr/share/mars_raw_utils/data/msl_zcam_cb2.toml", mode = "644"}
+"m20_watson_bay.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_watson_bay.toml", mode = "644"}
+"m20_watson_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_watson_ilt.toml", mode = "644"}
+"m20_watson_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_watson_rad.toml", mode = "644"}
+"m20_zcam_bay.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_bay.toml", mode = "644"}
+"m20_zcam_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_ilt.toml", mode = "644"}
+"m20_zcam_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_rad.toml", mode = "644"}
+"m20_zcam_cwb.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_cwb.toml", mode = "644"}
+"m20_zcam_cb2.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_cb2.toml", mode = "644"}
 "L0_-motorcount-_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_-motorcount-_cont_v1.jpg", mode = "644"}
 "L0_0000_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_0000_cont_v1.jpg", mode = "644"}
 "L0_2448_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_2448_cont_v1.jpg", mode = "644"}

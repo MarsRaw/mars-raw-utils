@@ -1,6 +1,7 @@
 FROM fedora:latest
 
 RUN yum group install -y "Development Tools"
+RUN yum install -y rpm-build strace
 
 RUN bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 
@@ -15,6 +16,7 @@ WORKDIR /build
 COPY . .
 RUN cp -v mars-raw-utils-data/caldata/* .rpm/
 RUN cargo rpm build -v
-RUN rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.3.2-1.el8.x86_64.rpm
+RUN ls -l target/release/rpmbuild/RPMS/x86_64/
+RUN rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.3.2-1.fc35.x86_64.rpm
 
 WORKDIR /data
