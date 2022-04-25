@@ -128,7 +128,6 @@ pub fn locate_calibration_file(file_path:&String) -> error::Result<String> {
     // Some default locations
     let mut locations = vec![
         String::from("mars-raw-utils-data/caldata"), // Running within the repo directory (dev: cargo run --bin ...)
-        String::from("/usr/local/share/mars_raw_utils/data/"), // macos
         String::from("/usr/share/mars_raw_utils/data/") // Linux, installed via apt or rpm
     ];
 
@@ -147,6 +146,14 @@ pub fn locate_calibration_file(file_path:&String) -> error::Result<String> {
         Err(_) => { }
     };
 
+    // Allow for a custom data path to be defined during build. 
+    match option_env!("MARSDATAROOT") {
+        Some(v) => locations.insert(0, String::from(v)),
+        None => {}
+    };    
+
+    // Add a path based on the location of the running executable
+    // Intended for Windows installations
     match std::env::current_exe() {
         Ok(exe_path) => {
             if cfg!(windows) {
@@ -156,7 +163,6 @@ pub fn locate_calibration_file(file_path:&String) -> error::Result<String> {
         },
         Err(_) => { }
     };
-
 
     // Prepend a home directory if known
     match dirs::home_dir() {
@@ -174,7 +180,7 @@ pub fn locate_calibration_file(file_path:&String) -> error::Result<String> {
         },
         Err(_) => { }
     };
-
+    
     // First match wins
     for loc in locations.iter() {
         let full_file_path = format!("{}/{}", loc, file_path);
