@@ -65,7 +65,7 @@ cargo install cargo-deb
 cargo deb
 sudo apt install ./target/debian/mars_raw_utils_0.1.3_amd64.deb
 ```
-NOTE: Adjust the output debian package filename to what is outputted by build.
+NOTE: Adjust the output debian package filename to what is output by the build.
 
 ### Install via rpm (RHEL, CentOS, Fedora, ...)
 ```
@@ -75,6 +75,12 @@ cargo rpm build -v
 rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.1.3-1.el8.x86_64.rpm
 ```
 NOTE: Adjust the output rpm package filename to what is created by build.
+
+### Install on MacOS via Homebrew:
+```
+brew tap kmgill/homebrew-mars-raw-utils
+brew install marsrawutils
+```
 
 ### Docker:
 The dockerfile demonstrates a method for building an installable debian package, or you can use the container itself:
