@@ -2,6 +2,7 @@
 static mut IS_VERBOSE: bool = false;
 
 use chrono::prelude::*;
+use colored::*;
 
 const DATETIME_PRINT_FORMAT : &str = "%Y-%m-%d %H:%M:%S%.3f";
 
@@ -47,4 +48,33 @@ macro_rules! veprintln {
             eprintln!($($arg)*);
         }
     };
+}
+
+pub enum CompleteStatus {
+    DONE,
+    WARN,
+    FAIL
+}
+
+pub fn print_done(file_base_name:&String) {
+    print_complete(file_base_name, CompleteStatus::DONE);
+}
+
+pub fn print_warn(file_base_name:&String) {
+    print_complete(file_base_name, CompleteStatus::WARN);
+}
+
+pub fn print_fail(file_base_name:&String) {
+    print_complete(file_base_name, CompleteStatus::FAIL);
+}
+
+pub fn print_complete(file_base_name:&String, status:CompleteStatus) {
+    println!("{: <80}[ {} ]", 
+                    file_base_name,
+                    match status {
+                        CompleteStatus::DONE => "DONE".green(),
+                        CompleteStatus::WARN => "WARN".yellow(),
+                        CompleteStatus::FAIL => "FAIL".red()
+                    }
+    );
 }

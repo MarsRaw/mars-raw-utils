@@ -6,7 +6,14 @@ use crate::{
     decompanding,
     util,
     calprofile,
-    calibfile
+    calibfile,
+    print::{
+        print_done,
+        print_fail,
+        print_warn,
+        print_complete,
+        CompleteStatus
+    }
 };
 
 use sciimg::prelude::*;
@@ -37,6 +44,7 @@ pub fn process_with_profile(input_file:&str, red_scalar:f32, green_scalar:f32, b
             },
             Err(why) => {
                 eprintln!("Error loading calibration profile: {}", why);
+                print_fail(&format!("{} ({})", path::basename(input_file), filename_suffix));
                 panic!("Error loading calibration profile");
             }
         }
@@ -85,9 +93,11 @@ fn motor_stop_from_focal_length(fl:f32) -> u16 {
 }
 
 pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, no_ilt:bool, only_new:bool, filename_suffix:&String) {
+    let mut warn = false;
     let out_file = util::append_file_name(input_file, filename_suffix);
     if path::file_exists(&out_file) && only_new {
         vprintln!("Output file exists, skipping. ({})", out_file);
+        print_warn(&format!("{} ({})", path::basename(input_file), filename_suffix));
         return;
     }
 
@@ -120,23 +130,27 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     }
 
     // I'm not wild about this
-    let focal_length = match &raw.metadata {
-        Some(md) => {
-            
-            let fl_res = focal_length_from_cahvor(&md.camera_model_component_list);
-            if let Ok(fl) = fl_res {
-                Ok(fl)
-            } else {
-                focal_length_from_file_name(input_file)
+    let focal_length:error::Result<f32> = match focal_length_from_file_name(input_file) {
+        Ok(fl) => Ok(fl),
+        Err(_) => {
+            match &raw.metadata {
+                Some(md) => {
+                    let fl_res = focal_length_from_cahvor(&md.camera_model_component_list);
+                    if let Ok(fl) = fl_res {
+                        Ok(fl)
+                    } else {
+                        print_fail(&format!("{} ({})", path::basename(input_file), filename_suffix));
+                        panic!("Unable to determine zcam focal length")
+                    }
+                },
+                None => {
+                    print_fail(&format!("{} ({})", path::basename(input_file), filename_suffix));
+                    panic!("Unable to determine zcam focal length")
+                }
             }
-            
-        },
-        None => {
-            focal_length_from_file_name(input_file)
         }
     };
     
-
     match focal_length {
         Ok(fl) => {
             // Do flat fielding
@@ -155,11 +169,13 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
                 raw.flatfield_with_flat(&flat);
             } else {
                 eprintln!("Flat file not found: {}", file_path);
+                print_fail(&format!("{} ({})", path::basename(input_file), filename_suffix));
                 panic!("Flat file not found!");
             }
             
         },
         Err(e) => {
+            warn = true;
             vprintln!("Could not determine focal length: {}", e)
         }
     };
@@ -184,4 +200,11 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     vprintln!("Writing to disk...");
     
     raw.save(&out_file);
+
+    print_complete(&format!("{} ({})", path::basename(input_file), filename_suffix), 
+        match warn {
+            true => CompleteStatus::WARN,
+            false => CompleteStatus::DONE
+        }
+    );
 }

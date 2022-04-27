@@ -14,3 +14,14 @@ pub use crate::metadata;
 pub use crate::enums::Mission;
 pub use crate::enums::Instrument;
 pub use crate::enums::CalFileType;
+
+use std::panic;
+use backtrace::Backtrace;
+
+pub fn init_panic_handler() {
+    panic::set_hook(Box::new(|_info| {
+        if print::is_verbose() {
+            println!("{:?}", Backtrace::new());  
+        }
+    }));
+}

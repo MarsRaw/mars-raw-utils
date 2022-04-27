@@ -9,7 +9,7 @@ use clap::{Arg, App};
 use std::process;
 
 fn main() {
-    
+    init_panic_handler();
     let matches = App::new(crate_name!())
                     .version(crate_version!())
                     .author(crate_authors!())

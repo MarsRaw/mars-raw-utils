@@ -8,7 +8,8 @@ extern crate clap;
 use clap::{Arg, App};
 
 fn main() {
-       let matches = App::new(crate_name!())
+    init_panic_handler();
+    let matches = App::new(crate_name!())
                     .version(crate_version!())
                     .author(crate_authors!())
                     .arg(Arg::with_name(constants::param::PARAM_INPUTS)

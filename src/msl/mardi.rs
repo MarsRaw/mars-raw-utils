@@ -5,7 +5,12 @@ use crate::{
     path,
     decompanding,
     util,
-    calprofile
+    calprofile,
+    print::{
+        print_done,
+        print_fail,
+        print_warn
+    }
 };
 
 pub fn process_with_profiles(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scalar:f32, no_ilt:bool, only_new:bool, filename_suffix:&String, profile_names:&Vec<&str>) {
@@ -30,6 +35,7 @@ pub fn process_with_profile(input_file:&str, red_scalar:f32, green_scalar:f32, b
             },
             Err(why) => {
                 eprintln!("Error loading calibration profile: {}", why);
+                print_fail(&format!("{} ({})", path::basename(input_file), filename_suffix));
                 panic!("Error loading calibration profile");
             }
         }
@@ -43,6 +49,7 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
     let out_file = util::append_file_name(input_file, &filename_suffix);
     if path::file_exists(&out_file) && only_new {
         vprintln!("Output file exists, skipping. ({})", out_file);
+        print_warn(&format!("{} ({})", path::basename(input_file), filename_suffix));
         return;
     }
 
@@ -70,4 +77,6 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
 
     vprintln!("Writing to disk...");
     raw.save(&out_file);
+
+    print_done(&format!("{} ({})", path::basename(input_file), filename_suffix));
 }

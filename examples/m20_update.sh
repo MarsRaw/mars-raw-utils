@@ -20,7 +20,7 @@ function update_on_sol() {
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        m20_ecam_calibrate -i *J0?.png -v
+        m20_ecam_calibrate -i *J0?.png 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -40,7 +40,7 @@ function update_on_sol() {
     cd $INSTROOT
 
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        m20_watson_calibrate -i *J0?.png -v -P m20_watson_bay m20_watson_ilt m20_watson_rad # m20_watson_cwb
+        m20_watson_calibrate -i *J0?.png -P m20_watson_bay m20_watson_ilt m20_watson_rad # m20_watson_cwb
     fi
 
     if [ `ls *rjcal-bay* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -75,7 +75,7 @@ function update_on_sol() {
     cd $INSTROOT
 
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        m20_zcam_calibrate -i *J0?.png -v -P m20_zcam_bay m20_zcam_ilt m20_zcam_rad m20_zcam_cwb m20_zcam_cb2
+        m20_zcam_calibrate -i *J0?.png -P m20_zcam_bay m20_zcam_ilt m20_zcam_rad m20_zcam_cwb m20_zcam_cb2
     fi
 
     if [ `ls *rjcal-bay* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -114,7 +114,7 @@ function update_on_sol() {
     
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        m20_scam_calibrate -i *J0?.png -v
+        m20_scam_calibrate -i *J0?.png 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -142,7 +142,7 @@ function update_on_sol() {
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        m20_pixl_calibrate -i *J0?.png -v
+        m20_pixl_calibrate -i *J0?.png
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -161,7 +161,7 @@ function update_on_sol() {
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        m20_skycam_calibrate -i *J0?.png -v
+        m20_skycam_calibrate -i *J0?.png 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -180,7 +180,7 @@ function update_on_sol() {
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        m20_hnav_calibrate -i *J0?.png -v
+        m20_hnav_calibrate -i *J0?.png
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -199,7 +199,7 @@ function update_on_sol() {
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        m20_hrte_calibrate -i *J0?.png -v
+        m20_hrte_calibrate -i *J0?.png 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
