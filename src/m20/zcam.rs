@@ -8,7 +8,6 @@ use crate::{
     calprofile,
     calibfile,
     print::{
-        print_done,
         print_fail,
         print_warn,
         print_complete,
@@ -160,7 +159,8 @@ pub fn process_file(input_file:&str, red_scalar:f32, green_scalar:f32, blue_scal
             let calfile = calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::FlatField).unwrap();
             
             let motor_stop = motor_stop_from_focal_length(fl);
-            let file_path = calfile.replace("-motorcount-", motor_stop.to_string().as_str());
+            let motor_stop_str = format!("{:04}", motor_stop);
+            let file_path = calfile.replace("-motorcount-", motor_stop_str.as_str());
 
             vprintln!("Using flat file: {}", file_path);
 
