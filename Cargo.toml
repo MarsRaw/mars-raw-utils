@@ -314,6 +314,7 @@ focusmerge = { path = "/usr/bin/focusmerge" }
 "m20_zcam_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_rad.toml", mode = "644"}
 "m20_zcam_cwb.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_cwb.toml", mode = "644"}
 "m20_zcam_cb2.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_cb2.toml", mode = "644"}
+"m20_hrte_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_hrte_rad.toml", mode = "644"}
 "L0_-motorcount-_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_-motorcount-_cont_v1.jpg", mode = "644"}
 "L0_0000_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_0000_cont_v1.jpg", mode = "644"}
 "L0_2448_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_2448_cont_v1.jpg", mode = "644"}

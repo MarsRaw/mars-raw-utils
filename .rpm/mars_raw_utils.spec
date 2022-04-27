@@ -65,7 +65,7 @@ rm -rf %{buildroot}
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_bay.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_ilt.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_rad.toml
-
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_hrte_rad.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_watson_bay.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_watson_ilt.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_watson_rad.toml

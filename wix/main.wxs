@@ -616,7 +616,14 @@
                                 Source='mars-raw-utils-data\caldata\msl_mcam_rad.toml'
                                 KeyPath='yes'/>
                         </Component>
-
+                        <Component Id='caldata61' Guid='*'>
+                            <File
+                                Id='data61'
+                                Name='m20_hrte_rad.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_hrte_rad.toml'
+                                KeyPath='yes'/>
+                        </Component>
 
 
 
@@ -1043,7 +1050,7 @@
             <ComponentRef Id='caldata58'/>
             <ComponentRef Id='caldata59'/>
             <ComponentRef Id='caldata60'/>
-
+            <ComponentRef Id='caldata61'/>
             <Feature
                 Id='Environment'
                 Title='PATH Environment Variable'
