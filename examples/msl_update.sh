@@ -74,12 +74,10 @@ function update_on_sol() {
             diffgif -i *_S*NCAM00596*rjcal.png -o DustDevil596_${sol}_NCAM00596_rjcal.gif -v -b 0 -w 5.0 -g 1.5 -l 5 -d 40
         fi
 
-        if [ `ls *_F*NCAM00597*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
-            diffgif -i *_F*NCAM00597*rjcal.png -o SuperSPENDFullFrameI597_${sol}_NCAM00597_rjcal.gif -v -b 0 -w 3.0 -g 1.5 -l 5 -d 40
-        fi
-
-        if [ `ls *_S*NCAM00597*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
-            diffgif -i *_S*NCAM00597*rjcal.png -o SuperSPENDISubFrame597_${sol}_NCAM00597_rjcal.gif -v -b 0 -w 5.0 -g 1.5 -l 5 -d 40
+        if [ `ls *NCAM00597*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
+            diffgif -i `ls *NCAM00597*-rjcal.png | head -n 16` -v -o SPENDI_NCAM00597_Set1_${sol}.gif  -b 0 -w 5.0 -g 1.5 -l 5 -d 40 -p stacked
+            diffgif -i *_F*NCAM00597*rjcal.png -o SPENDI_NCAM00597_Set2_${sol}.gif -v -b 0 -w 3.0 -g 1.5 -l 5 -d 40
+            diffgif -i `ls *NCAM00597*-rjcal.png | tail -n 23` -v -o SPENDI_NCAM00597_Set3_${sol}.gif  -b 0 -w 5.0 -g 1.5 -l 5 -d 40 -p stacked
         fi
 
 
