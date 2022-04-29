@@ -225,6 +225,7 @@ dirs = "4.0.0"
 wild = "2.0.4"
 colored = "2.0.0"
 backtrace = "0.3.65"
+termsize = "0.1.6"
 
 [package.metadata.rpm]
 package = "mars_raw_utils"

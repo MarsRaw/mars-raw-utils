@@ -3,6 +3,7 @@ static mut IS_VERBOSE: bool = false;
 
 use chrono::prelude::*;
 use colored::*;
+use termsize;
 
 const DATETIME_PRINT_FORMAT : &str = "%Y-%m-%d %H:%M:%S%.3f";
 
@@ -69,8 +70,24 @@ pub fn print_fail(file_base_name:&String) {
 }
 
 pub fn print_complete(file_base_name:&String, status:CompleteStatus) {
-    println!("{: <80}[ {} ]", 
-                    file_base_name,
+    let mut width = 88;
+
+    match termsize::get() {
+        Some(size) => {
+            if size.cols < width {
+                width = size.cols as u16;
+            }
+        },
+        None => {}
+    };
+
+    let mut formatted = format!("{: <80}", file_base_name);
+    if formatted.len() > width as usize - 8 {
+        formatted = String::from(&formatted[0..(width as usize - 8)]);
+    }
+    
+    println!("{}[ {} ]", 
+                    formatted,
                     match status {
                         CompleteStatus::DONE => "DONE".green(),
                         CompleteStatus::WARN => "WARN".yellow(),
