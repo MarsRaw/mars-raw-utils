@@ -21,7 +21,7 @@ function update_on_sol() {
     
     cd $INSTROOT
     if [ `ls *JPG 2> /dev/null | wc -l` -gt 0 ]; then
-        msl_ecam_calibrate -i *JPG 
+        calibrate -i *JPG 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -98,7 +98,7 @@ function update_on_sol() {
     cd $INSTROOT
 
     if [ `ls *jpg 2> /dev/null | wc -l` -gt 0 ]; then
-        msl_mahli_calibrate -i *jpg -P msl_mahli_bay msl_mahli_ilt msl_mahli_rad msl_mahli_cwb
+        calibrate -i *jpg -P msl_mahli_bay msl_mahli_ilt msl_mahli_rad msl_mahli_cwb
     fi
 
     if [ `ls *rjcal-bay* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -133,7 +133,7 @@ function update_on_sol() {
     cd $INSTROOT
 
     if [ `ls *jpg 2> /dev/null | wc -l` -gt 0 ]; then
-        msl_mcam_calibrate -i *jpg -P msl_mcam_bay msl_mcam_ilt msl_mcam_rad 
+        calibrate -i *jpg -P msl_mcam_bay msl_mcam_ilt msl_mcam_rad 
     fi
 
     if [ `ls *rjcal-bay* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -163,7 +163,7 @@ function update_on_sol() {
     
     cd $INSTROOT
     if [ `ls *PNG 2> /dev/null | wc -l` -gt 0 ]; then
-        msl_ccam_calibrate -i CR*L?.PNG 
+        calibrate -i CR*L?.PNG 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then

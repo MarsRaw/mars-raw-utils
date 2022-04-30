@@ -154,7 +154,7 @@ fn main() {
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    let calibrator = msl::ecam::MslEcam{};
+    let calibrator = CalContainer{calibrator:Box::new(msl::ecam::MslEcam{})};
     if profiles.len() > 0 {
         simple_calibration_with_profiles(&calibrator, &input_files, only_new, &profiles);
     } else {

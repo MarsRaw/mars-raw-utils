@@ -1,6 +1,9 @@
 
 extern crate clap;
 
+#[macro_use]
+extern crate lazy_static;
+
 pub mod print;
 pub mod m20;
 pub mod msl;

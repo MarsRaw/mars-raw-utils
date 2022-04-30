@@ -22,7 +22,7 @@ function update_on_sol() {
     
     cd $INSTROOT
     if [ `ls *M_.JPG 2> /dev/null | wc -l` -gt 0 ]; then
-        nsyt_icc_calibrate -i *M_.JPG
+        calibrate -i *M_.JPG
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -41,7 +41,7 @@ function update_on_sol() {
     
     cd $INSTROOT
     if [ `ls *M_.JPG 2> /dev/null | wc -l` -gt 0 ]; then
-        nsyt_idc_calibrate -i *M_.JPG
+        calibrate -i *M_.JPG
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then

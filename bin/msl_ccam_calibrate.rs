@@ -51,7 +51,7 @@ fn main() {
     };
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    let calibrator = msl::ccam::MslChemCam{};
+    let calibrator = CalContainer{calibrator:Box::new(msl::ccam::MslChemCam{})};
     if profiles.len() > 0 {
         simple_calibration_with_profiles(&calibrator, &input_files, only_new, &profiles);
     } else {

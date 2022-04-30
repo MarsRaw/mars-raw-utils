@@ -1,4 +1,5 @@
 
+
 pub use crate::constants;
 pub use crate::vprintln;
 pub use crate::print;
@@ -12,12 +13,57 @@ pub use crate::max;
 pub use crate::image::MarsImage;
 pub use crate::metadata;
 pub use crate::calprofile::CalProfile;
-pub use crate::calibrate;
-pub use crate::calibrate::simple_calibration_with_profiles;
-pub use crate::calibrate::simple_calibration;
+pub use crate::calibrate::*;
 pub use crate::enums::Mission;
 pub use crate::enums::Instrument;
 pub use crate::enums::CalFileType;
+pub use crate::print::{
+    print_complete,
+    print_done,
+    print_warn,
+    print_fail
+};
+
+use lazy_static;
+
+
+
+lazy_static! {
+    static ref CALIBRATORS:Vec<CalContainer> = vec![
+        CalContainer{calibrator:Box::new(msl::mcam::MslMastcam{})},
+        CalContainer{calibrator:Box::new(msl::ccam::MslChemCam{})},
+        CalContainer{calibrator:Box::new(msl::ecam::MslEcam{})},
+        CalContainer{calibrator:Box::new(msl::mahli::MslMahli{})},
+        CalContainer{calibrator:Box::new(msl::mardi::MslMardi{})},
+
+        CalContainer{calibrator:Box::new(m20::ecam::M20EECam{})},
+        CalContainer{calibrator:Box::new(m20::zcam::M20MastcamZ{})},
+        CalContainer{calibrator:Box::new(m20::helinav::M20HeliNav{})},
+        CalContainer{calibrator:Box::new(m20::helirte::M20HeliRte{})},
+        CalContainer{calibrator:Box::new(m20::pixlmcc::M20Pixl{})},
+        CalContainer{calibrator:Box::new(m20::scam::M20SuperCam{})},
+        CalContainer{calibrator:Box::new(m20::skycam::M20SkyCam{})},
+        CalContainer{calibrator:Box::new(m20::watson::M20Watson{})},
+
+        CalContainer{calibrator:Box::new(nsyt::icc::NsytIcc{})},
+        CalContainer{calibrator:Box::new(nsyt::idc::NsytIdc{})}
+    ];
+}
+
+pub fn calibrator_for_instrument(instrument:Instrument) -> Option<&'static CalContainer> {
+    for calibrator in CALIBRATORS.iter() {
+        if calibrator.calibrator.accepts_instrument(instrument) {
+            return Some(calibrator);
+        }
+    }
+    None
+}
+
+pub fn calibrator_for_instrument_from_str(instrument:&str) -> Option<&'static CalContainer> {
+    calibrator_for_instrument(Instrument::from_str(instrument))
+}
+
+
 
 use std::panic;
 use backtrace::Backtrace;

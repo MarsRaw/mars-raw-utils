@@ -41,6 +41,45 @@ pub enum Instrument {
     None
 }
 
+impl Instrument {
+    pub fn from_str(s:&str) -> Instrument {
+        match s.to_uppercase().as_str() {
+
+            "MCZ_LEFT" => Instrument::M20MastcamZLeft,
+            "MCZ_RIGHT" => Instrument::M20MastcamZRight,
+            "FRONT_HAZCAM_LEFT_A" | "FRONT_HAZCAM_LEFT_B" => Instrument::M20FrontHazLeft,
+            "FRONT_HAZCAM_RIGHT_A" | "FRONT_HAZCAM_RIGHT_B" => Instrument::M20FrontHazRight,
+            "REAR_HAZCAM_LEFT" => Instrument::M20RearHazLeft,
+            "REAR_HAZCAM_RIGHT" => Instrument::M20RearHazRight,
+            "NAVCAM_LEFT" => Instrument::M20NavcamLeft,
+            "NAVCAM_RIGHT" => Instrument::M20NavcamRight,
+            "SHERLOC_WATSON" => Instrument::M20Watson,
+            "HELI_NAV" => Instrument::M20HeliNav,
+            "HELI_RTE" => Instrument::M20HeliRte,
+            "PIXL_MCC" => Instrument::M20Pixl,
+            "SKYCAM" => Instrument::M20SkyCam,
+            "SUPERCAM_RMI" => Instrument::M20SuperCam,
+
+
+            "MAST_LEFT" => Instrument::MslMastcamLeft,
+            "MAST_RIGHT" => Instrument::MslMastcamRight,
+            "MAHLI" => Instrument::MslMAHLI,
+            "MARDI" => Instrument::MslMARDI,
+            "FHAZ_LEFT_A" | "FHAZ_LEFT_B" => Instrument::MslFrontHazLeft,
+            "FHAZ_RIGHT_A" | "FHAZ_RIGHT_B" => Instrument::MslFrontHazRight,
+            "RHAZ_LEFT_A" | "RHAZ_LEFT_B" => Instrument::MslRearHazLeft,
+            "RHAZ_RIGHT_A" | "RHAZ_RIGHT_B" => Instrument::MslRearHazRight,
+            "NAV_LEFT_A" | "NAV_LEFT_B" => Instrument::MslNavCamLeft,
+            "NAV_RIGHT_A" | "NAV_RIGHT_B" => Instrument::MslNavCamRight,
+            "CHEMCAM_RMI" => Instrument::MslChemCam,
+
+            "IDC" => Instrument::NsytIDC,
+            "ICC" => Instrument::NsytICC,
+            _ => Instrument::None
+        }
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum CalFileType {
     FlatField,

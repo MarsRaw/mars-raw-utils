@@ -118,7 +118,7 @@ fn main() {
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    let calibrator = m20::ecam::M20EECam{};
+    let calibrator = CalContainer{calibrator:Box::new(m20::ecam::M20EECam{})};
     if profiles.len() > 0 {
         simple_calibration_with_profiles(&calibrator, &input_files, only_new, &profiles);
     } else {

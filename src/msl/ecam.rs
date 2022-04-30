@@ -2,6 +2,7 @@ use crate::{
     vprintln, 
     image::MarsImage, 
     enums, 
+    enums::Instrument,
     path,
     util,
     inpaintmask,
@@ -23,8 +24,20 @@ use sciimg::{
 //
 // Also leaving in the ILT parameter until I iron out the cases in which it's needed
 // for ECAM. 
+#[derive(Copy, Clone)]
 pub struct MslEcam {}
+
 impl Calibration for MslEcam {
+
+    fn accepts_instrument(&self, instrument:Instrument) -> bool {
+        match instrument {
+            Instrument::MslNavCamLeft | Instrument::MslNavCamRight | 
+            Instrument::MslFrontHazLeft | Instrument::MslFrontHazRight |
+            Instrument::MslRearHazLeft | Instrument::MslRearHazRight => true,
+            _ => false
+        }
+    }
+
 
     fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool) -> error::Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());

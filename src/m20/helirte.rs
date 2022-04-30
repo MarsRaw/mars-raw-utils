@@ -2,6 +2,7 @@ use crate::{
     vprintln, 
     image::MarsImage, 
     enums, 
+    enums::Instrument,
     path,
     util,
     calprofile::CalProfile,
@@ -10,8 +11,17 @@ use crate::{
 
 use sciimg::error;
 
+#[derive(Copy, Clone)]
 pub struct M20HeliRte {}
+
 impl Calibration for M20HeliRte {
+
+    fn accepts_instrument(&self, instrument:Instrument) -> bool {
+        match instrument {
+            Instrument::M20HeliRte=> true,
+            _ => false
+        }
+    }
 
     fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool)  -> error::Result<CompleteContext> {
 

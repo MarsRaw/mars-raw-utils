@@ -2,6 +2,7 @@ use crate::{
     vprintln, 
     image::MarsImage, 
     enums, 
+    enums::Instrument,
     path,
     decompanding,
     util,
@@ -14,9 +15,16 @@ use sciimg::{
 };
 
 
-
+#[derive(Copy, Clone)]
 pub struct MslMardi {}
+
 impl Calibration for MslMardi {
+    fn accepts_instrument(&self, instrument:Instrument) -> bool {
+        match instrument {
+            Instrument::MslMARDI => true,
+            _ => false
+        }
+    }
 
     fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool) -> error::Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());

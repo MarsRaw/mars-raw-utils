@@ -1,13 +1,14 @@
 use crate::{
     vprintln, 
     image::MarsImage, 
-    enums, 
+    enums,
+    enums::Instrument, 
     path,
     decompanding,
     util,
     calibfile,
     calprofile::CalProfile,
-    calibrate::*
+    calibrate::*,
 };
 
 use sciimg::prelude::*;
@@ -56,8 +57,17 @@ fn motor_stop_from_focal_length(fl:f32) -> u16 {
     MOTOR_COUNT_STOPS[0]
 }
 
+#[derive(Copy, Clone)]
 pub struct M20MastcamZ {}
+
 impl Calibration for M20MastcamZ {
+
+    fn accepts_instrument(&self, instrument:Instrument) -> bool {
+        match instrument {
+            Instrument::M20MastcamZLeft | Instrument::M20MastcamZRight => true,
+            _ => false
+        }
+    }
 
     fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool)  -> error::Result<CompleteContext> {
 
@@ -69,11 +79,11 @@ impl Calibration for M20MastcamZ {
 
 
         let mut warn = false;
-        let mut instrument = enums::Instrument::M20MastcamZLeft;
+        let mut instrument = Instrument::M20MastcamZLeft;
 
         let bn = path::basename(&input_file);
         if bn.chars().nth(1).unwrap() == 'R' {
-            instrument = enums::Instrument::M20MastcamZRight;
+            instrument = Instrument::M20MastcamZRight;
             vprintln!("Processing for Mastcam-Z Right");
         } else {
             vprintln!("Processing for Mastcam-Z Left") ;

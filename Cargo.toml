@@ -198,6 +198,10 @@ path = "bin/diffgif.rs"
 name = "focusmerge"
 path = "bin/focusmerge.rs"
 
+[[bin]]
+name = "calibrate"
+path = "bin/calibrate.rs"
+
 # [[bin]]
 # name = "composite"
 # path = "bin/composite.rs"
@@ -226,6 +230,7 @@ wild = "2.0.4"
 colored = "2.0.0"
 backtrace = "0.3.65"
 termsize = "0.1.6"
+lazy_static = "1.4.0"
 
 [package.metadata.rpm]
 package = "mars_raw_utils"

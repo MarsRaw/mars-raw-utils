@@ -2,6 +2,7 @@ use crate::{
     vprintln, 
     image::MarsImage, 
     enums, 
+    enums::Instrument,
     path, 
     calibfile,
     util,
@@ -15,9 +16,17 @@ use sciimg::{
 };
 
 
-
+#[derive(Copy, Clone)]
 pub struct M20SuperCam {}
+
 impl Calibration for M20SuperCam {
+
+    fn accepts_instrument(&self, instrument:Instrument) -> bool {
+        match instrument {
+            Instrument::M20SuperCam => true,
+            _ => false
+        }
+    }
 
     fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool)  -> error::Result<CompleteContext> {
 
