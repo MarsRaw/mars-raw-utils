@@ -1,4 +1,6 @@
 
+use crate::calibrate::CompleteStatus;
+
 static mut IS_VERBOSE: bool = false;
 
 use chrono::prelude::*;
@@ -51,14 +53,8 @@ macro_rules! veprintln {
     };
 }
 
-pub enum CompleteStatus {
-    DONE,
-    WARN,
-    FAIL
-}
-
 pub fn print_done(file_base_name:&String) {
-    print_complete(file_base_name, CompleteStatus::DONE);
+    print_complete(file_base_name, CompleteStatus::OK);
 }
 
 pub fn print_warn(file_base_name:&String) {
@@ -89,7 +85,7 @@ pub fn print_complete(file_base_name:&String, status:CompleteStatus) {
     println!("{}[ {} ]", 
                     formatted,
                     match status {
-                        CompleteStatus::DONE => "DONE".green(),
+                        CompleteStatus::OK => "DONE".green(),
                         CompleteStatus::WARN => "WARN".yellow(),
                         CompleteStatus::FAIL => "FAIL".red()
                     }

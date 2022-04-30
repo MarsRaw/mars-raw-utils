@@ -5,79 +5,52 @@ use crate::{
     path,
     calibfile,
     util,
-    calprofile,
-    print::{
-        print_done,
-        print_fail
-    }
+    calprofile::CalProfile,
+    calibrate::*
 };
 
-use sciimg::imagebuffer;
+use sciimg::{
+    error,
+    imagebuffer
+};
 
-pub fn process_with_profiles(input_file:&str, only_new:bool, filename_suffix:&String, profile_names:&Vec<&str>) {
 
-    if profile_names.len() > 0 {
-        for f in profile_names.iter() {
-            process_with_profile(input_file, only_new, filename_suffix, Some(&f.to_string()));
+pub struct MslChemCam {}
+impl Calibration for MslChemCam {
+
+    fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool) -> error::Result<CompleteContext> {
+        let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
+        if path::file_exists(&out_file) && only_new {
+            vprintln!("Output file exists, skipping. ({})", out_file);
+            return cal_warn(cal_context);
         }
-    } else {
-        process_with_profile(input_file, only_new, filename_suffix, None);
-    }
 
-}
+        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslChemCam);
 
-pub fn process_with_profile(input_file:&str, only_new:bool, filename_suffix:&String, profile_name_opt:Option<&String>) {
+        vprintln!("Loading image mask");
+        let mask = imagebuffer::ImageBuffer::from_file(calibfile::get_calibration_file_for_instrument(enums::Instrument::MslChemCam, enums::CalFileType::Mask).unwrap().as_str()).unwrap();
+        raw.apply_mask(&mask);
 
-    if let Some(profile_name) = profile_name_opt {
+        let data_max = 255.0;
 
-        match calprofile::load_calibration_profile(&profile_name.to_string()) {
-            Ok(profile) => {
-                process_file(input_file, only_new, &profile.filename_suffix);
-            },
-            Err(why) => {
-                eprintln!("Error loading calibration profile: {}", why);
-                print_fail(&format!("{} ({})", path::basename(input_file), filename_suffix));
-                panic!("Error loading calibration profile");
-            }
+        if input_file.find("EDR") != None {
+            vprintln!("Image appears to be in standard contrast");
+            
+            vprintln!("Flatfielding...");
+            raw.flatfield();
+
+        } else if input_file.find("EDR") != None {
+            vprintln!("Image appears to be in enhanced contrast");
+            // ... Don't do flatfielding, these appear to already been applied.
+            // ... Do something about that
         }
-    } else {
-        process_file(input_file, only_new, &filename_suffix);
+
+        vprintln!("Normalizing...");
+        raw.image.normalize_to_16bit_with_max(data_max);
+
+        vprintln!("Writing to disk...");
+        raw.save(&out_file);
+
+        cal_ok(cal_context)
     }
-
-}
-
-pub fn process_file(input_file:&str, only_new:bool, filename_suffix:&String) {
-    let out_file = util::append_file_name(input_file, &filename_suffix);
-    if path::file_exists(&out_file) && only_new {
-        vprintln!("Output file exists, skipping. ({})", out_file);
-        return;
-    }
-
-    let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslChemCam);
-
-    vprintln!("Loading image mask");
-    let mask = imagebuffer::ImageBuffer::from_file(calibfile::get_calibration_file_for_instrument(enums::Instrument::MslChemCam, enums::CalFileType::Mask).unwrap().as_str()).unwrap();
-    raw.apply_mask(&mask);
-
-    let data_max = 255.0;
-
-    if input_file.find("EDR") != None {
-        vprintln!("Image appears to be in standard contrast");
-        
-        vprintln!("Flatfielding...");
-        raw.flatfield();
-
-    } else if input_file.find("EDR") != None {
-        vprintln!("Image appears to be in enhanced contrast");
-        // ... Don't do flatfielding, these appear to already been applied.
-        // ... Do something about that
-    }
-
-    vprintln!("Normalizing...");
-    raw.image.normalize_to_16bit_with_max(data_max);
-
-    vprintln!("Writing to disk...");
-    raw.save(&out_file);
-
-    print_done(&format!("{} ({})", path::basename(input_file), filename_suffix));
 }

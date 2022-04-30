@@ -40,8 +40,32 @@ pub struct CalProfile {
     #[serde(default = "default_hpc_threshold")]
     pub hot_pixel_detection_threshold: f32,
 
+    #[serde(default = "default_hpc_window_size")]
+    pub hot_pixel_window_size: i32,
+
     #[serde(default = "default_filename_suffix")]
     pub filename_suffix: String
+}
+
+impl CalProfile {
+    pub fn default() -> CalProfile {
+        CalProfile{
+            apply_ilt:default_false(),
+            red_scalar:default_color_scalar(),
+            green_scalar:default_color_scalar(),
+            blue_scalar:default_color_scalar(),
+            color_noise_reduction:default_false(),
+            color_noise_reduction_amount:default_color_noise_reduction_amount(),
+            hot_pixel_detection_threshold:default_hpc_threshold(),
+            hot_pixel_window_size:default_hpc_window_size(),
+            filename_suffix:default_filename_suffix()
+        }
+    }
+}
+
+
+fn default_hpc_window_size() -> i32 {
+    10
 }
 
 fn default_filename_suffix() -> String {

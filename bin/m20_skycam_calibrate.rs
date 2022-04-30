@@ -1,8 +1,6 @@
 
 use mars_raw_utils::prelude::*;
 
-use rayon::prelude::*;
-
 #[macro_use]
 extern crate clap;
 use clap::{Arg, App};
@@ -93,13 +91,20 @@ fn main() {
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    let num_files = input_files.len();
-    input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
-        if path::file_exists(in_file) {
-            vprintln!("Processing File: {} (#{} of {})", in_file, idx, num_files);
-            m20::skycam::process_with_profiles(in_file, hpc_threshold, hpc_window_size, only_new, &filename_suffix, &profiles);
-        } else {
-            eprintln!("File not found: {}", in_file);
-        }
-    });
+    let calibrator = m20::skycam::M20SkyCam{};
+    if profiles.len() > 0 {
+        simple_calibration_with_profiles(&calibrator, &input_files, only_new, &profiles);
+    } else {
+        simple_calibration(&calibrator, &input_files, only_new, &CalProfile{
+            apply_ilt: false,
+            red_scalar: 1.0,
+            green_scalar: 1.0,
+            blue_scalar: 1.0,
+            color_noise_reduction: false,
+            color_noise_reduction_amount: 0,
+            hot_pixel_detection_threshold: hpc_threshold,
+            hot_pixel_window_size: hpc_window_size,
+            filename_suffix: filename_suffix
+        });
+    }
 }

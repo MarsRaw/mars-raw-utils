@@ -1,0 +1,126 @@
+
+use rayon::prelude::*;
+
+use crate::{
+    calprofile::*,
+    path,
+    vprintln,
+    print::*
+};
+
+use sciimg::error;
+
+pub enum CompleteStatus {
+    OK,
+    WARN,
+    FAIL
+}
+
+pub struct CompleteContext {
+    pub status: CompleteStatus,
+    pub cal_context: CalProfile
+}
+
+impl CompleteContext {
+    pub fn new(status:CompleteStatus, cal_context:&CalProfile) -> Self {
+        CompleteContext {
+            status:status,
+            cal_context:cal_context.clone()
+        }
+    }
+}
+
+
+pub fn cal_warn(cal_context:&CalProfile) -> error::Result<CompleteContext> {
+    Ok(CompleteContext::new(CompleteStatus::WARN, cal_context))
+}
+
+pub fn cal_ok(cal_context:&CalProfile) -> error::Result<CompleteContext> {
+    Ok(CompleteContext::new(CompleteStatus::OK, cal_context))
+}
+
+pub fn cal_fail(cal_context:&CalProfile) -> error::Result<CompleteContext> {
+    Ok(CompleteContext::new(CompleteStatus::FAIL, cal_context))
+}
+
+
+
+pub trait Calibration {
+
+
+    fn process_with_profiles<F>(&self, input_file:&str, only_new:bool, profile_names:&Vec<&str>, on_cal_complete:F) where F: Fn(error::Result<CompleteContext>) {
+        for profile_name in profile_names.iter() {
+            on_cal_complete(
+                self.process_with_profile(input_file, only_new, &profile_name.to_string())
+            );
+        }
+    }
+
+    fn process_with_profile(&self, input_file:&str, only_new:bool, profile_name:&String) -> error::Result<CompleteContext> {
+        match load_calibration_profile(&profile_name.to_string()) {
+            Ok(profile) => {
+                self.process_file(input_file, &profile, only_new)
+            },
+            Err(why) => {
+                vprintln!("Error loading calibration profile: {}", why);
+                Err("Error loading calibration profile")
+            }
+        }
+    }
+
+    fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool) -> error::Result<CompleteContext>;
+}
+
+
+
+
+
+pub fn simple_calibration_with_profiles<C:Calibration + Sync>(calibrator:&C,input_files:&Vec<&str>, only_new:bool, profiles:&Vec<&str>) {
+
+    input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
+
+        if path::file_exists(in_file) {
+            vprintln!("Processing File: {} (#{} of {})", in_file, idx, input_files.len());
+            calibrator.process_with_profiles(&in_file, only_new, &profiles, |result| {
+                match result {
+                    Ok(cc) => print_complete(&format!("{} ({})", path::basename(in_file), cc.cal_context.filename_suffix), cc.status),
+                    Err(why) => {
+                        eprintln!("Error: {}", why);
+                        print_fail(&in_file.to_string());
+                    }
+                }
+            });
+        } else {
+            eprintln!("File not found: {}", in_file);
+            print_fail(&in_file.to_string());
+        }
+
+    });
+
+}
+
+pub fn simple_calibration<C:Calibration + Sync>(calibrator:&C, input_files:&Vec<&str>, only_new:bool, cal_context:&CalProfile) {
+
+    input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
+
+        if path::file_exists(in_file) {
+
+            vprintln!("Processing File: {} (#{} of {})", in_file, idx, input_files.len());
+            match calibrator.process_file(&in_file, cal_context, only_new) {
+                Ok(cc) => print_complete(&format!("{} ({})", path::basename(in_file), cc.cal_context.filename_suffix), cc.status),
+                Err(why) => {
+                    eprintln!("Error: {}", why);
+                    print_fail(&in_file.to_string());
+                }
+            };
+
+        } else {
+
+            eprintln!("File not found: {}", in_file);
+            print_fail(&in_file.to_string());
+
+        }
+
+    });
+
+}

@@ -4,73 +4,42 @@ use crate::{
     enums, 
     path,
     util,
-    calprofile,
-    print::{
-        print_done,
-        print_fail,
-        print_warn
-    }
+    calprofile::CalProfile,
+    calibrate::*
 };
 
-pub fn process_with_profiles(input_file:&str, only_new:bool, filename_suffix:&String, profile_names:&Vec<&str>) {
+use sciimg::error;
 
-    if profile_names.len() > 0 {
-        for f in profile_names.iter() {
-            process_with_profile(input_file, only_new, filename_suffix, Some(&f.to_string()));
+pub struct M20HeliNav {}
+impl Calibration for M20HeliNav {
+
+    fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool)  -> error::Result<CompleteContext> {
+
+        let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
+        if path::file_exists(&out_file) && only_new {
+            vprintln!("Output file exists, skipping. ({})", out_file);
+            return cal_warn(cal_context);
         }
-    } else {
-        process_with_profile(input_file, only_new, filename_suffix, None);
+        
+        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20HeliNav);
+        
+        let data_max = 255.0;
+
+        //if ! no_ilt {
+        //    vprintln!("Decompanding...");
+        //    raw.decompand().unwrap();
+        //    data_max = decompanding::get_max_for_instrument(enums::Instrument::M20Watson) as f32;
+        //}
+
+        vprintln!("Flatfielding...");
+        raw.flatfield();
+
+        vprintln!("Normalizing...");
+        raw.image.normalize_to_16bit_with_max(data_max);
+
+        vprintln!("Writing to disk...");
+        raw.save(&out_file);
+
+        cal_ok(cal_context)
     }
-
-}
-
-pub fn process_with_profile(input_file:&str, only_new:bool, filename_suffix:&String, profile_name_opt:Option<&String>) {
-
-    if let Some(profile_name) = profile_name_opt {
-
-        match calprofile::load_calibration_profile(&profile_name.to_string()) {
-            Ok(profile) => {
-                process_file(input_file, only_new, &profile.filename_suffix);
-            },
-            Err(why) => {
-                eprintln!("Error loading calibration profile: {}", why);
-                print_fail(&format!("{} ({})", path::basename(input_file), filename_suffix));
-                panic!("Error loading calibration profile");
-            }
-        }
-    } else {
-        process_file(input_file, only_new, &filename_suffix);
-    }
-
-}
-
-pub fn process_file(input_file:&str,  only_new:bool, filename_suffix:&String) {
-    let out_file = util::append_file_name(input_file, filename_suffix);
-    if path::file_exists(&out_file) && only_new {
-        vprintln!("Output file exists, skipping. ({})", out_file);
-        print_warn(&format!("{} ({})", path::basename(input_file), filename_suffix));
-        return;
-    }
-    
-    let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20HeliNav);
-    
-
-    let data_max = 255.0;
-
-    //if ! no_ilt {
-    //    vprintln!("Decompanding...");
-    //    raw.decompand().unwrap();
-    //    data_max = decompanding::get_max_for_instrument(enums::Instrument::M20Watson) as f32;
-    //}
-
-    vprintln!("Flatfielding...");
-    raw.flatfield();
-
-    vprintln!("Normalizing...");
-    raw.image.normalize_to_16bit_with_max(data_max);
-
-    vprintln!("Writing to disk...");
-    raw.save(&out_file);
-
-    print_done(&format!("{} ({})", path::basename(input_file), filename_suffix));
 }

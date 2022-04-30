@@ -1,7 +1,5 @@
 use mars_raw_utils::prelude::*;
 
-use rayon::prelude::*;
-
 #[macro_use]
 extern crate clap;
 
@@ -57,6 +55,13 @@ fn main() {
                         .help("Hot pixel correction variance threshold")
                         .required(false)
                         .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_HPC_WINDOW_SIZE)
+                        .short(constants::param::PARAM_HPC_WINDOW_SIZE_SHORT)
+                        .long(constants::param::PARAM_HPC_WINDOW_SIZE)
+                        .value_name("WINDOW_SIZE")
+                        .help("Hot pixel correction window size")
+                        .required(false)
+                        .takes_value(true))
                     .arg(Arg::with_name(constants::param::PARAM_CAL_PROFILE)
                         .short(constants::param::PARAM_CAL_PROFILE_SHORT)
                         .long(constants::param::PARAM_CAL_PROFILE)
@@ -78,6 +83,7 @@ fn main() {
     let mut green_scalar = constants::DEFAULT_GREEN_WEIGHT;
     let mut blue_scalar = constants::DEFAULT_BLUE_WEIGHT;
     let mut hpc_threshold = 0.0;
+    let mut hpc_window_size = 3;
     let mut no_ilt = false;
     let filename_suffix: String = String::from(constants::OUTPUT_FILENAME_APPEND);
     
@@ -127,6 +133,16 @@ fn main() {
         }
     }
 
+    if matches.is_present(constants::param::PARAM_HPC_WINDOW_SIZE) {
+        let s = matches.value_of(constants::param::PARAM_HPC_WINDOW_SIZE).unwrap();
+        if util::string_is_valid_i32(&s) {
+            hpc_window_size = s.parse::<i32>().unwrap();
+        } else {
+            eprintln!("Error: Invalid number specified for HPC window size");
+            process::exit(1);
+        }
+    }
+
     if matches.is_present(constants::param::PARAM_RAW_COLOR) {
         no_ilt = true;
     }
@@ -138,14 +154,21 @@ fn main() {
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    let num_files = input_files.len();
-    input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
-        if path::file_exists(in_file) {
-            vprintln!("Processing File: {} (#{} of {})", in_file, idx, num_files);
-            msl::ecam::process_with_profiles(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, hpc_threshold, only_new, &filename_suffix, &profiles);
-        } else {
-            eprintln!("File not found: {}", in_file);
-        }
-    });
+    let calibrator = msl::ecam::MslEcam{};
+    if profiles.len() > 0 {
+        simple_calibration_with_profiles(&calibrator, &input_files, only_new, &profiles);
+    } else {
+        simple_calibration(&calibrator, &input_files, only_new, &CalProfile{
+            apply_ilt: !no_ilt,
+            red_scalar: red_scalar,
+            green_scalar: green_scalar,
+            blue_scalar: blue_scalar,
+            color_noise_reduction: false,
+            color_noise_reduction_amount: 0,
+            hot_pixel_detection_threshold: hpc_threshold,
+            hot_pixel_window_size: hpc_window_size,
+            filename_suffix: filename_suffix
+        });
+    }
     
 }

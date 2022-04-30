@@ -1,7 +1,5 @@
 use mars_raw_utils::prelude::*;
 
-use rayon::prelude::*;
-
 #[macro_use]
 extern crate clap;
 
@@ -120,15 +118,22 @@ fn main() {
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    let num_files = input_files.len();
-    input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
-        if path::file_exists(in_file) {
-            vprintln!("Processing File: {} (#{} of {})", in_file, idx, num_files);
-            msl::mardi::process_with_profiles(in_file, red_scalar, green_scalar, blue_scalar, no_ilt, only_new, &filename_suffix, &profiles);
-        } else {
-            eprintln!("File not found: {}", in_file);
-        }
-    });
+    let calibrator = msl::mardi::MslMardi{};
+    if profiles.len() > 0 {
+        simple_calibration_with_profiles(&calibrator, &input_files, only_new, &profiles);
+    } else {
+        simple_calibration(&calibrator, &input_files, only_new, &CalProfile{
+            apply_ilt: !no_ilt,
+            red_scalar: red_scalar,
+            green_scalar: green_scalar,
+            blue_scalar: blue_scalar,
+            color_noise_reduction: false,
+            color_noise_reduction_amount: 0,
+            hot_pixel_detection_threshold: 0.0,
+            hot_pixel_window_size: 0,
+            filename_suffix: filename_suffix
+        });
+    }
 
     
 }
