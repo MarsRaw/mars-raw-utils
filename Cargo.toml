@@ -53,6 +53,7 @@ assets = [
     ["target/release/levels", "usr/bin/", "755"],
     ["target/release/diffgif", "usr/bin/", "755"],
     ["target/release/focusmerge", "usr/bin/", "755"],
+    ["target/release/calibrate", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
     ["mars-raw-utils-data/caldata/*jpg", "usr/share/mars_raw_utils/data/", "644"],
@@ -273,6 +274,7 @@ gen_mean_stack = { path = "/usr/bin/gen_mean_stack" }
 diffgif = { path = "/usr/bin/diffgif" }
 levels = { path = "/usr/bin/levels" }
 focusmerge = { path = "/usr/bin/focusmerge" }
+calibrate = { path = "/usr/bin/calibrate" }
 
 [package.metadata.rpm.files]
 "M20_MCZ_LEFT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png", mode = "644"}

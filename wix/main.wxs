@@ -913,6 +913,14 @@
                                 Source='$(var.CargoTargetBinDir)\focusmerge.exe'
                                 KeyPath='yes'/>
                         </Component>
+                        <Component Id='binary34' Guid='*'>
+                            <File
+                                Id='exe34'
+                                Name='calibrate.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\calibrate.exe'
+                                KeyPath='yes'/>
+                        </Component>
                     </Directory>
                 </Directory>
             </Directory>
@@ -988,6 +996,7 @@
             <ComponentRef Id='binary31'/>
             <ComponentRef Id='binary32'/>
             <ComponentRef Id='binary33'/>
+            <ComponentRef Id='binary34'/>
 
             <ComponentRef Id='caldata0'/>
             <ComponentRef Id='caldata1'/>
