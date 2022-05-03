@@ -87,6 +87,27 @@ pub struct MslApiResults {
 
 
 impl ImageMetadata for Image {
+
+    fn get_date_received(&self) -> String {
+        self.date_received.clone()
+    }
+    
+    fn get_xyz(&self) -> Option<Vec<f64>> {
+        if let Some(xyz) = &self.xyz {
+            Some(xyz.clone())
+        } else {
+            None
+        }
+    }
+
+    fn get_dimension(&self) -> Option<Vec<f64>> {
+        None
+    }
+
+    fn get_sample_type(&self) -> String {
+        self.extended.sample_type.clone()
+    }
+
     fn get_link(&self) -> String {
         self.url.clone()
     }

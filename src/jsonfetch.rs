@@ -84,6 +84,19 @@ fn str_to_vec(s:&str) -> error::Result<Vec<f64>> {
     Ok(tuple_vec)
 }
 
+
+pub fn default_vec_f64_none() -> Option<Vec<f64>> {
+    None
+}
+
+pub fn default_false() -> bool {
+    false
+}
+
+pub fn default_blank() -> String {
+    "".to_string()
+}
+
 pub mod cahvor_format {
 
     use serde::{

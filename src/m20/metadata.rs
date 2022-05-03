@@ -103,6 +103,31 @@ pub struct M20ApiResults {
 
 
 impl ImageMetadata for Image {
+
+    fn get_date_received(&self) -> String {
+        self.date_received.clone()
+    }
+    
+    fn get_xyz(&self) -> Option<Vec<f64>> {
+        if let Some(xyz) = &self.extended.xyz {
+            Some(xyz.clone())
+        } else {
+            None
+        }
+    }
+
+    fn get_dimension(&self) -> Option<Vec<f64>> {
+        if let Some(dimension) = &self.extended.dimension {
+            Some(dimension.clone())
+        } else {
+            None
+        }
+    }
+
+    fn get_sample_type(&self) -> String {
+        self.sample_type.clone()
+    }
+
     fn get_link(&self) -> String {
         self.image_files.full_res.clone()
     }

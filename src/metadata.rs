@@ -4,6 +4,9 @@ use serde::{
     Serialize
 };
 
+use crate::{
+    jsonfetch
+};
 
 use sciimg::prelude::*;
 
@@ -32,6 +35,10 @@ pub trait ImageMetadata{
     fn get_mast_az(&self) -> Option<f64>;
     fn get_mast_el(&self) -> Option<f64>;
     fn get_sclk(&self) -> Option<f64>;
+    fn get_date_received(&self) -> String;
+    fn get_xyz(&self) -> Option<Vec<f64>>;
+    fn get_dimension(&self) -> Option<Vec<f64>>;
+    fn get_sample_type(&self) -> String;
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -52,8 +59,21 @@ pub struct Metadata  {
     pub mast_el: Option<f64>,
     pub sclk: Option<f64>,
 
+    #[serde(default = "crate::jsonfetch::default_blank")]
+    pub date_received: String,
+
+    #[serde(default = "crate::jsonfetch::default_blank")]
+    pub sample_type: String,
+
+    #[serde(with = "crate::jsonfetch::tuple_format", default = "crate::jsonfetch::default_vec_f64_none")]
+    pub dimension: Option<Vec<f64>>,
+
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub camera_position: Option<Vec<f64>>,
+
+    #[serde(with = "crate::jsonfetch::tuple_format", default = "crate::jsonfetch::default_vec_f64_none")]
+    pub xyz: Option<Vec<f64>>,
+
     pub camera_model_type: Option<String>,
     pub site:Option<u32>,
     pub drive:Option<u32>,
@@ -61,28 +81,25 @@ pub struct Metadata  {
     #[serde(with = "crate::jsonfetch::cahvor_format")]
     pub camera_model_component_list: CameraModel,
 
-    #[serde(default = "default_step_status")]
+    #[serde(default = "crate::jsonfetch::default_false")]
     pub decompand:bool,
 
-    #[serde(default = "default_step_status")]
+    #[serde(default = "crate::jsonfetch::default_false")]
     pub debayer:bool,
 
-    #[serde(default = "default_step_status")]
+    #[serde(default = "crate::jsonfetch::default_false")]
     pub flatfield:bool,
 
-    #[serde(default = "default_step_status")]
+    #[serde(default = "crate::jsonfetch::default_false")]
     pub radiometric:bool,
 
-    #[serde(default = "default_step_status")]
+    #[serde(default = "crate::jsonfetch::default_false")]
     pub inpaint:bool,
 
-    #[serde(default = "default_step_status")]
+    #[serde(default = "crate::jsonfetch::default_false")]
     pub cropped:bool
 }
 
-fn default_step_status() -> bool {
-    false
-}
 
 pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
     Metadata{
@@ -97,12 +114,12 @@ pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
         scale_factor:im.get_scale_factor(),
         instrument:im.get_instrument(),
         filter_name:im.get_filter_name(),
-        decompand:default_step_status(),
-        debayer:default_step_status(),
-        flatfield:default_step_status(),
-        radiometric:default_step_status(),
-        inpaint:default_step_status(),
-        cropped:default_step_status(),
+        decompand:jsonfetch::default_false(),
+        debayer:jsonfetch::default_false(),
+        flatfield:jsonfetch::default_false(),
+        radiometric:jsonfetch::default_false(),
+        inpaint:jsonfetch::default_false(),
+        cropped:jsonfetch::default_false(),
         camera_vector:im.get_camera_vector(),
         camera_model_component_list:im.get_camera_model_component_list(),
         camera_position:im.get_camera_position(),
@@ -112,6 +129,10 @@ pub fn convert_to_std_metadata<T:ImageMetadata>(im:&T) -> Metadata {
         mast_el:im.get_mast_el(),
         mast_az:im.get_mast_az(),
         sclk:im.get_sclk(),
+        dimension:im.get_dimension(),
+        xyz:im.get_xyz(),
+        date_received:im.get_date_received(),
+        sample_type:im.get_sample_type()
     }
 }
 
