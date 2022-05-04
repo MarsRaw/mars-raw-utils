@@ -233,10 +233,12 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
                         //vprintln!("ray -> {:?}", ray);
 
                         let ls_in = input_model.xyz_to_ls(&ray, false);
-                        //vprintln!("{}, {} -> Line: {}, Sample: {}", y, x, ls_in.line, ls_in.sample);
+                        
 
-                        let in_x = ls_in.sample.round() as usize;
-                        let in_y = ls_in.line.round() as usize;
+                        let in_x = (ls_in.sample * map_r.width as f64).round() as usize;
+                        let in_y = (ls_in.line * map_r.height as f64).round() as usize;
+                        //vprintln!("{}, {} -> Line: {}, Sample: {}", y, x, in_y, in_x);
+
 
                         if in_x < img.image.width && in_y < img.image.height {
                             map_r.put(x, y, img.image.get_band(0).get(in_x, in_y).unwrap());
@@ -338,8 +340,8 @@ fn main() {
         bottom_lat : 90.0,
         left_lon: 360.0,
         right_lon: -360.0,
-        width: 1592,
-        height: 1182,
+        width: 1024,
+        height: 1024,
         degrees_per_pixel: 0.0
     };
     let mut map_r = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 100.0, ImageMode::U16BIT).unwrap();
