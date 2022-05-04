@@ -166,6 +166,14 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
             merged
         },
         false => {
+            let mnmx = blurred.get_min_max().unwrap();
+            
+            if mnmx.min.abs() < mnmx.max.abs() {
+                blurred.clip_mut(mnmx.min, mnmx.min.abs());
+            } else {
+                blurred.clip_mut(-1.0 * mnmx.max, mnmx.max);
+            }
+
             blurred.add_across_mut(32767.0);
             blurred.clip(0.0, 65355.0).unwrap()
         }
