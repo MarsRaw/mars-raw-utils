@@ -9,27 +9,33 @@ use std::process;
 
 use clap::{Arg, App};
 
+use std::panic;
 
-
-fn get_calibrator_for_file(input_file:&str) -> Option<&'static CalContainer>  {
+fn get_calibrator_for_file(input_file:&str, default_instrument:Option<&str>) -> Option<&'static CalContainer>  {
     let metadata_file = util::replace_image_extension(&input_file, "-metadata.json");
     vprintln!("Checking for metadata file at {}", metadata_file);
     if path::file_exists(metadata_file.as_str()) {
         vprintln!("Metadata file exists for loaded image: {}", metadata_file);
         match metadata::load_image_metadata(&metadata_file) {
-            Err(_) => None,
+            Err(_) => None, // Error loading the metadata file
             Ok(md) => {
                 calibrator_for_instrument_from_str(&md.instrument.as_str())
             }
         }
-    } else {
-        None
+    } else { // metadata file is missing
+
+        // If a default instrument was passed in, try and use that
+        if let Some(instrument) = default_instrument {
+            calibrator_for_instrument_from_str(instrument)
+        } else {
+            None // Otherwise, we don't know the instrument.
+        }
     }
 }
 
 
 fn main() {
-    init_panic_handler();
+    // init_panic_handler();
     let matches = App::new(crate_name!())
                     .version(crate_version!())
                     .author(crate_authors!())
@@ -40,6 +46,13 @@ fn main() {
                         .help("Input")
                         .required(true)
                         .multiple(true)
+                        .takes_value(true))
+                    .arg(Arg::with_name(constants::param::PARAM_INSTRUMENT)
+                        .short(constants::param::PARAM_INSTRUMENT_SHORT)
+                        .long(constants::param::PARAM_INSTRUMENT)
+                        .value_name("INSTRUMENT")
+                        .help("Default instrument (if missing)")
+                        .required(false)
                         .takes_value(true))
                     .arg(Arg::with_name(constants::param::PARAM_RED_WEIGHT)
                         .short(constants::param::PARAM_RED_WEIGHT_SHORT)
@@ -193,6 +206,12 @@ fn main() {
         filename_suffix: String::from(constants::OUTPUT_FILENAME_APPEND)
     };
 
+    let default_instrument = match matches.is_present(constants::param::PARAM_INSTRUMENT) {
+        true => {
+            Some(matches.value_of(constants::param::PARAM_INSTRUMENT).unwrap())
+        },
+        false => None
+    };
 
     let only_new = matches.is_present(constants::param::PARAM_ONLY_NEW);
 
@@ -203,9 +222,12 @@ fn main() {
 
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
-    input_files.par_iter().for_each(|input_file| {
+    panic::set_hook(Box::new(|_info| {
+        print_fail(&format!("Internal Error!"));
+    }));
 
-        let calibrator = get_calibrator_for_file(&input_file);
+    input_files.par_iter().for_each(|input_file| {
+        let calibrator = get_calibrator_for_file(&input_file, default_instrument);
         match calibrator {
             Some(cal) => {
 
@@ -235,7 +257,7 @@ fn main() {
                 print_fail(&format!("{} - Error: Instrument Unknown!", path::basename(input_file)));
             }
         }
-        //println!("{:?}", calibrator);
+        
     });
 
 }

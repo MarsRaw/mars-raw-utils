@@ -124,6 +124,9 @@ pub mod param {
 
     pub const PARAM_LIST : &str = "list";
     pub const PARAM_LIST_SHORT : &str = "l";
+
+    pub const PARAM_INSTRUMENT : &str = "instrument";
+    pub const PARAM_INSTRUMENT_SHORT : &str = "I";
 }
 
 
