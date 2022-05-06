@@ -11,13 +11,18 @@ use clap::{Arg, App};
 
 use std::panic;
 
+use backtrace::Backtrace;
+
 fn get_calibrator_for_file(input_file:&str, default_instrument:Option<&str>) -> Option<&'static CalContainer>  {
     let metadata_file = util::replace_image_extension(&input_file, "-metadata.json");
     vprintln!("Checking for metadata file at {}", metadata_file);
     if path::file_exists(metadata_file.as_str()) {
         vprintln!("Metadata file exists for loaded image: {}", metadata_file);
         match metadata::load_image_metadata(&metadata_file) {
-            Err(_) => None, // Error loading the metadata file
+            Err(_) => {
+                vprintln!("Could not load metadata file!");
+                None
+            }, // Error loading the metadata file
             Ok(md) => {
                 calibrator_for_instrument_from_str(&md.instrument.as_str())
             }
@@ -28,6 +33,7 @@ fn get_calibrator_for_file(input_file:&str, default_instrument:Option<&str>) -> 
         if let Some(instrument) = default_instrument {
             calibrator_for_instrument_from_str(instrument)
         } else {
+            vprintln!("We don't know what instrument was used!");
             None // Otherwise, we don't know the instrument.
         }
     }
@@ -223,6 +229,9 @@ fn main() {
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
 
     panic::set_hook(Box::new(|_info| {
+        if print::is_verbose() {
+            println!("{:?}", Backtrace::new());  
+        }
         print_fail(&format!("Internal Error!"));
     }));
 

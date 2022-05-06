@@ -137,6 +137,10 @@ impl MarsImage {
 
     }
 
+    pub fn crop(&mut self, x:usize, y:usize, width:usize, height:usize) {
+        self.image.crop(x, y, width, height);
+    }
+
     pub fn flatfield(&mut self) {
 
         let mut flat = flatfield::load_flat(self.instrument).unwrap();

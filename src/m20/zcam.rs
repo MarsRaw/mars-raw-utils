@@ -144,7 +144,15 @@ impl Calibration for M20MastcamZ {
                 vprintln!("Using flat file: {}", file_path);
 
                 if path::file_exists(&file_path) {
-                    let flat = MarsImage::open(file_path, instrument);
+                    let mut flat = MarsImage::open(file_path, instrument);
+
+                    if let Some(md) = &raw.metadata {
+                        if let Some(rect) = &md.subframe_rect {
+                            flat.crop(rect[0] as usize - 1, rect[1] as usize - 1, rect[2] as usize, rect[3] as usize);
+                        }
+                    }
+
+
                     raw.flatfield_with_flat(&flat);
                 } else {
                     eprintln!("Flat file not found: {}", file_path);

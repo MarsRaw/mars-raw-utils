@@ -7,7 +7,8 @@ use crate::{
     util,
     inpaintmask,
     calprofile::CalProfile,
-    calibrate::*
+    calibrate::*,
+    calibfile
 };
 
 use sciimg::{
@@ -86,18 +87,24 @@ impl Calibration for MslEcam {
         
         let data_max = 255.0;
 
-        // if ! no_ilt {
-        //     vprintln!("Decompanding...");
-        //     raw.decompand().unwrap();
-        //     data_max = decompanding::get_max_for_instrument(instrument) as f32;
-        // }
-        
-        // Exclude subframed images for now...
-        if raw.image.height >= 1022 {
-            vprintln!("Flatfielding...");
-            raw.flatfield();
+        let flat_file_path = calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::FlatField).unwrap();
+        vprintln!("Using flat file: {}", flat_file_path);
+
+        if path::file_exists(&flat_file_path) {
+            let mut flat = MarsImage::open(flat_file_path, instrument);
+
+            if let Some(md) = &raw.metadata {
+                if let Some(rect) = &md.subframe_rect {
+                    flat.crop(rect[0] as usize - 1, rect[1] as usize - 1, rect[2] as usize, rect[3] as usize);
+                }
+            }
+
+            raw.flatfield_with_flat(&flat);
+        } else {
+            eprintln!("Flat file not found: {}", flat_file_path);
+            panic!("Flat file not found!");
         }
-        
+
         
         vprintln!("Applying color weights...");
         raw.apply_weight(cal_context.red_scalar, cal_context.green_scalar, cal_context.blue_scalar);

@@ -71,6 +71,27 @@ struct LatLon{
     lon:f64
 }
 
+fn intersect_to_plane(lv:&LookVector, ground:&Vector) -> Vector {
+    let normal = Vector::new(0.0, 0.0, -1.0);
+    
+
+    let dot = lv.look_direction.dot_product(&normal);
+    if dot == 0.0 {
+        return lv.look_direction.clone();
+    }
+
+    let ratio = ground.subtract(&lv.origin).dot_product(&normal) / dot;
+
+    let intersect_point = lv.origin.add(&lv.look_direction.scale(ratio));
+    
+    if ratio < 0.0 {
+        lv.look_direction.clone()
+    } else {
+        intersect_point
+    }
+
+}
+
 fn intersect_to_sphere(lv:&LookVector, radius:f64) -> Vector {
     lv.look_direction.normalized().scale(radius).add(&lv.origin)
 }
@@ -89,7 +110,7 @@ fn lookvector_to_cylindrical(lv:&LookVector) -> LatLon {
     vector_to_cylindrical(&ray)
 }
 
-static SPHERE_RADIUS:f64 = 1.0;
+static SPHERE_RADIUS:f64 = 100.0;
 
 fn get_lat_lon(c:&CameraModel, x:usize, y:usize) -> error::Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample:x as f64 }) {
@@ -220,24 +241,46 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
             let center_el = get_el(&img);
             vprintln!("Mast Az/El: {}/{}", center_az, center_el);
             
-            let output_model = input_model.linearize(img.image.width, img.image.height, map_r.width, map_r.height).unwrap();
-            vprintln!("output model: {:?}", output_model);
+            println!("");
+            vprintln!("Input Model C: {:?}", input_model.c());
+            vprintln!("Input Model A: {:?}", input_model.a());
+            vprintln!("Input Model H: {:?}", input_model.h());
+            vprintln!("Input Model V: {:?}", input_model.v());
+            vprintln!("Input Model O: {:?}", input_model.o());
+            vprintln!("Input Model R: {:?}", input_model.r());
+            println!("");
+            //let output_model = input_model.linearize(img.image.width, img.image.height, map_r.width, map_r.height).unwrap();
+            let output_model = Cahv{
+                c: Vector::new(0.564241, 0.554952, -1.9218),
+                a: Vector::new(-0.502824, 0.854567, 0.12987),
+                h: Vector::new(-1314.41, -190.012, 64.2655),
+                v: Vector::new(-177.008, 297.727, 1282.35)
+            };
             
+            vprintln!("output model: {:?}", output_model);
+            println!("");
+
+            let ground = Vector::new(0.0,0.0,1.84566);
+            let z = Vector::new(0.0, 0.0, -1.0);
+            let mut min_angle = 1000000.0;
+            let mut max_angle = -1000000.0;
+
             for y in 0..map_context.height {
                 for x in 0..map_context.width {
 
                     if let Ok(lv) = output_model.ls_to_look_vector(&ImageCoordinate{line: y as f64, sample: x as f64}) {
-
+                        
                         //vprintln!("lv -> {:?}", lv.look_direction);
-                        let ray = intersect_to_sphere(&lv, SPHERE_RADIUS);
-                        //vprintln!("ray -> {:?}", ray);
-
+                        let ray = intersect_to_plane(&lv, &ground);
+                        //vprintln!("ray -> {:?} -- {}", ray, ray.len());
+                        min_angle = min!(z.angle(&ray).to_degrees(), min_angle);
+                        max_angle = max!(z.angle(&ray).to_degrees(), max_angle);
                         let ls_in = input_model.xyz_to_ls(&ray, false);
                         
 
-                        let in_x = (ls_in.sample * map_r.width as f64).round() as usize;
-                        let in_y = (ls_in.line * map_r.height as f64).round() as usize;
-                        //vprintln!("{}, {} -> Line: {}, Sample: {}", y, x, in_y, in_x);
+                        let in_x = ls_in.sample.round() as usize;
+                        let in_y = ls_in.line.round() as usize;
+                        //vprintln!("{}, {} -> Line: {}, Sample: {}", y, x, ls_in.line, ls_in.sample);
 
 
                         if in_x < img.image.width && in_y < img.image.height {
@@ -250,6 +293,7 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
                 }
             }
             
+            vprintln!("Min/Max angles: {}, {}", min_angle, max_angle);
 
             /*
             for x in 0..img.image.width {
