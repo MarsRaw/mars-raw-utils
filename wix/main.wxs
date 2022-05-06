@@ -641,78 +641,6 @@
                                 Action='set'
                                 System='yes'/>
                         </Component>
-                        <Component Id='binary0' Guid='*'>
-                            <File
-                                Id='exe0'
-                                Name='msl_mahli_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\msl_mahli_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary1' Guid='*'>
-                            <File
-                                Id='exe1'
-                                Name='msl_mcam_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\msl_mcam_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary2' Guid='*'>
-                            <File
-                                Id='exe2'
-                                Name='msl_ccam_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\msl_ccam_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary3' Guid='*'>
-                            <File
-                                Id='exe3'
-                                Name='msl_mardi_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\msl_mardi_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary4' Guid='*'>
-                            <File
-                                Id='exe4'
-                                Name='m20_zcam_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_zcam_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary5' Guid='*'>
-                            <File
-                                Id='exe5'
-                                Name='m20_hnav_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_hnav_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary6' Guid='*'>
-                            <File
-                                Id='exe6'
-                                Name='m20_hrte_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_hrte_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary7' Guid='*'>
-                            <File
-                                Id='exe7'
-                                Name='m20_pixl_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_pixl_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary8' Guid='*'>
-                            <File
-                                Id='exe8'
-                                Name='m20_skycam_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_skycam_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
                         <Component Id='binary9' Guid='*'>
                             <File
                                 Id='exe9'
@@ -761,30 +689,7 @@
                                 Source='$(var.CargoTargetBinDir)\nsyt_latest.exe'
                                 KeyPath='yes'/>
                         </Component>
-                        <Component Id='binary15' Guid='*'>
-                            <File
-                                Id='exe15'
-                                Name='nsyt_icc_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\nsyt_icc_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary16' Guid='*'>
-                            <File
-                                Id='exe16'
-                                Name='nsyt_idc_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\nsyt_idc_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary17' Guid='*'>
-                            <File
-                                Id='exe17'
-                                Name='msl_ecam_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\msl_ecam_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
+
                         <Component Id='binary18' Guid='*'>
                             <File
                                 Id='exe18'
@@ -801,30 +706,7 @@
                                 Source='$(var.CargoTargetBinDir)\m20_ecam_assemble.exe'
                                 KeyPath='yes'/>
                         </Component>
-                        <Component Id='binary20' Guid='*'>
-                            <File
-                                Id='exe20'
-                                Name='m20_ecam_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_ecam_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary21' Guid='*'>
-                            <File
-                                Id='exe21'
-                                Name='m20_watson_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_watson_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary22' Guid='*'>
-                            <File
-                                Id='exe22'
-                                Name='m20_scam_calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_scam_calibrate.exe'
-                                KeyPath='yes'/>
-                        </Component>
+
                         <Component Id='binary23' Guid='*'>
                             <File
                                 Id='exe23'
@@ -962,29 +844,14 @@
             -->
             <ComponentRef Id='License'/>
             <ComponentRef Id="ApplicationShortcut" />
-            <ComponentRef Id='binary0'/>
-            <ComponentRef Id='binary1'/>
-            <ComponentRef Id='binary2'/>
-            <ComponentRef Id='binary3'/>
-            <ComponentRef Id='binary4'/>
-            <ComponentRef Id='binary5'/>
-            <ComponentRef Id='binary6'/>
-            <ComponentRef Id='binary7'/>
-            <ComponentRef Id='binary8'/>
             <ComponentRef Id='binary9'/>
             <ComponentRef Id='binary10'/>
             <ComponentRef Id='binary11'/>
             <ComponentRef Id='binary12'/>
             <ComponentRef Id='binary13'/>
             <ComponentRef Id='binary14'/>
-            <ComponentRef Id='binary15'/>
-            <ComponentRef Id='binary16'/>
-            <ComponentRef Id='binary17'/>
             <ComponentRef Id='binary18'/>
             <ComponentRef Id='binary19'/>
-            <ComponentRef Id='binary20'/>
-            <ComponentRef Id='binary21'/>
-            <ComponentRef Id='binary22'/>
             <ComponentRef Id='binary23'/>
             <ComponentRef Id='binary24'/>
             <ComponentRef Id='binary25'/>

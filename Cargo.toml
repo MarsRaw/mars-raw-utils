@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.3.4"
+version = "0.4.0"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2018"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
@@ -21,25 +21,10 @@ priority = "optional"
 assets = [
     ["target/release/msl_fetch_raw", "usr/bin/", "755"],
     ["target/release/msl_latest", "usr/bin/", "755"],
-    ["target/release/msl_mahli_calibrate", "usr/bin/", "755"],
-    ["target/release/msl_mcam_calibrate", "usr/bin/", "755"],
-    ["target/release/msl_ecam_calibrate", "usr/bin/", "755"],
-    ["target/release/msl_ccam_calibrate", "usr/bin/", "755"],
-    ["target/release/msl_mardi_calibrate", "usr/bin/", "755"],
     ["target/release/m20_ecam_assemble", "usr/bin/", "755"],
-    ["target/release/m20_ecam_calibrate", "usr/bin/", "755"],
     ["target/release/m20_fetch_raw", "usr/bin/", "755"],
     ["target/release/m20_latest", "usr/bin/", "755"],
-    ["target/release/m20_watson_calibrate", "usr/bin/", "755"],
-    ["target/release/m20_zcam_calibrate", "usr/bin/", "755"],
-    ["target/release/m20_scam_calibrate", "usr/bin/", "755"],
-    ["target/release/m20_pixl_calibrate", "usr/bin/", "755"],
-    ["target/release/m20_skycam_calibrate", "usr/bin/", "755"],
-    ["target/release/m20_hnav_calibrate", "usr/bin/", "755"],
-    ["target/release/m20_hrte_calibrate", "usr/bin/", "755"],
     ["target/release/hpc_filter", "usr/bin/", "755"],
-    ["target/release/nsyt_icc_calibrate", "usr/bin/", "755"],
-    ["target/release/nsyt_idc_calibrate", "usr/bin/", "755"],
     ["target/release/nsyt_fetch_raw", "usr/bin/", "755"],
     ["target/release/nsyt_latest", "usr/bin/", "755"],
     ["target/release/inpaint_filter", "usr/bin/", "755"],
@@ -62,42 +47,6 @@ assets = [
 
 [lib]
 name = "mars_raw_utils"
-
-[[bin]]
-name = "msl_mahli_calibrate"
-path = "bin/msl_mahli_calibrate.rs"
-
-[[bin]]
-name = "msl_mcam_calibrate"
-path = "bin/msl_mcam_calibrate.rs"
-
-[[bin]]
-name = "msl_ccam_calibrate"
-path = "bin/msl_ccam_calibrate.rs"
-
-[[bin]]
-name = "msl_mardi_calibrate"
-path = "bin/msl_mardi_calibrate.rs"
-
-[[bin]]
-name = "m20_zcam_calibrate"
-path = "bin/m20_zcam_calibrate.rs"
-
-[[bin]]
-name = "m20_hnav_calibrate"
-path = "bin/m20_hnav_calibrate.rs"
-
-[[bin]]
-name = "m20_hrte_calibrate"
-path = "bin/m20_hrte_calibrate.rs"
-
-[[bin]]
-name = "m20_pixl_calibrate"
-path = "bin/m20_pixl_calibrate.rs"
-
-[[bin]]
-name = "m20_skycam_calibrate"
-path = "bin/m20_skycam_calibrate.rs"
 
 [[bin]]
 name = "msl_fetch_raw"
@@ -124,36 +73,12 @@ name = "nsyt_latest"
 path = "bin/nsyt_latest.rs"
 
 [[bin]]
-name = "nsyt_icc_calibrate"
-path = "bin/nsyt_icc_calibrate.rs"
-
-[[bin]]
-name = "nsyt_idc_calibrate"
-path = "bin/nsyt_idc_calibrate.rs"
-
-[[bin]]
-name = "msl_ecam_calibrate"
-path = "bin/msl_ecam_calibrate.rs"
-
-[[bin]]
 name = "hpc_filter"
 path = "bin/hpc_filter.rs"
 
 [[bin]]
 name = "m20_ecam_assemble"
 path = "bin/m20_ecam_assemble.rs"
-
-[[bin]]
-name = "m20_ecam_calibrate"
-path = "bin/m20_ecam_calibrate.rs"
-
-[[bin]]
-name = "m20_watson_calibrate"
-path = "bin/m20_watson_calibrate.rs"
-
-[[bin]]
-name = "m20_scam_calibrate"
-path = "bin/m20_scam_calibrate.rs"
 
 [[bin]]
 name = "inpaint_filter"
@@ -242,26 +167,11 @@ buildflags = ["--release"]
 [package.metadata.rpm.targets]
 hpc_filter = { path = "/usr/bin/hpc_filter" }
 inpaint_filter = { path = "/usr/bin/inpaint_filter" }
-m20_ecam_calibrate = { path = "/usr/bin/m20_ecam_calibrate" }
 m20_fetch_raw = { path = "/usr/bin/m20_fetch_raw" }
 m20_latest = { path = "/usr/bin/m20_latest" }
-m20_scam_calibrate = { path = "/usr/bin/m20_scam_calibrate" }
-m20_watson_calibrate = { path = "/usr/bin/m20_watson_calibrate" }
-m20_zcam_calibrate = { path = "/usr/bin/m20_zcam_calibrate" }
-m20_hnav_calibrate = { path = "/usr/bin/m20_hnav_calibrate" }
-m20_hrte_calibrate = { path = "/usr/bin/m20_hrte_calibrate" }
 m20_ecam_assemble = { path = "/usr/bin/m20_ecam_assemble" }
-msl_ecam_calibrate = { path = "/usr/bin/msl_ecam_calibrate" }
-m20_pixl_calibrate = { path = "/usr/bin/m20_pixl_calibrate" }
-m20_skycam_calibrate = { path = "/usr/bin/m20_skycam_calibrate" }
 msl_fetch_raw = { path = "/usr/bin/msl_fetch_raw" }
 msl_latest = { path = "/usr/bin/msl_latest" }
-msl_mahli_calibrate = { path = "/usr/bin/msl_mahli_calibrate" }
-msl_mcam_calibrate = { path = "/usr/bin/msl_mcam_calibrate" }
-msl_ccam_calibrate = { path = "/usr/bin/msl_ccam_calibrate" }
-msl_mardi_calibrate = { path = "/usr/bin/msl_mardi_calibrate" }
-nsyt_icc_calibrate = { path = "/usr/bin/nsyt_icc_calibrate" }
-nsyt_idc_calibrate = { path = "/usr/bin/nsyt_idc_calibrate" }
 nsyt_fetch_raw = { path = "/usr/bin/nsyt_fetch_raw" }
 nsyt_latest = { path = "/usr/bin/nsyt_latest" }
 upscale = { path = "/usr/bin/upscale" }
