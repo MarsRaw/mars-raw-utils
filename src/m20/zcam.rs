@@ -9,6 +9,7 @@ use crate::{
     calibfile,
     calprofile::CalProfile,
     calibrate::*,
+    inpaintmask
 };
 
 use sciimg::prelude::*;
@@ -166,12 +167,15 @@ impl Calibration for M20MastcamZ {
                 vprintln!("Could not determine focal length: {}", e)
             }
         };
-        //
-        //raw.flatfield();
-
 
         vprintln!("Inpainting...");
-        raw.apply_inpaint_fix();
+        let mut inpaint_mask = inpaintmask::load_mask(instrument).unwrap();
+        if let Some(md) = &raw.metadata {
+            if let Some(rect) = &md.subframe_rect {
+                inpaint_mask = inpaint_mask.get_subframe(rect[0] as usize - 1, rect[1] as usize - 1, rect[2] as usize, rect[3] as usize).unwrap();
+            }
+        }
+        raw.apply_inpaint_fix_with_mask(&inpaint_mask);
 
         vprintln!("Applying color weights...");
         raw.apply_weight(cal_context.red_scalar, cal_context.green_scalar, cal_context.blue_scalar);
@@ -179,7 +183,7 @@ impl Calibration for M20MastcamZ {
         vprintln!("Normalizing...");
         raw.image.normalize_to_16bit_with_max(data_max);
 
-        if raw.image.width == 1648 {
+        if raw.image.width == 1648 && raw.image.height == 1200 {
             vprintln!("Cropping...");
             raw.image.crop(29, 9, 1590, 1182);
         }
