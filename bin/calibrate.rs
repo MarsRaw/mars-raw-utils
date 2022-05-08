@@ -233,6 +233,18 @@ fn main() {
             println!("{:?}", Backtrace::new());  
         }
         print_fail(&format!("Internal Error!"));
+        
+        // If the user has exported MRU_EXIT_ON_PANIC=1, then we should exit here. 
+        // This will prevent situations where errors fly by on the screen and
+        // aren't noticed when testing.
+        match option_env!("MRU_EXIT_ON_PANIC") {
+            Some(v) => {
+                if v == "1" {
+                    process::exit(1);
+                }
+            }
+            None => {}
+        };   
     }));
 
     input_files.par_iter().for_each(|input_file| {
