@@ -104,7 +104,7 @@ impl Map {
         Map {
             width:width,
             height:height,
-            img_r: ImageBuffer::new_with_fill_as_mode(width, height, 100.0, ImageMode::U16BIT).unwrap(),
+            img_r: ImageBuffer::new_with_fill_as_mode(width, height, 0.0, ImageMode::U16BIT).unwrap(),
             img_g: ImageBuffer::new_with_fill_as_mode(width, height, 0.0, ImageMode::U16BIT).unwrap(),
             img_b: ImageBuffer::new_with_fill_as_mode(width, height, 0.0, ImageMode::U16BIT).unwrap()
         }
@@ -114,7 +114,7 @@ impl Map {
         RgbImage::new_from_buffers_rgb(&self.img_r, &self.img_g, &self.img_b, ImageMode::U16BIT).unwrap()
     }
 
-    pub fn paint_tri(&mut self, tri:&Triangle) {
+    pub fn paint_tri(&mut self, tri:&Triangle, avg_pixels:bool) {
 
         let min_x = tri.x_min().floor() as usize;
         let max_x = tri.x_max().ceil() as usize;
@@ -129,10 +129,24 @@ impl Map {
             for y in min_y..=max_y {
                 for x in min_x..=max_x {
                     if x < self.width && y < self.height && tri.contains(x as f64, y as f64) {
-                        let (r, g, b) = tri.interpolate_color(x as f64,y as f64);
-                        self.img_r.put(x, y, r as f32);
-                        self.img_g.put(x, y, g as f32);
-                        self.img_b.put(x, y, b as f32);
+                        let (mut r, mut g, mut b) = tri.interpolate_color(x as f64,y as f64);
+                        if r > 0.0 && g > 0.0 && b > 0.0 {
+
+                            let r0 = self.img_r.get(x, y).unwrap() as f64;
+                            let g0 = self.img_g.get(x, y).unwrap() as f64;
+                            let b0 = self.img_b.get(x, y).unwrap() as f64;
+
+                            if avg_pixels && (r0 > 0.0 || g0 > 0.0 || b0 > 0.0) {
+                                r = (r + r0) / 2.0;
+                                g = (g + g0) / 2.0;
+                                b = (b + b0) / 2.0;
+                            }
+
+                            self.img_r.put(x, y, r as f32);
+                            self.img_g.put(x, y, g as f32);
+                            self.img_b.put(x, y, b as f32);
+                        }
+                        
                     }
                 }
             }
@@ -142,17 +156,17 @@ impl Map {
 
     }
 
-    pub fn paint_square(&mut self, tl:&Point, bl:&Point, br:&Point, tr:&Point) {
+    pub fn paint_square(&mut self, tl:&Point, bl:&Point, br:&Point, tr:&Point, avg_pixels:bool) {
         self.paint_tri(&Triangle {
             p0: tl.clone(),
             p1: bl.clone(),
             p2: tr.clone()
-        });
+        }, avg_pixels);
         self.paint_tri(&Triangle {
             p0: tr.clone(),
             p1: bl.clone(),
             p2: br.clone()
-        });
+        }, avg_pixels);
     }
 }
 
@@ -440,7 +454,7 @@ fn process_file(input_file:&str, map_context:&MapContext, map:&mut Map) {
                     );
 
 
-                    map.paint_square(&tl, &bl, &br, &tr);
+                    map.paint_square(&tl, &bl, &br, &tr, false);
                 }
 
             }
