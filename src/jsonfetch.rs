@@ -107,10 +107,9 @@ pub mod cahvor_format {
     };
 
     use sciimg::prelude::*;
-
+    use crate::util::string_is_valid_f64;
     use crate::jsonfetch::{
-        str_to_vec,
-        vec_to_str
+        str_to_vec
     };
     
     use sciimg::vector::Vector;
@@ -125,28 +124,7 @@ pub mod cahvor_format {
         if ! model_opt.is_valid() {
             serializer.serialize_unit()
         } else {
-            let c = vec_to_str(&model_opt.c().to_vec());
-            let a = vec_to_str(&model_opt.a().to_vec());
-            let h = vec_to_str(&model_opt.h().to_vec());
-            let v = vec_to_str(&model_opt.v().to_vec());
-            let o = vec_to_str(&model_opt.o().to_vec());
-            let r = vec_to_str(&model_opt.r().to_vec());
-            let e = vec_to_str(&model_opt.e().to_vec());
-
-            match model_opt.model_type() {
-                ModelType::CAHVOR => {
-                    let s = format!("{};{};{};{};{};{}", c, a, h, v, o, r);
-                    serializer.serialize_str(&s)
-                },
-                ModelType::CAHV => {
-                    let s = format!("{};{};{};{}", c, a, h, v);
-                    serializer.serialize_str(&s)
-                },
-                ModelType::CAHVORE => {
-                    let s = format!("{};{};{};{};{};{};{}", c, a, h, v, o, r, e); // not complete
-                    serializer.serialize_str(&s)
-                }
-            }
+            serializer.serialize_str(&model_opt.serialize())
         }
     }
 
@@ -163,13 +141,16 @@ pub mod cahvor_format {
                 
                 let split = s0.split(';');
                 let mut parts:Vec<Vec<f64>> = Vec::new();
-
+                
                 for n in split {
                     match n.find('(') {
-                        None => (),
+                        None => {
+                            if string_is_valid_f64(&n) {
+                                parts.push(vec![n.parse::<f64>().unwrap()]);
+                            }
+                        },
                         Some(_i) => {
-                            let v:Vec<f64> = str_to_vec(&n).unwrap();
-                            parts.push(v);
+                            parts.push(str_to_vec(&n).unwrap());
                         }
                     }
                 }
@@ -194,6 +175,21 @@ pub mod cahvor_format {
                                 v: if parts.len() >= 4 { Vector::from_vec(&parts[3]).unwrap() } else { Vector::default() },
                                 o: if parts.len() >= 5 { Vector::from_vec(&parts[4]).unwrap() } else { Vector::default() },
                                 r: if parts.len() >= 6 { Vector::from_vec(&parts[5]).unwrap() } else { Vector::default() }
+                            }))
+                        )
+                    },
+                    9 => {              // CAHVORE
+                        Ok(
+                            CameraModel::new(Box::new(Cahvore{
+                                c: if parts.len() >= 1 { Vector::from_vec(&parts[0]).unwrap() } else { Vector::default() },
+                                a: if parts.len() >= 2 { Vector::from_vec(&parts[1]).unwrap() } else { Vector::default() },
+                                h: if parts.len() >= 3 { Vector::from_vec(&parts[2]).unwrap() } else { Vector::default() },
+                                v: if parts.len() >= 4 { Vector::from_vec(&parts[3]).unwrap() } else { Vector::default() },
+                                o: if parts.len() >= 5 { Vector::from_vec(&parts[4]).unwrap() } else { Vector::default() },
+                                r: if parts.len() >= 6 { Vector::from_vec(&parts[5]).unwrap() } else { Vector::default() },
+                                e: if parts.len() >= 7 { Vector::from_vec(&parts[6]).unwrap() } else { Vector::default() },
+                                linearity: if parts.len() >= 8 { parts[7][0] } else { LINEARITY_PERSPECTIVE },
+                                pupil_type: PupilType::General
                             }))
                         )
                     },

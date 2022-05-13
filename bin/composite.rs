@@ -240,7 +240,14 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
             let center_az = get_az(&img);
             let center_el = get_el(&img);
             vprintln!("Mast Az/El: {}/{}", center_az, center_el);
-            
+            // let input_model = Cahvor{
+            //     c: Vector { x: 1.04324, y: 0.465353, z: -1.90368 },
+            //     a: Vector { x: 0.70207, y: 0.498978, z: 0.50807 },
+            //     h: Vector { x: 56.6157, y: 1855.01, z: 653.211 },
+            //     v: Vector { x: 65.5219, y: 54.5998, z: 1767.17 },
+            //     o: Vector { x: 0.701208, y: 0.500104, z: 0.508152 },
+            //     r: Vector { x: 1.736e-6, y: 0.0501396, z: -0.0171254 }
+            // };
             println!("");
             vprintln!("Input Model C: {:?}", input_model.c());
             vprintln!("Input Model A: {:?}", input_model.a());
@@ -248,72 +255,78 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
             vprintln!("Input Model V: {:?}", input_model.v());
             vprintln!("Input Model O: {:?}", input_model.o());
             vprintln!("Input Model R: {:?}", input_model.r());
+            vprintln!("Input Model E: {:?}", input_model.e());
             println!("");
-            //let output_model = input_model.linearize(img.image.width, img.image.height, map_r.width, map_r.height).unwrap();
-            let output_model = Cahv{
-                c: Vector::new(0.564241, 0.554952, -1.9218),
-                a: Vector::new(-0.502824, 0.854567, 0.12987),
-                h: Vector::new(-1314.41, -190.012, 64.2655),
-                v: Vector::new(-177.008, 297.727, 1282.35)
-            };
+            //let output_model = input_model.linearize(img.image.width, img.image.height, img.image.width, img.image.height).unwrap();
+            // let output_model = Cahv{
+            //     c: Vector::new(0.564241, 0.554952, -1.9218),
+            //     a: Vector::new(-0.502824, 0.854567, 0.12987),
+            //     h: Vector::new(-1314.41, -190.012, 64.2655),
+            //     v: Vector::new(-177.008, 297.727, 1282.35)
+            // };
             
-            vprintln!("output model: {:?}", output_model);
+            // vprintln!("output model: {:?}", output_model);
             println!("");
 
-            let ground = Vector::new(0.0,0.0,1.84566);
-            let z = Vector::new(0.0, 0.0, -1.0);
-            let mut min_angle = 1000000.0;
-            let mut max_angle = -1000000.0;
+            // let ground = Vector::new(0.0,0.0,1.84566);
+            // let z = Vector::new(0.0, 0.0, -1.0);
+            // let mut min_angle = 1000000.0;
+            // let mut max_angle = -1000000.0;
 
-            for y in 0..map_context.height {
-                for x in 0..map_context.width {
+            // for y in 0..map_context.height {
+            //     for x in 0..map_context.width {
 
-                    if let Ok(lv) = output_model.ls_to_look_vector(&ImageCoordinate{line: y as f64, sample: x as f64}) {
+            //         if let Ok(lv) = output_model.ls_to_look_vector(&ImageCoordinate{line: y as f64, sample: x as f64}) {
                         
-                        //vprintln!("lv -> {:?}", lv.look_direction);
-                        let ray = intersect_to_plane(&lv, &ground);
-                        //vprintln!("ray -> {:?} -- {}", ray, ray.len());
-                        min_angle = min!(z.angle(&ray).to_degrees(), min_angle);
-                        max_angle = max!(z.angle(&ray).to_degrees(), max_angle);
-                        let ls_in = input_model.xyz_to_ls(&ray, false);
+            //             //vprintln!("lv -> {:?}", lv.look_direction);
+            //             let ray = intersect_to_plane(&lv, &ground);
+            //             //vprintln!("ray -> {:?} -- {}", ray, ray.len());
+            //             min_angle = min!(z.angle(&ray).to_degrees(), min_angle);
+            //             max_angle = max!(z.angle(&ray).to_degrees(), max_angle);
+            //             let ls_in = input_model.xyz_to_ls(&ray, false);
                         
 
-                        let in_x = ls_in.sample.round() as usize;
-                        let in_y = ls_in.line.round() as usize;
-                        //vprintln!("{}, {} -> Line: {}, Sample: {}", y, x, ls_in.line, ls_in.sample);
+            //             let in_x = ls_in.sample.round() as usize;
+            //             let in_y = ls_in.line.round() as usize;
+            //             //vprintln!("{}, {} -> Line: {}, Sample: {}", y, x, ls_in.line, ls_in.sample);
 
 
-                        if in_x < img.image.width && in_y < img.image.height {
-                            map_r.put(x, y, img.image.get_band(0).get(in_x, in_y).unwrap());
-                            map_g.put(x, y, img.image.get_band(1).get(in_x, in_y).unwrap());
-                            map_b.put(x, y, img.image.get_band(2).get(in_x, in_y).unwrap());
-                        }
-                    }
+            //             if in_x < img.image.width && in_y < img.image.height {
+            //                 map_r.put(x, y, img.image.get_band(0).get(in_x, in_y).unwrap());
+            //                 map_g.put(x, y, img.image.get_band(1).get(in_x, in_y).unwrap());
+            //                 map_b.put(x, y, img.image.get_band(2).get(in_x, in_y).unwrap());
+            //             }
+            //         }
 
-                }
-            }
+            //     }
+            // }
             
-            vprintln!("Min/Max angles: {}, {}", min_angle, max_angle);
+            // vprintln!("Min/Max angles: {}, {}", min_angle, max_angle);
 
-            /*
+            
             for x in 0..img.image.width {
                 for y in 0..img.image.height {
-                    let lv = match output_model.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample: x as f64 }) {
+
+                    let img_x = x as f64;
+                    let img_y = y as f64;
+
+                    let lv = match input_model.ls_to_look_vector(&ImageCoordinate{ line:img_y, sample: img_x }) {
                         Ok(lv) => lv,
                         Err(_) => continue
                     };
 
+                    
                     let ll = lookvector_to_cylindrical(&lv);
                     let lat = ll.lat;
                     let lon = ll.lon;
+                    
                     let out_y_f = (lat - map_context.bottom_lat) / (map_context.top_lat - map_context.bottom_lat) * map_context.height as f64;
                     let out_x_f = (lon - map_context.left_lon) / (map_context.right_lon - map_context.left_lon) * map_context.width as f64;
 
                     let out_x = out_x_f.round() as usize;
                     let out_y = out_y_f.round() as usize;
 
-
-
+                    
                     if out_x < map_r.width && out_y < map_r.height {
                         map_r.put(out_x, out_y, img.image.get_band(0).get(x, y).unwrap());
                         map_g.put(out_x, out_y, img.image.get_band(1).get(x, y).unwrap());
@@ -322,7 +335,7 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
                 }
 
             }
-            */
+            
                    
         },
         None => {
@@ -367,27 +380,27 @@ fn main() {
     let output = matches.value_of("output").unwrap();
 
 
-    // let map_context = determine_map_context(&input_files);
-    // vprintln!("Map Context: {:?}", map_context);
-    // vprintln!("FOV Vertical: {}", map_context.top_lat - map_context.bottom_lat);
-    // vprintln!("FOV Horizontal: {}", map_context.right_lon - map_context.left_lon);
+    let map_context = determine_map_context(&input_files);
+    vprintln!("Map Context: {:?}", map_context);
+    vprintln!("FOV Vertical: {}", map_context.top_lat - map_context.bottom_lat);
+    vprintln!("FOV Horizontal: {}", map_context.right_lon - map_context.left_lon);
 
-    // if map_context.width == 0 {
-    //     eprintln!("Output expected to have zero width. Cannot continue with that. Exiting...");
-    //     process::exit(1);
-    // } else if map_context.height == 0 {
-    //     eprintln!("Output expected to have zero height. Cannot continue with that. Exiting...");
-    //     process::exit(1);
-    // }
-    let map_context = MapContext{
-        top_lat : -90.0,
-        bottom_lat : 90.0,
-        left_lon: 360.0,
-        right_lon: -360.0,
-        width: 1024,
-        height: 1024,
-        degrees_per_pixel: 0.0
-    };
+    if map_context.width == 0 {
+        eprintln!("Output expected to have zero width. Cannot continue with that. Exiting...");
+        process::exit(1);
+    } else if map_context.height == 0 {
+        eprintln!("Output expected to have zero height. Cannot continue with that. Exiting...");
+        process::exit(1);
+    }
+    // let map_context = MapContext{
+    //     top_lat : -90.0,
+    //     bottom_lat : 90.0,
+    //     left_lon: 360.0,
+    //     right_lon: -360.0,
+    //     width: 1024,
+    //     height: 1024,
+    //     degrees_per_pixel: 0.0
+    // };
     let mut map_r = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 100.0, ImageMode::U16BIT).unwrap();
     let mut map_g = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
     let mut map_b = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
