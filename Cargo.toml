@@ -128,9 +128,9 @@ path = "bin/focusmerge.rs"
 name = "calibrate"
 path = "bin/calibrate.rs"
 
-[[bin]]
-name = "composite"
-path = "bin/composite.rs"
+# [[bin]]
+# name = "composite"
+# path = "bin/composite.rs"
 
 [features]
 
