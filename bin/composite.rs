@@ -1,15 +1,160 @@
 use mars_raw_utils::prelude::*;
 use sciimg::{
     prelude::*,
-    vector::Vector//,
-    // matrix::Matrix,
-    // enums::Axis,
-    // quaternion::Quaternion
+    vector::Vector,
+    min,
+    max
 };
+
 #[macro_use]
 extern crate clap;
 use clap::{Arg, App};
 use std::process;
+
+
+#[derive(Debug, Clone)]
+struct Point {
+    pub x:f64,
+    pub y:f64,
+    pub r:f64,
+    pub g:f64,
+    pub b:f64
+}
+
+impl Point{
+    pub fn create(x:f64, y:f64, r:f64, g:f64, b:f64) -> Self {
+
+
+        Point{
+            x:x,
+            y:y,
+            r:r,
+            g:g,
+            b:b
+        }
+    }
+}
+
+struct Triangle {
+    pub p0:Point,
+    pub p1:Point,
+    pub p2:Point
+}
+
+impl Triangle {
+
+    pub fn contains(&self, x:f64, y:f64) -> bool {
+        let p = Point{x:x, y:y, r:0.0, g:0.0, b:0.0};
+        let b0 = Triangle::sign(&p, &self.p0, &self.p1) <= 0.0;
+        let b1 = Triangle::sign(&p, &self.p1, &self.p2) <= 0.0;
+        let b2 = Triangle::sign(&p, &self.p2, &self.p0) <= 0.0;
+
+        (b0 == b1) && (b1 == b2)
+    }
+
+    pub fn sign(p0:&Point, p1:&Point, p2:&Point) -> f64 {
+        (p0.x - p2.x) * (p1.y - p2.y) - (p1.x - p2.x) * (p0.y - p2.y)
+    }
+
+    pub fn x_min(&self) -> f64 {
+        min!(self.p0.x, self.p1.x, self.p2.x)
+    }
+
+    pub fn x_max(&self) -> f64 {
+        max!(self.p0.x, self.p1.x, self.p2.x)
+    }
+
+    pub fn y_min(&self) -> f64 {
+        min!(self.p0.y, self.p1.y, self.p2.y)
+    }
+
+    pub fn y_max(&self) -> f64 {
+        max!(self.p0.y, self.p1.y, self.p2.y)
+    }
+
+    pub fn interpolate_color_channel(&self, x:f64, y:f64, c0:f64, c1:f64, c2:f64) -> f64 {
+        let det = self.p0.x * self.p1.y - self.p1.x * self.p0.y + self.p1.x * self.p2.y - self.p2.x * self.p1.y + self.p2.x * self.p0.y - self.p0.x * self.p2.y;
+        let a = ((self.p1.y-self.p2.y)*c0+(self.p2.y-self.p0.y)*c1+(self.p0.y-self.p1.y)*c2) / det;
+        let b = ((self.p2.x-self.p1.x)*c0+(self.p0.x-self.p2.x)*c1+(self.p1.x-self.p0.x)*c2) / det;
+        let c = ((self.p1.x*self.p2.y-self.p2.x*self.p1.y)*c0+(self.p2.x*self.p0.y-self.p0.x*self.p2.y)*c1+(self.p0.x*self.p1.y-self.p1.x*self.p0.y)*c2) / det;
+
+        let v = a*x+b*y+c;
+        v
+    }
+
+    pub fn interpolate_color(&self, x:f64, y:f64) -> (f64, f64, f64) {
+        let r = self.interpolate_color_channel(x, y, self.p0.r, self.p1.r, self.p2.r);
+        let g = self.interpolate_color_channel(x, y, self.p0.g, self.p1.g, self.p2.g);
+        let b = self.interpolate_color_channel(x, y, self.p0.b, self.p1.b, self.p2.b);
+        (r, g, b)
+    }
+
+}
+
+struct Map {
+    pub width:usize,
+    pub height:usize,
+    pub img_r:ImageBuffer,
+    pub img_g:ImageBuffer,
+    pub img_b:ImageBuffer
+}
+
+impl Map {
+    pub fn create(width:usize, height:usize) -> Self {
+        Map {
+            width:width,
+            height:height,
+            img_r: ImageBuffer::new_with_fill_as_mode(width, height, 100.0, ImageMode::U16BIT).unwrap(),
+            img_g: ImageBuffer::new_with_fill_as_mode(width, height, 0.0, ImageMode::U16BIT).unwrap(),
+            img_b: ImageBuffer::new_with_fill_as_mode(width, height, 0.0, ImageMode::U16BIT).unwrap()
+        }
+    }
+
+    pub fn to_rgbimage(&self) -> RgbImage {
+        RgbImage::new_from_buffers_rgb(&self.img_r, &self.img_g, &self.img_b, ImageMode::U16BIT).unwrap()
+    }
+
+    pub fn paint_tri(&mut self, tri:&Triangle) {
+
+        let min_x = tri.x_min().floor() as usize;
+        let max_x = tri.x_max().ceil() as usize;
+        let min_y = tri.y_min().floor() as usize;
+        let max_y = tri.y_max().ceil() as usize;
+
+        // Gonna limit the max dimension of a poly to just 100x100 
+        // to prevent those that wrap the entire image. 
+        // Until I plan out a better control to handle polygons that
+        // wrap the cut-off azimuth
+        if max_x - min_x < 100 && max_y - min_y <  100 {
+            for y in min_y..=max_y {
+                for x in min_x..=max_x {
+                    if x < self.width && y < self.height && tri.contains(x as f64, y as f64) {
+                        let (r, g, b) = tri.interpolate_color(x as f64,y as f64);
+                        self.img_r.put(x, y, r as f32);
+                        self.img_g.put(x, y, g as f32);
+                        self.img_b.put(x, y, b as f32);
+                    }
+                }
+            }
+        }
+
+        
+
+    }
+
+    pub fn paint_square(&mut self, tl:&Point, bl:&Point, br:&Point, tr:&Point) {
+        self.paint_tri(&Triangle {
+            p0: tl.clone(),
+            p1: bl.clone(),
+            p2: tr.clone()
+        });
+        self.paint_tri(&Triangle {
+            p0: tr.clone(),
+            p1: bl.clone(),
+            p2: br.clone()
+        });
+    }
+}
 
 
 fn get_cahvor(img:&MarsImage) -> Option<CameraModel> {
@@ -97,8 +242,6 @@ fn intersect_to_sphere(lv:&LookVector, radius:f64) -> Vector {
 }
 
 fn vector_to_cylindrical(v:&Vector) -> LatLon {
-    // let rho = (v.x * v.x + v.y * v.y).sqrt();
-    // let theta = (v.y / v.x).atan().to_degrees();
     LatLon{
         lat:v.z.atan2((v.x * v.x + v.y * v.y).sqrt()).to_degrees(),
         lon:v.y.atan2(v.x).to_degrees() + 180.0
@@ -140,15 +283,6 @@ fn determine_map_context(input_files:&Vec<&str>) -> MapContext {
         let img = MarsImage::open(String::from(*input_file), Instrument::M20MastcamZLeft);
         match get_cahvor(&img) {
             Some(c) => {
-                // let mast_az = get_az(&img);
-                // let mast_el = get_el(&img);
-
-                // let line = c.a.dot_product(&c.v);
-                // let sample = c.a.dot_product(&c.h);
-
-                // let center_x = img.image.width as f64 / 2.0 + sample;
-                // let center_y = img.image.height as f64 / 2.0 + line;
-
                 match get_lat_lon(&c, 0, 0) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat );
@@ -228,26 +362,33 @@ fn determine_map_context(input_files:&Vec<&str>) -> MapContext {
     context
 }
 
+fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:usize) -> (f64, f64) {
+    let img_x = x as f64;
+    let img_y = y as f64;
 
 
-fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer, map_g:&mut ImageBuffer, map_b:&mut ImageBuffer) {
+    let lv = match model.ls_to_look_vector(&ImageCoordinate{ line:img_y, sample: img_x }) {
+        Ok(lv) => lv,
+        Err(_) => panic!("Unable to convert ls to look vector")
+    };
+
+    let ll = lookvector_to_cylindrical(&lv);
+    let lat = ll.lat;
+    let lon = ll.lon;
+    
+    let out_y_f = (lat - map_context.bottom_lat) / (map_context.top_lat - map_context.bottom_lat) * map_context.height as f64;
+    let out_x_f = (lon - map_context.left_lon) / (map_context.right_lon - map_context.left_lon) * map_context.width as f64;
+
+    (out_x_f, out_y_f)
+}
+
+fn process_file(input_file:&str, map_context:&MapContext, map:&mut Map) {
 
     let img = MarsImage::open(String::from(input_file), Instrument::M20MastcamZLeft);
 
     match get_cahvor(&img) {
         Some(input_model) => {
-            //vprintln!("CAHVOR: {:?}", c);
-            let center_az = get_az(&img);
-            let center_el = get_el(&img);
-            vprintln!("Mast Az/El: {}/{}", center_az, center_el);
-            // let input_model = Cahvor{
-            //     c: Vector { x: 1.04324, y: 0.465353, z: -1.90368 },
-            //     a: Vector { x: 0.70207, y: 0.498978, z: 0.50807 },
-            //     h: Vector { x: 56.6157, y: 1855.01, z: 653.211 },
-            //     v: Vector { x: 65.5219, y: 54.5998, z: 1767.17 },
-            //     o: Vector { x: 0.701208, y: 0.500104, z: 0.508152 },
-            //     r: Vector { x: 1.736e-6, y: 0.0501396, z: -0.0171254 }
-            // };
+
             println!("");
             vprintln!("Input Model C: {:?}", input_model.c());
             vprintln!("Input Model A: {:?}", input_model.a());
@@ -257,16 +398,56 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
             vprintln!("Input Model R: {:?}", input_model.r());
             vprintln!("Input Model E: {:?}", input_model.e());
             println!("");
+
+            for x in 0..(img.image.width - 1) {
+                for y in 0..(img.image.height - 1) {
+                    
+                    let (tl_x, tl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y);
+                    let (tr_x, tr_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y);
+                    let (bl_x, bl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y+1);
+                    let (br_x, br_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y+1);
+
+                    let tl = Point::create(
+                        tl_x,
+                        tl_y,
+                        img.image.get_band(0).get(x, y).unwrap() as f64,
+                        img.image.get_band(1).get(x, y).unwrap() as f64,
+                        img.image.get_band(2).get(x, y).unwrap() as f64
+                    );
+
+                    let tr = Point::create(
+                        tr_x,
+                        tr_y,
+                        img.image.get_band(0).get(x+1, y).unwrap() as f64,
+                        img.image.get_band(1).get(x+1, y).unwrap() as f64,
+                        img.image.get_band(2).get(x+1, y).unwrap() as f64
+                    );
+
+                    let bl = Point::create(
+                        bl_x,
+                        bl_y,
+                        img.image.get_band(0).get(x, y+1).unwrap() as f64,
+                        img.image.get_band(1).get(x, y+1).unwrap() as f64,
+                        img.image.get_band(2).get(x, y+1).unwrap() as f64
+                    );
+
+                    let br = Point::create(
+                        br_x,
+                        br_y,
+                        img.image.get_band(0).get(x+1, y+1).unwrap() as f64,
+                        img.image.get_band(1).get(x+1, y+1).unwrap() as f64,
+                        img.image.get_band(2).get(x+1, y+1).unwrap() as f64
+                    );
+
+
+                    map.paint_square(&tl, &bl, &br, &tr);
+                }
+
+            }
+
             //let output_model = input_model.linearize(img.image.width, img.image.height, img.image.width, img.image.height).unwrap();
-            // let output_model = Cahv{
-            //     c: Vector::new(0.564241, 0.554952, -1.9218),
-            //     a: Vector::new(-0.502824, 0.854567, 0.12987),
-            //     h: Vector::new(-1314.41, -190.012, 64.2655),
-            //     v: Vector::new(-177.008, 297.727, 1282.35)
-            // };
-            
             // vprintln!("output model: {:?}", output_model);
-            println!("");
+            // println!("");
 
             // let ground = Vector::new(0.0,0.0,1.84566);
             // let z = Vector::new(0.0, 0.0, -1.0);
@@ -302,39 +483,6 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
             // }
             
             // vprintln!("Min/Max angles: {}, {}", min_angle, max_angle);
-
-            
-            for x in 0..img.image.width {
-                for y in 0..img.image.height {
-
-                    let img_x = x as f64;
-                    let img_y = y as f64;
-
-                    let lv = match input_model.ls_to_look_vector(&ImageCoordinate{ line:img_y, sample: img_x }) {
-                        Ok(lv) => lv,
-                        Err(_) => continue
-                    };
-
-                    
-                    let ll = lookvector_to_cylindrical(&lv);
-                    let lat = ll.lat;
-                    let lon = ll.lon;
-                    
-                    let out_y_f = (lat - map_context.bottom_lat) / (map_context.top_lat - map_context.bottom_lat) * map_context.height as f64;
-                    let out_x_f = (lon - map_context.left_lon) / (map_context.right_lon - map_context.left_lon) * map_context.width as f64;
-
-                    let out_x = out_x_f.round() as usize;
-                    let out_y = out_y_f.round() as usize;
-
-                    
-                    if out_x < map_r.width && out_y < map_r.height {
-                        map_r.put(out_x, out_y, img.image.get_band(0).get(x, y).unwrap());
-                        map_g.put(out_x, out_y, img.image.get_band(1).get(x, y).unwrap());
-                        map_b.put(out_x, out_y, img.image.get_band(2).get(x, y).unwrap());
-                    }
-                }
-
-            }
             
                    
         },
@@ -344,7 +492,6 @@ fn process_file(input_file:&str, map_context:&MapContext, map_r:&mut ImageBuffer
         }
     }
 
-    
 
 }
 
@@ -401,14 +548,16 @@ fn main() {
     //     height: 1024,
     //     degrees_per_pixel: 0.0
     // };
-    let mut map_r = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 100.0, ImageMode::U16BIT).unwrap();
-    let mut map_g = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
-    let mut map_b = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
+    // let mut map_r = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 100.0, ImageMode::U16BIT).unwrap();
+    // let mut map_g = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
+    // let mut map_b = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
+
+    let mut map = Map::create(map_context.width, map_context.height);
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
-            process_file(in_file, &map_context, &mut map_r, &mut map_g, &mut map_b);
+            process_file(in_file, &map_context, &mut map);
         } else {
             eprintln!("File not found: {}", in_file);
             process::exit(1);
@@ -416,7 +565,8 @@ fn main() {
     }
 
 
-    let mut out_img = RgbImage::new_from_buffers_rgb(&map_r, &map_g, &map_b, ImageMode::U16BIT).unwrap();
+    //let mut out_img = RgbImage::new_from_buffers_rgb(&map_r, &map_g, &map_b, ImageMode::U16BIT).unwrap();
+    let mut out_img = map.to_rgbimage();
     out_img.normalize_to_16bit_with_max(255.0);
     out_img.save(output);
     // map_r.normalize_mut(0.0, 65535.0);
