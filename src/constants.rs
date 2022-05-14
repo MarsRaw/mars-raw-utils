@@ -127,6 +127,12 @@ pub mod param {
 
     pub const PARAM_INSTRUMENT : &str = "instrument";
     pub const PARAM_INSTRUMENT_SHORT : &str = "I";
+
+    pub const PARAM_ANAGLYPH : &str = "anaglyph";
+    pub const PARAM_ANAGLYPH_SHORT : &str = "a";
+
+    pub const PARAM_AZIMUTH : &str = "azimuth";
+    pub const PARAM_AZIMUTH_SHORT : &str = "A";
 }
 
 

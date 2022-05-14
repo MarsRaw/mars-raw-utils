@@ -3,7 +3,8 @@ use sciimg::{
     prelude::*,
     vector::Vector,
     min,
-    max
+    max,
+    quaternion::Quaternion
 };
 
 #[macro_use]
@@ -11,6 +12,12 @@ extern crate clap;
 use clap::{Arg, App};
 use std::process;
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+enum Eye {
+    Right,
+    Left,
+    DontCare
+}
 
 #[derive(Debug, Clone)]
 struct Point {
@@ -114,7 +121,7 @@ impl Map {
         RgbImage::new_from_buffers_rgb(&self.img_r, &self.img_g, &self.img_b, ImageMode::U16BIT).unwrap()
     }
 
-    pub fn paint_tri(&mut self, tri:&Triangle, avg_pixels:bool) {
+    pub fn paint_tri(&mut self, tri:&Triangle, avg_pixels:bool, eye:Eye) {
 
         let min_x = tri.x_min().floor() as usize;
         let max_x = tri.x_max().ceil() as usize;
@@ -142,9 +149,21 @@ impl Map {
                                 b = (b + b0) / 2.0;
                             }
 
-                            self.img_r.put(x, y, r as f32);
-                            self.img_g.put(x, y, g as f32);
-                            self.img_b.put(x, y, b as f32);
+                            match eye {
+                                Eye::Left => {
+                                    self.img_r.put(x, y, r as f32);
+                                },
+                                Eye::Right => {
+                                    self.img_g.put(x, y, g as f32);
+                                    self.img_b.put(x, y, b as f32);
+                                },
+                                Eye::DontCare => {
+                                    self.img_r.put(x, y, r as f32);
+                                    self.img_g.put(x, y, g as f32);
+                                    self.img_b.put(x, y, b as f32);
+                                }
+                            };
+                            
                         }
                         
                     }
@@ -156,17 +175,17 @@ impl Map {
 
     }
 
-    pub fn paint_square(&mut self, tl:&Point, bl:&Point, br:&Point, tr:&Point, avg_pixels:bool) {
+    pub fn paint_square(&mut self, tl:&Point, bl:&Point, br:&Point, tr:&Point, avg_pixels:bool, eye:Eye) {
         self.paint_tri(&Triangle {
             p0: tl.clone(),
             p1: bl.clone(),
             p2: tr.clone()
-        }, avg_pixels);
+        }, avg_pixels, eye);
         self.paint_tri(&Triangle {
             p0: tr.clone(),
             p1: bl.clone(),
             p2: br.clone()
-        }, avg_pixels);
+        }, avg_pixels, eye);
     }
 }
 
@@ -182,34 +201,6 @@ fn get_cahvor(img:&MarsImage) -> Option<CameraModel> {
         },
         None => {
             None
-        }
-    }
-}
-
-fn get_az(img:&MarsImage) -> f64 {
-    match &img.metadata {
-        Some(md) => {
-            match &md.mast_az {
-                Some(az) => az.clone(),
-                None => 0.0
-            }
-        },
-        None => {
-            0.0
-        }
-    }
-}
-
-fn get_el(img:&MarsImage) -> f64 {
-    match &img.metadata {
-        Some(md) => {
-            match &md.mast_el {
-                Some(el) => el.clone(),
-                None => 0.0
-            }
-        },
-        None => {
-            0.0
         }
     }
 }
@@ -262,9 +253,14 @@ fn vector_to_cylindrical(v:&Vector) -> LatLon {
     }
 }
 
-fn lookvector_to_cylindrical(lv:&LookVector) -> LatLon {
+fn lookvector_to_cylindrical(lv:&LookVector, quat_o:Option<&Quaternion>) -> LatLon {
     let ray = intersect_to_sphere(&lv, SPHERE_RADIUS);
-    vector_to_cylindrical(&ray)
+    let rotated = if let Some(quat) = quat_o {
+        quat.rotate_vector(&ray)
+    } else {
+        ray
+    };
+    vector_to_cylindrical(&rotated)
 }
 
 static SPHERE_RADIUS:f64 = 100.0;
@@ -272,7 +268,7 @@ static SPHERE_RADIUS:f64 = 100.0;
 fn get_lat_lon(c:&CameraModel, x:usize, y:usize) -> error::Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample:x as f64 }) {
         Ok(lv) => {
-            Ok(lookvector_to_cylindrical(&lv))
+            Ok(lookvector_to_cylindrical(&lv, None))
         },
         Err(e) => {
             Err(e)
@@ -376,7 +372,7 @@ fn determine_map_context(input_files:&Vec<&str>) -> MapContext {
     context
 }
 
-fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:usize) -> (f64, f64) {
+fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:usize, quat:&Quaternion) -> (f64, f64) {
     let img_x = x as f64;
     let img_y = y as f64;
 
@@ -386,7 +382,7 @@ fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:us
         Err(_) => panic!("Unable to convert ls to look vector")
     };
 
-    let ll = lookvector_to_cylindrical(&lv);
+    let ll = lookvector_to_cylindrical(&lv, Some(&quat));
     let lat = ll.lat;
     let lon = ll.lon;
     
@@ -396,9 +392,26 @@ fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:us
     (out_x_f, out_y_f)
 }
 
-fn process_file(input_file:&str, map_context:&MapContext, map:&mut Map) {
+fn process_file(input_file:&str, map_context:&MapContext, map:&mut Map, anaglyph:bool, azimuth_rotation:f64) {
 
-    let img = MarsImage::open(String::from(input_file), Instrument::M20MastcamZLeft);
+    let mut img = MarsImage::open(String::from(input_file), Instrument::M20MastcamZLeft);
+    img.instrument = match &img.metadata {
+        Some(md) => Instrument::from_str(md.instrument.as_str()),
+        None => Instrument::M20MastcamZLeft
+    };
+
+    let eye = if anaglyph {
+        match util::filename_char_at_pos(&input_file, 1) {
+            'R' => Eye::Right,
+            'L' => Eye::Left,
+            _ => Eye::DontCare
+        }
+    } else {
+        Eye::DontCare
+    };
+
+    let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
+
 
     match get_cahvor(&img) {
         Some(input_model) => {
@@ -416,10 +429,10 @@ fn process_file(input_file:&str, map_context:&MapContext, map:&mut Map) {
             for x in 0..(img.image.width - 1) {
                 for y in 0..(img.image.height - 1) {
                     
-                    let (tl_x, tl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y);
-                    let (tr_x, tr_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y);
-                    let (bl_x, bl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y+1);
-                    let (br_x, br_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y+1);
+                    let (tl_x, tl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y, &quat);
+                    let (tr_x, tr_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y, &quat);
+                    let (bl_x, bl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y+1, &quat);
+                    let (br_x, br_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y+1, &quat);
 
                     let tl = Point::create(
                         tl_x,
@@ -454,7 +467,7 @@ fn process_file(input_file:&str, map_context:&MapContext, map:&mut Map) {
                     );
 
 
-                    map.paint_square(&tl, &bl, &br, &tr, false);
+                    map.paint_square(&tl, &bl, &br, &tr, false, eye);
                 }
 
             }
@@ -528,6 +541,27 @@ fn main() {
                         .help("Output")
                         .required(true)
                         .takes_value(true)) 
+                    .arg(Arg::with_name(constants::param::PARAM_ANAGLYPH)
+                        .short(constants::param::PARAM_ANAGLYPH_SHORT)
+                        .long(constants::param::PARAM_ANAGLYPH)
+                        .value_name("ANAGLYPH")
+                        .help("Anaglyph mode")
+                        .required(false)
+                        .takes_value(false)) 
+                    .arg(Arg::with_name(constants::param::PARAM_AZIMUTH)
+                        .short(constants::param::PARAM_AZIMUTH_SHORT)
+                        .long(constants::param::PARAM_AZIMUTH)
+                        .value_name("PARAM_AZIMUTH")
+                        .help("Azimuth rotation")
+                        .required(false)
+                        .takes_value(true)) 
+                    .arg(Arg::with_name(constants::param::PARAM_OUTPUT)
+                        .short(constants::param::PARAM_OUTPUT_SHORT)
+                        .long(constants::param::PARAM_OUTPUT)
+                        .value_name("OUTPUT")
+                        .help("Output")
+                        .required(true)
+                        .takes_value(true)) 
                     .arg(Arg::with_name(constants::param::PARAM_VERBOSE)
                         .short(constants::param::PARAM_VERBOSE)
                         .help("Show verbose output"))
@@ -540,6 +574,20 @@ fn main() {
     let input_files: Vec<&str> = matches.values_of(constants::param::PARAM_INPUTS).unwrap().collect();
     let output = matches.value_of("output").unwrap();
 
+    let anaglyph_mode = matches.is_present(constants::param::PARAM_ANAGLYPH);
+
+    let azimuth_rotation = match matches.is_present(constants::param::PARAM_AZIMUTH) {
+        true => {
+            let s = matches.value_of(constants::param::PARAM_AZIMUTH).unwrap();
+            if util::string_is_valid_f32(&s) {
+                s.parse::<f64>().unwrap()
+            } else {
+                eprintln!("Error: Invalid number specified for blue scalar");
+                process::exit(1);
+            }
+        },
+        false => 0.0
+    };
 
     let map_context = determine_map_context(&input_files);
     vprintln!("Map Context: {:?}", map_context);
@@ -571,18 +619,14 @@ fn main() {
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
-            process_file(in_file, &map_context, &mut map);
+            process_file(in_file, &map_context, &mut map, anaglyph_mode, azimuth_rotation);
         } else {
             eprintln!("File not found: {}", in_file);
             process::exit(1);
         }
     }
 
-
-    //let mut out_img = RgbImage::new_from_buffers_rgb(&map_r, &map_g, &map_b, ImageMode::U16BIT).unwrap();
     let mut out_img = map.to_rgbimage();
     out_img.normalize_to_16bit_with_max(255.0);
     out_img.save(output);
-    // map_r.normalize_mut(0.0, 65535.0);
-    // map_r.save("test.png", ImageMode::U16BIT);
 }
