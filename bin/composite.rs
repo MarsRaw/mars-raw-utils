@@ -12,6 +12,7 @@ extern crate clap;
 use clap::{Arg, App};
 use std::process;
 
+/// Representation of left/right side of a stereo image with an option to simply not care (or unknown).
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Eye {
     Right,
@@ -19,6 +20,8 @@ enum Eye {
     DontCare
 }
 
+/// A single two-dimensional point on a raster. Contains the x/y coordinate and the RGB values to be placed
+/// into the buffer.
 #[derive(Debug, Clone)]
 struct Point {
     pub x:f64,
@@ -29,9 +32,9 @@ struct Point {
 }
 
 impl Point{
+
+    /// Simple creation for a Point.
     pub fn create(x:f64, y:f64, r:f64, g:f64, b:f64) -> Self {
-
-
         Point{
             x:x,
             y:y,
@@ -42,6 +45,7 @@ impl Point{
     }
 }
 
+/// A triangle (polygon) of three two-dimensional points
 struct Triangle {
     pub p0:Point,
     pub p1:Point,
@@ -50,6 +54,7 @@ struct Triangle {
 
 impl Triangle {
 
+    /// Determine if a two dimensional point is contained within the  area bounded by the triangle
     pub fn contains(&self, x:f64, y:f64) -> bool {
         let p = Point{x:x, y:y, r:0.0, g:0.0, b:0.0};
         let b0 = Triangle::sign(&p, &self.p0, &self.p1) <= 0.0;
@@ -59,6 +64,7 @@ impl Triangle {
         (b0 == b1) && (b1 == b2)
     }
 
+    
     pub fn sign(p0:&Point, p1:&Point, p2:&Point) -> f64 {
         (p0.x - p2.x) * (p1.y - p2.y) - (p1.x - p2.x) * (p0.y - p2.y)
     }
@@ -79,6 +85,7 @@ impl Triangle {
         max!(self.p0.y, self.p1.y, self.p2.y)
     }
 
+    /// Determines an interpolated single-channel color value for a point in the triangle
     pub fn interpolate_color_channel(&self, x:f64, y:f64, c0:f64, c1:f64, c2:f64) -> f64 {
         let det = self.p0.x * self.p1.y - self.p1.x * self.p0.y + self.p1.x * self.p2.y - self.p2.x * self.p1.y + self.p2.x * self.p0.y - self.p0.x * self.p2.y;
         let a = ((self.p1.y-self.p2.y)*c0+(self.p2.y-self.p0.y)*c1+(self.p0.y-self.p1.y)*c2) / det;
@@ -89,6 +96,7 @@ impl Triangle {
         v
     }
 
+    /// Determines an interpolated three-channel (RGB) color value for a point in the triangle
     pub fn interpolate_color(&self, x:f64, y:f64) -> (f64, f64, f64) {
         let r = self.interpolate_color_channel(x, y, self.p0.r, self.p1.r, self.p2.r);
         let g = self.interpolate_color_channel(x, y, self.p0.g, self.p1.g, self.p2.g);
@@ -98,30 +106,41 @@ impl Triangle {
 
 }
 
-struct Map {
-    pub width:usize,
-    pub height:usize,
-    pub img_r:ImageBuffer,
-    pub img_g:ImageBuffer,
-    pub img_b:ImageBuffer
+/// Defines a buffer that can be drawn on using triangle or square polygons.
+trait Drawable {
+
+    /// Create a simple three-channel image buffer
+    fn create(width:usize, height:usize) -> Self;
+
+    /// Paint a triangle on the buffer.
+    fn paint_tri(&mut self, tri:&Triangle, avg_pixels:bool, eye:Eye);
+
+    /// Paint a square on the buffer using four points
+    fn paint_square(&mut self, tl:&Point, bl:&Point, br:&Point, tr:&Point, avg_pixels:bool, eye:Eye);
+
+    /// Width of the buffer
+    fn get_width(&self) -> usize;
+
+    /// Height of the buffer
+    fn get_height(&self) -> usize;
 }
 
-impl Map {
-    pub fn create(width:usize, height:usize) -> Self {
-        Map {
-            width:width,
-            height:height,
-            img_r: ImageBuffer::new_with_fill_as_mode(width, height, 0.0, ImageMode::U16BIT).unwrap(),
-            img_g: ImageBuffer::new_with_fill_as_mode(width, height, 0.0, ImageMode::U16BIT).unwrap(),
-            img_b: ImageBuffer::new_with_fill_as_mode(width, height, 0.0, ImageMode::U16BIT).unwrap()
-        }
+/// Implements the Drawable trait for the RgbImage class. This is probably later be merged fully into RgbImage
+/// in the sciimg crate.
+impl Drawable for RgbImage {
+    fn create(width:usize, height:usize) -> Self {
+        RgbImage::new_with_bands(width, height, 3, ImageMode::U16BIT).unwrap()
     }
 
-    pub fn to_rgbimage(&self) -> RgbImage {
-        RgbImage::new_from_buffers_rgb(&self.img_r, &self.img_g, &self.img_b, ImageMode::U16BIT).unwrap()
+    fn get_width(&self) -> usize {
+        self.width
     }
 
-    pub fn paint_tri(&mut self, tri:&Triangle, avg_pixels:bool, eye:Eye) {
+    fn get_height(&self) -> usize {
+        self.height
+    }
+
+    fn paint_tri(&mut self, tri:&Triangle, avg_pixels:bool, eye:Eye) {
 
         let min_x = tri.x_min().floor() as usize;
         let max_x = tri.x_max().ceil() as usize;
@@ -137,45 +156,40 @@ impl Map {
                 for x in min_x..=max_x {
                     if x < self.width && y < self.height && tri.contains(x as f64, y as f64) {
                         let (mut r, mut g, mut b) = tri.interpolate_color(x as f64,y as f64);
-                        if r > 0.0 && g > 0.0 && b > 0.0 {
-
-                            let r0 = self.img_r.get(x, y).unwrap() as f64;
-                            let g0 = self.img_g.get(x, y).unwrap() as f64;
-                            let b0 = self.img_b.get(x, y).unwrap() as f64;
-
-                            if avg_pixels && (r0 > 0.0 || g0 > 0.0 || b0 > 0.0) {
-                                r = (r + r0) / 2.0;
-                                g = (g + g0) / 2.0;
-                                b = (b + b0) / 2.0;
-                            }
-
-                            match eye {
-                                Eye::Left => {
-                                    self.img_r.put(x, y, r as f32);
-                                },
-                                Eye::Right => {
-                                    self.img_g.put(x, y, g as f32);
-                                    self.img_b.put(x, y, b as f32);
-                                },
-                                Eye::DontCare => {
-                                    self.img_r.put(x, y, r as f32);
-                                    self.img_g.put(x, y, g as f32);
-                                    self.img_b.put(x, y, b as f32);
-                                }
-                            };
-                            
-                        }
                         
+
+                        let r0 = self.get_band(0).get(x, y).unwrap() as f64;
+                        let g0 = self.get_band(1).get(x, y).unwrap() as f64;
+                        let b0 = self.get_band(2).get(x, y).unwrap() as f64;
+
+                        if avg_pixels && (r0 > 0.0 || g0 > 0.0 || b0 > 0.0) {
+                            r = (r + r0) / 2.0;
+                            g = (g + g0) / 2.0;
+                            b = (b + b0) / 2.0;
+                        }
+
+                        match eye {
+                            Eye::Left => {
+                                self.put(x, y, r as f32, 0);
+                            },
+                            Eye::Right => {
+                                self.put(x, y, g as f32, 1);
+                                self.put(x, y, b as f32, 2);
+                            },
+                            Eye::DontCare => {
+                                self.put(x, y, r as f32, 0);
+                                self.put(x, y, g as f32, 1);
+                                self.put(x, y, b as f32, 2);
+                            }
+                        };
                     }
                 }
             }
         }
-
-        
-
     }
 
-    pub fn paint_square(&mut self, tl:&Point, bl:&Point, br:&Point, tr:&Point, avg_pixels:bool, eye:Eye) {
+    /// Paints a square on the image by breaking it into two triangles.
+    fn paint_square(&mut self, tl:&Point, bl:&Point, br:&Point, tr:&Point, avg_pixels:bool, eye:Eye) {
         self.paint_tri(&Triangle {
             p0: tl.clone(),
             p1: bl.clone(),
@@ -392,7 +406,7 @@ fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:us
     (out_x_f, out_y_f)
 }
 
-fn process_file(input_file:&str, map_context:&MapContext, map:&mut Map, anaglyph:bool, azimuth_rotation:f64) {
+fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&mut D, anaglyph:bool, azimuth_rotation:f64) {
 
     let mut img = MarsImage::open(String::from(input_file), Instrument::M20MastcamZLeft);
     img.instrument = match &img.metadata {
@@ -426,8 +440,8 @@ fn process_file(input_file:&str, map_context:&MapContext, map:&mut Map, anaglyph
             vprintln!("Input Model E: {:?}", input_model.e());
             println!("");
 
-            for x in 0..(img.image.width - 1) {
-                for y in 0..(img.image.height - 1) {
+            for x in 50..(img.image.width - 51) {
+                for y in 50..(img.image.height - 51) {
                     
                     let (tl_x, tl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y, &quat);
                     let (tr_x, tr_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y, &quat);
@@ -614,7 +628,7 @@ fn main() {
     // let mut map_g = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
     // let mut map_b = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
 
-    let mut map = Map::create(map_context.width, map_context.height);
+    let mut map = RgbImage::create(map_context.width, map_context.height);
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
@@ -626,7 +640,6 @@ fn main() {
         }
     }
 
-    let mut out_img = map.to_rgbimage();
-    out_img.normalize_to_16bit_with_max(255.0);
-    out_img.save(output);
+    map.normalize_to_16bit_with_max(255.0);
+    map.save(output);
 }
