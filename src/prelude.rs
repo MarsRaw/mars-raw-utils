@@ -14,9 +14,9 @@ pub use crate::image::MarsImage;
 pub use crate::metadata;
 pub use crate::calprofile::CalProfile;
 pub use crate::calibrate::*;
-pub use crate::enums::Mission;
-pub use crate::enums::Instrument;
-pub use crate::enums::CalFileType;
+pub use crate::enums::*;
+pub use crate::drawable::*;
+
 pub use crate::print::{
     print_complete,
     print_done,

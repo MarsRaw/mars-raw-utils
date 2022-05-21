@@ -8,6 +8,14 @@ pub enum Mission {
     INSIGHT
 }
 
+/// Representation of left/right side of a stereo image with an option to simply not care (or unknown).
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum Eye {
+    Right,
+    Left,
+    DontCare
+}
+
 // Supported instruments
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Instrument {

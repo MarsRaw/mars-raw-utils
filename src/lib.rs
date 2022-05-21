@@ -25,4 +25,5 @@ pub mod diffgif;
 pub mod calprofile;
 pub mod focusmerge;
 pub mod calibrate;
+pub mod drawable;
 pub mod prelude;
