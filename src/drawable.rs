@@ -109,6 +109,9 @@ pub trait Drawable {
 
     /// Height of the buffer
     fn get_height(&self) -> usize;
+
+    /// Converts color to mono
+    fn to_mono(&mut self);
 }
 
 /// Implements the Drawable trait for the RgbImage class. This is probably later be merged fully into RgbImage
@@ -186,5 +189,22 @@ impl Drawable for RgbImage {
             p1: bl.clone(),
             p2: br.clone()
         }, avg_pixels, eye);
+    }
+
+    fn to_mono(&mut self) {
+        if self.num_bands() != 3 {
+            panic!("Cannot convert to mono: Already mono or unsupported number of bands");
+        }
+
+        let r = self.get_band(0).scale(0.2125).unwrap();
+        let g = self.get_band(1).scale(0.7154).unwrap();
+        let b = self.get_band(2).scale(0.0721).unwrap();
+
+        let m = r.add(&g).unwrap().add(&b).unwrap();
+
+        self.set_band(&m, 0);
+        self.set_band(&m, 1);
+        self.set_band(&m, 2);
+
     }
 }

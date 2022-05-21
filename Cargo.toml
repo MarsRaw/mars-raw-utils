@@ -132,6 +132,10 @@ path = "bin/calibrate.rs"
 name = "composite"
 path = "bin/composite.rs"
 
+[[bin]]
+name = "anaglyph"
+path = "bin/anaglyph.rs"
+
 [features]
 
 [dependencies]

@@ -7,7 +7,8 @@ use crate::{
     path,
     vprintln,
     flatfield,
-    inpaintmask
+    inpaintmask,
+    drawable::Drawable
 };
 
 use sciimg::{
@@ -192,5 +193,9 @@ impl MarsImage {
 
     pub fn hot_pixel_correction(&mut self, window_size:i32, threshold:f32) {
         self.image.hot_pixel_correction(window_size, threshold);
+    }
+
+    pub fn to_mono(&mut self) {
+        self.image.to_mono();
     }
 }
