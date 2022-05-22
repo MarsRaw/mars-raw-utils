@@ -44,30 +44,7 @@ struct LatLon{
     lon:f64
 }
 
-fn intersect_to_plane(lv:&LookVector, ground:&Vector) -> Vector {
-    let normal = Vector::new(0.0, 0.0, -1.0);
-    
 
-    let dot = lv.look_direction.dot_product(&normal);
-    if dot == 0.0 {
-        return lv.look_direction.clone();
-    }
-
-    let ratio = ground.subtract(&lv.origin).dot_product(&normal) / dot;
-
-    let intersect_point = lv.origin.add(&lv.look_direction.scale(ratio));
-    
-    if ratio < 0.0 {
-        lv.look_direction.clone()
-    } else {
-        intersect_point
-    }
-
-}
-
-fn intersect_to_sphere(lv:&LookVector, radius:f64) -> Vector {
-    lv.look_direction.normalized().scale(radius).add(&lv.origin)
-}
 
 fn vector_to_cylindrical(v:&Vector) -> LatLon {
     LatLon{
@@ -77,7 +54,7 @@ fn vector_to_cylindrical(v:&Vector) -> LatLon {
 }
 
 fn lookvector_to_cylindrical(lv:&LookVector, quat_o:Option<&Quaternion>) -> LatLon {
-    let ray = intersect_to_sphere(&lv, SPHERE_RADIUS);
+    let ray = lv.intersect_to_sphere(SPHERE_RADIUS);
     let rotated = if let Some(quat) = quat_o {
         quat.rotate_vector(&ray)
     } else {
