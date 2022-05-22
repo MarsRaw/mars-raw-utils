@@ -114,6 +114,48 @@ hot_pixel_detection_threshold = 0
 filename_suffix = "rjcal-rad"
 ```
 
+### Included calibration profiles:
+ * m20_hrte_rad
+ * m20_watson_bay
+ * m20_watson_ilt
+ * m20_watson_rad
+ * m20_zcam_bay
+ * m20_zcam_ilt
+ * m20_zcam_rad
+ * m20_zcam_cwb
+ * m20_zcam_cb2
+ * msl_mahli_bay
+ * msl_mahli_ilt
+ * msl_mahli_rad
+ * msl_mahli_cwb
+ * msl_mcam_bay
+ * msl_mcam_ilt
+ * msl_mcam_rad
+
+## Calibration
+```
+USAGE:
+    calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+
+FLAGS:
+    -h, --help       Prints help information
+    -n               Only new images. Skipped processed images.
+    -r, --raw        Raw color, skip ILT
+    -v               Show verbose output
+    -V, --version    Prints version information
+
+OPTIONS:
+    -B, --blue <BLUE>                                      Blue weight
+    -c, --color_noise_reduction <COLOR_NOISE_REDUCTION>    Color noise reduction amount in pixels
+    -G, --green <GREEN>                                    Green weight
+    -t, --hpc_threshold <THRESHOLD>                        Hot pixel correction variance threshold
+    -w, --hpc_window <WINDOW_SIZE>                         Hot pixel correction window size
+    -i, --inputs <INPUT>...                                Input
+    -I, --instrument <INSTRUMENT>                          Default instrument (if missing)
+    -P, --profile <PARAM_CAL_PROFILE>...                   Calibration profile file path
+    -R, --red <RED>                                        Red weight
+```
+
 ## Mars Science Laboratory (Curiosity):
 ### Fetch Raws:
 ```
@@ -159,41 +201,6 @@ Download NAV_RIGHT during sols 3110 through 3112, filtering for sequence id NCAM
 msl_fetch_raw -c NAV_RIGHT -m 3110 -M 3112 -S NCAM00595
 ```
 
-### MAHLI Calibration:
-```
-USAGE:
-    msl_mahli_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>                    Blue weight
-    -G, --green <GREEN>                  Green weight
-    -i, --inputs <INPUT>...              Input
-    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
-    -R, --red <RED>                      Red weight
-```
-#### Common Color Correction Multiples:
-* RED: 1.16
-* GREEN: 1.00
-* BLUE: 1.05
-
-#### Common Color Correction Multiples (White Balanced):
-* RED: 0.8
-* GREEN: 1.0
-* BLUE: 1.543
-
-#### Examples:
-Calibrate a directory of JPEGs, applying color correction values:
-```
-msl_mahli_calibrate -i *jpg -v -R 1.16 -G 1.00 -B 1.05
-```
-
 ### MastCam:
 ```
 USAGE:
@@ -215,73 +222,8 @@ OPTIONS:
     -R, --red <RED>                                        Red weight
 ```
 
-#### Recommended Color Correction Multiples:
-* RED: 0.965
-* GREEN: 0.985
-* BLUE: 1.155
 
-#### Examples:
-Calibrate a directory of JPEGs, applying color correction values:
-```
-msl_mcam_calibrate -i *jpg -v -R 0.965 -G 0.985 -B 1.155
-```
 
-Calibrate a directory of JPEGs, skipping ILT conversion (decompanding):
-```
-msl_mcam_calibrate -i *jpg -v -r
-```
-
-Calibrate a directory of JPEGs, applying color noise reduction with a chroma blur radius of 21 pixels:
-```
-msl_mcam_calibrate -i *jpg -v -c 21
-```
-
-### Engineering Cameras (Navcam, FHAZ, RHAZ):
-```
-USAGE:
-    msl_ecam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT (not currently used)
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>                    Blue weight
-    -G, --green <GREEN>                  Green weight
-    -t, --hpc_threshold <THRESHOLD>      Hot pixel correction variance threshold
-    -i, --inputs <INPUT>...              Input
-    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
-    -R, --red <RED>                      Red weight
-```
-
-#### Examples:
-Calibrate a directory of JPEGs:
-```
-msl_ecam_calibrate -i *jpg -v
-```
-
-Calibrate a directory of JPEGs, apply a hot pixel detection with a threshold of 2.5 standard deviations:
-```
-msl_ecam_calibrate -i *jpg -v -t 2.5
-```
-
-### ChemCam RMI:
-```
-USAGE:
-    msl_ccam_calibrate [FLAGS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -i, --inputs <INPUT>...    Input
-```
 
 ## Mars 2020 (Perseverance):
 ### Fetch Raws:
@@ -306,193 +248,50 @@ OPTIONS:
     -s, --sol <sol>             Mission Sol
 ```
 
-### MastCam-Z:
-```
-USAGE:
-    m20_zcam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
 
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>                    Blue weight
-    -G, --green <GREEN>                  Green weight
-    -i, --inputs <INPUT>...              Input
-    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
-    -R, --red <RED>                      Red weight
-```
-### Watson:
-```
-USAGE:
-    m20_watson_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>                    Blue weight
-    -G, --green <GREEN>                  Green weight
-    -i, --inputs <INPUT>...              Input
-    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
-    -R, --red <RED>                      Red weight
-```
-### Engineering Cameras (Navcam, FHAZ, RHAZ):
-```
-SAGE:
-    m20_ecam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>                    Blue weight
-    -G, --green <GREEN>                  Green weight
-    -i, --inputs <INPUT>...              Input
-    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
-    -R, --red <RED>                      Red weight
-```
-### SuperCam
-```
-USAGE:
-    m20_scam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>                    Blue weight
-    -G, --green <GREEN>                  Green weight
-    -i, --inputs <INPUT>...              Input
-    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
-    -R, --red <RED>                      Red weight
-```
-
-### PIXL Micro Context Camera
-```
-USAGE:
-    m20_pixl_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -i, --inputs <INPUT>...                 Input
-    -P, --profile <PARAM_CAL_PROFILE>...    Calibration profile file path
-```
-
-### MEDA SkyCam
-```
-USAGE:
-    m20_skycam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -t, --hpc_threshold <THRESHOLD>         Hot pixel correction variance threshold
-    -w, --hpc_window <WINDOW_SIZE>          Hot pixel correction window size
-    -i, --inputs <INPUT>...                 Input
-    -P, --profile <PARAM_CAL_PROFILE>...    Calibration profile file path
-```
-
-
-### Ingenuity Nav Camera:
-```
-USAGE:
-    m20_hnav_calibrate [FLAGS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -i, --inputs <INPUT>...    Input
-```
-
-### Ingenuity Color Camera (RTE):
-```
-USAGE:
-    m20_hrte_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>                    Blue weight
-    -G, --green <GREEN>                  Green weight
-    -i, --inputs <INPUT>...              Input
-    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
-    -R, --red <RED>                      Red weight
-```
 
 ## InSight
 ### Fetch Raws:
-...
-### Instrument Context Camera (ICC):
 ```
 USAGE:
-    nsyt_icc_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
+    nsyt_fetch_raw [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help           Prints help information
+    -i, --instruments    List camera instrument and exit
+    -l, --list           Don't download, only list results
+    -n                   Only new images. Skipped processed images.
+    -t, --thumbnails     Download thumbnails in the results
+    -v                   Show verbose output
+    -V, --version        Prints version information
+
+OPTIONS:
+    -c, --camera <camera>...    M20 Camera Instrument(s)
+    -M, --maxsol <maxsol>       Ending Mission Sol
+    -m, --minsol <minsol>       Starting Mission Sol
+    -N, --num <num>             Max number of results
+    -o, --output <OUTPUT>       Output directory
+    -p, --page <page>           Results page (starts at 1)
+    -S, --seqid <seqid>         Specific sequence id or substring
+    -s, --sol <sol>             Mission Sol
+```
+
+## Anaglyph
+Generate a red/blue anaglyph from a matching stereo pair.
+```
+USAGE:
+    anaglyph [FLAGS] --left <left> --output <OUTPUT> --right <right>
 
 FLAGS:
     -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
+    -m, --mono       Monochrome color (before converting to red/blue)
     -v               Show verbose output
     -V, --version    Prints version information
 
 OPTIONS:
-    -B, --blue <BLUE>                    Blue weight
-    -G, --green <GREEN>                  Green weight
-    -i, --inputs <INPUT>...              Input
-    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
-    -R, --red <RED>                      Red weight
-```
-
-### Instrument Deployment Camera (IDC):
-```
-USAGE:
-    nsyt_idc_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>                    Blue weight
-    -G, --green <GREEN>                  Green weight
-    -i, --inputs <INPUT>...              Input
-    -P, --profile <PARAM_CAL_PROFILE>    Calibration profile file path
-    -R, --red <RED>                      Red weight
+    -l, --left <left>        Left eye image
+    -o, --output <OUTPUT>    Output
+    -r, --right <right>      Right eye image
 ```
 
 ## Hot Pixel Correction Filter
@@ -631,7 +430,7 @@ OPTIONS:
 ```
 msl_fetch_raw -c NAV_RIGHT_B -s 3372 -S NCAM00595
 
-msl_ecam_calibrate -i *JPG -v -t 2.0
+calibrate -i *JPG -v -t 2.0
 
 diffgif -i *NCAM00595*-rjcal.png -o DustDevilMovie_Sol3372.gif -v -b 0 -w 2.0 -g 2.5 -l 5 -d 20
 ```
@@ -639,7 +438,7 @@ diffgif -i *NCAM00595*-rjcal.png -o DustDevilMovie_Sol3372.gif -v -b 0 -w 2.0 -g
 ```
 msl_fetch_raw -c NAV_RIGHT -s 3325
 
-msl_ecam_calibrate -i *JPG -v -t 2.0
+calibrate -i *JPG -v -t 2.0
 
 diffgif -i *NCAM00556*-rjcal.png -o CloudShadow_3325.gif -v -b 0 -w 1.0 -g 2.5 -l 5 -d 20
 ```
@@ -647,7 +446,7 @@ diffgif -i *NCAM00556*-rjcal.png -o CloudShadow_3325.gif -v -b 0 -w 1.0 -g 2.5 -
 ```
 msl_fetch_raw -c NAV_RIGHT -s 3325
 
-msl_ecam_calibrate -i *JPG -v -t 2.0
+calibrate -i *JPG -v -t 2.0
 
 diffgif -i *NCAM00551*-rjcal.png -o CloudZenith_3325.gif -v -b 0 -w 3.0 -g 1.0 -l 5 -d 20
 ```
