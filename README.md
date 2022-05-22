@@ -622,3 +622,5 @@ Castano, A., Fukunaga, A., Biesiadecki, J. et al. Automatic detection of dust de
 Allwood, Abigail C., Joel A. Hurowitz, Benton C. Clark, Luca Cinquini, Scott Davidoff, Robert W. Denise,
 W. Timothy Elam, et al. "The PIXL Instrument on the Mars 2020 Perseverance Rover." arXiv preprint
 arXiv:2103.07001 (2021). https://arxiv.org/abs/2103.07001
+
+Gennery, D.B. Generalized Camera Calibration Including Fish-Eye Lenses. Int J Comput Vision 68, 239–266 (2006). https://doi.org/10.1007/s11263-006-5168-1
