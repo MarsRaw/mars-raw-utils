@@ -53,10 +53,11 @@ fn vector_to_cylindrical(v:&Vector) -> LatLon {
     }
 }
 
-fn lookvector_to_cylindrical(lv:&LookVector, quat_o:Option<&Quaternion>) -> LatLon {
+fn lookvector_to_cylindrical(lv:&LookVector, quat_o:Option<&Quaternion>, origin_diff:&Vector) -> LatLon {
     let ray = lv.intersect_to_sphere(SPHERE_RADIUS);
+    let ray_moved = ray.subtract(&origin_diff);
     let rotated = if let Some(quat) = quat_o {
-        quat.rotate_vector(&ray)
+        quat.rotate_vector(&ray_moved)
     } else {
         ray
     };
@@ -68,7 +69,7 @@ static SPHERE_RADIUS:f64 = 100.0;
 fn get_lat_lon(c:&CameraModel, x:usize, y:usize) -> error::Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample:x as f64 }) {
         Ok(lv) => {
-            Ok(lookvector_to_cylindrical(&lv, None))
+            Ok(lookvector_to_cylindrical(&lv, None, &Vector::default()))
         },
         Err(e) => {
             Err(e)
@@ -172,7 +173,7 @@ fn determine_map_context(input_files:&Vec<&str>) -> MapContext {
     context
 }
 
-fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:usize, quat:&Quaternion) -> (f64, f64) {
+fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:usize, quat:&Quaternion, origin_diff:&Vector) -> (f64, f64) {
     let img_x = x as f64;
     let img_y = y as f64;
 
@@ -182,7 +183,9 @@ fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:us
         Err(_) => panic!("Unable to convert ls to look vector")
     };
 
-    let ll = lookvector_to_cylindrical(&lv, Some(&quat));
+    
+
+    let ll = lookvector_to_cylindrical(&lv, Some(&quat), origin_diff);
     let lat = ll.lat;
     let lon = ll.lon;
     
@@ -192,7 +195,7 @@ fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:us
     (out_x_f, out_y_f)
 }
 
-fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&mut D, anaglyph:bool, azimuth_rotation:f64) {
+fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&mut D, anaglyph:bool, azimuth_rotation:f64, initial_origin:&Vector) {
 
     let mut img = MarsImage::open(String::from(input_file), Instrument::M20MastcamZLeft);
     img.instrument = match &img.metadata {
@@ -229,10 +232,12 @@ fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&mut D
             for x in 50..(img.image.width - 51) {
                 for y in 50..(img.image.height - 51) {
                     
-                    let (tl_x, tl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y, &quat);
-                    let (tr_x, tr_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y, &quat);
-                    let (bl_x, bl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y+1, &quat);
-                    let (br_x, br_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y+1, &quat);
+                    let origin_diff = input_model.c().subtract(&initial_origin);
+
+                    let (tl_x, tl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y, &quat, &origin_diff);
+                    let (tr_x, tr_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y, &quat, &origin_diff);
+                    let (bl_x, bl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y+1, &quat, &origin_diff);
+                    let (br_x, br_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y+1, &quat, &origin_diff);
 
                     let tl = Point::create(
                         tl_x,
@@ -271,46 +276,6 @@ fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&mut D
                 }
 
             }
-
-            //let output_model = input_model.linearize(img.image.width, img.image.height, img.image.width, img.image.height).unwrap();
-            // vprintln!("output model: {:?}", output_model);
-            // println!("");
-
-            // let ground = Vector::new(0.0,0.0,1.84566);
-            // let z = Vector::new(0.0, 0.0, -1.0);
-            // let mut min_angle = 1000000.0;
-            // let mut max_angle = -1000000.0;
-
-            // for y in 0..map_context.height {
-            //     for x in 0..map_context.width {
-
-            //         if let Ok(lv) = output_model.ls_to_look_vector(&ImageCoordinate{line: y as f64, sample: x as f64}) {
-                        
-            //             //vprintln!("lv -> {:?}", lv.look_direction);
-            //             let ray = intersect_to_plane(&lv, &ground);
-            //             //vprintln!("ray -> {:?} -- {}", ray, ray.len());
-            //             min_angle = min!(z.angle(&ray).to_degrees(), min_angle);
-            //             max_angle = max!(z.angle(&ray).to_degrees(), max_angle);
-            //             let ls_in = input_model.xyz_to_ls(&ray, false);
-                        
-
-            //             let in_x = ls_in.sample.round() as usize;
-            //             let in_y = ls_in.line.round() as usize;
-            //             //vprintln!("{}, {} -> Line: {}, Sample: {}", y, x, ls_in.line, ls_in.sample);
-
-
-            //             if in_x < img.image.width && in_y < img.image.height {
-            //                 map_r.put(x, y, img.image.get_band(0).get(in_x, in_y).unwrap());
-            //                 map_g.put(x, y, img.image.get_band(1).get(in_x, in_y).unwrap());
-            //                 map_b.put(x, y, img.image.get_band(2).get(in_x, in_y).unwrap());
-            //             }
-            //         }
-
-            //     }
-            // }
-            
-            // vprintln!("Min/Max angles: {}, {}", min_angle, max_angle);
-            
                    
         },
         None => {
@@ -401,25 +366,21 @@ fn main() {
         eprintln!("Output expected to have zero height. Cannot continue with that. Exiting...");
         process::exit(1);
     }
-    // let map_context = MapContext{
-    //     top_lat : -90.0,
-    //     bottom_lat : 90.0,
-    //     left_lon: 360.0,
-    //     right_lon: -360.0,
-    //     width: 1024,
-    //     height: 1024,
-    //     degrees_per_pixel: 0.0
-    // };
-    // let mut map_r = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 100.0, ImageMode::U16BIT).unwrap();
-    // let mut map_g = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
-    // let mut map_b = ImageBuffer::new_with_fill_as_mode(map_context.width, map_context.height, 0.0, ImageMode::U16BIT).unwrap();
 
     let mut map = RgbImage::create(map_context.width, map_context.height);
+
+    let first_image = MarsImage::open(String::from(input_files[0]), Instrument::M20MastcamZLeft);
+    let initial_origin = if let Some(model) = get_cahvor(&first_image) {
+        model.c()
+    } else {
+        eprintln!("Cannot determine initial camera origin");
+        process::exit(2);
+    };
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
-            process_file(in_file, &map_context, &mut map, anaglyph_mode, azimuth_rotation);
+            process_file(in_file, &map_context, &mut map, anaglyph_mode, azimuth_rotation, &initial_origin);
         } else {
             eprintln!("File not found: {}", in_file);
             process::exit(1);
