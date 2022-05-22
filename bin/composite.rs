@@ -229,8 +229,8 @@ fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&mut D
             vprintln!("Input Model E: {:?}", input_model.e());
             println!("");
 
-            for x in 50..(img.image.width - 51) {
-                for y in 50..(img.image.height - 51) {
+            for x in 0..(img.image.width - 1) {
+                for y in 0..(img.image.height - 1) {
                     
                     let origin_diff = input_model.c().subtract(&initial_origin);
 
