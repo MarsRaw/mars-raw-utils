@@ -66,6 +66,7 @@ impl RunnableSubcommand for DiffGif {
             None => diffgif::ProductType::STANDARD
         };
 
+        println!("{}, {}, {}, {}, {}", black_level, white_level, gamma, lowpass_window_size, delay);
         let output = self.output.as_os_str().to_str().unwrap();
 
         if white_level < 0.0 || black_level < 0.0{
@@ -89,8 +90,8 @@ impl RunnableSubcommand for DiffGif {
             input_files: in_files,
             output: String::from(output),
             product_type: product_type,
-            black_level: black_level,
-            white_level: white_level,
+            black_level: black_level / 100.0,
+            white_level: white_level / 100.0,
             gamma: gamma,
             delay: delay,
             lowpass_window_size: lowpass_window_size
