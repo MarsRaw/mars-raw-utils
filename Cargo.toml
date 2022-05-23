@@ -48,99 +48,105 @@ assets = [
 [lib]
 name = "mars_raw_utils"
 
-[[bin]]
-name = "msl_fetch_raw"
-path = "bin/msl_fetch_raw.rs"
+# [[bin]]
+# name = "msl_fetch_raw"
+# path = "bin/msl_fetch_raw.rs"
+
+# [[bin]]
+# name = "msl_latest"
+# path = "bin/msl_latest.rs"
+
+# [[bin]]
+# name = "m20_fetch_raw"
+# path = "bin/m20_fetch_raw.rs"
+
+# [[bin]]
+# name = "m20_latest"
+# path = "bin/m20_latest.rs"
+
+# [[bin]]
+# name = "nsyt_fetch_raw"
+# path = "bin/nsyt_fetch_raw.rs"
+
+# [[bin]]
+# name = "nsyt_latest"
+# path = "bin/nsyt_latest.rs"
+
+# [[bin]]
+# name = "hpc_filter"
+# path = "bin/hpc_filter.rs"
+
+# [[bin]]
+# name = "m20_ecam_assemble"
+# path = "bin/m20_ecam_assemble.rs"
+
+# [[bin]]
+# name = "inpaint_filter"
+# path = "bin/inpaint_filter.rs"
+
+# [[bin]]
+# name = "upscale"
+# path = "bin/upscale.rs"
+
+# [[bin]]
+# name = "msl_date"
+# path = "bin/msl_date.rs"
+
+# [[bin]]
+# name = "m20_date"
+# path = "bin/m20_date.rs"
+
+# [[bin]]
+# name = "nsyt_date"
+# path = "bin/nsyt_date.rs"
+
+# [[bin]]
+# name = "crop"
+# path = "bin/crop.rs"
+
+# [[bin]]
+# name = "debayer"
+# path = "bin/debayer.rs"
+
+# [[bin]]
+# name = "gen_mean_stack"
+# path = "bin/gen_mean_stack.rs"
+
+# [[bin]]
+# name = "levels"
+# path = "bin/levels.rs"
+
+# [[bin]]
+# name = "diffgif"
+# path = "bin/diffgif.rs"
+
+# [[bin]]
+# name = "focusmerge"
+# path = "bin/focusmerge.rs"
+
+# [[bin]]
+# name = "calibrate"
+# path = "bin/calibrate.rs"
+
+# [[bin]]
+# name = "composite"
+# path = "bin/composite.rs"
+
+# [[bin]]
+# name = "anaglyph"
+# path = "bin/anaglyph.rs"
 
 [[bin]]
-name = "msl_latest"
-path = "bin/msl_latest.rs"
+name = "mru"
+path = "bin/mru.rs"
 
-[[bin]]
-name = "m20_fetch_raw"
-path = "bin/m20_fetch_raw.rs"
-
-[[bin]]
-name = "m20_latest"
-path = "bin/m20_latest.rs"
-
-[[bin]]
-name = "nsyt_fetch_raw"
-path = "bin/nsyt_fetch_raw.rs"
-
-[[bin]]
-name = "nsyt_latest"
-path = "bin/nsyt_latest.rs"
-
-[[bin]]
-name = "hpc_filter"
-path = "bin/hpc_filter.rs"
-
-[[bin]]
-name = "m20_ecam_assemble"
-path = "bin/m20_ecam_assemble.rs"
-
-[[bin]]
-name = "inpaint_filter"
-path = "bin/inpaint_filter.rs"
-
-[[bin]]
-name = "upscale"
-path = "bin/upscale.rs"
-
-[[bin]]
-name = "msl_date"
-path = "bin/msl_date.rs"
-
-[[bin]]
-name = "m20_date"
-path = "bin/m20_date.rs"
-
-[[bin]]
-name = "nsyt_date"
-path = "bin/nsyt_date.rs"
-
-[[bin]]
-name = "crop"
-path = "bin/crop.rs"
-
-[[bin]]
-name = "debayer"
-path = "bin/debayer.rs"
-
-[[bin]]
-name = "gen_mean_stack"
-path = "bin/gen_mean_stack.rs"
-
-[[bin]]
-name = "levels"
-path = "bin/levels.rs"
-
-[[bin]]
-name = "diffgif"
-path = "bin/diffgif.rs"
-
-[[bin]]
-name = "focusmerge"
-path = "bin/focusmerge.rs"
-
-[[bin]]
-name = "calibrate"
-path = "bin/calibrate.rs"
-
-[[bin]]
-name = "composite"
-path = "bin/composite.rs"
-
-[[bin]]
-name = "anaglyph"
-path = "bin/anaglyph.rs"
 
 [features]
 
 [dependencies]
+proc-macro2 = "1.0.28"
 image = "0.24.1"
-clap = "2.33.3"
+clap = { version = "3.1.18", features = ["derive"] }
 serde_json = "1.0.64"
 const_format = "0.2.14"
 reqwest = { version = "0.11.2", features = ["blocking"] }

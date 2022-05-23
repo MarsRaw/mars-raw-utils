@@ -33,14 +33,14 @@ fn make_diff_container(image:&rgbimage::RgbImage, blur_amount:usize) -> Diff {
     }
 }
 
-pub fn focusmerge(input_files:&Vec<&str>, quality_window_size:usize, output_file:&str) {
+pub fn focusmerge(input_files:&Vec<String>, quality_window_size:usize, output_file:&str) {
     let mut images : Vec<Diff> = vec!();
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
 
-            let image = rgbimage::RgbImage::open16(&String::from(*in_file)).unwrap();
+            let image = rgbimage::RgbImage::open16(&in_file).unwrap();
             images.push(make_diff_container(&image, 5));
         } else {
             eprintln!("File not found: {}", in_file);

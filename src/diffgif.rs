@@ -12,6 +12,7 @@ use sciimg::{
 
 use gif;
 
+use std::str::FromStr;
 use std::fs::File;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -21,8 +22,19 @@ pub enum ProductType {
     STACKED
 }
 
+impl FromStr for ProductType {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match ProductType::_from_str(&s) {
+            None => Err("Invalid product type"),
+            Some(t) => Ok(t)
+        }
+    }
+}
+
 impl ProductType {
-    pub fn from_str(s:&str) -> Option<ProductType> {
+    pub fn _from_str(s:&str) -> Option<ProductType> {
         match s {
             "std" => Some(ProductType::STANDARD),
             "diff" => Some(ProductType::DIFFERENTIAL),

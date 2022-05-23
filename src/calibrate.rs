@@ -70,7 +70,7 @@ pub struct CalContainer {
     pub calibrator:Box<dyn Calibration + 'static>
 }
 
-pub fn process_with_profiles<F: Fn(error::Result<CompleteContext>)>(calibrator:&CalContainer, input_file:&str, only_new:bool, profile_names:&Vec<&str>, on_cal_complete:F) {
+pub fn process_with_profiles<F: Fn(error::Result<CompleteContext>)>(calibrator:&CalContainer, input_file:&str, only_new:bool, profile_names:&Vec<String>, on_cal_complete:F) {
     for profile_name in profile_names.iter() {
         on_cal_complete(
             calibrator.calibrator.process_with_profile(input_file, only_new, &profile_name.to_string())
@@ -82,7 +82,7 @@ pub fn process_with_profiles<F: Fn(error::Result<CompleteContext>)>(calibrator:&
 
 
 
-pub fn simple_calibration_with_profiles(calibrator:&CalContainer, input_files:&Vec<&str>, only_new:bool, profiles:&Vec<&str>) {
+pub fn simple_calibration_with_profiles(calibrator:&CalContainer, input_files:&Vec<&str>, only_new:bool, profiles:&Vec<String>) {
 
     input_files.into_par_iter().enumerate().for_each(|(idx, in_file)| {
 
