@@ -22,10 +22,10 @@ fi
 
 cd ${soldir}/ECAM 
 
-m20_fetch_raw -c NAVCAM_LEFT -s $sol -S ${seqid}
+mru m20-fetch -c NAVCAM_LEFT -s $sol -S ${seqid}
 
-calibrate -i *J0?.png 
+mru calibrate -i *J0?.png 
 
-diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -v -b 0 -w 3.0 -g 1.0 -l 5 -d 20 -p stacked
+mru -v diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 3.0 -g 1.0 -l 5 -d 20 -p stacked
 
 

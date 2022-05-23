@@ -40,6 +40,8 @@ enum Mru {
     Composite(composite::Composite),
     Crop(crop::Crop),
     Debayer(debayer::Debayer),
+
+    #[clap(name="diffgif")]
     DiffGif(diffgif::DiffGif),
     FocusMerge(focusmerge::FocusMerge),
     MeanStack(meanstack::MeanStack),

@@ -16,11 +16,11 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/ECAM
     mkdir -p $INSTROOT
 
-    m20_fetch_raw -c NAVCAM HAZ_FRONT HAZ_REAR -s $sol -o $INSTROOT -n
+    mru m20-fetch -c NAVCAM HAZ_FRONT HAZ_REAR -s $sol -o $INSTROOT -n
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *J0?.png 
+        mru calibrate -i *J0?.png 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -35,12 +35,12 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/WATSON
     mkdir -p $INSTROOT
 
-    m20_fetch_raw -c WATSON -s $sol -o $INSTROOT -n -S EBY
+    mru m20-fetch -c WATSON -s $sol -o $INSTROOT -n -S EBY
 
     cd $INSTROOT
 
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *J0?.png -P m20_watson_bay m20_watson_ilt m20_watson_rad # m20_watson_cwb
+        mru calibrate -i *J0?.png -P m20_watson_bay m20_watson_ilt m20_watson_rad # m20_watson_cwb
     fi
 
     if [ `ls *rjcal-bay* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -70,12 +70,12 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/ZCAM
     mkdir -p $INSTROOT
 
-    m20_fetch_raw -c MASTCAM -s $sol -o $INSTROOT -n
+    mru m20-fetch -c MASTCAM -s $sol -o $INSTROOT -n
 
     cd $INSTROOT
 
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *J0?.png -P m20_zcam_bay m20_zcam_ilt m20_zcam_rad m20_zcam_cwb m20_zcam_cb2
+        mru calibrate -i *J0?.png -P m20_zcam_bay m20_zcam_ilt m20_zcam_rad m20_zcam_cwb m20_zcam_cb2
     fi
 
     if [ `ls *rjcal-bay* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -110,11 +110,11 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/SCAM
     mkdir -p $INSTROOT
 
-    m20_fetch_raw -c SUPERCAM -s $sol -o $INSTROOT -n -S EBY
+    mru m20-fetch -c SUPERCAM -s $sol -o $INSTROOT -n -S EBY
     
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *J0?.png 
+        mru calibrate -i *J0?.png 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -129,7 +129,7 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/CCAM
     mkdir -p $INSTROOT
 
-    m20_fetch_raw -c CACHECAM -s $sol -o $INSTROOT -n 
+    mru m20-fetch -c CACHECAM -s $sol -o $INSTROOT -n 
 
     ##############
     # PIXL MCC
@@ -138,11 +138,11 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/PIXL
     mkdir -p $INSTROOT
 
-    m20_fetch_raw -c PIXL -s $sol -o $INSTROOT -n 
+    mru m20-fetch -c PIXL -s $sol -o $INSTROOT -n 
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *J0?.png
+        mru calibrate -i *J0?.png
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -157,11 +157,11 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/SKYCAM
     mkdir -p $INSTROOT
 
-    m20_fetch_raw -c SKYCAM -s $sol -o $INSTROOT -n 
+    mru m20-fetch -c SKYCAM -s $sol -o $INSTROOT -n 
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *J0?.png 
+        mru calibrate -i *J0?.png 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -176,11 +176,11 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/HNAV
     mkdir -p $INSTROOT
 
-    m20_fetch_raw -c HELI_NAV -s $sol -o $INSTROOT -n 
+    mru m20-fetch -c HELI_NAV -s $sol -o $INSTROOT -n 
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *J0?.png
+        mru calibrate -i *J0?.png
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -195,11 +195,11 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/HRTE
     mkdir -p $INSTROOT
 
-    m20_fetch_raw -c HELI_RTE -s $sol -o $INSTROOT -n 
+    mru m20-fetch -c HELI_RTE -s $sol -o $INSTROOT -n 
 
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *J0?.png 
+        mru calibrate -i *J0?.png 
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then

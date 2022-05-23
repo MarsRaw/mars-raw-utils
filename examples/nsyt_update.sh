@@ -18,11 +18,11 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/ICC
     mkdir -p $INSTROOT
 
-    nsyt_fetch_raw -c ICC -s $sol -o $INSTROOT -n
+    mru nsyt-fetch -c ICC -s $sol -o $INSTROOT -n
     
     cd $INSTROOT
     if [ `ls *M_.JPG 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *M_.JPG
+        mru calibrate -i *M_.JPG
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then
@@ -37,11 +37,11 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/IDC
     mkdir -p $INSTROOT
 
-    nsyt_fetch_raw -c IDC -s $sol -o $INSTROOT -n
+    mru nsyt-fetch -c IDC -s $sol -o $INSTROOT -n
     
     cd $INSTROOT
     if [ `ls *M_.JPG 2> /dev/null | wc -l` -gt 0 ]; then
-        calibrate -i *M_.JPG
+        mru calibrate -i *M_.JPG
     fi
 
     if [ `ls *rjcal* 2> /dev/null | wc -l ` -gt 0 ]; then

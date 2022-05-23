@@ -7,7 +7,7 @@ use crate::subs::runnable::RunnableSubcommand;
 use std::process;
 
 #[derive(clap::Args)]
-#[clap(author, version, about = "Create differential gif from a navcam movie", long_about = None)]
+#[clap(author, version, about = "Create differential gif from a navcam movie", long_about = None, name="diffgif")]
 pub struct DiffGif {
     #[clap(long, short, parse(from_os_str), help = "Input images", multiple_values(true))]
     input_files: Vec<std::path::PathBuf>,
