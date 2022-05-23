@@ -19,26 +19,7 @@ depends = "$auto"
 section = "science"
 priority = "optional"
 assets = [
-    ["target/release/msl_fetch_raw", "usr/bin/", "755"],
-    ["target/release/msl_latest", "usr/bin/", "755"],
-    ["target/release/m20_ecam_assemble", "usr/bin/", "755"],
-    ["target/release/m20_fetch_raw", "usr/bin/", "755"],
-    ["target/release/m20_latest", "usr/bin/", "755"],
-    ["target/release/hpc_filter", "usr/bin/", "755"],
-    ["target/release/nsyt_fetch_raw", "usr/bin/", "755"],
-    ["target/release/nsyt_latest", "usr/bin/", "755"],
-    ["target/release/inpaint_filter", "usr/bin/", "755"],
-    ["target/release/upscale", "usr/bin/", "755"],
-    ["target/release/msl_date", "usr/bin/", "755"],
-    ["target/release/m20_date", "usr/bin/", "755"],
-    ["target/release/nsyt_date", "usr/bin/", "755"],
-    ["target/release/crop", "usr/bin/", "755"],
-    ["target/release/debayer", "usr/bin/", "755"],
-    ["target/release/gen_mean_stack", "usr/bin/", "755"],
-    ["target/release/levels", "usr/bin/", "755"],
-    ["target/release/diffgif", "usr/bin/", "755"],
-    ["target/release/focusmerge", "usr/bin/", "755"],
-    ["target/release/calibrate", "usr/bin/", "755"],
+    ["target/release/mru", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
     ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
     ["mars-raw-utils-data/caldata/*jpg", "usr/share/mars_raw_utils/data/", "644"],
@@ -48,98 +29,9 @@ assets = [
 [lib]
 name = "mars_raw_utils"
 
-# [[bin]]
-# name = "msl_fetch_raw"
-# path = "bin/msl_fetch_raw.rs"
-
-# [[bin]]
-# name = "msl_latest"
-# path = "bin/msl_latest.rs"
-
-# [[bin]]
-# name = "m20_fetch_raw"
-# path = "bin/m20_fetch_raw.rs"
-
-# [[bin]]
-# name = "m20_latest"
-# path = "bin/m20_latest.rs"
-
-# [[bin]]
-# name = "nsyt_fetch_raw"
-# path = "bin/nsyt_fetch_raw.rs"
-
-# [[bin]]
-# name = "nsyt_latest"
-# path = "bin/nsyt_latest.rs"
-
-# [[bin]]
-# name = "hpc_filter"
-# path = "bin/hpc_filter.rs"
-
-# [[bin]]
-# name = "m20_ecam_assemble"
-# path = "bin/m20_ecam_assemble.rs"
-
-# [[bin]]
-# name = "inpaint_filter"
-# path = "bin/inpaint_filter.rs"
-
-# [[bin]]
-# name = "upscale"
-# path = "bin/upscale.rs"
-
-# [[bin]]
-# name = "msl_date"
-# path = "bin/msl_date.rs"
-
-# [[bin]]
-# name = "m20_date"
-# path = "bin/m20_date.rs"
-
-# [[bin]]
-# name = "nsyt_date"
-# path = "bin/nsyt_date.rs"
-
-# [[bin]]
-# name = "crop"
-# path = "bin/crop.rs"
-
-# [[bin]]
-# name = "debayer"
-# path = "bin/debayer.rs"
-
-# [[bin]]
-# name = "gen_mean_stack"
-# path = "bin/gen_mean_stack.rs"
-
-# [[bin]]
-# name = "levels"
-# path = "bin/levels.rs"
-
-# [[bin]]
-# name = "diffgif"
-# path = "bin/diffgif.rs"
-
-# [[bin]]
-# name = "focusmerge"
-# path = "bin/focusmerge.rs"
-
-# [[bin]]
-# name = "calibrate"
-# path = "bin/calibrate.rs"
-
-# [[bin]]
-# name = "composite"
-# path = "bin/composite.rs"
-
-# [[bin]]
-# name = "anaglyph"
-# path = "bin/anaglyph.rs"
-
 [[bin]]
 name = "mru"
 path = "bin/mru.rs"
-
 
 [features]
 
@@ -175,26 +67,7 @@ package = "mars_raw_utils"
 buildflags = ["--release"]
 
 [package.metadata.rpm.targets]
-hpc_filter = { path = "/usr/bin/hpc_filter" }
-inpaint_filter = { path = "/usr/bin/inpaint_filter" }
-m20_fetch_raw = { path = "/usr/bin/m20_fetch_raw" }
-m20_latest = { path = "/usr/bin/m20_latest" }
-m20_ecam_assemble = { path = "/usr/bin/m20_ecam_assemble" }
-msl_fetch_raw = { path = "/usr/bin/msl_fetch_raw" }
-msl_latest = { path = "/usr/bin/msl_latest" }
-nsyt_fetch_raw = { path = "/usr/bin/nsyt_fetch_raw" }
-nsyt_latest = { path = "/usr/bin/nsyt_latest" }
-upscale = { path = "/usr/bin/upscale" }
-msl_date = { path = "/usr/bin/msl_date" }
-m20_date = { path = "/usr/bin/m20_date" }
-nsyt_date = { path = "/usr/bin/nsyt_date" }
-debayer = { path = "/usr/bin/debayer" }
-crop = { path = "/usr/bin/crop" }
-gen_mean_stack = { path = "/usr/bin/gen_mean_stack" }
-diffgif = { path = "/usr/bin/diffgif" }
-levels = { path = "/usr/bin/levels" }
-focusmerge = { path = "/usr/bin/focusmerge" }
-calibrate = { path = "/usr/bin/calibrate" }
+mru = { path = "/usr/bin/mru" }
 
 [package.metadata.rpm.files]
 "M20_MCZ_LEFT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png", mode = "644"}

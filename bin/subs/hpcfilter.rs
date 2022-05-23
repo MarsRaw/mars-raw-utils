@@ -1,0 +1,66 @@
+use mars_raw_utils::{
+    prelude::*
+};
+use sciimg::{
+    prelude::*
+};
+
+use crate::subs::runnable::RunnableSubcommand;
+
+use std::process;
+
+#[derive(clap::Args)]
+#[clap(author, version, about = "Perform hot pixel detection and correction", long_about = None)]
+pub struct HpcFilter {
+    #[clap(long, short, parse(from_os_str), help = "Input images", multiple_values(true))]
+    input_files: Vec<std::path::PathBuf>,
+
+    #[clap(long, short = 't', help = "HPC threshold")]
+    threshold: Option<f32>,
+
+    #[clap(long, short = 'w', help = "HPC window size")]
+    window: Option<i32>,
+}
+
+impl RunnableSubcommand for HpcFilter {
+    fn run(&self) {
+        
+        let window_size = match self.window {
+            Some(w) => w,
+            None => 3
+        };
+
+        let threshold = match self.threshold {
+            Some(t) => t,
+            None => 0.0
+        };
+        
+        if threshold < 0.0 {
+            eprintln!("Threshold cannot be less than zero!");
+            process::exit(1);
+        }
+
+        for in_file in self.input_files.iter() {
+            if in_file.exists() {
+                vprintln!("Processing File: {:?}", in_file);
+                let mut raw = RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+
+                vprintln!("Hot pixel correction with variance threshold {}...", threshold);
+                raw.hot_pixel_correction(window_size, threshold);
+                
+                // DON'T ASSUME THIS!
+                let data_max = 255.0;
+            
+                vprintln!("Normalizing...");
+                raw.normalize_to_16bit_with_max(data_max);
+            
+                vprintln!("Writing to disk...");
+            
+                let out_file = util::append_file_name(in_file.as_os_str().to_str().unwrap(), "hpc");
+                raw.save(&out_file);
+            } else {
+                eprintln!("File not found: {:?}", in_file);
+            }
+        }    
+    }
+}
