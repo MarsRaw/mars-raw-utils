@@ -66,7 +66,8 @@ fn test_find_remote_instrument_names_fromlist() {
 
     let list :Vec<&str> = vec!["NAV_LEFT", "CHEMCAM"];
 
-    let remote_instruments = instrument_list.find_remote_instrument_names_fromlist(&list).unwrap();
+    let string_lis : Vec<String> = list.iter().map(|s| String::from(*s)).collect();
+    let remote_instruments = instrument_list.find_remote_instrument_names_fromlist(&string_lis).unwrap();
 
     let expected_list = vec!["NAV_LEFT_A", "NAV_LEFT_B", "CHEMCAM_RMI"];
     assert_eq!(remote_instruments, expected_list);
@@ -89,5 +90,7 @@ fn test_find_remote_instrument_names_fromlist_invalid() {
         ].iter().cloned().collect()};
 
     let list :Vec<&str> = vec!["NAV_LEFT", "CHEMCAM", "FOO"];
-    let _remote_instruments = instrument_list.find_remote_instrument_names_fromlist(&list).unwrap();
+
+    let string_lis : Vec<String> = list.iter().map(|s| String::from(*s)).collect();
+    let _remote_instruments = instrument_list.find_remote_instrument_names_fromlist(&string_lis).unwrap();
 }
