@@ -33,6 +33,9 @@ name = "mars_raw_utils"
 name = "mru"
 path = "bin/mru.rs"
 
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+
 [features]
 
 [dependencies]
