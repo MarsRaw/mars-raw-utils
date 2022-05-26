@@ -641,166 +641,12 @@
                                 Action='set'
                                 System='yes'/>
                         </Component>
-                        <Component Id='binary9' Guid='*'>
+                        <Component Id='mrumainbinary' Guid='*'>
                             <File
                                 Id='exe9'
-                                Name='msl_fetch_raw.exe'
+                                Name='mru.exe'
                                 DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\msl_fetch_raw.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary10' Guid='*'>
-                            <File
-                                Id='exe10'
-                                Name='msl_latest.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\msl_latest.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary11' Guid='*'>
-                            <File
-                                Id='exe11'
-                                Name='m20_fetch_raw.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_fetch_raw.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary12' Guid='*'>
-                            <File
-                                Id='exe12'
-                                Name='m20_latest.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_latest.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary13' Guid='*'>
-                            <File
-                                Id='exe13'
-                                Name='nsyt_fetch_raw.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\nsyt_fetch_raw.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary14' Guid='*'>
-                            <File
-                                Id='exe14'
-                                Name='nsyt_latest.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\nsyt_latest.exe'
-                                KeyPath='yes'/>
-                        </Component>
-
-                        <Component Id='binary18' Guid='*'>
-                            <File
-                                Id='exe18'
-                                Name='hpc_filter.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\hpc_filter.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary19' Guid='*'>
-                            <File
-                                Id='exe19'
-                                Name='m20_ecam_assemble.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_ecam_assemble.exe'
-                                KeyPath='yes'/>
-                        </Component>
-
-                        <Component Id='binary23' Guid='*'>
-                            <File
-                                Id='exe23'
-                                Name='inpaint_filter.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\inpaint_filter.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary24' Guid='*'>
-                            <File
-                                Id='exe24'
-                                Name='upscale.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\upscale.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary25' Guid='*'>
-                            <File
-                                Id='exe25'
-                                Name='msl_date.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\msl_date.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary26' Guid='*'>
-                            <File
-                                Id='exe26'
-                                Name='m20_date.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\m20_date.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary27' Guid='*'>
-                            <File
-                                Id='exe27'
-                                Name='nsyt_date.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\nsyt_date.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary28' Guid='*'>
-                            <File
-                                Id='exe28'
-                                Name='crop.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\crop.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary29' Guid='*'>
-                            <File
-                                Id='exe29'
-                                Name='debayer.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\debayer.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary30' Guid='*'>
-                            <File
-                                Id='exe30'
-                                Name='gen_mean_stack.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\gen_mean_stack.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary31' Guid='*'>
-                            <File
-                                Id='exe31'
-                                Name='levels.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\levels.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary32' Guid='*'>
-                            <File
-                                Id='exe32'
-                                Name='diffgif.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\diffgif.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary33' Guid='*'>
-                            <File
-                                Id='exe33'
-                                Name='focusmerge.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\focusmerge.exe'
-                                KeyPath='yes'/>
-                        </Component>
-                        <Component Id='binary34' Guid='*'>
-                            <File
-                                Id='exe34'
-                                Name='calibrate.exe'
-                                DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\calibrate.exe'
+                                Source='$(var.CargoTargetBinDir)\mru.exe'
                                 KeyPath='yes'/>
                         </Component>
                     </Directory>
@@ -844,27 +690,8 @@
             -->
             <ComponentRef Id='License'/>
             <ComponentRef Id="ApplicationShortcut" />
-            <ComponentRef Id='binary9'/>
-            <ComponentRef Id='binary10'/>
-            <ComponentRef Id='binary11'/>
-            <ComponentRef Id='binary12'/>
-            <ComponentRef Id='binary13'/>
-            <ComponentRef Id='binary14'/>
-            <ComponentRef Id='binary18'/>
-            <ComponentRef Id='binary19'/>
-            <ComponentRef Id='binary23'/>
-            <ComponentRef Id='binary24'/>
-            <ComponentRef Id='binary25'/>
-            <ComponentRef Id='binary26'/>
-            <ComponentRef Id='binary27'/>
-            <ComponentRef Id='binary28'/>
-            <ComponentRef Id='binary29'/>
-            <ComponentRef Id='binary30'/>
-            <ComponentRef Id='binary31'/>
-            <ComponentRef Id='binary32'/>
-            <ComponentRef Id='binary33'/>
-            <ComponentRef Id='binary34'/>
-
+            <ComponentRef Id='mrumainbinary'/>
+            
             <ComponentRef Id='caldata0'/>
             <ComponentRef Id='caldata1'/>
             <ComponentRef Id='caldata2'/>
