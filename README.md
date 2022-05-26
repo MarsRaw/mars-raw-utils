@@ -91,10 +91,8 @@ docker run --name mars_raw_utils -dit mars_raw_utils
 docker exec -it mars_raw_utils bash
 ```
 
-Builds for MacOSX (maybe via Homebrew?) and Windows are in the plan. Though the project has built and run from MacOSX and Windows, I haven't worked out the installation method in a way that handles the calibration data.
-
 ### Building RPMs using Docker
-CentOS targetted RPMs can be built using `dockerbuild.sh` which will result in the build artifacts being placed into the `target` directory.
+Fedora targetted RPMs can be built using `dockerbuild.sh` which will result in the build artifacts being placed into the `target` directory.
 
 ## Specifying Calibration Data Location:
 By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can use the default `~/.marsdata` or set the calibration file directory by using the `MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
@@ -135,93 +133,90 @@ filename_suffix = "rjcal-rad"
 ## Calibration
 ```
 USAGE:
-    calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
-    -v               Show verbose output
-    -V, --version    Prints version information
+    mru calibrate [OPTIONS]
 
 OPTIONS:
-    -B, --blue <BLUE>                                      Blue weight
-    -c, --color_noise_reduction <COLOR_NOISE_REDUCTION>    Color noise reduction amount in pixels
-    -G, --green <GREEN>                                    Green weight
-    -t, --hpc_threshold <THRESHOLD>                        Hot pixel correction variance threshold
-    -w, --hpc_window <WINDOW_SIZE>                         Hot pixel correction window size
-    -i, --inputs <INPUT>...                                Input
-    -I, --instrument <INSTRUMENT>                          Default instrument (if missing)
-    -P, --profile <PARAM_CAL_PROFILE>...                   Calibration profile file path
-    -R, --red <RED>                                        Red weight
+    -B, --blue-weight <BLUE_WEIGHT>
+            Blue weight
+
+    -c, --color-noise-reduction-amount <COLOR_NOISE_REDUCTION_AMOUNT>
+            Color noise reduction amount
+
+    -G, --green-weight <GREEN_WEIGHT>
+            Green weight
+
+    -h, --help
+            Print help information
+
+    -i, --input-files <INPUT_FILES>...
+            Input raw images
+
+    -I, --instrument <INSTRUMENT>
+            Force instrument
+
+    -P, --profile <PROFILE>...
+            Calibration profile
+
+    -r, --raw
+            Raw color, skip ILT
+
+    -R, --red-weight <RED_WEIGHT>
+            Red weight
+
+    -t, --hpc-threshold <HPC_THRESHOLD>
+            HPC threshold
+
+    -V, --version
+            Print version information
+
+    -w, --hpc-window <HPC_WINDOW>
+            HPC window size
 ```
 
 ## Mars Science Laboratory (Curiosity):
 ### Fetch Raws:
 ```
 USAGE:
-    msl_fetch_raw [FLAGS] [OPTIONS]
-
-FLAGS:
-    -h, --help          Prints help information
-    -l, --list          Don't download, only list results
-    -t, --thumbnails    Download thumbnails in the results
-    -v                  Show verbose output
-    -V, --version       Prints version information
+    mru msl-fetch [OPTIONS]
 
 OPTIONS:
-    -c, --camera <camera>...    M20 Camera Instrument(s)
-    -M, --maxsol <maxsol>       Ending Mission Sol
-    -m, --minsol <minsol>       Starting Mission Sol
-    -n, --num <num>             Max number of results
-    -p, --page <page>           Results page (starts at 1)
-    -S, --seqid <seqid>         Specific sequence id or substring
-    -s, --sol <sol>             Mission Sol
+    -c, --camera <CAMERA>...    MSL Camera Instrument(s)
+    -h, --help                  Print help information
+    -I, --instruments           List instruments
+    -l, --list                  Don't download, only list results
+    -m, --minsol <MINSOL>       Starting Mission Sol
+    -M, --maxsol <MAXSOL>       Ending Mission Sol
+    -n, --new                   Only new images. Skipped processed images.
+    -N, --num <NUM>             Max number of results
+    -o, --output <OUTPUT>       Output directory
+    -p, --page <PAGE>           Results page (starts at 1)
+    -s, --sol <SOL>             Mission Sol
+    -S, --seqid <SEQID>         Sequence ID
+    -t, --thumbnails            Download thumbnails in the results
+    -V, --version               Print version information
 ```
 
 #### Examples:
 
 Show available instruments:
 ```
-msl_fetch_raw -i
+mru msl-fetch -i
 ```
 
 List what's available for Mastcam on sol 3113: (remove the `-l` to download the images)
 ```
-msl_fetch_raw -c MASTCAM -s 3113 -l
+mru msl-fetch -c MASTCAM -s 3113 -l
 ```
 
 List what's available for NAV_RIGHT between sols 3110 and 3112: (remove the `-l` to download the images)
 ```
-msl_fetch_raw -c NAV_RIGHT -m 3110 -M 3112 -l
+mru msl-fetch -c NAV_RIGHT -m 3110 -M 3112 -l
 ```
 
 Download NAV_RIGHT during sols 3110 through 3112, filtering for sequence id NCAM00595:
 ```
-msl_fetch_raw -c NAV_RIGHT -m 3110 -M 3112 -S NCAM00595
+mru msl-fetch -c NAV_RIGHT -m 3110 -M 3112 -S NCAM00595
 ```
-
-### MastCam:
-```
-USAGE:
-    msl_mcam_calibrate [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -n               Only new images. Skipped processed images.
-    -r, --raw        Raw color, skip ILT
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -B, --blue <BLUE>                                      Blue weight
-    -c, --color_noise_reduction <COLOR_NOISE_REDUCTION>    Color noise reduction amount in pixels
-    -G, --green <GREEN>                                    Green weight
-    -i, --inputs <INPUT>...                                Input
-    -P, --profile <PARAM_CAL_PROFILE>                      Calibration profile file path
-    -R, --red <RED>                                        Red weight
-```
-
 
 
 
@@ -229,23 +224,24 @@ OPTIONS:
 ### Fetch Raws:
 ```
 USAGE:
-    m20_fetch_raw [FLAGS] [OPTIONS]
-
-FLAGS:
-    -h, --help          Prints help information
-    -l, --list          Don't download, only list results
-    -t, --thumbnails    Download thumbnails in the results
-    -v                  Show verbose output
-    -V, --version       Prints version information
+    mru m20-fetch [OPTIONS]
 
 OPTIONS:
-    -c, --camera <camera>...    M20 Camera Instrument(s)
-    -M, --maxsol <maxsol>       Ending Mission Sol
-    -m, --minsol <minsol>       Starting Mission Sol
-    -n, --num <num>             Max number of results
-    -p, --page <page>           Results page (starts at 1)
-    -S, --seqid <seqid>         Specific sequence id or substring
-    -s, --sol <sol>             Mission Sol
+    -c, --camera <CAMERA>...    Mars2020 Camera Instrument(s)
+    -e, --movie                 Only movie frames
+    -h, --help                  Print help information
+    -I, --instruments           List instruments
+    -l, --list                  Don't download, only list results
+    -m, --minsol <MINSOL>       Starting Mission Sol
+    -M, --maxsol <MAXSOL>       Ending Mission Sol
+    -n, --new                   Only new images. Skipped processed images.
+    -N, --num <NUM>             Max number of results
+    -o, --output <OUTPUT>       Output directory
+    -p, --page <PAGE>           Results page (starts at 1)
+    -s, --sol <SOL>             Mission Sol
+    -S, --seqid <SEQID>         Sequence ID
+    -t, --thumbnails            Download thumbnails in the results
+    -V, --version               Print version information
 ```
 
 
@@ -254,44 +250,38 @@ OPTIONS:
 ### Fetch Raws:
 ```
 USAGE:
-    nsyt_fetch_raw [FLAGS] [OPTIONS]
-
-FLAGS:
-    -h, --help           Prints help information
-    -i, --instruments    List camera instrument and exit
-    -l, --list           Don't download, only list results
-    -n                   Only new images. Skipped processed images.
-    -t, --thumbnails     Download thumbnails in the results
-    -v                   Show verbose output
-    -V, --version        Prints version information
+    mru nsyt-fetch [OPTIONS]
 
 OPTIONS:
-    -c, --camera <camera>...    M20 Camera Instrument(s)
-    -M, --maxsol <maxsol>       Ending Mission Sol
-    -m, --minsol <minsol>       Starting Mission Sol
-    -N, --num <num>             Max number of results
+    -c, --camera <CAMERA>...    InSight Camera Instrument(s)
+    -h, --help                  Print help information
+    -I, --instruments           List instruments
+    -l, --list                  Don't download, only list results
+    -m, --minsol <MINSOL>       Starting Mission Sol
+    -M, --maxsol <MAXSOL>       Ending Mission Sol
+    -n, --new                   Only new images. Skipped processed images.
+    -N, --num <NUM>             Max number of results
     -o, --output <OUTPUT>       Output directory
-    -p, --page <page>           Results page (starts at 1)
-    -S, --seqid <seqid>         Specific sequence id or substring
-    -s, --sol <sol>             Mission Sol
+    -p, --page <PAGE>           Results page (starts at 1)
+    -s, --sol <SOL>             Mission Sol
+    -S, --seqid <SEQID>         Sequence ID
+    -t, --thumbnails            Download thumbnails in the results
+    -V, --version               Print version information
 ```
 
 ## Anaglyph
 Generate a red/blue anaglyph from a matching stereo pair.
 ```
 USAGE:
-    anaglyph [FLAGS] --left <left> --output <OUTPUT> --right <right>
-
-FLAGS:
-    -h, --help       Prints help information
-    -m, --mono       Monochrome color (before converting to red/blue)
-    -v               Show verbose output
-    -V, --version    Prints version information
+    mru anaglyph [OPTIONS] --left <LEFT> --right <RIGHT> --output <OUTPUT>
 
 OPTIONS:
-    -l, --left <left>        Left eye image
-    -o, --output <OUTPUT>    Output
-    -r, --right <right>      Right eye image
+    -h, --help               Print help information
+    -l, --left <LEFT>        Left image
+    -m, --mono               Monochrome color (before converting to red/blue)
+    -o, --output <OUTPUT>    Output image
+    -r, --right <RIGHT>      Right image
+    -V, --version            Print version information
 ```
 
 ## Hot Pixel Correction Filter
@@ -306,80 +296,51 @@ For each pixel (excluding image border pixels):
 
 ```
 USAGE:
-    hpc_filter [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -v               Show verbose output
-    -V, --version    Prints version information
+    mru hpc-filter [OPTIONS]
 
 OPTIONS:
-    -t, --hpc_threshold <THRESHOLD>    Hot pixel correction variance threshold
-    -w, --hpc_window <WINDOW_SIZE>     Hot pixel correction window size
-    -i, --inputs <INPUT>...            Input
+    -h, --help                            Print help information
+    -i, --input-files <INPUT_FILES>...    Input images
+    -t, --threshold <THRESHOLD>           HPC threshold
+    -V, --version                         Print version information
+    -w, --window <WINDOW>                 HPC window size
 ```
 
 ## Inpainting Filter
 Applies a basic inpainting filter on a set of input images. Inpainting regions need to be marked in red (rgb 255, 0, 0).
 ```
 USAGE:
-    inpaint_filter [FLAGS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -v               Show verbose output
-    -V, --version    Prints version information
+    mru inpaint [OPTIONS]
 
 OPTIONS:
-    -i, --inputs <INPUT>...    Input
+    -h, --help                            Print help information
+    -i, --input-files <INPUT_FILES>...    Input images
+    -V, --version                         Print version information
 ```
 
-## Upscale Experiment (Deprecated)
-An experiment in smooth image upscaling using the median-based inpainting algorithm.
-
-```
-USAGE:
-    upscale [FLAGS] --factor <FACTOR> --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -v               Show verbose output
-    -V, --version    Prints version information
-
-OPTIONS:
-    -f, --factor <FACTOR>      Scale factor
-    -i, --inputs <INPUT>...    Input
-```
 
 ## Crop
 ```
 USAGE:
-    crop [FLAGS] --crop <WINDOW_SIZE> --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -v               Show verbose output
-    -V, --version    Prints version information
+    mru crop [OPTIONS] --crop <CROP>
 
 OPTIONS:
-    -c, --crop <WINDOW_SIZE>    Crop as x,y,width,height
-    -i, --inputs <INPUT>...     Input
+    -c, --crop <CROP>                     Crop as x,y,width,height
+    -h, --help                            Print help information
+    -i, --input-files <INPUT_FILES>...    Input images
+    -V, --version                         Print version information
 ```
 
 ## Debayer
 Apply Malvar Demosaicking (Debayer) on a grayscale bayer-pattern image. Optionally apply a color noise reduction.
 ```
 USAGE:
-    debayer [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -v               Show verbose output
-    -V, --version    Prints version information
+    mru debayer [OPTIONS]
 
 OPTIONS:
-    -c, --color_noise_reduction <COLOR_NOISE_REDUCTION>    Color noise reduction amount in pixels
-    -i, --inputs <INPUT>...                                Input
+    -h, --help                            Print help information
+    -i, --input-files <INPUT_FILES>...    Input images
+    -V, --version                         Print version information
 ```
 
 
@@ -387,18 +348,15 @@ OPTIONS:
 Apply levels adjustments to an image. Analogous to 'Levels' in Photoshop or GIMP. 
 ```
 USAGE:
-    levels [FLAGS] [OPTIONS] --inputs <INPUT>...
-
-FLAGS:
-    -h, --help       Prints help information
-    -v               Show verbose output
-    -V, --version    Prints version information
+    mru levels [OPTIONS]
 
 OPTIONS:
-    -b, --blacklevel <BLACK_LEVEL>    Black level
-    -g, --gamma <PARAM_GAMMA>         Gamma
-    -i, --inputs <INPUT>...           Input
-    -w, --whitelevel <WHITE_LEVEL>    White level
+    -b, --black <BLACK>                   Black level
+    -g, --gamma <GAMMA>                   Gamma level
+    -h, --help                            Print help information
+    -i, --input-files <INPUT_FILES>...    Input images
+    -V, --version                         Print version information
+    -w, --white <WHITE>                   White level
 ```
 
 ## Change Detection (Dust devils, clouds)
@@ -406,49 +364,46 @@ Calculates a per-frame differential from a mean across a series of images. Inten
 
 ```
 USAGE:
-    diffgif [FLAGS] [OPTIONS] --inputs <INPUT>... --output <OUTPUT>
-
-FLAGS:
-    -h, --help       Prints help information
-    -v               Show verbose output
-    -V, --version    Prints version information
+    mru diffgif [OPTIONS] --output <OUTPUT>
 
 OPTIONS:
-    -b, --blacklevel <BLACK_LEVEL>         Black level
-    -d, --delay <PARAM_DELAY>              Interframe delay in increments of 10ms
-    -g, --gamma <PARAM_GAMMA>              Gamma
-    -i, --inputs <INPUT>...                Input
-    -l, --lowpass <PARAM_LOWPASS>          Lowpass window size
-    -o, --output <OUTPUT>                  Output
-    -p, --prodtype <PARAM_PRODUCT_TYPE>    Product type (std, diff, stacked)
-    -w, --whitelevel <WHITE_LEVEL>         White level
+    -b, --black <BLACK>                   Black level
+    -d, --delay <DELAY>                   Interframe delay in increments of 10ms
+    -g, --gamma <GAMMA>                   Gamma level
+    -h, --help                            Print help information
+    -i, --input-files <INPUT_FILES>...    Input images
+    -l, --lowpass <LOWPASS>               Lowpass window size
+    -o, --output <OUTPUT>                 Output image
+    -p, --prodtype <PRODTYPE>             Product type
+    -V, --version                         Print version information
+    -w, --white <WHITE>                   White level
 
 ```
 
 ### Examples
 #### Dust Devils, MSL Sol 3372, Seq id NCAM00595:
 ```
-msl_fetch_raw -c NAV_RIGHT_B -s 3372 -S NCAM00595
+mru msl-fetch -c NAV_RIGHT_B -s 3372 -S NCAM00595
 
-calibrate -i *JPG -v -t 2.0
+mru calibrate -i *JPG -v -t 2.0
 
-diffgif -i *NCAM00595*-rjcal.png -o DustDevilMovie_Sol3372.gif -v -b 0 -w 2.0 -g 2.5 -l 5 -d 20
+mru diffgif -i *NCAM00595*-rjcal.png -o DustDevilMovie_Sol3372.gif -v -b 0 -w 2.0 -g 2.5 -l 5 -d 20
 ```
 #### Cloud motion and shadows, MSL Sol 3325, Seq id NCAM00556:
 ```
-msl_fetch_raw -c NAV_RIGHT -s 3325
+mru msl-fetch -c NAV_RIGHT -s 3325
 
-calibrate -i *JPG -v -t 2.0
+mru calibrate -i *JPG -v -t 2.0
 
-diffgif -i *NCAM00556*-rjcal.png -o CloudShadow_3325.gif -v -b 0 -w 1.0 -g 2.5 -l 5 -d 20
+mru diffgif -i *NCAM00556*-rjcal.png -o CloudShadow_3325.gif -v -b 0 -w 1.0 -g 2.5 -l 5 -d 20
 ```
 #### Clouds, zenith movie, MSL Sol 3325, Seq id NCAM00551:
 ```
-msl_fetch_raw -c NAV_RIGHT -s 3325
+mru msl-fetch -c NAV_RIGHT -s 3325
 
-calibrate -i *JPG -v -t 2.0
+mru calibrate -i *JPG -v -t 2.0
 
-diffgif -i *NCAM00551*-rjcal.png -o CloudZenith_3325.gif -v -b 0 -w 3.0 -g 1.0 -l 5 -d 20
+mru diffgif -i *NCAM00551*-rjcal.png -o CloudZenith_3325.gif -v -b 0 -w 3.0 -g 1.0 -l 5 -d 20
 ```
 
 ## Data Update Checks
@@ -456,7 +411,7 @@ Fetches information as to the latest updated sols.
 
 Example Output:
 ```
-$ msl_latest
+$ mru msl-latest
 Latest data: 2022-02-23T18:30:03Z
 Latest sol: 3395
 Latest sols: [3365, 3374, 3376, 3378, 3390, 3393, 3394, 3395]
@@ -464,7 +419,7 @@ New Count: 364
 Sol Count: 225
 Total: 894201
 
-$ m20_latest
+$ mru m20-latest
 Latest data: 2022-02-23T10:22:33Z
 Latest sol: 359
 Latest sols: [349]
@@ -472,7 +427,7 @@ New Count: 270
 Sol Count: 99
 Total: 217981
 
-$ nsyt_latest
+$ mru nsyt-latest
 Latest data: 2022-02-14T15:11:15Z
 Latest sol: 1144
 Latest sols: [1144]
@@ -490,7 +445,7 @@ Currently, the output provides valules for the Mars Sol Date, coordinated Mars t
 
 Example Output:
 ```
-$ msl_date
+$ mru msl-date
 Mars Sol Date:          52391.26879394437
 Coordinated Mars Time:  06:27:03.797
 Mission Sol:            3122
@@ -498,7 +453,7 @@ Mission Time:           15:36:49.805 LMST
 Local True Solar Time:  15:29:37.673 LTST
 Solar Longitude:        47.04093399663567
 
-$ m20_date
+$ mru m20-date
 Mars Sol Date:          52391.270293050664
 Coordinated Mars Time:  06:29:13.320
 Mission Sol:            87
@@ -506,7 +461,7 @@ Mission Time:           11:38:56.520 LMST
 Local True Solar Time:  11:31:44.417 LTST
 Solar Longitude:        47.04161842268443
 
-$ nsyt_date 
+$ mru nsyt-date 
 Mars Sol Date:          52391.27048977531
 Coordinated Mars Time:  06:29:30.317
 Mission Sol:            880
@@ -523,17 +478,14 @@ The tool takes an input of 2+ images and an output location. An optional paramet
 
 ```
 USAGE:
-    focusmerge [FLAGS] [OPTIONS] --inputs <INPUT>... --output <OUTPUT>
-
-FLAGS:
-    -h, --help       Prints help information
-    -v               Show verbose output
-    -V, --version    Prints version information
+    mru focus-merge [OPTIONS] --output <OUTPUT>
 
 OPTIONS:
-    -i, --inputs <INPUT>...               Input
-    -o, --output <OUTPUT>                 Output
-    -w, --window <QUALITY_WINDOW_SIZE>    Quality determination window size (pixels)
+    -h, --help                            Print help information
+    -i, --input-files <INPUT_FILES>...    Input images
+    -o, --output <OUTPUT>                 Output image
+    -V, --version                         Print version information
+    -w, --window <WINDOW>                 Quality determination window size (pixels)
 ```
 
 ## References:
