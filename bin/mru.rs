@@ -7,6 +7,7 @@ use subs::*;
 // use std::ffi::OsString;
 // use std::path::PathBuf;
 
+extern crate wild;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -51,7 +52,7 @@ enum Mru {
 }
 
 fn main() {
-    let args = Cli::parse();
+    let args = Cli::parse_from(wild::args());
 
     if args.verbose {
         print::set_verbose(true);
