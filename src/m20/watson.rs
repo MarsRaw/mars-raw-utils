@@ -46,6 +46,11 @@ impl Calibration for M20Watson {
         data_max = decompanding::get_max_for_instrument(enums::Instrument::M20Watson) as f32;
         }
 
+        if input_file.find("ECM") != None && raw.image.is_grayscale() {
+            vprintln!("Image appears to be grayscale, applying debayering...");
+            raw.debayer();
+        }
+
         vprintln!("Flatfielding...");
         let mut flat = flatfield::load_flat(enums::Instrument::M20Watson).unwrap();
         if raw.image.width == 1584 && raw.image.height == 1184 {
@@ -59,11 +64,6 @@ impl Calibration for M20Watson {
             inpaint_mask = inpaint_mask.get_subframe(32, 16, 1584, 1184).unwrap();
         }
         raw.apply_inpaint_fix_with_mask(&inpaint_mask);
-
-        if input_file.find("ECM") != None && raw.image.is_grayscale() {
-            vprintln!("Image appears to be grayscale, applying debayering...");
-            raw.debayer();
-        }
 
         vprintln!("Applying color weights...");
         raw.apply_weight(cal_context.red_scalar, cal_context.green_scalar, cal_context.blue_scalar);
