@@ -138,6 +138,10 @@ impl RunnableSubcommand for Calibrate {
 
 
         in_files.par_iter().for_each(|input_file| {
+            if ! path::file_exists(&input_file) {
+                print_fail(&format!("Error: File not found: {}", input_file));
+                process::exit(1);
+            }
             let calibrator = Calibrate::get_calibrator_for_file(&input_file, &self.instrument);
             match calibrator {
                 Some(cal) => {

@@ -91,3 +91,9 @@ pub fn print_complete(file_base_name:&String, status:CompleteStatus) {
                     }
     );
 }
+
+
+
+pub fn print_experimental() {
+    println!("{} - Results may vary, bugs will be present, and not all functionality has been implemented", "Experimental Code!".red())
+}

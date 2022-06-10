@@ -28,9 +28,29 @@ pub struct Anaglyph {
 
 impl RunnableSubcommand for Anaglyph {
     fn run(&self) {
+        print::print_experimental();
 
-        let mut left_img = MarsImage::open(String::from(self.left.as_os_str().to_str().unwrap()), Instrument::M20MastcamZLeft);
-        let mut right_img = MarsImage::open(String::from(self.right.as_os_str().to_str().unwrap()), Instrument::M20MastcamZRight);
+        let left_image_path = String::from(self.left.as_os_str().to_str().unwrap());
+        let right_image_path = String::from(self.right.as_os_str().to_str().unwrap());
+        let out_file_path = self.output.as_os_str().to_str().unwrap();
+
+        if ! path::file_exists(&left_image_path) {
+            eprintln!("Error: File not found (left eye): {}", left_image_path);
+            process::exit(1);
+        }
+
+        if ! path::file_exists(&right_image_path) {
+            eprintln!("Error: File not found (right eye): {}", right_image_path);
+            process::exit(1);
+        }
+
+        if ! path::parent_exists_and_writable(&out_file_path) {
+            eprintln!("Error: Output file directory not found or is not writable: {}", out_file_path);
+            process::exit(1);
+        }
+
+        let mut left_img = MarsImage::open(left_image_path, Instrument::M20MastcamZLeft);
+        let mut right_img = MarsImage::open(right_image_path, Instrument::M20MastcamZRight);
     
         if self.mono {
             vprintln!("Converting input images to monochrome...");
@@ -67,6 +87,6 @@ impl RunnableSubcommand for Anaglyph {
         anaglyph::process_image(&left_img, &mut map, &left_cahv, &output_model, &ground, Eye::Left);
     
         map.normalize_to_16bit_with_max(255.0);
-        map.save(self.output.as_os_str().to_str().unwrap());
+        map.save(out_file_path);
     }
 }

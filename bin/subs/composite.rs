@@ -3,7 +3,8 @@ use mars_raw_utils::{
     composite
 };
 use sciimg::{
-    prelude::*
+    prelude::*,
+    quaternion::Quaternion
 };
 
 use crate::subs::runnable::RunnableSubcommand;
@@ -22,14 +23,15 @@ pub struct Composite {
     #[clap(long, short, help = "Anaglyph mode")]
     anaglyph: bool,
 
-    #[clap(long, short, help = "Azimuth rotation")]
+    #[clap(long, short = 'r', help = "Azimuth rotation")]
     azimuth: Option<f64>,
 
 }
 
 impl RunnableSubcommand for Composite {
     fn run(&self) {
-
+        print::print_experimental();
+        
         let in_files : Vec<String> = self.input_files.iter().map(|s| String::from(s.as_os_str().to_str().unwrap())).collect();
 
         let output = self.output.as_os_str().to_str().unwrap();
@@ -39,7 +41,11 @@ impl RunnableSubcommand for Composite {
             None => 0.0
         };
 
-        let map_context = composite::determine_map_context(&in_files);
+
+        let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
+
+
+        let map_context = composite::determine_map_context(&in_files, &quat);
         vprintln!("Map Context: {:?}", map_context);
         vprintln!("FOV Vertical: {}", map_context.top_lat - map_context.bottom_lat);
         vprintln!("FOV Horizontal: {}", map_context.right_lon - map_context.left_lon);
@@ -65,7 +71,7 @@ impl RunnableSubcommand for Composite {
         for in_file in in_files.iter() {
             if path::file_exists(in_file) {
                 vprintln!("Processing File: {}", in_file);
-                composite::process_file(in_file, &map_context, &mut map, self.anaglyph, azimuth_rotation, &initial_origin);
+                composite::process_file(in_file, &map_context, &mut map, self.anaglyph, &quat, &initial_origin);
             } else {
                 eprintln!("File not found: {}", in_file);
                 process::exit(1);

@@ -62,7 +62,7 @@ fn lookvector_to_cylindrical(lv:&LookVector, quat_o:Option<&Quaternion>, origin_
 
 static SPHERE_RADIUS:f64 = 100.0;
 
-fn get_lat_lon(c:&CameraModel, x:usize, y:usize) -> error::Result<LatLon> {
+fn get_lat_lon(c:&CameraModel, x:usize, y:usize, quat:&Quaternion) -> error::Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate{ line:y as f64, sample:x as f64 }) {
         Ok(lv) => {
             Ok(lookvector_to_cylindrical(&lv, None, &Vector::default()))
@@ -74,8 +74,7 @@ fn get_lat_lon(c:&CameraModel, x:usize, y:usize) -> error::Result<LatLon> {
 }
 
 
-
-pub fn determine_map_context(input_files:&Vec<String>) -> MapContext {
+pub fn determine_map_context(input_files:&Vec<String>, quat:&Quaternion) -> MapContext {
     let mut context = MapContext{
         top_lat : -90.0,
         bottom_lat : 90.0,
@@ -90,7 +89,7 @@ pub fn determine_map_context(input_files:&Vec<String>) -> MapContext {
         let img = MarsImage::open(input_file.to_owned(), Instrument::M20MastcamZLeft);
         match get_cahvor(&img) {
             Some(c) => {
-                match get_lat_lon(&c, 0, 0) {
+                match get_lat_lon(&c, 0, 0, &quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat );
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -100,7 +99,7 @@ pub fn determine_map_context(input_files:&Vec<String>) -> MapContext {
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, img.image.width, 0) {
+                match get_lat_lon(&c, img.image.width, 0, &quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat );
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -110,7 +109,7 @@ pub fn determine_map_context(input_files:&Vec<String>) -> MapContext {
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, 0, img.image.height) {
+                match get_lat_lon(&c, 0, img.image.height, &quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat );
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -120,7 +119,7 @@ pub fn determine_map_context(input_files:&Vec<String>) -> MapContext {
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, img.image.width, img.image.height) {
+                match get_lat_lon(&c, img.image.width, img.image.height, &quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat );
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -130,7 +129,7 @@ pub fn determine_map_context(input_files:&Vec<String>) -> MapContext {
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, img.image.width / 2, 0) {
+                match get_lat_lon(&c, img.image.width / 2, 0, &quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat );
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -140,7 +139,7 @@ pub fn determine_map_context(input_files:&Vec<String>) -> MapContext {
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, img.image.width / 2, img.image.height) {
+                match get_lat_lon(&c, img.image.width / 2, img.image.height, &quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat );
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -191,7 +190,7 @@ fn get_ls_from_map_xy(model:&CameraModel, map_context:&MapContext, x:usize, y:us
     (out_x_f, out_y_f)
 }
 
-pub fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&mut D, anaglyph:bool, azimuth_rotation:f64, initial_origin:&Vector) {
+pub fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&mut D, anaglyph:bool, quat:&Quaternion, initial_origin:&Vector) {
 
     let mut img = MarsImage::open(String::from(input_file), Instrument::M20MastcamZLeft);
     img.instrument = match &img.metadata {
@@ -209,7 +208,9 @@ pub fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&m
         Eye::DontCare
     };
 
-    let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
+    //let pitch = (map_context.top_lat + map_context.bottom_lat) / 2.0;
+    //vprintln!("Rotating pitch to {}", pitch);
+    //let quat = Quaternion::from_pitch_roll_yaw(0.0, -20.0f64.to_radians(), azimuth_rotation.to_radians());
 
 
     match get_cahvor(&img) {
