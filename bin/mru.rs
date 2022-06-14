@@ -48,7 +48,8 @@ enum Mru {
     MeanStack(meanstack::MeanStack),
     HpcFilter(hpcfilter::HpcFilter),
     Inpaint(inpaint::Inpaint),
-    Levels(levels::Levels)
+    Levels(levels::Levels),
+    Info(info::Info)
 }
 
 fn main() {
@@ -120,6 +121,9 @@ fn main() {
             args.run();
         },
         Mru::Levels(args) => {
+            args.run();
+        },
+        Mru::Info(args) => {
             args.run();
         }
     };

@@ -18,3 +18,4 @@ pub mod meanstack;
 pub mod hpcfilter;
 pub mod inpaint;
 pub mod levels;
+pub mod info;
