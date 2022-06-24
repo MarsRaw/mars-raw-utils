@@ -98,6 +98,9 @@ pub trait Drawable {
     /// Create a simple three-channel image buffer
     fn create(width:usize, height:usize) -> Self;
 
+    /// Create a simple three-channel image buffer
+    fn create_masked(width:usize, height:usize, mask_value:bool) -> Self;
+
     /// Paint a triangle on the buffer.
     fn paint_tri(&mut self, tri:&Triangle, avg_pixels:bool, eye:Eye);
 
@@ -119,6 +122,10 @@ pub trait Drawable {
 impl Drawable for RgbImage {
     fn create(width:usize, height:usize) -> Self {
         RgbImage::new_with_bands(width, height, 3, ImageMode::U16BIT).unwrap()
+    }
+
+    fn create_masked(width:usize, height:usize, mask_value:bool) -> Self {
+        RgbImage::new_with_bands_masked(width, height, 3, ImageMode::U16BIT, mask_value).unwrap()
     }
 
     fn get_width(&self) -> usize {
@@ -151,11 +158,15 @@ impl Drawable for RgbImage {
                         let g0 = self.get_band(1).get(x, y).unwrap() as f64;
                         let b0 = self.get_band(2).get(x, y).unwrap() as f64;
 
-                        if avg_pixels && (r0 > 0.0 || g0 > 0.0 || b0 > 0.0) {
+                        if self.get_band(0).get_mask_at_point(x, y).unwrap() && avg_pixels && (r0 > 0.0 || g0 > 0.0 || b0 > 0.0) {
                             r = (r + r0) / 2.0;
                             g = (g + g0) / 2.0;
                             b = (b + b0) / 2.0;
                         }
+
+                        self.put_mask(x, y, true, 0);
+                        self.put_mask(x, y, true, 1);
+                        self.put_mask(x, y, true, 2);
 
                         match eye {
                             Eye::Left => {

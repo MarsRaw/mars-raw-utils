@@ -216,7 +216,7 @@ pub fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&m
     match get_cahvor(&img) {
         Some(input_model) => {
 
-            println!("");
+            vprintln!("");
             vprintln!("Input Model C: {:?}", input_model.c());
             vprintln!("Input Model A: {:?}", input_model.a());
             vprintln!("Input Model H: {:?}", input_model.h());
@@ -224,7 +224,11 @@ pub fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&m
             vprintln!("Input Model O: {:?}", input_model.o());
             vprintln!("Input Model R: {:?}", input_model.r());
             vprintln!("Input Model E: {:?}", input_model.e());
-            println!("");
+            vprintln!("");
+
+            let band_0 = img.image.get_band(0);
+            let band_1 =  img.image.get_band(1);
+            let band_2 =  img.image.get_band(2);
 
             for x in 0..(img.image.width - 1) {
                 for y in 0..(img.image.height - 1) {
@@ -235,37 +239,42 @@ pub fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&m
                     let (tr_x, tr_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y, &quat, &origin_diff);
                     let (bl_x, bl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y+1, &quat, &origin_diff);
                     let (br_x, br_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y+1, &quat, &origin_diff);
+                    
+                    if ! band_0.get_mask_at_point(x, y).unwrap() {
+                        continue;
+                    }
+                    
 
                     let tl = Point::create(
                         tl_x,
                         tl_y,
-                        img.image.get_band(0).get(x, y).unwrap() as f64,
-                        img.image.get_band(1).get(x, y).unwrap() as f64,
-                        img.image.get_band(2).get(x, y).unwrap() as f64
+                        band_0.get(x, y).unwrap() as f64,
+                        band_1.get(x, y).unwrap() as f64,
+                        band_2.get(x, y).unwrap() as f64
                     );
 
                     let tr = Point::create(
                         tr_x,
                         tr_y,
-                        img.image.get_band(0).get(x+1, y).unwrap() as f64,
-                        img.image.get_band(1).get(x+1, y).unwrap() as f64,
-                        img.image.get_band(2).get(x+1, y).unwrap() as f64
+                        band_0.get(x+1, y).unwrap() as f64,
+                        band_1.get(x+1, y).unwrap() as f64,
+                        band_2.get(x+1, y).unwrap() as f64
                     );
 
                     let bl = Point::create(
                         bl_x,
                         bl_y,
-                        img.image.get_band(0).get(x, y+1).unwrap() as f64,
-                        img.image.get_band(1).get(x, y+1).unwrap() as f64,
-                        img.image.get_band(2).get(x, y+1).unwrap() as f64
+                        band_0.get(x, y+1).unwrap() as f64,
+                        band_1.get(x, y+1).unwrap() as f64,
+                        band_2.get(x, y+1).unwrap() as f64
                     );
 
                     let br = Point::create(
                         br_x,
                         br_y,
-                        img.image.get_band(0).get(x+1, y+1).unwrap() as f64,
-                        img.image.get_band(1).get(x+1, y+1).unwrap() as f64,
-                        img.image.get_band(2).get(x+1, y+1).unwrap() as f64
+                        band_0.get(x+1, y+1).unwrap() as f64,
+                        band_1.get(x+1, y+1).unwrap() as f64,
+                        band_2.get(x+1, y+1).unwrap() as f64
                     );
 
 

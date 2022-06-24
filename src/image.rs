@@ -175,6 +175,9 @@ impl MarsImage {
         self.image.clear_mask_on_band(2);
     }
 
+    pub fn get_mask_at(&self, x:usize, y:usize) -> bool {
+        self.image.get_mask_at(x, y)
+    }
 
     pub fn apply_inpaint_fix(&mut self) {
         let mask = inpaintmask::load_mask(self.instrument).unwrap();
