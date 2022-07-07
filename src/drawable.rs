@@ -121,7 +121,7 @@ pub trait Drawable {
 /// in the sciimg crate.
 impl Drawable for RgbImage {
     fn create(width:usize, height:usize) -> Self {
-        RgbImage::new_with_bands(width, height, 3, ImageMode::U16BIT).unwrap()
+        RgbImage::new_with_bands_masked(width, height, 3, ImageMode::U16BIT, true).unwrap()
     }
 
     fn create_masked(width:usize, height:usize, mask_value:bool) -> Self {
