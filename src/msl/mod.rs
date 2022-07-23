@@ -2,7 +2,7 @@ pub mod ecam;
 pub mod mahli;
 pub mod mcam;
 pub mod remote;
-pub mod lmst;
+pub mod missiontime;
 pub mod ccam;
 pub mod mardi;
 pub mod metadata;

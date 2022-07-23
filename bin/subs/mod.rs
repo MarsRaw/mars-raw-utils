@@ -5,6 +5,7 @@ pub mod runnable;
 pub mod msl;
 pub mod m20;
 pub mod nsyt;
+pub mod mer;
 
 // Multimission subcommands:
 pub mod calibrate;

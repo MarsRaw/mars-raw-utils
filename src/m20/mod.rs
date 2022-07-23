@@ -3,7 +3,7 @@ pub mod scam;
 pub mod zcam;
 pub mod watson;
 pub mod remote;
-pub mod lmst;
+pub mod missiontime;
 pub mod metadata;
 pub mod helinav;
 pub mod helirte;

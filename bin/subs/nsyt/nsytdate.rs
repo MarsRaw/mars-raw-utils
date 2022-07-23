@@ -10,12 +10,12 @@ pub struct NsytDate {}
 
 impl RunnableSubcommand for NsytDate {
     fn run(&self) {
-        match nsyt::lmst::get_lmst() {
+        match nsyt::missiontime::get_lmst() {
             Ok(mtime) => {
                 println!("Mars Sol Date:          {}", mtime.msd);
                 println!("Coordinated Mars Time:  {}", mtime.mtc_display);
                 println!("Mission Sol:            {}", mtime.sol);
-                println!("Mission Time:           {}", mtime.lmst_display);
+                println!("Mission Time:           {}", mtime.mission_time_display);
                 println!("Local True Solar Time:  {}", mtime.ltst_display);
                 println!("Solar Longitude:        {}", mtime.l_s);
             },

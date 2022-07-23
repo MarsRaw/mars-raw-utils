@@ -9,6 +9,11 @@ use std::time::{
     UNIX_EPOCH
 };
 
+pub enum TimeSystem {
+    LMST,
+    HLST
+}
+
 fn within_24(n:f64) -> f64 {
     let mut _n = n;
     if _n < 0.0 {
@@ -26,21 +31,22 @@ pub struct Hms {
 }
 
 pub struct MissionTime {
-    pub lmst_display: String,
+    pub mission_time_display: String,
     pub ltst_display: String,
     pub mtc_display: String,
     pub sol: i32,
-    pub lmst_hms: Hms,
+    pub mission_time_hms: Hms,
     pub ltst_hms: Hms,
     pub sclk: i32,
     pub msd: f64,
     pub mtc: f64,
     pub mtc_hms: Hms,
-    pub lmst: f64,
+    pub mission_time: f64,
     pub ltst: f64,
     pub l_s: f64,
     pub nu: f64,
-    pub e: f64
+    pub e: f64,
+    pub time_system: TimeSystem
 }
 
 
@@ -61,7 +67,7 @@ pub fn get_lmst_from_epoch_secs(epoch:f64, longitude:f64) -> error::Result<Missi
     let j2000_land = jd_tt_land - 2451545.0 + 0.00014;
     let sol_offset = ((j2000_land - 4.5) / 1.027491252) + 44796.0 - 0.00096;
     
-    get_lmst(-1.0 * sol_offset, longitude)
+    get_time(-1.0 * sol_offset, longitude, TimeSystem::LMST)
 }
 
 fn cos(v:f64) -> f64 {
@@ -90,7 +96,7 @@ fn t_to_hms(t:f64) -> Hms {
 
 // Based on m2020-bitbar which in turn is based on James Tauber's Mars Clock
 // See http://marsclock.com/
-pub fn get_lmst(sol_offset:f64, longitude:f64) -> error::Result<MissionTime> {
+pub fn get_time(sol_offset:f64, longitude:f64, time_system:TimeSystem) -> error::Result<MissionTime> {
     let seconds_since_epoch = get_seconds_since_epoch();
     let millis = seconds_since_epoch * 1000.0;
 
@@ -124,12 +130,18 @@ pub fn get_lmst(sol_offset:f64, longitude:f64) -> error::Result<MissionTime> {
     let msd = ((j2000 - 4.5) / constants::time::MARS_SEC_ADJUSTMENT) + 44796.0 - 0.00096;
     let mtc = (24.0 * msd) % 24.0;
 
-    let lambda = 360.0 - longitude;
-    let sol = ((msd - lambda / 360.0) + sol_offset).floor();
-    let lmst = within_24(mtc - lambda * 24.0 / 360.0);
-    let ltst = within_24(lmst + eot * 24.0 / 360.0);
+    let sol = match time_system {
+        TimeSystem::LMST => ((msd - (360.0 - longitude) / 360.0) + sol_offset).floor(),
+        TimeSystem::HLST => msd + sol_offset
+    };
+    let mission_time = match time_system {
+        TimeSystem::LMST => within_24(mtc - (360.0 - longitude) * 24.0 / 360.0),
+        TimeSystem::HLST => (24.0 * sol) % 24.0
+    };
 
-    let lmst_hms = t_to_hms(lmst);
+    let ltst = within_24(mission_time + eot * 24.0 / 360.0);
+
+    let mission_time_hms = t_to_hms(mission_time);
     let ltst_hms = t_to_hms(ltst);
     let mtc_hms = t_to_hms(mtc);
 
@@ -137,25 +149,26 @@ pub fn get_lmst(sol_offset:f64, longitude:f64) -> error::Result<MissionTime> {
     // let unix_count = seconds_since_epoch - constants::time::M20_UNIX_COUNT_OFFSET;
     // let display_sclk = constants::time::M20_SURFACE_SCLK + unix_count + 2.0;
 
-    let lmst_string = format!("{:02}:{:02}:{:06.3} LMST", lmst_hms.hours, lmst_hms.minutes, lmst_hms.seconds);
+    let mission_time_string = format!("{:02}:{:02}:{:06.3} LMST", mission_time_hms.hours, mission_time_hms.minutes, mission_time_hms.seconds);
     let ltst_string = format!("{:02}:{:02}:{:06.3} LTST", ltst_hms.hours, ltst_hms.minutes, ltst_hms.seconds);
     let mtc_string = format!("{:02}:{:02}:{:06.3}", mtc_hms.hours, mtc_hms.minutes, mtc_hms.seconds);
 
     Ok(MissionTime{
-        lmst_display: lmst_string,
+        mission_time_display: mission_time_string,
         ltst_display: ltst_string,
         mtc_display: mtc_string,
         sol: sol as i32,
-        lmst_hms,
+        mission_time_hms,
         ltst_hms,
         sclk: 0_i32,
         msd,
         mtc,
         mtc_hms,
-        lmst,
+        mission_time,
         ltst,
         l_s,
         nu,
-        e
+        e,
+        time_system
     })
 }

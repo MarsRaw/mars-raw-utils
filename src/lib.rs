@@ -8,6 +8,7 @@ pub mod print;
 pub mod m20;
 pub mod msl;
 pub mod nsyt;
+pub mod mer;
 pub mod constants;
 pub mod calibfile;
 pub mod path;

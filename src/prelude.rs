@@ -7,6 +7,7 @@ pub use crate::path;
 pub use crate::m20;
 pub use crate::msl;
 pub use crate::nsyt;
+pub use crate::mer;
 pub use crate::util;
 pub use crate::min;
 pub use crate::max;

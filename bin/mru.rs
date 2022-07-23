@@ -36,6 +36,8 @@ enum Mru {
     NsytDate(nsyt::nsytdate::NsytDate),
     NsytLatest(nsyt::nsytlatest::NsytLatest),
 
+    MerDate(mer::merdate::MerDate),
+
     Calibrate(calibrate::Calibrate),
     Anaglyph(anaglyph::Anaglyph),
     Composite(composite::Composite),
@@ -91,6 +93,9 @@ fn main() {
             args.run();
         },
         Mru::NsytLatest(args) => {
+            args.run();
+        },
+        Mru::MerDate(args) => {
             args.run();
         },
         Mru::Anaglyph(args) => {

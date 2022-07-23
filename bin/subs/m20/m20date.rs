@@ -10,12 +10,12 @@ pub struct M20Date {}
 
 impl RunnableSubcommand for M20Date {
     fn run(&self) {
-        match m20::lmst::get_lmst() {
+        match m20::missiontime::get_lmst() {
             Ok(mtime) => {
                 println!("Mars Sol Date:          {}", mtime.msd);
                 println!("Coordinated Mars Time:  {}", mtime.mtc_display);
                 println!("Mission Sol:            {}", mtime.sol);
-                println!("Mission Time:           {}", mtime.lmst_display);
+                println!("Mission Time:           {}", mtime.mission_time_display);
                 println!("Local True Solar Time:  {}", mtime.ltst_display);
                 println!("Solar Longitude:        {}", mtime.l_s);
             },

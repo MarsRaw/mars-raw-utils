@@ -29,7 +29,15 @@ pub mod time {
 
     pub const NSYT_LONGITUDE: f64 = 135.6234;
     pub const NSYT_SOL_OFFSET: f64 = -51510.0;
-    
+
+    // MER-B: Opportunity
+    pub const MER_MERB_LONGITUDE: f64 = -5.343715;
+    pub const MER_MERB_SOL_OFFSET: f64 = -46235.0 - 0.042431;
+
+    // MER-A: Spirit
+    pub const MER_MERA_LONGITUDE: f64 = 175.5;
+    pub const MER_MERA_SOL_OFFSET: f64 = -46216.0; // Might need fine-tuning
+
     pub const LEAP_SEC : f64 = 2.0;
     pub const MARS_SEC_ADJUSTMENT : f64 = 1.02749125;
     pub const TAI_OFFSET: f64 = 37.0;
