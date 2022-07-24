@@ -1,6 +1,7 @@
 use crate::{
     vprintln,
-    path
+    path,
+    util
 };
 
 use sciimg::{
@@ -33,7 +34,7 @@ fn make_diff_container(image:&rgbimage::RgbImage, blur_amount:usize) -> Diff {
     }
 }
 
-pub fn focusmerge(input_files:&Vec<String>, quality_window_size:usize, output_file:&str) {
+pub fn focusmerge(input_files:&Vec<String>, quality_window_size:usize, depth_map:bool, output_file:&str) {
     let mut images : Vec<Diff> = vec!();
 
     for in_file in input_files.iter() {
@@ -48,6 +49,8 @@ pub fn focusmerge(input_files:&Vec<String>, quality_window_size:usize, output_fi
         }
     }
 
+    let mut depth_map_buffer = imagebuffer::ImageBuffer::new_with_fill_as_mode(images[0].band_0.width, images[0].band_0.height, 0.0, images[0].band_0.mode).unwrap();
+
     let mut b0_merge_buffer = imagebuffer::ImageBuffer::new_with_fill_as_mode(images[0].band_0.width, images[0].band_0.height, 0.0, images[0].band_0.mode).unwrap();
     let mut b1_merge_buffer = imagebuffer::ImageBuffer::new_with_fill_as_mode(images[0].band_0.width, images[0].band_0.height, 0.0, images[0].band_0.mode).unwrap();
     let mut b2_merge_buffer = imagebuffer::ImageBuffer::new_with_fill_as_mode(images[0].band_0.width, images[0].band_0.height, 0.0, images[0].band_0.mode).unwrap();
@@ -60,8 +63,12 @@ pub fn focusmerge(input_files:&Vec<String>, quality_window_size:usize, output_fi
             let mut b1_value = 0.0_f32;
             let mut b2_value = 0.0_f32;
             let mut max_quality = 0.0_f32;
+            let mut depth_value = 0;
 
-            for image in images.iter() {
+            for image_num in 0..images.len() {
+
+                let image:&Diff = &images[image_num];
+
                 let q0 = quality::get_point_quality_estimation_on_diff_buffer(&image.band_0, quality_window_size, x, y);
                 let q1 = quality::get_point_quality_estimation_on_diff_buffer(&image.band_1, quality_window_size, x, y);
                 let q2 = quality::get_point_quality_estimation_on_diff_buffer(&image.band_2, quality_window_size, x, y);
@@ -71,6 +78,7 @@ pub fn focusmerge(input_files:&Vec<String>, quality_window_size:usize, output_fi
                 };
 
                 if q > max_quality {
+                    depth_value = image_num;
                     max_quality = q;
                     b0_value = image.image.get_band(0).get(x, y).unwrap();
                     b1_value = image.image.get_band(1).get(x, y).unwrap();
@@ -78,6 +86,7 @@ pub fn focusmerge(input_files:&Vec<String>, quality_window_size:usize, output_fi
                 }
             }
 
+            depth_map_buffer.put(x, y, depth_value as f32);
             b0_merge_buffer.put(x, y, b0_value);
             b1_merge_buffer.put(x, y, b1_value);
             b2_merge_buffer.put(x, y, b2_value);
@@ -87,5 +96,11 @@ pub fn focusmerge(input_files:&Vec<String>, quality_window_size:usize, output_fi
     let merge_buffer = rgbimage::RgbImage::new_from_buffers_rgb(&b0_merge_buffer, &b1_merge_buffer, &b2_merge_buffer, b0_merge_buffer.mode).unwrap();
 
     merge_buffer.save(&output_file);
+
+    if depth_map {
+        depth_map_buffer = depth_map_buffer.normalize(0.0, 65535.0).unwrap();
+        let depth_map_out_file = util::append_file_name(output_file, "depth");
+        depth_map_buffer.save_16bit(&depth_map_out_file);
+    }
 
 }
