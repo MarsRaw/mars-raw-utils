@@ -65,7 +65,7 @@ impl RunnableSubcommand for MslFetch {
             None => if sol >= 0 { sol } else { 100000 }
         };
 
-        let maxsol = match self.minsol {
+        let maxsol = match self.maxsol {
             Some(s) => if sol >= 0 { sol } else { s as i32 },
             None => if sol >= 0 { sol } else { -100000 as i32 }
         };
