@@ -15,6 +15,9 @@ pub struct FocusMerge {
 
     #[clap(long, short = 'w', help = "Quality determination window size (pixels)")]
     window: Option<usize>,
+
+    #[clap(long, short = 'd', help = "Produce a depth map")]
+    depth_map: bool
 }
 
 impl RunnableSubcommand for FocusMerge {
@@ -26,7 +29,7 @@ impl RunnableSubcommand for FocusMerge {
 
         let output = self.output.as_os_str().to_str().unwrap();
         let in_files : Vec<String> = self.input_files.iter().map(|s| String::from(s.as_os_str().to_str().unwrap())).collect();
-        focusmerge::focusmerge(&in_files, quality_window_size, &output);
+        focusmerge::focusmerge(&in_files, quality_window_size, self.depth_map, &output);
 
     }
 }
