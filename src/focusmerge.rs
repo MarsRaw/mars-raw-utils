@@ -1,3 +1,5 @@
+use std::process;
+
 use crate::{
     vprintln,
     path,
@@ -11,6 +13,8 @@ use sciimg::{
     stats,
     quality
 };
+
+use colored::*;
 
 struct Diff {
     band_0:imagebuffer::ImageBuffer,
@@ -37,11 +41,24 @@ fn make_diff_container(image:&rgbimage::RgbImage, blur_amount:usize) -> Diff {
 pub fn focusmerge(input_files:&Vec<String>, quality_window_size:usize, depth_map:bool, output_file:&str) {
     let mut images : Vec<Diff> = vec!();
 
+    let mut out_width = 0;
+    let mut out_height = 0;
+
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
 
             let image = rgbimage::RgbImage::open16(&in_file).unwrap();
+
+            if out_width == 0 {
+                out_width = image.width;
+                out_height = image.height;
+            } else if out_width != image.width || out_height != image.height {
+                eprintln!("{} Input images have differing dimensions. Cannot continue", "Error".red());
+                process::exit(1);
+            }
+            
+
             images.push(make_diff_container(&image, 5));
         } else {
             eprintln!("File not found: {}", in_file);
