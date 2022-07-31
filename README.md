@@ -9,7 +9,7 @@ Implemented calibration steps include (varying per instrument):
 | ---------- |:-----------:|:---------:|:-------:|:------------:|:------:|:------:|
 | MSL        | MastCam     | &#9745;   | &#9745; |              |        |        |
 | MSL        | MAHLI       | &#9745;   |         | &#9745;      | &#9745;| &#9745;|
-| MSL        | NavCam      |           |         | &#9745;      | &#9745;| &#9745;|
+| MSL        | NavCam**    |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | Rear Haz    |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | Front Haz   |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | ChemCam RMI |           |         |              | &#9745;|        |
@@ -29,10 +29,20 @@ Implemented calibration steps include (varying per instrument):
 
 \* Hot pixel detection and correction
 
+\** For the purposes of this project, the cameras on MSL RCE-A have been ignored as the mission is very unlikely to return to that computer.
 
-Additional instruments will be implemented more or less whenever I get to them...
+Additional instruments will be implemented more or less whenever I get to them.
 
-## Building from source:
+## Quick Start
+Check out the wiki for some quick start topics: https://github.com/kmgill/mars-raw-utils/wiki
+
+## Contributing
+Feedback, issues, and contributions are always welcomed. Should enough interest arise in contributing development efforts, I will write up a contribution guide. 
+
+## Citing Mars Raw Utils
+Citing MRU is not required, but if the software has significantly contributed to your research or if you'd like to acknowledge the project in your works, I would be grateful if you did so.  
+
+## Building from source
 A working Rust (https://www.rust-lang.org/) installation is required for building.
 
 So far I've only tested building on Ubuntu 21.10, natively and within the Windows Subsystem for Linux on Windows 10, and on MacOSX Catalina. Within the project folder, the software can be built for testing via `cargo build` and individual binaries can be run in debug mode via, for example, `cargo run --bin m20_fetch_raw -- -i`
@@ -41,7 +51,7 @@ To build successfully on Linux, you'll likely need the following packages instal
 * libssl-dev (Ubuntu)
 * openssl-devel (RHEL, CentOS, Fedora)
 
-### Clone from git:
+### Clone from git
 ```
 git clone git@github.com:kmgill/mars-raw-utils.git
 cd mars-raw-utils/
@@ -49,7 +59,7 @@ git submodule init
 git submodule update
 ```
 
-### Install via cargo:
+### Install via cargo
 This is the easiest installation method for *nix-based systems. It has not been tested in Windows.
 
 ```
@@ -59,7 +69,7 @@ cp mars-raw-utils-data/caldata/* ~/.marsdata
 ```
 NOTE: You can set $MARS_RAW_DATA in ~/.bash_profile if a custom data directory is required.
 
-### Install via apt (Debian, Ubuntu, ...):
+### Install via apt (Debian, Ubuntu, ...)
 ```
 cargo install cargo-deb
 cargo deb
@@ -76,13 +86,13 @@ rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.1.3-1.el8.x86_64.r
 ```
 NOTE: Adjust the output rpm package filename to what is created by build.
 
-### Install on MacOS via Homebrew:
+### Install on MacOS via Homebrew
 ```
 brew tap kmgill/homebrew-mars-raw-utils
 brew install marsrawutils
 ```
 
-### Docker:
+### Docker
 The dockerfile demonstrates a method for building an installable debian package, or you can use the container itself:
 
 ```
@@ -94,7 +104,7 @@ docker exec -it mars_raw_utils bash
 ### Building RPMs using Docker
 Fedora targetted RPMs can be built using `dockerbuild.sh` which will result in the build artifacts being placed into the `target` directory.
 
-## Specifying Calibration Data Location:
+## Specifying Calibration Data Location
 By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can use the default `~/.marsdata` or set the calibration file directory by using the `MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
 
 ## Calibration Profiles
@@ -112,7 +122,7 @@ hot_pixel_detection_threshold = 0
 filename_suffix = "rjcal-rad"
 ```
 
-### Included calibration profiles:
+### Included calibration profiles
  * m20_hrte_rad
  * m20_watson_bay
  * m20_watson_ilt
@@ -173,8 +183,8 @@ OPTIONS:
             HPC window size
 ```
 
-## Mars Science Laboratory (Curiosity):
-### Fetch Raws:
+## Mars Science Laboratory (Curiosity)
+### Fetch Raws
 ```
 USAGE:
     mru msl-fetch [OPTIONS]
@@ -196,11 +206,11 @@ OPTIONS:
     -V, --version               Print version information
 ```
 
-#### Examples:
+#### Examples
 
 Show available instruments:
 ```
-mru msl-fetch -i
+mru msl-fetch -I
 ```
 
 List what's available for Mastcam on sol 3113: (remove the `-l` to download the images)
@@ -220,8 +230,8 @@ mru msl-fetch -c NAV_RIGHT -m 3110 -M 3112 -S NCAM00595
 
 
 
-## Mars 2020 (Perseverance):
-### Fetch Raws:
+## Mars 2020 (Perseverance)
+### Fetch Raws
 ```
 USAGE:
     mru m20-fetch [OPTIONS]
@@ -247,7 +257,7 @@ OPTIONS:
 
 
 ## InSight
-### Fetch Raws:
+### Fetch Raws
 ```
 USAGE:
     mru nsyt-fetch [OPTIONS]
@@ -381,7 +391,7 @@ OPTIONS:
 ```
 
 ### Examples
-#### Dust Devils, MSL Sol 3372, Seq id NCAM00595:
+#### Dust Devils, MSL Sol 3372, Seq id NCAM00595
 ```
 mru msl-fetch -c NAV_RIGHT_B -s 3372 -S NCAM00595
 
@@ -389,7 +399,7 @@ mru calibrate -i *JPG -v -t 2.0
 
 mru diffgif -i *NCAM00595*-rjcal.png -o DustDevilMovie_Sol3372.gif -v -b 0 -w 2.0 -g 2.5 -l 5 -d 20
 ```
-#### Cloud motion and shadows, MSL Sol 3325, Seq id NCAM00556:
+#### Cloud motion and shadows, MSL Sol 3325, Seq id NCAM00556
 ```
 mru msl-fetch -c NAV_RIGHT -s 3325
 
@@ -397,7 +407,7 @@ mru calibrate -i *JPG -v -t 2.0
 
 mru diffgif -i *NCAM00556*-rjcal.png -o CloudShadow_3325.gif -v -b 0 -w 1.0 -g 2.5 -l 5 -d 20
 ```
-#### Clouds, zenith movie, MSL Sol 3325, Seq id NCAM00551:
+#### Clouds, zenith movie, MSL Sol 3325, Seq id NCAM00551
 ```
 mru msl-fetch -c NAV_RIGHT -s 3325
 
@@ -439,9 +449,9 @@ Total: 6353
 
 
 ## Mission Dates
-Mission time and sol are available for MSL, Mars2020, and InSight via `msl_date`, `m20_date`, and `nsyt_date`, respectively. 
+Mission time and sol are available for MSL, Mars2020, InSight, and the Mars Exploration Rovers via `msl_date`, `m20_date`, `nsyt_date`, and `mer-date` respectively. 
 
-Currently, the output provides valules for the Mars Sol Date, coordinated Mars time, mission sol, mission time (LMST), local true color time, and areocentric solar longitude. The algorithm used for the calculation is based on James Tauber's marsclock.com and is exposed via `time::get_lmst()`.
+Currently, the output provides valules for the Mars Sol Date, coordinated Mars time, mission sol, mission time (LMST/HLST), local true color time, and areocentric solar longitude. The algorithm used for the calculation is based on James Tauber's marsclock.com and is exposed via `time::get_time(sol_offset:f64, longitude:f64, time_system:time::TimeSystem)`.
 
 Example Output:
 ```
@@ -468,6 +478,23 @@ Mission Sol:            880
 Mission Time:           15:31:59.933 LMST
 Local True Solar Time:  15:24:47.833 LTST
 Solar Longitude:        47.041708238462114
+
+$ mru mer-date
+MER-A / Spirit:
+Mars Sol Date:          52818.42509854407
+Coordinated Mars Time:  10:12:08.514
+Mission Sol:            6602
+Mission Time:           10:12:08.514 LMST
+Local True Solar Time:  09:52:00.678 LTST
+Solar Longitude:        276.7135713289173
+-----------------------------------------------
+MER-B / Opportunity:
+Mars Sol Date:          52818.42509854497
+Coordinated Mars Time:  10:12:08.514
+Mission Sol:            6583
+Mission Time:           09:11:02.476 LMST
+Local True Solar Time:  08:50:54.640 LTST
+Solar Longitude:        276.7135713294991
 ```
 
 ## Focus Merge
@@ -481,6 +508,7 @@ USAGE:
     mru focus-merge [OPTIONS] --output <OUTPUT>
 
 OPTIONS:
+    -d, --depth-map                       Produce a depth map
     -h, --help                            Print help information
     -i, --input-files <INPUT_FILES>...    Input images
     -o, --output <OUTPUT>                 Output image
@@ -488,7 +516,7 @@ OPTIONS:
     -w, --window <WINDOW>                 Quality determination window size (pixels)
 ```
 
-## References:
+## References
 
 Bell, J. F. et al. (2017), The Mars Science Laboratory Curiosity rover
 Mastcam instruments: Preflight and in‐flight calibration, validation,
