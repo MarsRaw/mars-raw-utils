@@ -51,7 +51,9 @@ enum Mru {
     HpcFilter(hpcfilter::HpcFilter),
     Inpaint(inpaint::Inpaint),
     Levels(levels::Levels),
-    Info(info::Info)
+    Info(info::Info),
+
+    Autotie(autotie::Autotie)
 }
 
 fn main() {
@@ -129,6 +131,9 @@ fn main() {
             args.run();
         },
         Mru::Info(args) => {
+            args.run();
+        },
+        Mru::Autotie(args) => {
             args.run();
         }
     };

@@ -604,3 +604,5 @@ W. Timothy Elam, et al. "The PIXL Instrument on the Mars 2020 Perseverance Rover
 arXiv:2103.07001 (2021). https://arxiv.org/abs/2103.07001
 
 Gennery, D.B. Generalized Camera Calibration Including Fish-Eye Lenses. Int J Comput Vision 68, 239–266 (2006). https://doi.org/10.1007/s11263-006-5168-1
+
+Lowe, David G. "Distinctive Image Features from Scale-Invariant Keypoints" University of British Columbia, January 2004 https://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf

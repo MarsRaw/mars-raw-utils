@@ -20,3 +20,4 @@ pub mod hpcfilter;
 pub mod inpaint;
 pub mod levels;
 pub mod info;
+pub mod autotie;
