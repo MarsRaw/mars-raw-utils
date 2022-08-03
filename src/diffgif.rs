@@ -120,7 +120,7 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
         }
     }
 
-    let mm = d.get_min_max().unwrap();
+    let mm = d.get_min_max();
     let rng = 65535.0;
     let norm_min = (rng * black_level) + mm.min;
     let norm_max = (rng * white_level) + mm.min;
@@ -152,7 +152,7 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
             // Then undo that offset and scaling. 
             // We lose precision by about half
             
-            let mnmx = n.get_min_max().unwrap();
+            let mnmx = n.get_min_max();
             let init_mn = mnmx.min;
             if init_mn < 0.0 {
                 n.scale_mut(0.5);
@@ -178,7 +178,7 @@ fn process_band(band:&imagebuffer::ImageBuffer, mean_band:&imagebuffer::ImageBuf
             merged
         },
         false => {
-            let mnmx = blurred.get_min_max().unwrap();
+            let mnmx = blurred.get_min_max();
             
             if mnmx.min.abs() < mnmx.max.abs() {
                 blurred.clip_mut(mnmx.min, mnmx.min.abs());
