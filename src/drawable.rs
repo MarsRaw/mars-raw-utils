@@ -158,15 +158,13 @@ impl Drawable for RgbImage {
                         let g0 = self.get_band(1).get(x, y).unwrap() as f64;
                         let b0 = self.get_band(2).get(x, y).unwrap() as f64;
 
-                        if self.get_band(0).get_mask_at_point(x, y).unwrap() && avg_pixels && (r0 > 0.0 || g0 > 0.0 || b0 > 0.0) {
+                        if self.get_band(0).get_mask_at_point(x, y) && avg_pixels && (r0 > 0.0 || g0 > 0.0 || b0 > 0.0) {
                             r = (r + r0) / 2.0;
                             g = (g + g0) / 2.0;
                             b = (b + b0) / 2.0;
                         }
 
-                        self.put_mask(x, y, true, 0);
-                        self.put_mask(x, y, true, 1);
-                        self.put_mask(x, y, true, 2);
+                        self.put_alpha(x, y, true);
 
                         match eye {
                             Eye::Left => {
