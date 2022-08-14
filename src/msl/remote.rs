@@ -57,17 +57,29 @@ fn print_image(output_path:&str, image:&Image) {
                 );
 }
 
+fn search_empty_or_has_match(image_id:&String, search:&Vec<String>) -> bool {
+    if search.is_empty() {
+        return true;
+    }
 
-fn process_results(results:&MslApiResults, thumbnails:bool, list_only:bool, search:&str, only_new:bool, output_path:&str) -> error::Result<i32>  {
+    for i in search.iter() {
+        if image_id.find(i) != None {
+            return true;
+        }
+    }
+    false
+}
+
+fn process_results(results:&MslApiResults, thumbnails:bool, list_only:bool, search:&Vec<String>, only_new:bool, output_path:&str) -> error::Result<i32>  {
     let mut valid_img_count = 0;
     for image in results.items.iter() {
         // If this image is a thumbnail and we're ignoring those, then ignore it.
         if image.is_thumbnail && ! thumbnails {
             continue;
         }
-
+        
         // If we're searching for a substring and this image doesn't match, skip it.
-        if !search.is_empty() && image.imageid.find(&search) == None {
+        if ! search_empty_or_has_match(&image.imageid, &search) {
             continue;
         }
 
@@ -134,7 +146,7 @@ fn submit_query(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i3
 }
 
 
-pub fn fetch_page(cameras:&[String], num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool, output_path:&str) -> error::Result<i32> {
+pub fn fetch_page(cameras:&[String], num_per_page:i32, page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&Vec<String>, only_new:bool, output_path:&str) -> error::Result<i32> {
     match submit_query(&cameras, num_per_page, Some(page), minsol, maxsol) {
         Ok(v) => {
             let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
@@ -184,7 +196,7 @@ pub fn fetch_latest() -> error::Result<LatestData> {
     }
 }
 
-pub fn fetch_all(cameras:&[String], num_per_page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool, output_path:&str) -> error::Result<i32> {
+pub fn fetch_all(cameras:&[String], num_per_page:i32, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&Vec<String>, only_new:bool, output_path:&str) -> error::Result<i32> {
 
     let stats = match fetch_stats(&cameras, minsol, maxsol) {
         Ok(s) => s,
@@ -207,7 +219,7 @@ pub fn fetch_all(cameras:&[String], num_per_page:i32, minsol:i32, maxsol:i32, th
 }
 
 
-pub fn remote_fetch(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&str, only_new:bool, output_path:&str) -> error::Result<i32> {
+pub fn remote_fetch(cameras:&[String], num_per_page:i32, page:Option<i32>, minsol:i32, maxsol:i32, thumbnails:bool, list_only:bool, search:&Vec<String>, only_new:bool, output_path:&str) -> error::Result<i32> {
     match page {
         Some(p) => {
             fetch_page(&cameras, num_per_page, p, minsol, maxsol, thumbnails, list_only, search, only_new, output_path)

@@ -33,8 +33,8 @@ pub struct NsytFetch {
     #[clap(long, short = 'p', help = "Results page (starts at 1)")]
     page: Option<u8>,
 
-    #[clap(long, short = 'S', help = "Sequence ID")]
-    seqid: Option<String>,
+    #[clap(long, short = 'f', help = "Filter on image id", multiple_values(true))]
+    filter: Option<Vec<String>>,
 
     #[clap(long, short = 'I', help = "List instruments")]
     instruments: bool,
@@ -81,9 +81,9 @@ impl RunnableSubcommand for NsytFetch {
             None => None
         };
 
-        let search = match &self.seqid {
+        let search = match &self.filter {
             Some(s) => s.clone(),
-            None => "".to_string()
+            None => vec![]
         };
 
         let output = match &self.output {
@@ -108,7 +108,7 @@ impl RunnableSubcommand for NsytFetch {
                                             maxsol, 
                                             self.thumbnails, 
                                             self.list, 
-                                            &search.as_str(), 
+                                            &search, 
                                             self.new, 
                                             &output.as_str()) {
             Ok(c) => println!("{} images found", c),
