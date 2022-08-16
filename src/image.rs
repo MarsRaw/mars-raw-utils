@@ -163,20 +163,16 @@ impl MarsImage {
         self.apply_flat(&flat.image);
     }
 
-    pub fn apply_mask(&mut self, mask:&ImageBuffer) {
-        self.image.apply_mask_to_band(&mask, 0);
-        self.image.apply_mask_to_band(&mask, 1);
-        self.image.apply_mask_to_band(&mask, 2);
+    pub fn apply_alpha(&mut self, mask:&ImageBuffer) {
+        self.image.copy_alpha_from(&mask);
     }
 
-    pub fn clear_mask(&mut self) {
-        self.image.clear_mask_on_band(0);
-        self.image.clear_mask_on_band(1);
-        self.image.clear_mask_on_band(2);
+    pub fn clear_alpha(&mut self) {
+        self.image.clear_alpha();
     }
 
-    pub fn get_mask_at(&self, x:usize, y:usize) -> bool {
-        self.image.get_mask_at(x, y)
+    pub fn get_alpha_at(&self, x:usize, y:usize) -> bool {
+        self.image.get_alpha_at(x, y)
     }
 
     pub fn apply_inpaint_fix(&mut self) {

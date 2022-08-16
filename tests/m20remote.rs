@@ -21,9 +21,11 @@ fn test_m20_instrument_fetches() {
     "MCZ_LEFT","MCZ_RIGHT", "EDL_DDCAM", "EDL_PUCAM1", "EDL_PUCAM2", "EDL_RUCAM", "EDL_RDCAM", "LCAM",
     "SHERLOC_WATSON"];
 
+    let f: Vec<String> = vec![];
+
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
-        remote::remote_fetch(&vec![String::from(i)], 5, Some(0), 70, 79, false, false, true, "", false, "").unwrap();
+        remote::remote_fetch(&vec![String::from(i)], 5, Some(0), 70, 79, false, false, true, &f, false, "").unwrap();
     }
 
 }

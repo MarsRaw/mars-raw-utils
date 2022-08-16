@@ -38,7 +38,7 @@ impl Calibration for MslChemCam {
 
         vprintln!("Loading image mask");
         let mask = imagebuffer::ImageBuffer::from_file(calibfile::get_calibration_file_for_instrument(enums::Instrument::MslChemCam, enums::CalFileType::Mask).unwrap().as_str()).unwrap();
-        raw.apply_mask(&mask);
+        raw.apply_alpha(&mask);
 
         let data_max = 255.0;
 

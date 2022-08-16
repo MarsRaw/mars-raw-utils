@@ -17,10 +17,11 @@ fn test_msl_latest() {
 #[ignore] // Ignoring this by default to prevent unneccessary load on NASA's servers
 fn test_nsyt_instrument_fetches() {
     let instruments = vec!["idc", "icc"];
+    let f: Vec<String> = vec![];
 
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
-        remote_fetch(&vec![String::from(i)], 5, Some(0), 3119, 3119, false, true, "", false, "").unwrap();
+        remote_fetch(&vec![String::from(i)], 5, Some(0), 3119, 3119, false, true, &f, false, "").unwrap();
     }
 
 }

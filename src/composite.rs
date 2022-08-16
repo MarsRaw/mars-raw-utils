@@ -240,7 +240,7 @@ pub fn process_file<D:Drawable>(input_file:&str, map_context:&MapContext, map:&m
                     let (bl_x, bl_y) = get_ls_from_map_xy(&input_model, &map_context, x, y+1, &quat, &origin_diff);
                     let (br_x, br_y) = get_ls_from_map_xy(&input_model, &map_context, x+1, y+1, &quat, &origin_diff);
                     
-                    if ! band_0.get_mask_at_point(x, y).unwrap() {
+                    if ! band_0.get_mask_at_point(x, y) {
                         continue;
                     }
                     
