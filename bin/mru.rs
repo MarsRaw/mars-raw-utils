@@ -51,7 +51,8 @@ enum Mru {
     HpcFilter(hpcfilter::HpcFilter),
     Inpaint(inpaint::Inpaint),
     Levels(levels::Levels),
-    Info(info::Info)
+    Info(info::Info),
+    Xeye(xeye::CrossEye)
 }
 
 fn main() {
@@ -129,6 +130,9 @@ fn main() {
             args.run();
         },
         Mru::Info(args) => {
+            args.run();
+        },
+        Mru::Xeye(args) => {
             args.run();
         }
     };
