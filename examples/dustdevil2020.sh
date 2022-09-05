@@ -22,7 +22,7 @@ fi
 
 cd ${soldir}/ECAM 
 
-mru m20-fetch -c NAVCAM_LEFT -s $sol -S ${seqid}
+mru m20-fetch -c NAVCAM_LEFT -s $sol -f ${seqid}
 
 mru calibrate -i *J0?.png 
 

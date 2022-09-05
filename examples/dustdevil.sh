@@ -17,7 +17,7 @@ fi
 cd $sol/ECAM 
 
 
-mru msl-fetch -c NAV_LEFT -s $sol
+mru msl-fetch -c NAV_RIGHT  -s $sol -n
 
 mru calibrate -i *JPG -t 2.0
 
@@ -29,7 +29,7 @@ mv *rjcal* RDR
 cd RDR
 
 if [ `ls *NCAM00593*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i NLB*NCAM00593*-rjcal.png -o DustDevil_${sol}_NCAM00593_rjcal.gif -b 0 -w 2.0 -g 2.5 -l 5 -d 20 -p stacked
+    mru -v diffgif -i NRB*NCAM00593*-rjcal.png -o DustDevil_${sol}_NCAM00593_rjcal.gif -b 0 -w 2.0 -g 2.5 -l 5 -d 20 -p stacked
 fi
 
 if [ `ls *${seqid}*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
