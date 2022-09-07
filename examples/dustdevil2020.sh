@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sol=$1
-seqid=NCAM00525
+seqid=
 
 if [ "x$2" != "x" ];then
     seqid=$2
@@ -22,10 +22,12 @@ fi
 
 cd ${soldir}/ECAM 
 
-mru m20-fetch -c NAVCAM_LEFT -s $sol -f ${seqid}
+mru m20-fetch -c NAVCAM_LEFT -s $sol -f NCAM0052 ${seqid} -n
 
 mru calibrate -i *J0?.png 
 
-mru -v diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 3.0 -g 1.0 -l 5 -d 20 -p stacked
+for seqid in `ls *png | cut -c 36-44 | sort | uniq`; do
+    mru -v diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 3.0 -g 1.0 -l 5 -d 20 -p stacked
+done
 
 
