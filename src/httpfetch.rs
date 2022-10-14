@@ -88,21 +88,21 @@ pub fn simple_fetch_text_with_timeout(
     url: &str,
     timeout_seconds: u64,
 ) -> error::Result<std::string::String> {
-    let mut fetcher = HttpFetcher::new(&url);
+    let mut fetcher = HttpFetcher::new(url);
     fetcher.set_timeout(timeout_seconds);
     fetcher.fetch_text()
 }
 
 pub fn simple_fetch_text(url: &str) -> error::Result<std::string::String> {
-    simple_fetch_text_with_timeout(&url, DEFAULT_TIMEOUT)
+    simple_fetch_text_with_timeout(url, DEFAULT_TIMEOUT)
 }
 
 pub fn simple_fetch_bin_with_timeout(url: &str, timeout_seconds: u64) -> error::Result<Vec<u8>> {
-    let mut fetcher = HttpFetcher::new(&url);
+    let mut fetcher = HttpFetcher::new(url);
     fetcher.set_timeout(timeout_seconds);
     fetcher.fetch_bin()
 }
 
 pub fn simple_fetch_bin(url: &str) -> error::Result<Vec<u8>> {
-    simple_fetch_bin_with_timeout(&url, DEFAULT_TIMEOUT)
+    simple_fetch_bin_with_timeout(url, DEFAULT_TIMEOUT)
 }

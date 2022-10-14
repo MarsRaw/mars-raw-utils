@@ -18,7 +18,7 @@ impl FromStr for ProductType {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match ProductType::_from_str(&s) {
+        match ProductType::_from_str(s) {
             None => Err("Invalid product type"),
             Some(t) => Ok(t),
         }
@@ -45,7 +45,7 @@ fn imagebuffer_to_vec_v8(
     for y in 0..buff_0.height {
         for x in 0..buff_0.width {
             let idx = (y * buff_0.width + x) * 3;
-            f[idx + 0] = buff_0.get(x, y).unwrap().round() as u8;
+            f[idx] = buff_0.get(x, y).unwrap().round() as u8;
             f[idx + 1] = buff_1.get(x, y).unwrap().round() as u8;
             f[idx + 2] = buff_2.get(x, y).unwrap().round() as u8;
         }
@@ -58,7 +58,7 @@ fn rgbimage_to_vec_v8(img3band: &rgbimage::RgbImage) -> Vec<u8> {
     let b0 = img3band.get_band(0);
     let b1 = img3band.get_band(1);
     let b2 = img3band.get_band(2);
-    imagebuffer_to_vec_v8(&b0, &b1, &b2)
+    imagebuffer_to_vec_v8(b0, b1, b2)
 }
 
 fn generate_mean_stack(input_files: &Vec<String>) -> rgbimage::RgbImage {
@@ -72,7 +72,7 @@ fn generate_mean_stack(input_files: &Vec<String>) -> rgbimage::RgbImage {
         if path::file_exists(in_file) {
             vprintln!("Adding file to stack: {}", in_file);
 
-            let raw = rgbimage::RgbImage::open16(&in_file).unwrap();
+            let raw = rgbimage::RgbImage::open16(in_file).unwrap();
 
             if mean.is_empty() {
                 mean = raw;
@@ -203,8 +203,8 @@ fn process_frame_3channel(
     product_type: ProductType,
 ) -> rgbimage::RgbImage {
     let mut processed_band_0 = process_band(
-        &raw.get_band(0),
-        &mean_stack.get_band(0),
+        raw.get_band(0),
+        mean_stack.get_band(0),
         black_level,
         white_level,
         gamma,
@@ -212,8 +212,8 @@ fn process_frame_3channel(
         product_type == ProductType::STANDARD,
     );
     let mut processed_band_1 = process_band(
-        &raw.get_band(1),
-        &mean_stack.get_band(1),
+        raw.get_band(1),
+        mean_stack.get_band(1),
         black_level,
         white_level,
         gamma,
@@ -221,8 +221,8 @@ fn process_frame_3channel(
         product_type == ProductType::STANDARD,
     );
     let mut processed_band_2 = process_band(
-        &raw.get_band(2),
-        &mean_stack.get_band(2),
+        raw.get_band(2),
+        mean_stack.get_band(2),
         black_level,
         white_level,
         gamma,
@@ -256,13 +256,13 @@ fn process_file(
 ) {
     vprintln!("Processing frame differential on file: {}", in_file);
 
-    let raw = rgbimage::RgbImage::open16(&in_file).unwrap();
+    let raw = rgbimage::RgbImage::open16(in_file).unwrap();
 
     let (mut pixels, height) = match product_type {
         ProductType::STACKED => {
             let img_std = process_frame_3channel(
                 &raw,
-                &mean_stack,
+                mean_stack,
                 black_level,
                 white_level,
                 gamma,
@@ -271,7 +271,7 @@ fn process_file(
             );
             let img_diff = process_frame_3channel(
                 &raw,
-                &mean_stack,
+                mean_stack,
                 black_level,
                 white_level,
                 gamma,
@@ -292,7 +292,7 @@ fn process_file(
         _ => {
             let img = process_frame_3channel(
                 &raw,
-                &mean_stack,
+                mean_stack,
                 black_level,
                 white_level,
                 gamma,
@@ -303,7 +303,7 @@ fn process_file(
         }
     };
 
-    let mut frame = gif::Frame::from_rgb(raw.width as u16, height as u16, &mut *pixels);
+    let mut frame = gif::Frame::from_rgb(raw.width as u16, height as u16, &mut pixels);
     frame.delay = delay;
     encoder.write_frame(&frame).unwrap();
 }
@@ -335,7 +335,7 @@ pub fn process(params: &DiffGif) {
         if path::file_exists(in_file) {
             process_file(
                 &mut encoder,
-                &in_file,
+                in_file,
                 &mean_stack,
                 params.black_level,
                 params.white_level,

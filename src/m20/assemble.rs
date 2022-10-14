@@ -463,12 +463,12 @@ impl Tile {
 
                     Tile {
                         source_path: source_path.to_string(),
-                        image: image,
+                        image,
                         top_left_x: tl_x,
                         top_left_y: tl_y,
                         bottom_right_x: right_x,
                         bottom_right_y: bottom_y,
-                        scale: scale,
+                        scale,
                     }
                 } else {
                     panic!("Subframe rect field is empty");
@@ -490,13 +490,13 @@ pub struct Composite {
 
 impl Composite {
     pub fn new(tiles: &Vec<Tile>) -> Self {
-        if tiles.len() == 0 {
+        if tiles.is_empty() {
             panic!("Cannot assemble composite with no tiles!");
         }
 
         let scale = tiles[0].scale;
 
-        let (max_x, max_y) = Composite::determine_composite_size(&tiles);
+        let (max_x, max_y) = Composite::determine_composite_size(tiles);
 
         let composite_image =
             rgbimage::RgbImage::new_with_bands(max_x, max_y, 3, ImageMode::U16BIT).unwrap();
@@ -509,10 +509,10 @@ impl Composite {
         );
 
         Composite {
-            scale: scale,
+            scale,
             width: max_x,
             height: max_y,
-            composite_image: composite_image,
+            composite_image,
         }
     }
 
@@ -538,7 +538,7 @@ impl Composite {
 
     pub fn paste_tiles(&mut self, tiles: &Vec<Tile>) {
         tiles.iter().for_each(|t| {
-            self.paste_tile(&t);
+            self.paste_tile(t);
         });
     }
 

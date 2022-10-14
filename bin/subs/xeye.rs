@@ -83,16 +83,12 @@ impl GetCameraModel for MarsImage {
     fn implements_linearized(&self) -> bool {
         match self.get_camera_model() {
             Some(c) => {
-                if let Ok(_) = c.linearize(
+                c.linearize(
                     self.image.width,
                     self.image.height,
                     self.image.width,
                     self.image.height,
-                ) {
-                    true
-                } else {
-                    false
-                }
+                ).is_ok()
             }
             None => false,
         }
@@ -248,7 +244,7 @@ impl RunnableSubcommand for CrossEye {
             process::exit(1);
         }
 
-        if !path::parent_exists_and_writable(&out_file_path) {
+        if !path::parent_exists_and_writable(out_file_path) {
             eprintln!(
                 "Error: Output file directory not found or is not writable: {}",
                 out_file_path

@@ -39,10 +39,7 @@ impl RunnableSubcommand for Composite {
 
         let output = self.output.as_os_str().to_str().unwrap();
 
-        let azimuth_rotation: f64 = match self.azimuth {
-            Some(a) => a,
-            None => 0.0,
-        };
+        let azimuth_rotation: f64 = self.azimuth.unwrap_or(0.0);
 
         let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 

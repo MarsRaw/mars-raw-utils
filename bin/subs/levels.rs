@@ -29,20 +29,11 @@ pub struct Levels {
 
 impl RunnableSubcommand for Levels {
     fn run(&self) {
-        let white_level = match self.white {
-            Some(w) => w,
-            None => 1.0,
-        };
+        let white_level = self.white.unwrap_or(1.0);
 
-        let black_level = match self.black {
-            Some(b) => b,
-            None => 0.0,
-        };
+        let black_level = self.black.unwrap_or(0.0);
 
-        let gamma = match self.gamma {
-            Some(g) => g,
-            None => 1.0,
-        };
+        let gamma = self.gamma.unwrap_or(1.0);
 
         // Some rules on the parameters
         // TODO: Keep an eye on floating point errors

@@ -26,15 +26,9 @@ pub struct HpcFilter {
 
 impl RunnableSubcommand for HpcFilter {
     fn run(&self) {
-        let window_size = match self.window {
-            Some(w) => w,
-            None => 3,
-        };
+        let window_size = self.window.unwrap_or(3);
 
-        let threshold = match self.threshold {
-            Some(t) => t,
-            None => 0.0,
-        };
+        let threshold = self.threshold.unwrap_or(0.0);
 
         if threshold < 0.0 {
             eprintln!("Threshold cannot be less than zero!");

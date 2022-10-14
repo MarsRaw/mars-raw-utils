@@ -22,7 +22,7 @@ impl Calibration for M20SuperCam {
         cal_context: &CalProfile,
         only_new: bool,
     ) -> error::Result<CompleteContext> {
-        let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
+        let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
             return cal_warn(cal_context);
@@ -44,7 +44,7 @@ impl Calibration for M20SuperCam {
 
         let data_max = 255.0;
 
-        if input_file.find("ECM") != None && raw.image.is_grayscale() {
+        if input_file.contains("ECM") && raw.image.is_grayscale() {
             vprintln!("Image appears to be grayscale, applying debayering...");
             raw.debayer();
         }

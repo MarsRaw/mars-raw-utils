@@ -121,12 +121,12 @@ pub mod cahvor_format {
                 for n in split {
                     match n.find('(') {
                         None => {
-                            if string_is_valid_f64(&n) {
+                            if string_is_valid_f64(n) {
                                 parts.push(vec![n.parse::<f64>().unwrap()]);
                             }
                         }
                         Some(_i) => {
-                            parts.push(str_to_vec(&n).unwrap());
+                            parts.push(str_to_vec(n).unwrap());
                         }
                     }
                 }
@@ -135,7 +135,7 @@ pub mod cahvor_format {
                     4 => {
                         // CAHV
                         Ok(CameraModel::new(Box::new(Cahv {
-                            c: if parts.len() >= 1 {
+                            c: if !parts.is_empty() {
                                 Vector::from_vec(&parts[0]).unwrap()
                             } else {
                                 Vector::default()
@@ -160,7 +160,7 @@ pub mod cahvor_format {
                     6 => {
                         // CAHVOR
                         Ok(CameraModel::new(Box::new(Cahvor {
-                            c: if parts.len() >= 1 {
+                            c: if !parts.is_empty() {
                                 Vector::from_vec(&parts[0]).unwrap()
                             } else {
                                 Vector::default()
@@ -195,7 +195,7 @@ pub mod cahvor_format {
                     9 => {
                         // CAHVORE
                         Ok(CameraModel::new(Box::new(Cahvore {
-                            c: if parts.len() >= 1 {
+                            c: if !parts.is_empty() {
                                 Vector::from_vec(&parts[0]).unwrap()
                             } else {
                                 Vector::default()
@@ -258,7 +258,7 @@ pub mod tuple_format {
         match tuple_vec_opt {
             None => serializer.serialize_unit(),
             Some(v) => {
-                let s = vec_to_str(&v);
+                let s = vec_to_str(v);
                 serializer.serialize_str(s.as_ref())
             }
         }

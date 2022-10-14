@@ -18,7 +18,7 @@ pub struct CompleteContext {
 impl CompleteContext {
     pub fn new(status: CompleteStatus, cal_context: &CalProfile) -> Self {
         CompleteContext {
-            status: status,
+            status,
             cal_context: cal_context.clone(),
         }
     }
@@ -99,7 +99,7 @@ pub fn simple_calibration_with_profiles(
                     idx,
                     input_files.len()
                 );
-                process_with_profiles(&calibrator, &in_file, only_new, &profiles, |result| {
+                process_with_profiles(calibrator, in_file, only_new, profiles, |result| {
                     match result {
                         Ok(cc) => print_complete(
                             &format!(
@@ -141,7 +141,7 @@ pub fn simple_calibration(
                 );
                 match calibrator
                     .calibrator
-                    .process_file(&in_file, cal_context, only_new)
+                    .process_file(in_file, cal_context, only_new)
                 {
                     Ok(cc) => print_complete(
                         &format!(

@@ -157,7 +157,7 @@ pub fn fetch_image(
 
     if path::file_exists(&write_to) && only_new {
         vprintln!("Output file {} exists, skipping", write_to);
-        return ok!();
+        ok!()
     } else {
         let image_data = match httpfetch::simple_fetch_bin(image_url) {
             Ok(i) => i,
@@ -167,7 +167,7 @@ pub fn fetch_image(
         let path = Path::new(write_to.as_str());
         vprintln!("Writing image data to {}", write_to);
 
-        let mut file = match File::create(&path) {
+        let mut file = match File::create(path) {
             Err(why) => panic!("couldn't create {}", why),
             Ok(file) => file,
         };
@@ -218,7 +218,7 @@ pub fn save_image_json_from_string(
 
     vprintln!("Writing metadata file to {}", path.to_str().unwrap());
 
-    let mut file = match File::create(&path) {
+    let mut file = match File::create(path) {
         Err(why) => panic!("couldn't create {}", why),
         Ok(file) => file,
     };
@@ -243,12 +243,12 @@ pub fn append_file_name(input_file: &str, append: &str) -> String {
 }
 
 pub fn replace_image_extension(input_file: &str, append: &str) -> String {
-    let out_file = input_file
+    
+    input_file
         .replace(".png", append)
         .replace(".PNG", append)
         .replace(".jpg", append)
         .replace(".JPG", append)
         .replace(".tif", append)
-        .replace(".TIF", append);
-    String::from(out_file)
+        .replace(".TIF", append)
 }

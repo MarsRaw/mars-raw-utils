@@ -63,7 +63,7 @@ impl Calibration for M20MastcamZ {
         cal_context: &CalProfile,
         only_new: bool,
     ) -> error::Result<CompleteContext> {
-        let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
+        let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
             return cal_warn(cal_context);
@@ -72,7 +72,7 @@ impl Calibration for M20MastcamZ {
         let mut warn = false;
         let mut instrument = Instrument::M20MastcamZLeft;
 
-        let bn = path::basename(&input_file);
+        let bn = path::basename(input_file);
         if bn.chars().nth(1).unwrap() == 'R' {
             instrument = Instrument::M20MastcamZRight;
             vprintln!("Processing for Mastcam-Z Right");
@@ -93,7 +93,7 @@ impl Calibration for M20MastcamZ {
         // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
         // Update: Not always. Added a check to determine whether or not is is grayscale.
         // It's not perfect so please validate results. Gonna keep the 'ECM' check for now.
-        if input_file.find("ECM") != None && raw.image.is_grayscale() {
+        if input_file.contains("ECM") && raw.image.is_grayscale() {
             vprintln!("Image appears to be grayscale, applying debayering...");
             raw.debayer();
         }

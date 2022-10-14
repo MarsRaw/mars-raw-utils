@@ -94,19 +94,11 @@ impl ImageMetadata for Image {
     }
 
     fn get_xyz(&self) -> Option<Vec<f64>> {
-        if let Some(xyz) = &self.extended.xyz {
-            Some(xyz.clone())
-        } else {
-            None
-        }
+        self.extended.xyz.as_ref().cloned()
     }
 
     fn get_dimension(&self) -> Option<Vec<f64>> {
-        if let Some(dimension) = &self.extended.dimension {
-            Some(dimension.clone())
-        } else {
-            None
-        }
+        self.extended.dimension.as_ref().cloned()
     }
 
     fn get_sample_type(&self) -> String {
@@ -142,10 +134,7 @@ impl ImageMetadata for Image {
     }
 
     fn get_subframe_rect(&self) -> Option<Vec<f64>> {
-        match self.extended.subframe_rect.as_ref() {
-            Some(v) => Some(v.clone()),
-            None => None,
-        }
+        self.extended.subframe_rect.as_ref().cloned()
     }
 
     fn get_scale_factor(&self) -> u32 {
@@ -221,7 +210,7 @@ impl ImageMetadata for Image {
 pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
     vprintln!("Loading metadata file from {}", file_path);
 
-    if !path::file_exists(&file_path.as_str()) {
+    if !path::file_exists(file_path.as_str()) {
         return Err(constants::status::FILE_NOT_FOUND);
     }
 
@@ -234,7 +223,7 @@ pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
     file.read_to_end(&mut buf).unwrap();
     let s = String::from_utf8(buf).unwrap();
 
-    let res: Image = serde_json::from_str(&s.as_str()).unwrap();
+    let res: Image = serde_json::from_str(s.as_str()).unwrap();
 
     Ok(convert_to_std_metadata(&res))
 }

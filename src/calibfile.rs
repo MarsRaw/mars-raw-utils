@@ -115,7 +115,7 @@ pub fn locate_calibration_file_no_extention(
 
 pub fn locate_calibration_file(file_path: &String) -> error::Result<String> {
     // If the file exists as-is, return it
-    if path::file_exists(&file_path) {
+    if path::file_exists(file_path) {
         return Ok(file_path.clone());
     }
 
@@ -135,7 +135,7 @@ pub fn locate_calibration_file(file_path: &String) -> error::Result<String> {
                     locations.insert(
                         0,
                         format!("{:?}", filename.with_file_name("data").as_os_str())
-                            .replace("\"", ""),
+                            .replace('\"', ""),
                     );
                 }
             }

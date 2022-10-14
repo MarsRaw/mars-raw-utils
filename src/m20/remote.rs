@@ -55,7 +55,7 @@ fn search_empty_or_has_match(image_id: &String, search: &Vec<String>) -> bool {
     }
 
     for i in search.iter() {
-        if image_id.find(i) != None {
+        if image_id.contains(i) {
             return true;
         }
     }
@@ -79,7 +79,7 @@ fn process_results(
         }
 
         // If we're searching for a substring and this image doesn't match, skip it.
-        if !search_empty_or_has_match(&image.imageid, &search) {
+        if !search_empty_or_has_match(&image.imageid, search) {
             continue;
         }
 
@@ -213,7 +213,7 @@ pub fn fetch_page(
     output_path: &str,
 ) -> error::Result<i32> {
     match submit_query(
-        &cameras,
+        cameras,
         num_per_page,
         Some(page),
         minsol,
@@ -244,7 +244,7 @@ pub fn fetch_stats(
     thumbnails: bool,
     movie_only: bool,
 ) -> error::Result<M20RemoteStats> {
-    match submit_query(&cameras, 0, Some(0), minsol, maxsol, thumbnails, movie_only) {
+    match submit_query(cameras, 0, Some(0), minsol, maxsol, thumbnails, movie_only) {
         Ok(v) => {
             let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
             Ok(M20RemoteStats {
@@ -270,7 +270,7 @@ pub fn fetch_all(
     only_new: bool,
     output_path: &str,
 ) -> error::Result<i32> {
-    let stats = match fetch_stats(&cameras, minsol, maxsol, thumbnails, movie_only) {
+    let stats = match fetch_stats(cameras, minsol, maxsol, thumbnails, movie_only) {
         Ok(s) => s,
         Err(e) => return Err(e),
     };
@@ -280,7 +280,7 @@ pub fn fetch_all(
     let mut count = 0;
     for page in 0..pages {
         match fetch_page(
-            &cameras,
+            cameras,
             num_per_page,
             page,
             minsol,
@@ -320,7 +320,7 @@ pub fn remote_fetch(
 ) -> error::Result<i32> {
     match page {
         Some(p) => fetch_page(
-            &cameras,
+            cameras,
             num_per_page,
             p,
             minsol,
@@ -333,7 +333,7 @@ pub fn remote_fetch(
             output_path,
         ),
         None => fetch_all(
-            &cameras,
+            cameras,
             num_per_page,
             minsol,
             maxsol,

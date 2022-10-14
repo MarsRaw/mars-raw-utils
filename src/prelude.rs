@@ -72,16 +72,11 @@ lazy_static! {
 }
 
 pub fn calibrator_for_instrument(instrument: Instrument) -> Option<&'static CalContainer> {
-    for calibrator in CALIBRATORS.iter() {
-        if calibrator.calibrator.accepts_instrument(instrument) {
-            return Some(calibrator);
-        }
-    }
-    None
+    CALIBRATORS.iter().find(|&calibrator| calibrator.calibrator.accepts_instrument(instrument))
 }
 
 pub fn calibrator_for_instrument_from_str(instrument: &String) -> Option<&'static CalContainer> {
-    calibrator_for_instrument(Instrument::from_str(&instrument.as_str()))
+    calibrator_for_instrument(Instrument::from_str(instrument.as_str()))
 }
 
 use backtrace::Backtrace;

@@ -1,9 +1,9 @@
 use mars_raw_utils::prelude::*;
-use sciimg::prelude::*;
+
 
 use crate::subs::runnable::RunnableSubcommand;
 
-use std::process;
+
 
 #[derive(clap::Args)]
 #[clap(author, version, about = "Image information", long_about = None)]
@@ -108,8 +108,8 @@ impl RunnableSubcommand for Info {
                     eprintln!("Image {:?} lacks metadata", in_file);
                 }
 
-                println!("");
-                println!("");
+                println!();
+                println!();
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }

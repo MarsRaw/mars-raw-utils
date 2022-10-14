@@ -43,7 +43,7 @@ fn lookvector_to_cylindrical(
     origin_diff: &Vector,
 ) -> LatLon {
     let ray = lv.intersect_to_sphere(SPHERE_RADIUS);
-    let ray_moved = ray.subtract(&origin_diff);
+    let ray_moved = ray.subtract(origin_diff);
     let rotated = if let Some(quat) = quat_o {
         quat.rotate_vector(&ray_moved)
     } else {
@@ -54,7 +54,7 @@ fn lookvector_to_cylindrical(
 
 static SPHERE_RADIUS: f64 = 100.0;
 
-fn get_lat_lon(c: &CameraModel, x: usize, y: usize, quat: &Quaternion) -> error::Result<LatLon> {
+fn get_lat_lon(c: &CameraModel, x: usize, y: usize, _quat: &Quaternion) -> error::Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate {
         line: y as f64,
         sample: x as f64,
@@ -79,7 +79,7 @@ pub fn determine_map_context(input_files: &Vec<String>, quat: &Quaternion) -> Ma
         let img = MarsImage::open(input_file.to_owned(), Instrument::M20MastcamZLeft);
         match get_cahvor(&img) {
             Some(c) => {
-                match get_lat_lon(&c, 0, 0, &quat) {
+                match get_lat_lon(&c, 0, 0, quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat);
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -89,7 +89,7 @@ pub fn determine_map_context(input_files: &Vec<String>, quat: &Quaternion) -> Ma
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, img.image.width, 0, &quat) {
+                match get_lat_lon(&c, img.image.width, 0, quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat);
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -99,7 +99,7 @@ pub fn determine_map_context(input_files: &Vec<String>, quat: &Quaternion) -> Ma
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, 0, img.image.height, &quat) {
+                match get_lat_lon(&c, 0, img.image.height, quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat);
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -109,7 +109,7 @@ pub fn determine_map_context(input_files: &Vec<String>, quat: &Quaternion) -> Ma
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, img.image.width, img.image.height, &quat) {
+                match get_lat_lon(&c, img.image.width, img.image.height, quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat);
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -119,7 +119,7 @@ pub fn determine_map_context(input_files: &Vec<String>, quat: &Quaternion) -> Ma
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, img.image.width / 2, 0, &quat) {
+                match get_lat_lon(&c, img.image.width / 2, 0, quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat);
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -129,7 +129,7 @@ pub fn determine_map_context(input_files: &Vec<String>, quat: &Quaternion) -> Ma
                     Err(_) => {}
                 };
 
-                match get_lat_lon(&c, img.image.width / 2, img.image.height, &quat) {
+                match get_lat_lon(&c, img.image.width / 2, img.image.height, quat) {
                     Ok(ll) => {
                         context.bottom_lat = min!(context.bottom_lat, ll.lat);
                         context.top_lat = max!(context.top_lat, ll.lat);
@@ -177,7 +177,7 @@ fn get_ls_from_map_xy(
         Err(_) => panic!("Unable to convert ls to look vector"),
     };
 
-    let ll = lookvector_to_cylindrical(&lv, Some(&quat), origin_diff);
+    let ll = lookvector_to_cylindrical(&lv, Some(quat), origin_diff);
     let lat = ll.lat;
     let lon = ll.lon;
 
@@ -204,7 +204,7 @@ pub fn process_file<D: Drawable>(
     };
 
     let eye = if anaglyph {
-        match util::filename_char_at_pos(&input_file, 1) {
+        match util::filename_char_at_pos(input_file, 1) {
             'R' => Eye::Right,
             'L' => Eye::Left,
             _ => Eye::DontCare,
@@ -235,32 +235,32 @@ pub fn process_file<D: Drawable>(
 
             for x in 0..(img.image.width - 1) {
                 for y in 0..(img.image.height - 1) {
-                    let origin_diff = input_model.c().subtract(&initial_origin);
+                    let origin_diff = input_model.c().subtract(initial_origin);
 
                     let (tl_x, tl_y) =
-                        get_ls_from_map_xy(&input_model, &map_context, x, y, &quat, &origin_diff);
+                        get_ls_from_map_xy(&input_model, map_context, x, y, quat, &origin_diff);
                     let (tr_x, tr_y) = get_ls_from_map_xy(
                         &input_model,
-                        &map_context,
+                        map_context,
                         x + 1,
                         y,
-                        &quat,
+                        quat,
                         &origin_diff,
                     );
                     let (bl_x, bl_y) = get_ls_from_map_xy(
                         &input_model,
-                        &map_context,
+                        map_context,
                         x,
                         y + 1,
-                        &quat,
+                        quat,
                         &origin_diff,
                     );
                     let (br_x, br_y) = get_ls_from_map_xy(
                         &input_model,
-                        &map_context,
+                        map_context,
                         x + 1,
                         y + 1,
-                        &quat,
+                        quat,
                         &origin_diff,
                     );
 

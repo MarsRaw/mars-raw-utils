@@ -36,7 +36,7 @@ impl RunnableSubcommand for M20EcamAssemble {
                 eprintln!("File not found: {}", in_file);
                 process::exit(1);
             }
-            let tile = Tile::new(&in_file);
+            let tile = Tile::new(in_file);
             tiles.push(tile);
         }
 
@@ -48,6 +48,6 @@ impl RunnableSubcommand for M20EcamAssemble {
         composite.paste_tiles(&mut tiles);
 
         vprintln!("Saving composite to {}", output);
-        composite.finalize_and_save(&output);
+        composite.finalize_and_save(output);
     }
 }

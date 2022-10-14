@@ -22,7 +22,7 @@ impl Calibration for MslChemCam {
         cal_context: &CalProfile,
         only_new: bool,
     ) -> error::Result<CompleteContext> {
-        let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
+        let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
             return cal_warn(cal_context);
@@ -44,12 +44,12 @@ impl Calibration for MslChemCam {
 
         let data_max = 255.0;
 
-        if input_file.find("EDR") != None {
+        if input_file.contains("EDR") {
             vprintln!("Image appears to be in standard contrast");
 
             vprintln!("Flatfielding...");
             raw.flatfield();
-        } else if input_file.find("EDR") != None {
+        } else if input_file.contains("EDR") {
             vprintln!("Image appears to be in enhanced contrast");
             // ... Don't do flatfielding, these appear to already been applied.
             // ... Do something about that

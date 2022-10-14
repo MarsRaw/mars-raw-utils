@@ -26,10 +26,7 @@ pub struct FocusMerge {
 
 impl RunnableSubcommand for FocusMerge {
     fn run(&self) {
-        let quality_window_size = match self.window {
-            Some(w) => w,
-            None => 15,
-        };
+        let quality_window_size = self.window.unwrap_or(15);
 
         let output = self.output.as_os_str().to_str().unwrap();
         let in_files: Vec<String> = self
@@ -37,6 +34,6 @@ impl RunnableSubcommand for FocusMerge {
             .iter()
             .map(|s| String::from(s.as_os_str().to_str().unwrap()))
             .collect();
-        focusmerge::focusmerge(&in_files, quality_window_size, self.depth_map, &output);
+        focusmerge::focusmerge(&in_files, quality_window_size, self.depth_map, output);
     }
 }

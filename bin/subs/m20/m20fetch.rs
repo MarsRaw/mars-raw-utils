@@ -94,7 +94,7 @@ impl RunnableSubcommand for M20Fetch {
                 if sol >= 0 {
                     sol
                 } else {
-                    -100000 as i32
+                    -100000_i32
                 }
             }
         };
@@ -104,10 +104,7 @@ impl RunnableSubcommand for M20Fetch {
             None => 100,
         };
 
-        let page = match self.page {
-            Some(p) => Some(p as i32),
-            None => None,
-        };
+        let page = self.page.map(|p| p as i32);
 
         let search = match &self.filter {
             Some(s) => s.clone(),
@@ -140,7 +137,7 @@ impl RunnableSubcommand for M20Fetch {
             self.list,
             &search,
             self.new,
-            &output.as_str(),
+            output.as_str(),
         ) {
             Ok(c) => println!("{} images found", c),
             Err(e) => eprintln!("Error: {}", e),
