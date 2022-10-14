@@ -9,17 +9,11 @@ use termsize;
 const DATETIME_PRINT_FORMAT: &str = "%Y-%m-%d %H:%M:%S%.3f";
 
 pub fn print_datetime() {
-    print!(
-        "{} ",
-        Local::now().format(DATETIME_PRINT_FORMAT)
-    );
+    print!("{} ", Local::now().format(DATETIME_PRINT_FORMAT));
 }
 
 pub fn eprint_datetime() {
-    eprint!(
-        "{} ",
-        Local::now().format(DATETIME_PRINT_FORMAT)
-    );
+    eprint!("{} ", Local::now().format(DATETIME_PRINT_FORMAT));
 }
 
 pub fn set_verbose(v: bool) {

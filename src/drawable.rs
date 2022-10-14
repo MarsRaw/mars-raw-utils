@@ -15,13 +15,7 @@ pub struct Point {
 impl Point {
     /// Simple creation for a Point.
     pub fn create(x: f64, y: f64, r: f64, g: f64, b: f64) -> Self {
-        Point {
-            x,
-            y,
-            r,
-            g,
-            b,
-        }
+        Point { x, y, r, g, b }
     }
 }
 
@@ -88,7 +82,6 @@ impl Triangle {
             + (self.p0.x * self.p1.y - self.p1.x * self.p0.y) * c2)
             / det;
 
-        
         a * x + b * y + c
     }
 

@@ -72,7 +72,9 @@ lazy_static! {
 }
 
 pub fn calibrator_for_instrument(instrument: Instrument) -> Option<&'static CalContainer> {
-    CALIBRATORS.iter().find(|&calibrator| calibrator.calibrator.accepts_instrument(instrument))
+    CALIBRATORS
+        .iter()
+        .find(|&calibrator| calibrator.calibrator.accepts_instrument(instrument))
 }
 
 pub fn calibrator_for_instrument_from_str(instrument: &String) -> Option<&'static CalContainer> {

@@ -82,14 +82,14 @@ impl GetCameraModel for MarsImage {
 
     fn implements_linearized(&self) -> bool {
         match self.get_camera_model() {
-            Some(c) => {
-                c.linearize(
+            Some(c) => c
+                .linearize(
                     self.image.width,
                     self.image.height,
                     self.image.width,
                     self.image.height,
-                ).is_ok()
-            }
+                )
+                .is_ok(),
             None => false,
         }
     }

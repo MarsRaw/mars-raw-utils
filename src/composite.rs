@@ -239,22 +239,10 @@ pub fn process_file<D: Drawable>(
 
                     let (tl_x, tl_y) =
                         get_ls_from_map_xy(&input_model, map_context, x, y, quat, &origin_diff);
-                    let (tr_x, tr_y) = get_ls_from_map_xy(
-                        &input_model,
-                        map_context,
-                        x + 1,
-                        y,
-                        quat,
-                        &origin_diff,
-                    );
-                    let (bl_x, bl_y) = get_ls_from_map_xy(
-                        &input_model,
-                        map_context,
-                        x,
-                        y + 1,
-                        quat,
-                        &origin_diff,
-                    );
+                    let (tr_x, tr_y) =
+                        get_ls_from_map_xy(&input_model, map_context, x + 1, y, quat, &origin_diff);
+                    let (bl_x, bl_y) =
+                        get_ls_from_map_xy(&input_model, map_context, x, y + 1, quat, &origin_diff);
                     let (br_x, br_y) = get_ls_from_map_xy(
                         &input_model,
                         map_context,

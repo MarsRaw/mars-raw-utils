@@ -99,8 +99,12 @@ pub fn simple_calibration_with_profiles(
                     idx,
                     input_files.len()
                 );
-                process_with_profiles(calibrator, in_file, only_new, profiles, |result| {
-                    match result {
+                process_with_profiles(
+                    calibrator,
+                    in_file,
+                    only_new,
+                    profiles,
+                    |result| match result {
                         Ok(cc) => print_complete(
                             &format!(
                                 "{} ({})",
@@ -113,8 +117,8 @@ pub fn simple_calibration_with_profiles(
                             eprintln!("Error: {}", why);
                             print_fail(&in_file.to_string());
                         }
-                    }
-                });
+                    },
+                );
             } else {
                 eprintln!("File not found: {}", in_file);
                 print_fail(&in_file.to_string());

@@ -1,9 +1,6 @@
 use mars_raw_utils::prelude::*;
 
-
 use crate::subs::runnable::RunnableSubcommand;
-
-
 
 #[derive(clap::Args)]
 #[clap(author, version, about = "Image information", long_about = None)]

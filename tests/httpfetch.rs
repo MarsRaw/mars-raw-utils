@@ -1,7 +1,5 @@
 use mars_raw_utils::httpfetch;
 
-
-
 #[test]
 #[ignore]
 fn test_text_fetch() {

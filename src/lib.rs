@@ -1,4 +1,13 @@
+#![feature(associated_type_bounds)]
+
+use reqwest::Client;
+use std::time::Duration;
 extern crate clap;
+
+lazy_static! {
+    pub static ref CLIENT: reqwest::Client =
+        Client::builder().timeout(Duration::from_secs(60)).build().expect("Error creating client, this is most unexpected and is likely a mistake by a developer working on this project.");
+}
 
 #[macro_use]
 extern crate lazy_static;
