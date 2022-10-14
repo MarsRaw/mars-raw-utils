@@ -39,7 +39,7 @@ impl RunnableSubcommand for Anaglyph {
             process::exit(1);
         }
 
-        if !path::parent_exists_and_writable(&out_file_path) {
+        if !path::parent_exists_and_writable(out_file_path) {
             eprintln!(
                 "Error: Output file directory not found or is not writable: {}",
                 out_file_path

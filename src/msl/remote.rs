@@ -40,11 +40,11 @@ fn print_image(output_path: &str, image: &Image) {
         "{:37} {:15} {:<6} {:20} {:27} {:6} {:6} {:7} {:10}",
         image.imageid,
         image.instrument,
-        format!("{:<6}", image.sol), // This is such a hack...
+        image.sol, // This is such a hack...
         &image.date_taken[..16],
         null_to_str(&image.extended.lmst),
-        format!("{:6}", null_to_str(&image.site)),
-        format!("{:6}", null_to_str(&image.drive)),
+        null_to_str(&image.site),
+        null_to_str(&image.drive),
         if image.is_thumbnail {
             constants::status::YES
         } else {
@@ -58,7 +58,7 @@ fn print_image(output_path: &str, image: &Image) {
     );
 }
 
-fn search_empty_or_has_match(image_id: &String, search: &Vec<String>) -> bool {
+fn search_empty_or_has_match(image_id: &str, search: &[String]) -> bool {
     if search.is_empty() {
         return true;
     }
@@ -75,7 +75,7 @@ fn process_results(
     results: &MslApiResults,
     thumbnails: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> error::Result<i32> {
@@ -87,12 +87,12 @@ fn process_results(
         }
 
         // If we're searching for a substring and this image doesn't match, skip it.
-        if !search_empty_or_has_match(&image.imageid, &search) {
+        if !search_empty_or_has_match(&image.imageid, search) {
             continue;
         }
 
         valid_img_count += 1;
-        print_image(output_path, &image);
+        print_image(output_path, image);
 
         if !list_only {
             match fetch_image(&image.url, only_new, Some(output_path)) {
@@ -182,11 +182,11 @@ pub fn fetch_page(
     maxsol: i32,
     thumbnails: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> error::Result<i32> {
-    match submit_query(&cameras, num_per_page, Some(page), minsol, maxsol) {
+    match submit_query(cameras, num_per_page, Some(page), minsol, maxsol) {
         Ok(v) => {
             let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
             process_results(&res, thumbnails, list_only, search, only_new, output_path)
@@ -204,7 +204,7 @@ pub struct MslRemoteStats {
 }
 
 pub fn fetch_stats(cameras: &[String], minsol: i32, maxsol: i32) -> error::Result<MslRemoteStats> {
-    match submit_query(&cameras, 0, Some(0), minsol, maxsol) {
+    match submit_query(cameras, 0, Some(0), minsol, maxsol) {
         Ok(v) => {
             let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
             Ok(MslRemoteStats {
@@ -242,11 +242,11 @@ pub fn fetch_all(
     maxsol: i32,
     thumbnails: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> error::Result<i32> {
-    let stats = match fetch_stats(&cameras, minsol, maxsol) {
+    let stats = match fetch_stats(cameras, minsol, maxsol) {
         Ok(s) => s,
         Err(e) => return Err(e),
     };
@@ -256,7 +256,7 @@ pub fn fetch_all(
     let mut count = 0;
     for page in 0..pages {
         match fetch_page(
-            &cameras,
+            cameras,
             num_per_page,
             page,
             minsol,
@@ -285,13 +285,13 @@ pub fn remote_fetch(
     maxsol: i32,
     thumbnails: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> error::Result<i32> {
     match page {
         Some(p) => fetch_page(
-            &cameras,
+            cameras,
             num_per_page,
             p,
             minsol,
@@ -303,7 +303,7 @@ pub fn remote_fetch(
             output_path,
         ),
         None => fetch_all(
-            &cameras,
+            cameras,
             num_per_page,
             minsol,
             maxsol,

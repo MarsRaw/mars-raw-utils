@@ -159,7 +159,7 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/CCAM
     mkdir -p $INSTROOT
 
-    mru msl-fetch -c CHEMCAM -s $sol -o $INSTROOT -S PRC -n
+    mru msl-fetch -c CHEMCAM -s $sol -o $INSTROOT -f PRC -n
     
     cd $INSTROOT
     if [ `ls *PNG 2> /dev/null | wc -l` -gt 0 ]; then
@@ -180,7 +180,7 @@ function update_on_sol() {
 if [ "x$1" !=  "x" ]; then 
     update_on_sol $1
 else
-    for sol in `msl_latest -l`; do 
+    for sol in `mru msl-latest -l`; do 
         update_on_sol $sol
     done
 fi

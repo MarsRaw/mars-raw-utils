@@ -98,7 +98,7 @@ impl InstrumentMap {
 
     pub fn find_remote_instrument_names_fromlist(
         &self,
-        instrument_inputs: &Vec<String>,
+        instrument_inputs: &[String],
     ) -> error::Result<Vec<String>> {
         let mut inst_list: Vec<String> = Vec::new();
 
@@ -243,12 +243,11 @@ pub fn append_file_name(input_file: &str, append: &str) -> String {
 }
 
 pub fn replace_image_extension(input_file: &str, append: &str) -> String {
-    let out_file = input_file
+    input_file
         .replace(".png", append)
         .replace(".PNG", append)
         .replace(".jpg", append)
         .replace(".JPG", append)
         .replace(".tif", append)
-        .replace(".TIF", append);
-    String::from(out_file)
+        .replace(".TIF", append)
 }

@@ -15,7 +15,7 @@ pub fn process_image(
                 line: y as f64,
                 sample: x as f64,
             }) {
-                let ray = lv.intersect_to_plane(&ground);
+                let ray = lv.intersect_to_plane(ground);
 
                 let ls_in = match ray {
                     Some(ray) => {

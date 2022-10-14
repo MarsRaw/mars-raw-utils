@@ -51,10 +51,10 @@ pub struct M20MastcamZ {}
 
 impl Calibration for M20MastcamZ {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::M20MastcamZLeft | Instrument::M20MastcamZRight => true,
-            _ => false,
-        }
+        matches!(
+            instrument,
+            Instrument::M20MastcamZLeft | Instrument::M20MastcamZRight
+        )
     }
 
     fn process_file(
@@ -63,7 +63,7 @@ impl Calibration for M20MastcamZ {
         cal_context: &CalProfile,
         only_new: bool,
     ) -> error::Result<CompleteContext> {
-        let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
+        let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
             return cal_warn(cal_context);
@@ -72,7 +72,7 @@ impl Calibration for M20MastcamZ {
         let mut warn = false;
         let mut instrument = Instrument::M20MastcamZLeft;
 
-        let bn = path::basename(&input_file);
+        let bn = path::basename(input_file);
         if bn.chars().nth(1).unwrap() == 'R' {
             instrument = Instrument::M20MastcamZRight;
             vprintln!("Processing for Mastcam-Z Right");

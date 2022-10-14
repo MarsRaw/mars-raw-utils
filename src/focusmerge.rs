@@ -17,8 +17,8 @@ fn make_diff_for_band(
     buffer: &imagebuffer::ImageBuffer,
     amount: usize,
 ) -> imagebuffer::ImageBuffer {
-    let blurred = lowpass::lowpass_imagebuffer(&buffer, amount);
-    blurred.subtract(&buffer).unwrap()
+    let blurred = lowpass::lowpass_imagebuffer(buffer, amount);
+    blurred.subtract(buffer).unwrap()
 }
 
 fn make_diff_container(image: &rgbimage::RgbImage, blur_amount: usize) -> Diff {
@@ -31,7 +31,7 @@ fn make_diff_container(image: &rgbimage::RgbImage, blur_amount: usize) -> Diff {
 }
 
 pub fn focusmerge(
-    input_files: &Vec<String>,
+    input_files: &[String],
     quality_window_size: usize,
     depth_map: bool,
     output_file: &str,
@@ -45,7 +45,7 @@ pub fn focusmerge(
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
 
-            let image = rgbimage::RgbImage::open16(&in_file).unwrap();
+            let image = rgbimage::RgbImage::open16(in_file).unwrap();
 
             if out_width == 0 {
                 out_width = image.width;
@@ -110,9 +110,7 @@ pub fn focusmerge(
             let mut max_quality = 0.0_f32;
             let mut depth_value = 0;
 
-            for image_num in 0..images.len() {
-                let image: &Diff = &images[image_num];
-
+            for (image_num, image) in images.iter().enumerate() {
                 let q0 = quality::get_point_quality_estimation_on_diff_buffer(
                     &image.band_0,
                     quality_window_size,
@@ -131,10 +129,7 @@ pub fn focusmerge(
                     x,
                     y,
                 );
-                let q = match stats::mean(&vec![q0, q1, q2]) {
-                    Some(m) => m,
-                    None => 0.0,
-                };
+                let q = stats::mean(&[q0, q1, q2]).unwrap_or(0.0);
 
                 if q > max_quality {
                     depth_value = image_num;
@@ -160,7 +155,7 @@ pub fn focusmerge(
     )
     .unwrap();
 
-    merge_buffer.save(&output_file);
+    merge_buffer.save(output_file);
 
     if depth_map {
         depth_map_buffer = depth_map_buffer.normalize(0.0, 65535.0).unwrap();

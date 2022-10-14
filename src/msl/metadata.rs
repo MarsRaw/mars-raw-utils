@@ -80,11 +80,7 @@ impl ImageMetadata for Image {
     }
 
     fn get_xyz(&self) -> Option<Vec<f64>> {
-        if let Some(xyz) = &self.xyz {
-            Some(xyz.clone())
-        } else {
-            None
-        }
+        self.xyz.as_ref().cloned()
     }
 
     fn get_dimension(&self) -> Option<Vec<f64>> {
@@ -124,10 +120,7 @@ impl ImageMetadata for Image {
     }
 
     fn get_subframe_rect(&self) -> Option<Vec<f64>> {
-        match self.subframe_rect.as_ref() {
-            Some(v) => Some(v.clone()),
-            None => None,
-        }
+        self.subframe_rect.as_ref().cloned()
     }
 
     fn get_instrument(&self) -> String {
@@ -144,10 +137,7 @@ impl ImageMetadata for Image {
     // }
 
     fn get_scale_factor(&self) -> u32 {
-        match self.scale_factor {
-            Some(v) => v,
-            None => 1,
-        }
+        self.scale_factor.unwrap_or(1)
     }
 
     fn get_camera_vector(&self) -> Option<Vec<f64>> {
@@ -167,11 +157,11 @@ impl ImageMetadata for Image {
     }
 
     fn get_site(&self) -> Option<u32> {
-        self.site.clone()
+        self.site
     }
 
     fn get_drive(&self) -> Option<u32> {
-        self.drive.clone()
+        self.drive
     }
 
     fn get_mast_az(&self) -> Option<f64> {
@@ -197,14 +187,14 @@ impl ImageMetadata for Image {
     }
 
     fn get_sclk(&self) -> Option<f64> {
-        self.spacecraft_clock.clone()
+        self.spacecraft_clock
     }
 }
 
 pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
     vprintln!("Loading metadata file from {}", file_path);
 
-    if !path::file_exists(&file_path.as_str()) {
+    if !path::file_exists(file_path.as_str()) {
         return Err(constants::status::FILE_NOT_FOUND);
     }
 
@@ -217,7 +207,7 @@ pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
     file.read_to_end(&mut buf).unwrap();
     let s = String::from_utf8(buf).unwrap();
 
-    let res: Image = serde_json::from_str(&s.as_str()).unwrap();
+    let res: Image = serde_json::from_str(s.as_str()).unwrap();
 
     Ok(convert_to_std_metadata(&res))
 }

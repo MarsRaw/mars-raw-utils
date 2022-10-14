@@ -16,11 +16,11 @@ impl Point {
     /// Simple creation for a Point.
     pub fn create(x: f64, y: f64, r: f64, g: f64, b: f64) -> Self {
         Point {
-            x: x,
-            y: y,
-            r: r,
-            g: g,
-            b: b,
+            x,
+            y,
+            r,
+            g,
+            b,
         }
     }
 }
@@ -36,8 +36,8 @@ impl Triangle {
     /// Determine if a two dimensional point is contained within the  area bounded by the triangle
     pub fn contains(&self, x: f64, y: f64) -> bool {
         let p = Point {
-            x: x,
-            y: y,
+            x,
+            y,
             r: 0.0,
             g: 0.0,
             b: 0.0,
@@ -88,8 +88,8 @@ impl Triangle {
             + (self.p0.x * self.p1.y - self.p1.x * self.p0.y) * c2)
             / det;
 
-        let v = a * x + b * y + c;
-        v
+        
+        a * x + b * y + c
     }
 
     /// Determines an interpolated three-channel (RGB) color value for a point in the triangle

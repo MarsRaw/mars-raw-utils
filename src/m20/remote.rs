@@ -31,11 +31,11 @@ fn print_image(output_path: &str, image: &Image) {
         "{:54} {:25} {:>6} {:27} {:27} {:>6} {:>6} {:7} {:10}",
         image.imageid,
         image.camera.instrument,
-        format!("{:>6}", image.sol),
+        image.sol,
         image.date_taken_utc, //[..16],
         image.date_taken_mars,
-        format!("{:>6}", image.site),
-        format!("{:>6}", image.drive),
+        image.site,
+        image.drive,
         if image.sample_type == "Thumbnail" {
             constants::status::YES
         } else {
@@ -49,7 +49,7 @@ fn print_image(output_path: &str, image: &Image) {
     );
 }
 
-fn search_empty_or_has_match(image_id: &String, search: &Vec<String>) -> bool {
+fn search_empty_or_has_match(image_id: &str, search: &[String]) -> bool {
     if search.is_empty() {
         return true;
     }
@@ -66,7 +66,7 @@ fn process_results(
     results: &M20ApiResults,
     thumbnails: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> error::Result<i32> {
@@ -79,7 +79,7 @@ fn process_results(
         }
 
         // If we're searching for a substring and this image doesn't match, skip it.
-        if !search_empty_or_has_match(&image.imageid, &search) {
+        if !search_empty_or_has_match(&image.imageid, search) {
             continue;
         }
 
@@ -208,12 +208,12 @@ pub fn fetch_page(
     thumbnails: bool,
     movie_only: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> error::Result<i32> {
     match submit_query(
-        &cameras,
+        cameras,
         num_per_page,
         Some(page),
         minsol,
@@ -244,7 +244,7 @@ pub fn fetch_stats(
     thumbnails: bool,
     movie_only: bool,
 ) -> error::Result<M20RemoteStats> {
-    match submit_query(&cameras, 0, Some(0), minsol, maxsol, thumbnails, movie_only) {
+    match submit_query(cameras, 0, Some(0), minsol, maxsol, thumbnails, movie_only) {
         Ok(v) => {
             let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
             Ok(M20RemoteStats {
@@ -266,11 +266,11 @@ pub fn fetch_all(
     thumbnails: bool,
     movie_only: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> error::Result<i32> {
-    let stats = match fetch_stats(&cameras, minsol, maxsol, thumbnails, movie_only) {
+    let stats = match fetch_stats(cameras, minsol, maxsol, thumbnails, movie_only) {
         Ok(s) => s,
         Err(e) => return Err(e),
     };
@@ -280,7 +280,7 @@ pub fn fetch_all(
     let mut count = 0;
     for page in 0..pages {
         match fetch_page(
-            &cameras,
+            cameras,
             num_per_page,
             page,
             minsol,
@@ -314,13 +314,13 @@ pub fn remote_fetch(
     thumbnails: bool,
     movie_only: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> error::Result<i32> {
     match page {
         Some(p) => fetch_page(
-            &cameras,
+            cameras,
             num_per_page,
             p,
             minsol,
@@ -333,7 +333,7 @@ pub fn remote_fetch(
             output_path,
         ),
         None => fetch_all(
-            &cameras,
+            cameras,
             num_per_page,
             minsol,
             maxsol,

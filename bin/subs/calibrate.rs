@@ -52,7 +52,7 @@ impl Calibrate {
         input_file: &str,
         default_instrument: &Option<String>,
     ) -> Option<&'static CalContainer> {
-        let metadata_file = util::replace_image_extension(&input_file, "-metadata.json");
+        let metadata_file = util::replace_image_extension(input_file, "-metadata.json");
         vprintln!("Checking for metadata file at {}", metadata_file);
         if path::file_exists(metadata_file.as_str()) {
             vprintln!("Metadata file exists for loaded image: {}", metadata_file);
@@ -68,7 +68,7 @@ impl Calibrate {
 
             // If a default instrument was passed in, try and use that
             if let Some(instrument) = default_instrument {
-                calibrator_for_instrument_from_str(&instrument)
+                calibrator_for_instrument_from_str(instrument)
             } else {
                 vprintln!("We don't know what instrument was used!");
                 None // Otherwise, we don't know the instrument.
@@ -81,34 +81,13 @@ impl RunnableSubcommand for Calibrate {
     fn run(&self) {
         let cal_context = CalProfile {
             apply_ilt: !self.raw,
-            red_scalar: match self.red_weight {
-                Some(s) => s,
-                None => 1.0,
-            },
-            green_scalar: match self.green_weight {
-                Some(s) => s,
-                None => 1.0,
-            },
-            blue_scalar: match self.blue_weight {
-                Some(s) => s,
-                None => 1.0,
-            },
-            color_noise_reduction: match self.color_noise_reduction_amount {
-                Some(_) => true,
-                None => false,
-            },
-            color_noise_reduction_amount: match self.color_noise_reduction_amount {
-                Some(s) => s,
-                None => 0,
-            },
-            hot_pixel_detection_threshold: match self.hpc_threshold {
-                Some(s) => s,
-                None => 0.0,
-            },
-            hot_pixel_window_size: match self.hpc_window {
-                Some(s) => s,
-                None => 3,
-            },
+            red_scalar: self.red_weight.unwrap_or(1.0),
+            green_scalar: self.green_weight.unwrap_or(1.0),
+            blue_scalar: self.blue_weight.unwrap_or(1.0),
+            color_noise_reduction: self.color_noise_reduction_amount.is_some(),
+            color_noise_reduction_amount: self.color_noise_reduction_amount.unwrap_or(0),
+            hot_pixel_detection_threshold: self.hpc_threshold.unwrap_or(0.0),
+            hot_pixel_window_size: self.hpc_window.unwrap_or(3),
             filename_suffix: String::from(constants::OUTPUT_FILENAME_APPEND),
         };
 
@@ -121,7 +100,7 @@ impl RunnableSubcommand for Calibrate {
             if print::is_verbose() {
                 println!("{:?}", Backtrace::new());
             }
-            print_fail(&format!("Internal Error!"));
+            print_fail(&"Internal Error!".to_string());
 
             // If the user has exported MRU_EXIT_ON_PANIC=1, then we should exit here.
             // This will prevent situations where errors fly by on the screen and
@@ -143,15 +122,15 @@ impl RunnableSubcommand for Calibrate {
             .collect();
 
         in_files.par_iter().for_each(|input_file| {
-            if !path::file_exists(&input_file) {
+            if !path::file_exists(input_file) {
                 print_fail(&format!("Error: File not found: {}", input_file));
                 process::exit(1);
             }
-            let calibrator = Calibrate::get_calibrator_for_file(&input_file, &self.instrument);
+            let calibrator = Calibrate::get_calibrator_for_file(input_file, &self.instrument);
             match calibrator {
                 Some(cal) => {
-                    if profiles.len() > 0 {
-                        process_with_profiles(&cal, input_file, false, &profiles, |result| {
+                    if !profiles.is_empty() {
+                        process_with_profiles(cal, input_file, false, &profiles, |result| {
                             match result {
                                 Ok(cc) => print_complete(
                                     &format!(
@@ -163,7 +142,7 @@ impl RunnableSubcommand for Calibrate {
                                 ),
                                 Err(why) => {
                                     eprintln!("Error: {}", why);
-                                    print_fail(&input_file.to_string());
+                                    print_fail(input_file);
                                 }
                             }
                         });
@@ -179,7 +158,7 @@ impl RunnableSubcommand for Calibrate {
                             ),
                             Err(why) => {
                                 eprintln!("Error: {}", why);
-                                print_fail(&input_file.to_string());
+                                print_fail(input_file);
                             }
                         }
                     }

@@ -14,7 +14,7 @@ fn test_msl_instrument_fetches() {
     let f: Vec<String> = vec![];
 
     remote_fetch(
-        &vec![String::from("MAST_LEFT")],
+        &[String::from("MAST_LEFT")],
         5,
         Some(0),
         3119,
@@ -27,7 +27,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("MAST_RIGHT")],
+        &[String::from("MAST_RIGHT")],
         5,
         Some(0),
         3119,
@@ -40,7 +40,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("MARDI")],
+        &[String::from("MARDI")],
         5,
         Some(0),
         3119,
@@ -53,7 +53,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("MAHLI")],
+        &[String::from("MAHLI")],
         5,
         Some(0),
         3119,
@@ -66,7 +66,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("CHEMCAM_RMI")],
+        &[String::from("CHEMCAM_RMI")],
         5,
         Some(0),
         3119,
@@ -79,7 +79,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("MAST_LEFT")],
+        &[String::from("MAST_LEFT")],
         5,
         Some(0),
         3119,
@@ -92,7 +92,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("NAV_RIGHT_A")],
+        &[String::from("NAV_RIGHT_A")],
         5,
         Some(0),
         3119,
@@ -105,7 +105,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("NAV_RIGHT_B")],
+        &[String::from("NAV_RIGHT_B")],
         5,
         Some(0),
         3119,
@@ -118,7 +118,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("NAV_LEFT_A")],
+        &[String::from("NAV_LEFT_A")],
         5,
         Some(0),
         3119,
@@ -131,7 +131,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("NAV_LEFT_B")],
+        &[String::from("NAV_LEFT_B")],
         5,
         Some(0),
         3119,
@@ -144,7 +144,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("FHAZ_RIGHT_A")],
+        &[String::from("FHAZ_RIGHT_A")],
         5,
         Some(0),
         3119,
@@ -157,7 +157,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("FHAZ_RIGHT_B")],
+        &[String::from("FHAZ_RIGHT_B")],
         5,
         Some(0),
         3119,
@@ -170,7 +170,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("FHAZ_LEFT_A")],
+        &[String::from("FHAZ_LEFT_A")],
         5,
         Some(0),
         3119,
@@ -183,7 +183,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("FHAZ_LEFT_B")],
+        &[String::from("FHAZ_LEFT_B")],
         5,
         Some(0),
         3119,
@@ -196,7 +196,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("RHAZ_RIGHT_A")],
+        &[String::from("RHAZ_RIGHT_A")],
         5,
         Some(0),
         3119,
@@ -209,7 +209,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("RHAZ_RIGHT_B")],
+        &[String::from("RHAZ_RIGHT_B")],
         5,
         Some(0),
         3119,
@@ -222,7 +222,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("RHAZ_LEFT_A")],
+        &[String::from("RHAZ_LEFT_A")],
         5,
         Some(0),
         3119,
@@ -235,7 +235,7 @@ fn test_msl_instrument_fetches() {
     )
     .unwrap();
     remote_fetch(
-        &vec![String::from("RHAZ_LEFT_B")],
+        &[String::from("RHAZ_LEFT_B")],
         5,
         Some(0),
         3119,

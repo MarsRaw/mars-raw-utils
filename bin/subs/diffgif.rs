@@ -40,35 +40,12 @@ pub struct DiffGif {
 
 impl RunnableSubcommand for DiffGif {
     fn run(&self) {
-        let white_level = match self.white {
-            Some(w) => w,
-            None => 1.0,
-        };
-
-        let black_level = match self.black {
-            Some(b) => b,
-            None => 0.0,
-        };
-
-        let gamma = match self.gamma {
-            Some(g) => g,
-            None => 1.0,
-        };
-
-        let delay = match self.delay {
-            Some(d) => d,
-            None => 10,
-        };
-
-        let lowpass_window_size = match self.lowpass {
-            Some(l) => l,
-            None => 0,
-        };
-
-        let product_type = match self.prodtype {
-            Some(p) => p,
-            None => diffgif::ProductType::STANDARD,
-        };
+        let white_level = self.white.unwrap_or(1.0);
+        let black_level = self.black.unwrap_or(0.0);
+        let gamma = self.gamma.unwrap_or(1.0);
+        let delay = self.delay.unwrap_or(10);
+        let lowpass_window_size = self.lowpass.unwrap_or(0);
+        let product_type = self.prodtype.unwrap_or(diffgif::ProductType::STANDARD);
 
         println!(
             "{}, {}, {}, {}, {}",
@@ -100,12 +77,12 @@ impl RunnableSubcommand for DiffGif {
         diffgif::process(&diffgif::DiffGif {
             input_files: in_files,
             output: String::from(output),
-            product_type: product_type,
+            product_type,
             black_level: black_level / 100.0,
             white_level: white_level / 100.0,
-            gamma: gamma,
-            delay: delay,
-            lowpass_window_size: lowpass_window_size,
+            gamma,
+            delay,
+            lowpass_window_size,
         });
     }
 }

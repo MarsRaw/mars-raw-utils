@@ -16,6 +16,7 @@ pub use crate::path;
 pub use crate::print;
 pub use crate::util;
 pub use crate::vprintln;
+use std::str::FromStr;
 
 pub use crate::print::{print_complete, print_done, print_fail, print_warn};
 
@@ -80,8 +81,8 @@ pub fn calibrator_for_instrument(instrument: Instrument) -> Option<&'static CalC
     None
 }
 
-pub fn calibrator_for_instrument_from_str(instrument: &String) -> Option<&'static CalContainer> {
-    calibrator_for_instrument(Instrument::from_str(&instrument.as_str()))
+pub fn calibrator_for_instrument_from_str(instrument: &str) -> Option<&'static CalContainer> {
+    calibrator_for_instrument(Instrument::from_str(instrument).unwrap())
 }
 
 use backtrace::Backtrace;

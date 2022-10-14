@@ -115,7 +115,7 @@ pub fn locate_calibration_file_no_extention(
 
 pub fn locate_calibration_file(file_path: &String) -> error::Result<String> {
     // If the file exists as-is, return it
-    if path::file_exists(&file_path) {
+    if path::file_exists(file_path) {
         return Ok(file_path.clone());
     }
 
@@ -125,58 +125,44 @@ pub fn locate_calibration_file(file_path: &String) -> error::Result<String> {
         String::from("/usr/share/mars_raw_utils/data/"), // Linux, installed via apt or rpm
     ];
 
-    match std::env::current_exe() {
-        Ok(exe_path) => {
-            if cfg!(windows) {
-                // I'm not even a little comfortable with this...
-                // So, to figure out the installation path, we get the path to the running executable, then get the path, and then
-                // append 'data' to it to get to the calibration files. We also have to get rid of those quotation marks.
-                if let Some(filename) = exe_path.parent() {
-                    locations.insert(
-                        0,
-                        format!("{:?}", filename.with_file_name("data").as_os_str())
-                            .replace("\"", ""),
-                    );
-                }
+    if let Ok(exe_path) = std::env::current_exe() {
+        if cfg!(windows) {
+            // I'm not even a little comfortable with this...
+            // So, to figure out the installation path, we get the path to the running executable, then get the path, and then
+            // append 'data' to it to get to the calibration files. We also have to get rid of those quotation marks.
+            if let Some(filename) = exe_path.parent() {
+                locations.insert(
+                    0,
+                    format!("{:?}", filename.with_file_name("data").as_os_str()).replace('\"', ""),
+                );
             }
         }
-        Err(_) => {}
-    };
+    }
 
     // Allow for a custom data path to be defined during build.
-    match option_env!("MARSDATAROOT") {
-        Some(v) => locations.insert(0, String::from(v)),
-        None => {}
-    };
+    if let Some(v) = option_env!("MARSDATAROOT") {
+        locations.insert(0, String::from(v));
+    }
 
     // Add a path based on the location of the running executable
     // Intended for Windows installations
-    match std::env::current_exe() {
-        Ok(exe_path) => {
-            if cfg!(windows) {
-                let bn = format!("{:?}/../data/", exe_path.file_name());
-                locations.insert(0, bn);
-            }
+    if let Ok(exe_path) = std::env::current_exe() {
+        if cfg!(windows) {
+            let bn = format!("{:?}/../data/", exe_path.file_name());
+            locations.insert(0, bn);
         }
-        Err(_) => {}
-    };
+    }
 
     // Prepend a home directory if known
-    match dirs::home_dir() {
-        Some(dir) => {
-            let homedatadir = format!("{}/.marsdata", dir.to_str().unwrap());
-            locations.insert(0, homedatadir);
-        }
-        None => {}
-    };
+    if let Some(dir) = dirs::home_dir() {
+        let homedatadir = format!("{}/.marsdata", dir.to_str().unwrap());
+        locations.insert(0, homedatadir);
+    }
 
     // Prepend a location specified by environment variable
-    match env::var("MARS_RAW_DATA") {
-        Ok(dir) => {
-            locations.insert(0, dir);
-        }
-        Err(_) => {}
-    };
+    if let Ok(dir) = env::var("MARS_RAW_DATA") {
+        locations.insert(0, dir);
+    }
 
     // First match wins
     for loc in locations.iter() {

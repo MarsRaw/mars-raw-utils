@@ -18,7 +18,7 @@ pub struct CompleteContext {
 impl CompleteContext {
     pub fn new(status: CompleteStatus, cal_context: &CalProfile) -> Self {
         CompleteContext {
-            status: status,
+            status,
             cal_context: cal_context.clone(),
         }
     }
@@ -45,7 +45,7 @@ pub trait Calibration: Sync {
         only_new: bool,
         profile_name: &String,
     ) -> error::Result<CompleteContext> {
-        match load_calibration_profile(&profile_name.to_string()) {
+        match load_calibration_profile(profile_name) {
             Ok(profile) => self.process_file(input_file, &profile, only_new),
             Err(why) => {
                 vprintln!("Error loading calibration profile: {}", why);
@@ -70,14 +70,14 @@ pub fn process_with_profiles<F: Fn(error::Result<CompleteContext>)>(
     calibrator: &CalContainer,
     input_file: &str,
     only_new: bool,
-    profile_names: &Vec<String>,
+    profile_names: &[String],
     on_cal_complete: F,
 ) {
     for profile_name in profile_names.iter() {
         on_cal_complete(calibrator.calibrator.process_with_profile(
             input_file,
             only_new,
-            &profile_name.to_string(),
+            profile_name,
         ));
     }
 }
@@ -86,7 +86,7 @@ pub fn simple_calibration_with_profiles(
     calibrator: &CalContainer,
     input_files: &Vec<&str>,
     only_new: bool,
-    profiles: &Vec<String>,
+    profiles: &[String],
 ) {
     input_files
         .into_par_iter()
@@ -99,8 +99,12 @@ pub fn simple_calibration_with_profiles(
                     idx,
                     input_files.len()
                 );
-                process_with_profiles(&calibrator, &in_file, only_new, &profiles, |result| {
-                    match result {
+                process_with_profiles(
+                    calibrator,
+                    in_file,
+                    only_new,
+                    profiles,
+                    |result| match result {
                         Ok(cc) => print_complete(
                             &format!(
                                 "{} ({})",
@@ -113,8 +117,8 @@ pub fn simple_calibration_with_profiles(
                             eprintln!("Error: {}", why);
                             print_fail(&in_file.to_string());
                         }
-                    }
-                });
+                    },
+                );
             } else {
                 eprintln!("File not found: {}", in_file);
                 print_fail(&in_file.to_string());
@@ -141,7 +145,7 @@ pub fn simple_calibration(
                 );
                 match calibrator
                     .calibrator
-                    .process_file(&in_file, cal_context, only_new)
+                    .process_file(in_file, cal_context, only_new)
                 {
                     Ok(cc) => print_complete(
                         &format!(

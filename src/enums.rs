@@ -1,3 +1,6 @@
+use std::num::ParseIntError;
+use std::str::FromStr;
+
 // Supported missions
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Mission {
@@ -47,9 +50,11 @@ pub enum Instrument {
     None,
 }
 
-impl Instrument {
-    pub fn from_str(s: &str) -> Instrument {
-        match s.to_uppercase().as_str() {
+impl FromStr for Instrument {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Instrument, ParseIntError> {
+        Ok(match s.to_uppercase().as_str() {
             "MCZ_LEFT" => Instrument::M20MastcamZLeft,
             "MCZ_RIGHT" => Instrument::M20MastcamZRight,
             "FRONT_HAZCAM_LEFT_A" | "FRONT_HAZCAM_LEFT_B" => Instrument::M20FrontHazLeft,
@@ -80,7 +85,7 @@ impl Instrument {
             "IDC" => Instrument::NsytIDC,
             "ICC" => Instrument::NsytICC,
             _ => Instrument::None,
-        }
+        })
     }
 }
 

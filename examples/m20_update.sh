@@ -35,7 +35,7 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/WATSON
     mkdir -p $INSTROOT
 
-    mru m20-fetch -c WATSON -s $sol -o $INSTROOT -n -S EBY
+    mru m20-fetch -c WATSON -s $sol -o $INSTROOT -n -f EBY
 
     cd $INSTROOT
 
@@ -110,7 +110,7 @@ function update_on_sol() {
     INSTROOT=$SOLROOT/SCAM
     mkdir -p $INSTROOT
 
-    mru m20-fetch -c SUPERCAM -s $sol -o $INSTROOT -n -S EBY
+    mru m20-fetch -c SUPERCAM -s $sol -o $INSTROOT -n -f EBY
     
     cd $INSTROOT
     if [ `ls *J0?.png 2> /dev/null | wc -l` -gt 0 ]; then
@@ -218,7 +218,7 @@ function update_on_sol() {
 if [ "x$1" !=  "x" ]; then 
     update_on_sol $1
 else
-    for sol in `m20_latest -l`; do 
+    for sol in `mru m20-latest -l`; do 
         update_on_sol $sol
     done
 fi

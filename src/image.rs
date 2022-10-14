@@ -13,7 +13,7 @@ impl MarsImage {
     pub fn new(width: usize, height: usize, instrument: enums::Instrument) -> Self {
         MarsImage {
             image: RgbImage::new_with_bands(width, height, 3, ImageMode::U8BIT).unwrap(),
-            instrument: instrument,
+            instrument,
             metadata: None,
         }
     }
@@ -27,13 +27,13 @@ impl MarsImage {
 
         MarsImage {
             image: RgbImage::open(&file_path).unwrap(),
-            instrument: instrument,
+            instrument,
             metadata: MarsImage::load_image_metadata(&file_path),
         }
     }
 
     fn load_image_metadata(file_path: &str) -> Option<Metadata> {
-        let metadata_file = util::replace_image_extension(&file_path, "-metadata.json");
+        let metadata_file = util::replace_image_extension(file_path, "-metadata.json");
         vprintln!("Checking for metadata file at {}", metadata_file);
         if path::file_exists(metadata_file.as_str()) {
             vprintln!("Metadata file exists for loaded image: {}", metadata_file);
@@ -51,7 +51,7 @@ impl MarsImage {
         self.image.save(to_file);
 
         vprintln!("Writing image buffer to file at {}", to_file);
-        if path::parent_exists_and_writable(&to_file) {
+        if path::parent_exists_and_writable(to_file) {
             match &self.metadata {
                 Some(md) => {
                     util::save_image_json(to_file, &md, false, None).unwrap();
@@ -102,7 +102,7 @@ impl MarsImage {
     }
 
     fn apply_flat(&mut self, flat: &RgbImage) {
-        self.image.apply_flat(&flat);
+        self.image.apply_flat(flat);
 
         if let Some(ref mut md) = self.metadata {
             md.flatfield = true;
@@ -144,7 +144,7 @@ impl MarsImage {
     }
 
     pub fn apply_alpha(&mut self, mask: &ImageBuffer) {
-        self.image.copy_alpha_from(&mask);
+        self.image.copy_alpha_from(mask);
     }
 
     pub fn clear_alpha(&mut self) {
@@ -161,7 +161,7 @@ impl MarsImage {
     }
 
     pub fn apply_inpaint_fix_with_mask(&mut self, mask: &ImageBuffer) {
-        let mut fixed = inpaint::apply_inpaint_to_buffer(&self.image, &mask).unwrap();
+        let mut fixed = inpaint::apply_inpaint_to_buffer(&self.image, mask).unwrap();
         fixed.set_mode(self.image.get_mode());
         self.image = fixed;
 

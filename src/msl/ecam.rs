@@ -19,15 +19,15 @@ pub struct MslEcam {}
 
 impl Calibration for MslEcam {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
+        matches!(
+            instrument,
             Instrument::MslNavCamLeft
-            | Instrument::MslNavCamRight
-            | Instrument::MslFrontHazLeft
-            | Instrument::MslFrontHazRight
-            | Instrument::MslRearHazLeft
-            | Instrument::MslRearHazRight => true,
-            _ => false,
-        }
+                | Instrument::MslNavCamRight
+                | Instrument::MslFrontHazLeft
+                | Instrument::MslFrontHazRight
+                | Instrument::MslRearHazLeft
+                | Instrument::MslRearHazRight
+        )
     }
 
     fn process_file(
@@ -36,7 +36,7 @@ impl Calibration for MslEcam {
         cal_context: &CalProfile,
         only_new: bool,
     ) -> error::Result<CompleteContext> {
-        let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
+        let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
             return cal_warn(cal_context);
@@ -45,27 +45,27 @@ impl Calibration for MslEcam {
         let mut instrument = enums::Instrument::MslNavCamRight;
 
         // Attempt to figure out camera from file name
-        if util::filename_char_at_pos(&input_file, 0) == 'N' {
+        if util::filename_char_at_pos(input_file, 0) == 'N' {
             // NAVCAMS
-            if util::filename_char_at_pos(&input_file, 1) == 'L' {
+            if util::filename_char_at_pos(input_file, 1) == 'L' {
                 // Left
                 instrument = enums::Instrument::MslNavCamLeft;
             } else {
                 // Assume Right
                 instrument = enums::Instrument::MslNavCamRight;
             }
-        } else if util::filename_char_at_pos(&input_file, 0) == 'F' {
+        } else if util::filename_char_at_pos(input_file, 0) == 'F' {
             // FHAZ
-            if util::filename_char_at_pos(&input_file, 1) == 'L' {
+            if util::filename_char_at_pos(input_file, 1) == 'L' {
                 // Left
                 instrument = enums::Instrument::MslFrontHazLeft;
             } else {
                 // Assume Right
                 instrument = enums::Instrument::MslFrontHazRight;
             }
-        } else if util::filename_char_at_pos(&input_file, 0) == 'R' {
+        } else if util::filename_char_at_pos(input_file, 0) == 'R' {
             // RHAZ
-            if util::filename_char_at_pos(&input_file, 1) == 'L' {
+            if util::filename_char_at_pos(input_file, 1) == 'L' {
                 // Left
                 instrument = enums::Instrument::MslRearHazLeft;
             } else {

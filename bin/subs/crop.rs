@@ -26,7 +26,7 @@ impl RunnableSubcommand for Crop {
         //https://stackoverflow.com/questions/26536871/how-can-i-convert-a-string-of-numbers-to-an-array-or-vector-of-integers-in-rust
         let crop_numbers: Vec<usize> = self
             .crop
-            .split(",")
+            .split(',')
             .map(|s| s.parse().expect("parse error"))
             .collect();
 

@@ -10,10 +10,7 @@ pub struct MslChemCam {}
 
 impl Calibration for MslChemCam {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::MslChemCam => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::MslChemCam)
     }
 
     fn process_file(
@@ -22,7 +19,7 @@ impl Calibration for MslChemCam {
         cal_context: &CalProfile,
         only_new: bool,
     ) -> error::Result<CompleteContext> {
-        let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
+        let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
             return cal_warn(cal_context);
