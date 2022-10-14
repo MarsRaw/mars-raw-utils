@@ -1,11 +1,8 @@
-use mars_raw_utils::{
-    jsonfetch
-};
+use mars_raw_utils::jsonfetch;
 
 #[test]
 #[ignore]
 fn test_json_fetch() {
-
     let jf = jsonfetch::JsonFetcher::new("http://echo.jsontest.com/key/value/one/two");
     let res = jf.fetch().unwrap();
     assert_eq!(res["one"], "two");

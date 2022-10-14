@@ -1,12 +1,6 @@
 use crate::{
-    vprintln, 
-    image::MarsImage, 
-    enums, 
-    enums::Instrument,
-    path,
-    util,
-    calprofile::CalProfile,
-    calibrate::*
+    calibrate::*, calprofile::CalProfile, enums, enums::Instrument, image::MarsImage, path, util,
+    vprintln,
 };
 
 use sciimg::error;
@@ -15,44 +9,58 @@ use sciimg::error;
 pub struct M20EECam {}
 
 impl Calibration for M20EECam {
-
-    fn accepts_instrument(&self, instrument:Instrument) -> bool {
+    fn accepts_instrument(&self, instrument: Instrument) -> bool {
         match instrument {
-            Instrument::M20FrontHazLeft | Instrument::M20FrontHazRight |
-            Instrument::M20NavcamLeft | Instrument::M20NavcamRight | 
-            Instrument::M20RearHazLeft | Instrument::M20RearHazRight => true,
-            _ => false
+            Instrument::M20FrontHazLeft
+            | Instrument::M20FrontHazRight
+            | Instrument::M20NavcamLeft
+            | Instrument::M20NavcamRight
+            | Instrument::M20RearHazLeft
+            | Instrument::M20RearHazRight => true,
+            _ => false,
         }
     }
 
-    fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool)  -> error::Result<CompleteContext> {
-
+    fn process_file(
+        &self,
+        input_file: &str,
+        cal_context: &CalProfile,
+        only_new: bool,
+    ) -> error::Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
             return cal_warn(cal_context);
         }
-        
 
         let mut instrument = enums::Instrument::M20NavcamRight;
 
         // Attempt to figure out camera from file name
-        if util::filename_char_at_pos(&input_file, 0) == 'N' {         // NAVCAMS
-            if util::filename_char_at_pos(&input_file, 1) == 'L' {     // Left
+        if util::filename_char_at_pos(&input_file, 0) == 'N' {
+            // NAVCAMS
+            if util::filename_char_at_pos(&input_file, 1) == 'L' {
+                // Left
                 instrument = enums::Instrument::M20NavcamLeft;
-            } else {                                   // Assume Right
+            } else {
+                // Assume Right
                 instrument = enums::Instrument::M20NavcamRight;
             }
-        } else if util::filename_char_at_pos(&input_file, 0) == 'F' {  // FHAZ
-            if util::filename_char_at_pos(&input_file, 1)  == 'L' {     // Left
+        } else if util::filename_char_at_pos(&input_file, 0) == 'F' {
+            // FHAZ
+            if util::filename_char_at_pos(&input_file, 1) == 'L' {
+                // Left
                 instrument = enums::Instrument::M20FrontHazLeft;
-            } else {                                   // Assume Right
+            } else {
+                // Assume Right
                 instrument = enums::Instrument::M20FrontHazRight;
-            }  
-        } else if util::filename_char_at_pos(&input_file, 0) == 'R' {  // RHAZ
-            if util::filename_char_at_pos(&input_file, 1)  == 'L' {     // Left
+            }
+        } else if util::filename_char_at_pos(&input_file, 0) == 'R' {
+            // RHAZ
+            if util::filename_char_at_pos(&input_file, 1) == 'L' {
+                // Left
                 instrument = enums::Instrument::M20RearHazLeft;
-            } else {                                   // Assume Right
+            } else {
+                // Assume Right
                 instrument = enums::Instrument::M20RearHazRight;
             }
         }
@@ -79,7 +87,11 @@ impl Calibration for M20EECam {
         //raw.apply_inpaint_fix().unwrap();
 
         vprintln!("Applying color weights...");
-        raw.apply_weight(cal_context.red_scalar, cal_context.green_scalar, cal_context.blue_scalar);
+        raw.apply_weight(
+            cal_context.red_scalar,
+            cal_context.green_scalar,
+            cal_context.blue_scalar,
+        );
 
         vprintln!("Normalizing...");
         raw.image.normalize_to_16bit_with_max(data_max);

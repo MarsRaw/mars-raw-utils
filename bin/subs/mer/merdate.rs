@@ -1,6 +1,4 @@
-use mars_raw_utils::{
-    prelude::*
-};
+use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 
@@ -19,7 +17,7 @@ impl RunnableSubcommand for MerDate {
                 println!("Mission Time:           {}", mtime.mission_time_display);
                 println!("Local True Solar Time:  {}", mtime.ltst_display);
                 println!("Solar Longitude:        {}", mtime.l_s);
-            },
+            }
             Err(_e) => {
                 eprintln!("Error calculating mission time");
             }
@@ -34,7 +32,7 @@ impl RunnableSubcommand for MerDate {
                 println!("Mission Time:           {}", mtime.mission_time_display);
                 println!("Local True Solar Time:  {}", mtime.ltst_display);
                 println!("Solar Longitude:        {}", mtime.l_s);
-            },
+            }
             Err(_e) => {
                 eprintln!("Error calculating mission time");
             }

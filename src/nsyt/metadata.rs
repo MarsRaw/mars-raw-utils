@@ -1,30 +1,21 @@
-use crate::{
-    constants, 
-    vprintln,
-    path,
-    metadata::*
-};
+use crate::{constants, metadata::*, path, vprintln};
 
 use sciimg::prelude::*;
 
 use std::fs::File;
 use std::io::Read;
 
-use serde::{
-    Deserialize, 
-    Serialize
-};
-
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Extended {
-    pub localtime: String
+    pub localtime: String,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Image {
     pub id: u32,
-    
+
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub camera_vector: Option<Vec<f64>>,
 
@@ -70,7 +61,7 @@ pub struct Image {
     pub description: String,
     pub link: String,
     pub image_credit: String,
-    pub https_url: String
+    pub https_url: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -79,10 +70,8 @@ pub struct NsytApiResults {
     pub more: bool,
     pub total: u32,
     pub page: u32,
-    pub per_page: u32
+    pub per_page: u32,
 }
-
-
 
 impl ImageMetadata for Image {
     fn get_link(&self) -> String {
@@ -136,7 +125,7 @@ impl ImageMetadata for Image {
     fn get_subframe_rect(&self) -> Option<Vec<f64>> {
         match self.subframe_rect.as_ref() {
             Some(v) => Some(v.clone()),
-            None => None
+            None => None,
         }
     }
 
@@ -189,9 +178,7 @@ impl ImageMetadata for Image {
     }
 }
 
-
-pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {
-
+pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
     vprintln!("Loading metadata file from {}", file_path);
 
     if !path::file_exists(&file_path.as_str()) {
@@ -203,7 +190,7 @@ pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {
         Ok(file) => file,
     };
 
-    let mut buf : Vec<u8> = Vec::default();
+    let mut buf: Vec<u8> = Vec::default();
     file.read_to_end(&mut buf).unwrap();
     let s = String::from_utf8(buf).unwrap();
 

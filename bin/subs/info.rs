@@ -1,9 +1,5 @@
-use mars_raw_utils::{
-    prelude::*
-};
-use sciimg::{
-    prelude::*
-};
+use mars_raw_utils::prelude::*;
+use sciimg::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 
@@ -12,9 +8,15 @@ use std::process;
 #[derive(clap::Args)]
 #[clap(author, version, about = "Image information", long_about = None)]
 pub struct Info {
-    #[clap(long, short, parse(from_os_str), help = "Input images", multiple_values(true), required(true))]
+    #[clap(
+        long,
+        short,
+        parse(from_os_str),
+        help = "Input images",
+        multiple_values(true),
+        required(true)
+    )]
     input_files: Vec<std::path::PathBuf>,
-
 }
 
 pub trait YesNo {
@@ -23,23 +25,24 @@ pub trait YesNo {
 
 impl YesNo for bool {
     fn yesno(&self) -> String {
-        if *self { "Yes".to_string() } else { "No".to_string() }
+        if *self {
+            "Yes".to_string()
+        } else {
+            "No".to_string()
+        }
     }
 }
 
 impl RunnableSubcommand for Info {
-
-    
-
     fn run(&self) {
-        
         for in_file in self.input_files.iter() {
             if in_file.exists() {
-
                 println!("Image: {:?}", in_file);
-                let img = MarsImage::open(String::from(in_file.as_os_str().to_str().unwrap()), Instrument::None);
+                let img = MarsImage::open(
+                    String::from(in_file.as_os_str().to_str().unwrap()),
+                    Instrument::None,
+                );
                 if let Some(md) = img.metadata {
-
                     println!("Sol:                         {}", md.sol);
                     println!("Instrument:                  {}", md.instrument);
                     println!("Image Id:                    {}", md.imageid);
@@ -48,7 +51,7 @@ impl RunnableSubcommand for Info {
                     if let Some(sclk) = md.sclk {
                         println!("SCLK:                        {}", sclk);
                     }
-                    
+
                     if let Some(dt) = md.date_taken_mars {
                         println!("Data Taken (Mars):           {}", dt);
                     }
@@ -56,7 +59,7 @@ impl RunnableSubcommand for Info {
                     if let Some(sf) = md.subframe_rect {
                         println!("Subframe Rectangle:          {:?}", sf);
                     }
-                    
+
                     if let Some(cmt) = md.camera_model_type {
                         println!("Camera Model Type:           {}", cmt);
                     }
@@ -68,7 +71,6 @@ impl RunnableSubcommand for Info {
                     if let Some(drive) = md.drive {
                         println!("Drive:                       {}", drive);
                     }
-
 
                     println!("Scale Factor:                {}", md.scale_factor);
 
@@ -112,7 +114,5 @@ impl RunnableSubcommand for Info {
                 eprintln!("File not found: {:?}", in_file);
             }
         }
-
-
     }
 }

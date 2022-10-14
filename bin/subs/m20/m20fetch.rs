@@ -1,6 +1,4 @@
-use mars_raw_utils::{
-    prelude::*
-};
+use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 
@@ -9,7 +7,12 @@ use std::process;
 #[derive(clap::Args)]
 #[clap(author, version, about = "Fetch raw Mars2020 images", long_about = None)]
 pub struct M20Fetch {
-    #[clap(long, short, help = "Mars2020 Camera Instrument(s)", multiple_values(true))]
+    #[clap(
+        long,
+        short,
+        help = "Mars2020 Camera Instrument(s)",
+        multiple_values(true)
+    )]
     camera: Vec<String>,
 
     #[clap(long, short = 's', help = "Mission Sol")]
@@ -56,40 +59,64 @@ impl RunnableSubcommand for M20Fetch {
             im.print_instruments();
             process::exit(0);
         }
-        
-        let sol : i32 = match self.sol {
+
+        let sol: i32 = match self.sol {
             Some(s) => s as i32,
-            None => -1
+            None => -1,
         };
 
         let minsol = match self.minsol {
-            Some(s) => if sol >= 0 { sol } else { s as i32 },
-            None => if sol >= 0 { sol } else { 100000 }
+            Some(s) => {
+                if sol >= 0 {
+                    sol
+                } else {
+                    s as i32
+                }
+            }
+            None => {
+                if sol >= 0 {
+                    sol
+                } else {
+                    100000
+                }
+            }
         };
 
         let maxsol = match self.maxsol {
-            Some(s) => if sol >= 0 { sol } else { s as i32 },
-            None => if sol >= 0 { sol } else { -100000 as i32 }
+            Some(s) => {
+                if sol >= 0 {
+                    sol
+                } else {
+                    s as i32
+                }
+            }
+            None => {
+                if sol >= 0 {
+                    sol
+                } else {
+                    -100000 as i32
+                }
+            }
         };
 
         let num_per_page = match self.num {
             Some(n) => n as i32,
-            None => 100
+            None => 100,
         };
 
         let page = match self.page {
             Some(p) => Some(p as i32),
-            None => None
+            None => None,
         };
 
         let search = match &self.filter {
             Some(s) => s.clone(),
-            None => vec![]
+            None => vec![],
         };
 
         let output = match &self.output {
             Some(s) => String::from(s.as_os_str().to_str().unwrap()),
-            None => path::cwd()
+            None => path::cwd(),
         };
 
         let camera_ids_res = im.find_remote_instrument_names_fromlist(&self.camera);
@@ -97,24 +124,26 @@ impl RunnableSubcommand for M20Fetch {
             Err(_e) => {
                 eprintln!("Invalid camera instrument(s) specified");
                 process::exit(1);
-            },
+            }
             Ok(v) => v,
         };
 
         m20::remote::print_header();
-        match m20::remote::remote_fetch(&cameras, 
-                                        num_per_page, 
-                                        page, 
-                                        minsol, 
-                                        maxsol, 
-                                        self.thumbnails, 
-                                        self.movie,
-                                        self.list, 
-                                        &search, 
-                                        self.new, 
-                                        &output.as_str()) {
+        match m20::remote::remote_fetch(
+            &cameras,
+            num_per_page,
+            page,
+            minsol,
+            maxsol,
+            self.thumbnails,
+            self.movie,
+            self.list,
+            &search,
+            self.new,
+            &output.as_str(),
+        ) {
             Ok(c) => println!("{} images found", c),
-            Err(e) => eprintln!("Error: {}", e)
+            Err(e) => eprintln!("Error: {}", e),
         };
     }
 }

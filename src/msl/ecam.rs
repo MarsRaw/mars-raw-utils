@@ -1,20 +1,9 @@
 use crate::{
-    vprintln, 
-    image::MarsImage, 
-    enums, 
-    enums::Instrument,
-    path,
-    util,
-    inpaintmask,
-    calprofile::CalProfile,
-    calibrate::*,
-    calibfile
+    calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument, image::MarsImage,
+    inpaintmask, path, util, vprintln,
 };
 
-use sciimg::{
-    error
-};
-
+use sciimg::error;
 
 // Doesn't support subframed images yet since we won't know what part of the sensor was
 // used from the raws alone. If it's in the JSON response from the raw image site, then
@@ -24,23 +13,29 @@ use sciimg::{
 // prefix to the image filename.
 //
 // Also leaving in the ILT parameter until I iron out the cases in which it's needed
-// for ECAM. 
+// for ECAM.
 #[derive(Copy, Clone)]
 pub struct MslEcam {}
 
 impl Calibration for MslEcam {
-
-    fn accepts_instrument(&self, instrument:Instrument) -> bool {
+    fn accepts_instrument(&self, instrument: Instrument) -> bool {
         match instrument {
-            Instrument::MslNavCamLeft | Instrument::MslNavCamRight | 
-            Instrument::MslFrontHazLeft | Instrument::MslFrontHazRight |
-            Instrument::MslRearHazLeft | Instrument::MslRearHazRight => true,
-            _ => false
+            Instrument::MslNavCamLeft
+            | Instrument::MslNavCamRight
+            | Instrument::MslFrontHazLeft
+            | Instrument::MslFrontHazRight
+            | Instrument::MslRearHazLeft
+            | Instrument::MslRearHazRight => true,
+            _ => false,
         }
     }
 
-
-    fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool) -> error::Result<CompleteContext> {
+    fn process_file(
+        &self,
+        input_file: &str,
+        cal_context: &CalProfile,
+        only_new: bool,
+    ) -> error::Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
@@ -50,22 +45,31 @@ impl Calibration for MslEcam {
         let mut instrument = enums::Instrument::MslNavCamRight;
 
         // Attempt to figure out camera from file name
-        if util::filename_char_at_pos(&input_file, 0) == 'N' {         // NAVCAMS
-            if util::filename_char_at_pos(&input_file, 1) == 'L' {     // Left
+        if util::filename_char_at_pos(&input_file, 0) == 'N' {
+            // NAVCAMS
+            if util::filename_char_at_pos(&input_file, 1) == 'L' {
+                // Left
                 instrument = enums::Instrument::MslNavCamLeft;
-            } else {                                   // Assume Right
+            } else {
+                // Assume Right
                 instrument = enums::Instrument::MslNavCamRight;
             }
-        } else if util::filename_char_at_pos(&input_file, 0) == 'F' {  // FHAZ
-            if util::filename_char_at_pos(&input_file, 1)  == 'L' {     // Left
+        } else if util::filename_char_at_pos(&input_file, 0) == 'F' {
+            // FHAZ
+            if util::filename_char_at_pos(&input_file, 1) == 'L' {
+                // Left
                 instrument = enums::Instrument::MslFrontHazLeft;
-            } else {                                   // Assume Right
+            } else {
+                // Assume Right
                 instrument = enums::Instrument::MslFrontHazRight;
-            }  
-        } else if util::filename_char_at_pos(&input_file, 0) == 'R' {  // RHAZ
-            if util::filename_char_at_pos(&input_file, 1)  == 'L' {     // Left
+            }
+        } else if util::filename_char_at_pos(&input_file, 0) == 'R' {
+            // RHAZ
+            if util::filename_char_at_pos(&input_file, 1) == 'L' {
+                // Left
                 instrument = enums::Instrument::MslRearHazLeft;
-            } else {                                   // Assume Right
+            } else {
+                // Assume Right
                 instrument = enums::Instrument::MslRearHazRight;
             }
         }
@@ -81,13 +85,23 @@ impl Calibration for MslEcam {
         }
 
         if cal_context.hot_pixel_detection_threshold > 0.0 {
-            vprintln!("Hot pixel correction with variance threshold {}...", cal_context.hot_pixel_detection_threshold);
-            raw.hot_pixel_correction(cal_context.hot_pixel_window_size, cal_context.hot_pixel_detection_threshold);
+            vprintln!(
+                "Hot pixel correction with variance threshold {}...",
+                cal_context.hot_pixel_detection_threshold
+            );
+            raw.hot_pixel_correction(
+                cal_context.hot_pixel_window_size,
+                cal_context.hot_pixel_detection_threshold,
+            );
         }
-        
+
         let data_max = 255.0;
 
-        let flat_file_path = calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::FlatField).unwrap();
+        let flat_file_path = calibfile::get_calibration_file_for_instrument(
+            instrument,
+            enums::CalFileType::FlatField,
+        )
+        .unwrap();
         vprintln!("Using flat file: {}", flat_file_path);
 
         if path::file_exists(&flat_file_path) {
@@ -95,7 +109,12 @@ impl Calibration for MslEcam {
 
             if let Some(md) = &raw.metadata {
                 if let Some(rect) = &md.subframe_rect {
-                    flat.crop(rect[0] as usize - 1, rect[1] as usize - 1, rect[2] as usize, rect[3] as usize);
+                    flat.crop(
+                        rect[0] as usize - 1,
+                        rect[1] as usize - 1,
+                        rect[2] as usize,
+                        rect[3] as usize,
+                    );
                 }
             }
 
@@ -105,9 +124,12 @@ impl Calibration for MslEcam {
             panic!("Flat file not found!");
         }
 
-        
         vprintln!("Applying color weights...");
-        raw.apply_weight(cal_context.red_scalar, cal_context.green_scalar, cal_context.blue_scalar);
+        raw.apply_weight(
+            cal_context.red_scalar,
+            cal_context.green_scalar,
+            cal_context.blue_scalar,
+        );
 
         vprintln!("Normalizing...");
         raw.image.normalize_to_16bit_with_max(data_max);

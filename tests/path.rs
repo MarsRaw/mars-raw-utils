@@ -1,6 +1,5 @@
 use mars_raw_utils::path;
 
-
 #[test]
 fn test_file_exists() {
     assert!(path::file_exists("Cargo.toml"));

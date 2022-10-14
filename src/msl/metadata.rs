@@ -1,22 +1,11 @@
-use crate::{
-    constants, 
-    vprintln,
-    path,
-    metadata::*
-};
+use crate::{constants, metadata::*, path, vprintln};
 
 use sciimg::prelude::*;
 
 use std::fs::File;
 use std::io::Read;
 
-use serde::{
-    Deserialize, 
-    Serialize
-};
-
-
-
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Extended {
@@ -27,7 +16,7 @@ pub struct Extended {
     pub url_list: String,
     pub contributor: String,
     pub filter_name: Option<String>,
-    pub sample_type: String
+    pub sample_type: String,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -73,7 +62,7 @@ pub struct Image {
     pub description: String,
     pub link: String,
     pub image_credit: String,
-    pub https_url: String
+    pub https_url: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -82,16 +71,14 @@ pub struct MslApiResults {
     pub more: bool,
     pub total: u32,
     pub page: u32,
-    pub per_page: u32
+    pub per_page: u32,
 }
 
-
 impl ImageMetadata for Image {
-
     fn get_date_received(&self) -> String {
         self.date_received.clone()
     }
-    
+
     fn get_xyz(&self) -> Option<Vec<f64>> {
         if let Some(xyz) = &self.xyz {
             Some(xyz.clone())
@@ -139,7 +126,7 @@ impl ImageMetadata for Image {
     fn get_subframe_rect(&self) -> Option<Vec<f64>> {
         match self.subframe_rect.as_ref() {
             Some(v) => Some(v.clone()),
-            None => None
+            None => None,
         }
     }
 
@@ -159,7 +146,7 @@ impl ImageMetadata for Image {
     fn get_scale_factor(&self) -> u32 {
         match self.scale_factor {
             Some(v) => v,
-            None => 1
+            None => 1,
         }
     }
 
@@ -191,7 +178,7 @@ impl ImageMetadata for Image {
         if let Some(ref mast_az_string) = self.extended.mast_az {
             match mast_az_string.parse::<f64>() {
                 Ok(v) => Some(v),
-                Err(_) => None
+                Err(_) => None,
             }
         } else {
             None
@@ -202,7 +189,7 @@ impl ImageMetadata for Image {
         if let Some(ref mast_el_string) = self.extended.mast_el {
             match mast_el_string.parse::<f64>() {
                 Ok(v) => Some(v),
-                Err(_) => None
+                Err(_) => None,
             }
         } else {
             None
@@ -214,8 +201,7 @@ impl ImageMetadata for Image {
     }
 }
 
-pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {
-
+pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
     vprintln!("Loading metadata file from {}", file_path);
 
     if !path::file_exists(&file_path.as_str()) {
@@ -227,7 +213,7 @@ pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {
         Ok(file) => file,
     };
 
-    let mut buf : Vec<u8> = Vec::default();
+    let mut buf: Vec<u8> = Vec::default();
     file.read_to_end(&mut buf).unwrap();
     let s = String::from_utf8(buf).unwrap();
 

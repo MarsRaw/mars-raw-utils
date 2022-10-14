@@ -1,12 +1,6 @@
 use crate::{
-    vprintln, 
-    image::MarsImage, 
-    enums, 
-    enums::Instrument,
-    path, 
-    util,
-    calprofile::CalProfile,
-    calibrate::*
+    calibrate::*, calprofile::CalProfile, enums, enums::Instrument, image::MarsImage, path, util,
+    vprintln,
 };
 
 use sciimg::error;
@@ -15,30 +9,39 @@ use sciimg::error;
 pub struct M20SkyCam {}
 
 impl Calibration for M20SkyCam {
-
-    fn accepts_instrument(&self, instrument:Instrument) -> bool {
+    fn accepts_instrument(&self, instrument: Instrument) -> bool {
         match instrument {
             Instrument::M20SkyCam => true,
-            _ => false
+            _ => false,
         }
     }
 
-    fn process_file(&self, input_file:&str, cal_context:&CalProfile, only_new:bool)  -> error::Result<CompleteContext> {
-
+    fn process_file(
+        &self,
+        input_file: &str,
+        cal_context: &CalProfile,
+        only_new: bool,
+    ) -> error::Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, &cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
             return cal_warn(cal_context);
         }
-    
+
         let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20SkyCam);
 
         vprintln!("Flatfielding...");
         raw.flatfield();
 
         if cal_context.hot_pixel_detection_threshold > 0.0 {
-            vprintln!("Hot pixel correction with variance threshold {}...", cal_context.hot_pixel_detection_threshold);
-            raw.hot_pixel_correction(cal_context.hot_pixel_window_size, cal_context.hot_pixel_detection_threshold);
+            vprintln!(
+                "Hot pixel correction with variance threshold {}...",
+                cal_context.hot_pixel_detection_threshold
+            );
+            raw.hot_pixel_correction(
+                cal_context.hot_pixel_window_size,
+                cal_context.hot_pixel_detection_threshold,
+            );
         }
 
         vprintln!("Normalizing...");

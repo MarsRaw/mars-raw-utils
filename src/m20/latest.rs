@@ -1,8 +1,4 @@
-
-use serde::{
-    Deserialize, 
-    Serialize
-};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LatestData {
@@ -14,7 +10,5 @@ pub struct LatestData {
     pub total: u32,
 
     #[serde(alias = "type")]
-    pub result_type: String
+    pub result_type: String,
 }
-
-

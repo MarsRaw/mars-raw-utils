@@ -22,12 +22,25 @@ fi
 
 cd ${soldir}/ECAM 
 
-mru m20-fetch -c NAVCAM_LEFT -s $sol -f NCAM0052 ${seqid} -n
+mru m20-fetch -c NAVCAM_LEFT -s $sol -f NCAM00500 NCAM0052 NCAM0053 ${seqid} -n
 
 mru calibrate -i *J0?.png 
 
-for seqid in `ls *png | cut -c 36-44 | sort | uniq`; do
-    mru -v diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 3.0 -g 1.0 -l 5 -d 20 -p stacked
+for seqid in `ls *NCAM005{2,3}*2I*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
+    mru -v diffgif -i *${seqid}*2I*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 3.0 -g 1.0 -l 5 -d 20 -p stacked
 done
+
+
+if [ `ls *NCAM00500*-rjcal.png 2> /dev/null | wc -l` -eq 15 ]; then
+    rm DiffGif_${sol}_NCAM00500.gif
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 3` -o DustDevil_${sol}_NCAM00500_part1_rjcal.gif -b 0 -w 2.0 -g 2.5 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 6 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part2_rjcal.gif -b 0 -w 2.0 -g 2.5 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 9 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part3_rjcal.gif -b 0 -w 2.0 -g 2.5 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 12 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part4_rjcal.gif -b 0 -w 2.0 -g 2.5 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 15 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part5_rjcal.gif -b 0 -w 2.0 -g 2.5 -l 5 -d 40 -p stacked
+    /usr/bin/convert DustDevil_${sol}_NCAM00500_part1_rjcal.gif  DustDevil_${sol}_NCAM00500_part2_rjcal.gif DustDevil_${sol}_NCAM00500_part3_rjcal.gif \
+        DustDevil_${sol}_NCAM00500_part4_rjcal.gif DustDevil_${sol}_NCAM00500_part5_rjcal.gif DustDevil_${sol}_NCAM00500_rjcal.gif 
+    rm DustDevil_${sol}_NCAM00500_part*_rjcal.gif 
+fi
 
 

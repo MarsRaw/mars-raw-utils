@@ -1,50 +1,43 @@
-
-use reqwest::{StatusCode, blocking};
 use reqwest::blocking::Client;
+use reqwest::{blocking, StatusCode};
 
-
+use crate::{constants, vprintln};
 use std::time::Duration;
-use crate::{
-    constants, 
-    vprintln
-};
 
 use sciimg::error;
 
 use std::string::String;
 
 pub struct HttpFetcher {
-    uri : String,
+    uri: String,
     timeout: std::time::Duration,
-    numparams: u32
+    numparams: u32,
 }
 
-const DEFAULT_TIMEOUT:u64 = 60;
+const DEFAULT_TIMEOUT: u64 = 60;
 
 // This is rather hacky and minimal.
 impl HttpFetcher {
-
-    pub fn new(uri:&str) -> HttpFetcher {
-        HttpFetcher{
-            uri:String::from(uri),
-            timeout:Duration::from_secs(DEFAULT_TIMEOUT),
-            numparams:0
+    pub fn new(uri: &str) -> HttpFetcher {
+        HttpFetcher {
+            uri: String::from(uri),
+            timeout: Duration::from_secs(DEFAULT_TIMEOUT),
+            numparams: 0,
         }
     }
 
-    pub fn set_timeout(&mut self, seconds:u64) {
+    pub fn set_timeout(&mut self, seconds: u64) {
         self.timeout = Duration::from_secs(seconds);
     }
 
     // I mean, seriously. How bad is this?
-    pub fn param(&mut self, key:&str, value:&str) {
+    pub fn param(&mut self, key: &str, value: &str) {
         let q = if self.numparams == 0 { "?" } else { "&" };
         self.uri = format!("{}{}{}={}", self.uri, q, key, value);
         self.numparams += 1;
     }
 
-
-    fn fetch(&self) -> error::Result<blocking::Response>{
+    fn fetch(&self) -> error::Result<blocking::Response> {
         vprintln!("Request URI: {}", self.uri);
         vprintln!("Timeout set to {} seconds", self.timeout.as_secs());
 
@@ -91,22 +84,25 @@ impl HttpFetcher {
     }
 }
 
-pub fn simple_fetch_text_with_timeout(url:&str, timeout_seconds:u64) -> error::Result<std::string::String> {
+pub fn simple_fetch_text_with_timeout(
+    url: &str,
+    timeout_seconds: u64,
+) -> error::Result<std::string::String> {
     let mut fetcher = HttpFetcher::new(&url);
     fetcher.set_timeout(timeout_seconds);
     fetcher.fetch_text()
 }
 
-pub fn simple_fetch_text(url:&str) -> error::Result<std::string::String> {
+pub fn simple_fetch_text(url: &str) -> error::Result<std::string::String> {
     simple_fetch_text_with_timeout(&url, DEFAULT_TIMEOUT)
 }
 
-pub fn simple_fetch_bin_with_timeout(url:&str, timeout_seconds:u64) -> error::Result<Vec<u8>> {
+pub fn simple_fetch_bin_with_timeout(url: &str, timeout_seconds: u64) -> error::Result<Vec<u8>> {
     let mut fetcher = HttpFetcher::new(&url);
     fetcher.set_timeout(timeout_seconds);
     fetcher.fetch_bin()
 }
 
-pub fn simple_fetch_bin(url:&str) -> error::Result<Vec<u8>> {
+pub fn simple_fetch_bin(url: &str) -> error::Result<Vec<u8>> {
     simple_fetch_bin_with_timeout(&url, DEFAULT_TIMEOUT)
 }

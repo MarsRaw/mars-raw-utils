@@ -1,24 +1,14 @@
-use crate::{
-    constants, 
-    vprintln,
-    path,
-    metadata::*
-};
+use crate::{constants, metadata::*, path, vprintln};
 
 use sciimg::prelude::*;
 
 use std::fs::File;
 use std::io::Read;
 
-
-use serde::{
-    Deserialize, 
-    Serialize
-};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Extended {
-
     #[serde(alias = "mastAz")]
     pub mast_az: String,
 
@@ -37,19 +27,16 @@ pub struct Extended {
     pub subframe_rect: Option<Vec<f64>>,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
-    pub dimension: Option<Vec<f64>>
+    pub dimension: Option<Vec<f64>>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ImageFiles {
     pub medium: String,
-    pub small: String, 
+    pub small: String,
     pub full_res: String,
-    pub large: String
+    pub large: String,
 }
-
-
-
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Camera {
@@ -64,7 +51,7 @@ pub struct Camera {
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub camera_position: Option<Vec<f64>>,
     pub instrument: String,
-    pub camera_model_type: String
+    pub camera_model_type: String,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -85,7 +72,7 @@ pub struct Image {
     pub drive: String,
     pub title: String,
     pub site: u32,
-    pub date_received: String
+    pub date_received: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -98,16 +85,14 @@ pub struct M20ApiResults {
     #[serde(skip_deserializing)]
     pub page: u32,
     pub mission: String,
-    pub total_images: u32
+    pub total_images: u32,
 }
 
-
 impl ImageMetadata for Image {
-
     fn get_date_received(&self) -> String {
         self.date_received.clone()
     }
-    
+
     fn get_xyz(&self) -> Option<Vec<f64>> {
         if let Some(xyz) = &self.extended.xyz {
             Some(xyz.clone())
@@ -159,7 +144,7 @@ impl ImageMetadata for Image {
     fn get_subframe_rect(&self) -> Option<Vec<f64>> {
         match self.extended.subframe_rect.as_ref() {
             Some(v) => Some(v.clone()),
-            None => None
+            None => None,
         }
     }
 
@@ -167,7 +152,7 @@ impl ImageMetadata for Image {
         if self.extended.scale_factor == "UNK" {
             return 1;
         }
-        
+
         let sf = self.extended.scale_factor.parse::<u32>();
         if sf.is_ok() {
             sf.unwrap()
@@ -207,34 +192,33 @@ impl ImageMetadata for Image {
     fn get_drive(&self) -> Option<u32> {
         match self.drive.parse::<u32>() {
             Ok(v) => Some(v),
-            Err(_) => None
+            Err(_) => None,
         }
     }
 
     fn get_mast_az(&self) -> Option<f64> {
         match self.extended.mast_az.parse::<f64>() {
             Ok(v) => Some(v),
-            Err(_) => None
+            Err(_) => None,
         }
     }
 
     fn get_mast_el(&self) -> Option<f64> {
         match self.extended.mast_el.parse::<f64>() {
             Ok(v) => Some(v),
-            Err(_) => None
+            Err(_) => None,
         }
     }
 
     fn get_sclk(&self) -> Option<f64> {
         match self.extended.sclk.parse::<f64>() {
             Ok(v) => Some(v),
-            Err(_) => None
+            Err(_) => None,
         }
     }
 }
 
-pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {
-
+pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
     vprintln!("Loading metadata file from {}", file_path);
 
     if !path::file_exists(&file_path.as_str()) {
@@ -246,7 +230,7 @@ pub fn load_metadata_file(file_path:String) -> error::Result<Metadata> {
         Ok(file) => file,
     };
 
-    let mut buf : Vec<u8> = Vec::default();
+    let mut buf: Vec<u8> = Vec::default();
     file.read_to_end(&mut buf).unwrap();
     let s = String::from_utf8(buf).unwrap();
 

@@ -1,11 +1,9 @@
-
-
 // Supported missions
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Mission {
     MSL,
     MARS2020,
-    INSIGHT
+    INSIGHT,
 }
 
 /// Representation of left/right side of a stereo image with an option to simply not care (or unknown).
@@ -13,7 +11,7 @@ pub enum Mission {
 pub enum Eye {
     Right,
     Left,
-    DontCare
+    DontCare,
 }
 
 // Supported instruments
@@ -46,13 +44,12 @@ pub enum Instrument {
     M20HeliRte,
     NsytICC,
     NsytIDC,
-    None
+    None,
 }
 
 impl Instrument {
-    pub fn from_str(s:&str) -> Instrument {
+    pub fn from_str(s: &str) -> Instrument {
         match s.to_uppercase().as_str() {
-
             "MCZ_LEFT" => Instrument::M20MastcamZLeft,
             "MCZ_RIGHT" => Instrument::M20MastcamZRight,
             "FRONT_HAZCAM_LEFT_A" | "FRONT_HAZCAM_LEFT_B" => Instrument::M20FrontHazLeft,
@@ -68,7 +65,6 @@ impl Instrument {
             "SKYCAM" => Instrument::M20SkyCam,
             "SUPERCAM_RMI" => Instrument::M20SuperCam,
 
-
             "MAST_LEFT" => Instrument::MslMastcamLeft,
             "MAST_RIGHT" => Instrument::MslMastcamRight,
             "MAHLI" => Instrument::MslMAHLI,
@@ -83,7 +79,7 @@ impl Instrument {
 
             "IDC" => Instrument::NsytIDC,
             "ICC" => Instrument::NsytICC,
-            _ => Instrument::None
+            _ => Instrument::None,
         }
     }
 }
@@ -92,9 +88,5 @@ impl Instrument {
 pub enum CalFileType {
     FlatField,
     InpaintMask,
-    Mask
+    Mask,
 }
-
-
-
-

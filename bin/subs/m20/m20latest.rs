@@ -1,6 +1,4 @@
-use mars_raw_utils::{
-    prelude::*
-};
+use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 
@@ -15,14 +13,14 @@ pub struct M20Latest {
 
 impl RunnableSubcommand for M20Latest {
     fn run(&self) {
-        let latest : m20::latest::LatestData = match m20::remote::fetch_latest() {
+        let latest: m20::latest::LatestData = match m20::remote::fetch_latest() {
             Ok(v) => v,
             Err(e) => {
                 eprintln!("Error fetching latest data from M20 remote server: {}", e);
                 process::exit(1);
             }
         };
-    
+
         if self.list {
             latest.latest_sols.iter().for_each(|s| {
                 println!("{}", s);

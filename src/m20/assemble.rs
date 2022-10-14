@@ -1,10 +1,6 @@
 use crate::prelude::*;
 
-use sciimg::{
-    enums::ImageMode,
-    rgbimage
-};
-
+use sciimg::{enums::ImageMode, rgbimage};
 
 // /*
 //   "subframe_rect": [
@@ -19,7 +15,6 @@ use sciimg::{
 //     height: 968
 
 // */
-
 // #[derive(Debug)]
 // struct Rgb {
 //     pub r:f32,
@@ -33,7 +28,7 @@ use sciimg::{
 
 //         if self.is_zero() || other.is_zero() {
 //             return Rgb{r:0.0, g:0.0, b:0.0};
-//         } 
+//         }
 
 //         let r = if other.r > 0.0 { self.r / other.r } else { 1.0 };
 //         let g = if other.g > 0.0 { self.g / other.g } else { 1.0 };
@@ -102,7 +97,6 @@ use sciimg::{
 //     pub bottom_right_y:usize
 // }
 
-
 // impl Tile {
 
 //     pub fn load(in_file:&str) -> error::Result<Self> {
@@ -117,7 +111,7 @@ use sciimg::{
 //             eprintln!("Each image must have the associated metadata");
 //             panic!("ERROR: Metadata file not found for {}", in_file);
 //         }
-        
+
 //         image.crop(2, 2, image.width - 4, image.height - 4).unwrap();
 
 //         let md = image.get_metadata().unwrap();
@@ -128,7 +122,7 @@ use sciimg::{
 //                 let tl_y = (sf[1] / scale as f64).floor() as usize + 2;
 //                 let right_x = tl_x + image.width;
 //                 let bottom_y = tl_y + image.height;
-                
+
 //                 vprintln!("Image top left x/y: {}/{}", tl_x, tl_y);
 //                 vprintln!("Image bottom right x/y: {}/{}", right_x, bottom_y);
 
@@ -146,7 +140,7 @@ use sciimg::{
 //         } else {
 //             Err("Tile lacks metadata")
 //         }
-        
+
 //     }
 
 //     pub fn determine_composite_size(tiles:&Vec<Tile>) -> (usize, usize) {
@@ -197,8 +191,6 @@ use sciimg::{
 
 // }
 
-
-
 // struct Composite {
 //     image:rgbimage::RgbImage
 // }
@@ -218,8 +210,6 @@ use sciimg::{
 //             b: self.image.blue().get(x, y).unwrap()
 //         }
 //     }
-
-
 
 //     fn color_diff_vert(self:&Composite, tile:&Tile, x_offset:usize) -> ColorDiff {
 
@@ -242,24 +232,20 @@ use sciimg::{
 //                     cdiff.r += multiplier.r;
 //                     cdiff.g += multiplier.g;
 //                     cdiff.b += multiplier.b;
-//                     count += 1; 
+//                     count += 1;
 //                 }
-                
 
 //                 //vprintln!("{:?} {:?} {:?} {:?} -- {}", avg_mult, composite_rgb, tile_rgb, multiplier, i);
 //             }
 
-
 //         });
-
-        
 
 //         if count > 0 {
 //             cdiff.r /= count as f32;
 //             cdiff.g /= count as f32;
 //             cdiff.b /= count as f32;
 //         }
-        
+
 //         cdiff
 //     }
 
@@ -275,8 +261,6 @@ use sciimg::{
 //             let composite_rgb = self.rgb_at_point(tile.top_left_x + i, tile.top_left_y + y_offset);
 //             let tile_rgb = tile.rgb_at_point(i, y_offset);
 
-            
-
 //             if ! composite_rgb.is_zero() {
 //                 let multiplier = composite_rgb.get_multipliers(&tile_rgb);
 //                 if !multiplier.is_zero() {
@@ -287,9 +271,9 @@ use sciimg::{
 //                     cdiff.r += multiplier.r;
 //                     cdiff.g += multiplier.g;
 //                     cdiff.b += multiplier.b;
-//                     count += 1; 
+//                     count += 1;
 //                 }
-                
+
 //             }
 //         });
 
@@ -300,7 +284,6 @@ use sciimg::{
 //         }
 //         cdiff
 //     }
-
 
 //     fn compute_multipliers(self:&Composite, tile:&Tile) -> ColorDiff {
 //         let mut cdiff = ColorDiff::new();
@@ -378,10 +361,8 @@ use sciimg::{
 //     }
 // }
 
-
-
 // fn main() {
-    
+
 //     let matches = App::new(crate_name!())
 //                     .version(crate_version!())
 //                     .author(crate_authors!())
@@ -404,7 +385,6 @@ use sciimg::{
 //                         .short(constants::param::PARAM_VERBOSE)
 //                         .help("Show verbose output"))
 //                     .get_matches();
-
 
 //     if matches.is_present(constants::param::PARAM_VERBOSE) {
 //         print::set_verbose(true);
@@ -437,11 +417,10 @@ use sciimg::{
 //     vprintln!("Combined image width: {}", composite_width);
 //     vprintln!("Combined image height: {}", composite_height);
 
-
 //     let mut composite = Composite::new(composite_width, composite_height);
 
 //     let mut _composite = rgbimage::RgbImage::new_with_size(composite_width, composite_height, enums::Instrument::None, enums::ImageMode::U16BIT).unwrap();
-    
+
 //     tiles.iter().for_each(|t| {
 //         vprintln!("Pasting tile {}", t.source_file_path);
 //         composite.paste(&t).expect("Failed to paste tile to composite");
@@ -455,24 +434,21 @@ use sciimg::{
 
 // }
 
-
-
 pub struct Tile {
-    pub source_path:String,
-    pub image:MarsImage,
-    pub top_left_x:usize,
-    pub top_left_y:usize,
-    pub bottom_right_x:usize,
-    pub bottom_right_y:usize,
-    pub scale:u32
-
+    pub source_path: String,
+    pub image: MarsImage,
+    pub top_left_x: usize,
+    pub top_left_y: usize,
+    pub bottom_right_x: usize,
+    pub bottom_right_y: usize,
+    pub scale: u32,
 }
 
 impl Tile {
-    pub fn new(source_path:&str) -> Self {
+    pub fn new(source_path: &str) -> Self {
         let instrument = Instrument::M20NavcamLeft;
         let image = MarsImage::open(String::from(&source_path.to_owned()), instrument);
-        
+
         match image.metadata.clone() {
             Some(md) => {
                 let scale = md.scale_factor;
@@ -486,18 +462,18 @@ impl Tile {
                     let bottom_y = tl_y + image.image.height;
 
                     Tile {
-                        source_path:source_path.to_string(),
-                        image:image,
+                        source_path: source_path.to_string(),
+                        image: image,
                         top_left_x: tl_x,
                         top_left_y: tl_y,
                         bottom_right_x: right_x,
                         bottom_right_y: bottom_y,
-                        scale:scale
+                        scale: scale,
                     }
                 } else {
                     panic!("Subframe rect field is empty");
                 }
-            },
+            }
             None => {
                 panic!("Metadata not found for image {}", source_path);
             }
@@ -505,18 +481,15 @@ impl Tile {
     }
 }
 
-
 pub struct Composite {
-
-    pub scale:u32,
-    pub width:usize,
-    pub height:usize,
-    composite_image:rgbimage::RgbImage
+    pub scale: u32,
+    pub width: usize,
+    pub height: usize,
+    composite_image: rgbimage::RgbImage,
 }
 
 impl Composite {
-    pub fn new(tiles:&Vec<Tile>) -> Self {
-
+    pub fn new(tiles: &Vec<Tile>) -> Self {
         if tiles.len() == 0 {
             panic!("Cannot assemble composite with no tiles!");
         }
@@ -525,46 +498,57 @@ impl Composite {
 
         let (max_x, max_y) = Composite::determine_composite_size(&tiles);
 
-        let composite_image = rgbimage::RgbImage::new_with_bands(max_x, max_y, 3, ImageMode::U16BIT).unwrap();
+        let composite_image =
+            rgbimage::RgbImage::new_with_bands(max_x, max_y, 3, ImageMode::U16BIT).unwrap();
 
-        vprintln!("Composite has width {}px, height {}px, and scale factor of {}", max_x, max_y, scale);
-        
+        vprintln!(
+            "Composite has width {}px, height {}px, and scale factor of {}",
+            max_x,
+            max_y,
+            scale
+        );
+
         Composite {
-            scale:scale,
-            width:max_x,
-            height:max_y,
-            composite_image:composite_image
+            scale: scale,
+            width: max_x,
+            height: max_y,
+            composite_image: composite_image,
         }
     }
 
-    fn determine_composite_size(tiles:&Vec<Tile>) -> (usize, usize) {
-
-        let mut max_x : usize = 0;
-        let mut max_y : usize = 0;
+    fn determine_composite_size(tiles: &Vec<Tile>) -> (usize, usize) {
+        let mut max_x: usize = 0;
+        let mut max_y: usize = 0;
 
         tiles.iter().for_each(|t| {
-
-            max_x = if t.bottom_right_x > max_x { t.bottom_right_x } else { max_x };
-            max_y = if t.bottom_right_y > max_y { t.bottom_right_y } else { max_y };
-
+            max_x = if t.bottom_right_x > max_x {
+                t.bottom_right_x
+            } else {
+                max_x
+            };
+            max_y = if t.bottom_right_y > max_y {
+                t.bottom_right_y
+            } else {
+                max_y
+            };
         });
 
         (max_x, max_y)
     }
 
-    pub fn paste_tiles(&mut self, tiles:&Vec<Tile>) {
-        tiles.iter().for_each(|t| { 
+    pub fn paste_tiles(&mut self, tiles: &Vec<Tile>) {
+        tiles.iter().for_each(|t| {
             self.paste_tile(&t);
         });
     }
 
-    pub fn paste_tile(&mut self, tile:&Tile) {
-        self.composite_image.paste(&tile.image.image, tile.top_left_x, tile.top_left_y);
+    pub fn paste_tile(&mut self, tile: &Tile) {
+        self.composite_image
+            .paste(&tile.image.image, tile.top_left_x, tile.top_left_y);
     }
 
-    pub fn finalize_and_save(&mut self, output_path:&str) {
+    pub fn finalize_and_save(&mut self, output_path: &str) {
         self.composite_image.normalize_to_16bit();
         self.composite_image.save(output_path);
     }
-
 }

@@ -1,6 +1,4 @@
-use mars_raw_utils::{
-    prelude::*
-};
+use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 
@@ -15,14 +13,17 @@ pub struct NsytLatest {
 
 impl RunnableSubcommand for NsytLatest {
     fn run(&self) {
-        let latest : nsyt::latest::LatestData = match nsyt::remote::fetch_latest() {
+        let latest: nsyt::latest::LatestData = match nsyt::remote::fetch_latest() {
             Ok(v) => v,
             Err(e) => {
-                eprintln!("Error fetching latest data from InSight remote server: {}", e);
+                eprintln!(
+                    "Error fetching latest data from InSight remote server: {}",
+                    e
+                );
                 process::exit(1);
             }
         };
-    
+
         if self.list {
             latest.latest_sols.iter().for_each(|s| {
                 println!("{}", s);

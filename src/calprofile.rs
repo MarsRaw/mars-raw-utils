@@ -1,24 +1,14 @@
-
-use crate::{
-    calibfile,
-    vprintln,
-    constants
-};
+use crate::{calibfile, constants, vprintln};
 
 use sciimg::error;
 
-use serde::{
-    Deserialize, 
-    Serialize
-};
+use serde::{Deserialize, Serialize};
 
 use std::fs::File;
 use std::io::Read;
 
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CalProfile {
-
     #[serde(default = "default_false")]
     pub apply_ilt: bool,
 
@@ -44,25 +34,24 @@ pub struct CalProfile {
     pub hot_pixel_window_size: i32,
 
     #[serde(default = "default_filename_suffix")]
-    pub filename_suffix: String
+    pub filename_suffix: String,
 }
 
 impl CalProfile {
     pub fn default() -> CalProfile {
-        CalProfile{
-            apply_ilt:default_false(),
-            red_scalar:default_color_scalar(),
-            green_scalar:default_color_scalar(),
-            blue_scalar:default_color_scalar(),
-            color_noise_reduction:default_false(),
-            color_noise_reduction_amount:default_color_noise_reduction_amount(),
-            hot_pixel_detection_threshold:default_hpc_threshold(),
-            hot_pixel_window_size:default_hpc_window_size(),
-            filename_suffix:default_filename_suffix()
+        CalProfile {
+            apply_ilt: default_false(),
+            red_scalar: default_color_scalar(),
+            green_scalar: default_color_scalar(),
+            blue_scalar: default_color_scalar(),
+            color_noise_reduction: default_false(),
+            color_noise_reduction_amount: default_color_noise_reduction_amount(),
+            hot_pixel_detection_threshold: default_hpc_threshold(),
+            hot_pixel_window_size: default_hpc_window_size(),
+            filename_suffix: default_filename_suffix(),
         }
     }
 }
-
 
 fn default_hpc_window_size() -> i32 {
     10
@@ -88,33 +77,30 @@ fn default_hpc_threshold() -> f32 {
     0.0
 }
 
-
-pub fn load_calibration_profile(file_path:&String) -> error::Result<CalProfile> {
+pub fn load_calibration_profile(file_path: &String) -> error::Result<CalProfile> {
     match calibfile::locate_calibration_file_no_extention(file_path, &".toml".to_string()) {
         Ok(located_file) => {
             let mut file = match File::open(&located_file) {
                 Err(why) => panic!("couldn't open {}", why),
                 Ok(file) => file,
             };
-        
-            let mut buf : Vec<u8> = Vec::default();
+
+            let mut buf: Vec<u8> = Vec::default();
             file.read_to_end(&mut buf).unwrap();
             let text = String::from_utf8(buf).unwrap();
-        
+
             match toml::from_str(&text) {
                 Ok(calprof) => {
                     vprintln!("Loaded calibration profile from {}", located_file);
                     vprintln!("Profile: {:?}", calprof);
                     Ok(calprof)
-                },
+                }
                 Err(why) => {
                     eprintln!("Error parsing calibration profile: {:?}", why);
                     Err("Error parsing calibration profile file")
                 }
             }
-        },
-        Err(why) => {
-            Err(why)
         }
+        Err(why) => Err(why),
     }
 }
