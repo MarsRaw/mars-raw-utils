@@ -24,8 +24,9 @@ pub struct HpcFilter {
     window: Option<i32>,
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for HpcFilter {
-    fn run(&self) {
+    async fn run(&self) {
         let window_size = self.window.unwrap_or(3);
 
         let threshold = self.threshold.unwrap_or(0.0);

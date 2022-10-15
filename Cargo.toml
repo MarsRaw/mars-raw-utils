@@ -2,7 +2,7 @@
 name = "mars_raw_utils"
 version = "0.5.2"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
 repository = "https://github.com/kmgill/mars-raw-utils"
 readme = "README.md"
@@ -50,8 +50,7 @@ lab = "0.11.0"
 toml = "0.5.8"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
-sciimg = "0.4.0"
-#sciimg = { path = "../sciimg" }
+sciimg = {version= "0.3.5", git = "https://github.com/alphastrata/sciimg"}
 weezl = "0.1.5"
 gif = "0.11.3"
 rayon = "1.5.1"
@@ -65,6 +64,8 @@ lazy_static = "1.4.0"
 anyhow = "1.0.65"
 bytes = "1.2.1"
 thiserror = "1.0.37"
+async-trait = "0.1.57"
+tokio = {version="1.21.2", features= ["full"]}
 
 [package.metadata.rpm]
 package = "mars_raw_utils"

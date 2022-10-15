@@ -63,76 +63,76 @@ fn main() {
 
     match args.command {
         Mru::MslFetch(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::M20Fetch(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::NsytFetch(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::Calibrate(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::MslDate(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::MslLatest(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::M20Date(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::M20Latest(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::NsytDate(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::M20EcamAssemble(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::NsytLatest(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::MerDate(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::Anaglyph(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::Composite(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::Crop(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::Debayer(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::DiffGif(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::FocusMerge(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::MeanStack(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::HpcFilter(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::Inpaint(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::Levels(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::Info(args) => {
-            args.run();
+            _ = args.run();
         }
         Mru::Xeye(args) => {
-            args.run();
+            _ = args.run();
         }
     };
 }

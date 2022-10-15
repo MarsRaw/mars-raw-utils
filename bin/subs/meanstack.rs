@@ -21,8 +21,9 @@ pub struct MeanStack {
     output: std::path::PathBuf,
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for MeanStack {
-    fn run(&self) {
+    async fn run(&self) {
         let output = self.output.as_os_str().to_str().unwrap();
 
         let mut mean: RgbImage = RgbImage::new_empty().unwrap();

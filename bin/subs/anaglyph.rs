@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use mars_raw_utils::prelude::*;
 use sciimg::{prelude::*, vector::Vector};
 
@@ -20,9 +21,9 @@ pub struct Anaglyph {
     #[clap(long, short, help = "Monochrome color (before converting to red/blue)")]
     mono: bool,
 }
-
+#[async_trait]
 impl RunnableSubcommand for Anaglyph {
-    fn run(&self) {
+    async fn run(&self) {
         print::print_experimental();
 
         let left_image_path = String::from(self.left.as_os_str().to_str().unwrap());

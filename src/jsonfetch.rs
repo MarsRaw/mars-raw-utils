@@ -1,5 +1,3 @@
-use std::string::ParseError;
-
 use crate::{constants, httpfetch::HttpFetcher, util::string_is_valid_f64};
 
 use sciimg::prelude::*;
@@ -23,7 +21,7 @@ impl JsonFetcher {
     }
 
     pub fn param(&mut self, key: &str, value: &str) {
-        self.fetcher.param(key, value);
+        _ = self.fetcher.param(key, value);
     }
 
     pub async fn fetch(&self) -> Result<Value> {

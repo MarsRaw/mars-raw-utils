@@ -3,19 +3,13 @@ use crate::{
     util::*,
 };
 
-use anyhow::Result;
-use sciimg::error;
+use anyhow::{anyhow, Result};
 
 pub fn print_header() {
     println!(
         "{:37} {:15} {:6} {:20} {:27} {:7} {:10}",
         "ID", "Instrument", "Sol", "Image Date (UTC)", "Image Date (Mars)", "Thumb", "Present"
     );
-}
-
-enum Error {
-    AnyhowError(anyhow::Error),
-    ReqwestError(reqwest::Error),
 }
 
 fn print_image(output_path: &str, image: &Image) {
@@ -145,7 +139,7 @@ pub async fn fetch_page(
     search: &Vec<String>,
     only_new: bool,
     output_path: &str,
-) -> Result<i32, Error> {
+) -> Result<i32> {
     match submit_query(cameras, num_per_page, Some(page), minsol, maxsol).await {
         Ok(v) => match serde_json::from_str(&v) {
             Ok(res) => {
@@ -154,11 +148,10 @@ pub async fn fetch_page(
                         .await,
                 )
             }
-            //TODO: this error ><
-            Err(e) => Err(e),
+            // NOTE: The anyhow! macro is glorious for making on-the-fly errors in application code, there's a sister libary called thiserror which is for making explicit libary code error types.
+            Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
         },
-        Err(e) => Err(e),
-        _ => return Err(Error::AnyhowError()),
+        Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
     }
 }
 
@@ -175,7 +168,7 @@ pub async fn fetch_stats(
     minsol: i32,
     maxsol: i32,
 ) -> Result<NsytRemoteStats> {
-    match submit_query(cameras, 0, Some(0), minsol, maxsol) {
+    match submit_query(cameras, 0, Some(0), minsol, maxsol).await {
         Ok(v) => {
             let res: NsytApiResults = serde_json::from_str(v.as_str()).unwrap();
             Ok(NsytRemoteStats {
@@ -185,11 +178,13 @@ pub async fn fetch_stats(
                 per_page: res.per_page as i32,
             })
         }
-        Err(e) => Err(e),
+        Err(_) => Err(anyhow!(
+            "Unable to create NsytRemoteStats from submitted query."
+        )),
     }
 }
 
-pub fn fetch_all(
+pub async fn fetch_all(
     cameras: &Vec<String>,
     num_per_page: i32,
     minsol: i32,
@@ -199,17 +194,17 @@ pub fn fetch_all(
     search: &Vec<String>,
     only_new: bool,
     output_path: &str,
-) -> error::Result<i32> {
-    let stats = match fetch_stats(cameras, minsol, maxsol) {
-        Ok(s) => s,
-        Err(e) => return Err(e),
-    };
+) -> Result<i32> {
+    let stats = match fetch_stats(cameras, minsol, maxsol).await {
+        Ok(s) => Ok(s),
+        Err(e) => Err(anyhow!("unable to fetch statistics:\n{}", e)),
+    }?;
 
     let pages = (stats.total as f32 / num_per_page as f32).ceil() as i32;
 
     let mut count = 0;
     for page in 0..pages {
-        match fetch_page(
+        _ = match fetch_page(
             cameras,
             num_per_page,
             page,
@@ -220,18 +215,21 @@ pub fn fetch_all(
             search,
             only_new,
             output_path,
-        ) {
+        )
+        .await
+        {
             Ok(c) => {
                 count += c;
+                Ok(())
             }
-            Err(e) => return Err(e),
+            Err(e) => Err(anyhow!("{}", e)),
         };
     }
 
     Ok(count)
 }
 
-pub fn remote_fetch(
+pub async fn remote_fetch(
     cameras: &Vec<String>,
     num_per_page: i32,
     page: Option<i32>,
@@ -242,47 +240,47 @@ pub fn remote_fetch(
     search: &Vec<String>,
     only_new: bool,
     output_path: &str,
-) -> error::Result<i32> {
+) -> Result<i32> {
     match page {
-        Some(p) => fetch_page(
-            cameras,
-            num_per_page,
-            p,
-            minsol,
-            maxsol,
-            thumbnails,
-            list_only,
-            search,
-            only_new,
-            output_path,
-        ),
-        None => fetch_all(
-            cameras,
-            num_per_page,
-            minsol,
-            maxsol,
-            thumbnails,
-            list_only,
-            search,
-            only_new,
-            output_path,
-        ),
+        Some(p) => {
+            fetch_page(
+                cameras,
+                num_per_page,
+                p,
+                minsol,
+                maxsol,
+                thumbnails,
+                list_only,
+                search,
+                only_new,
+                output_path,
+            )
+            .await
+        }
+        None => {
+            fetch_all(
+                cameras,
+                num_per_page,
+                minsol,
+                maxsol,
+                thumbnails,
+                list_only,
+                search,
+                only_new,
+                output_path,
+            )
+            .await
+        }
     }
 }
 
-pub fn fetch_latest() -> error::Result<latest::LatestData> {
+pub async fn fetch_latest() -> Result<latest::LatestData> {
     let uri = constants::url::NSYT_LATEST_WEBSERVICE_URL;
 
-    let req = jsonfetch::JsonFetcher::new(uri);
-    match req.fetch_str() {
-        Ok(v) => {
-            let res: latest::Latest = serde_json::from_str(v.as_str()).unwrap();
-            if res.success {
-                Ok(res.latest_data)
-            } else {
-                Err("Server error")
-            }
-        }
-        Err(e) => Err(e),
+    let req = jsonfetch::JsonFetcher::new(uri)?;
+    let res: latest::Latest = serde_json::from_str(&req.fetch_str().await?)?;
+    if !res.success {
+        return Err(anyhow!("unable to fetch latest."));
     }
+    Ok(res.latest_data)
 }

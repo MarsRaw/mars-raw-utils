@@ -3,7 +3,7 @@ use crate::{
     util::*,
 };
 
-use sciimg::error;
+use anyhow::{anyhow, Result};
 
 pub fn print_header() {
     println!(
@@ -62,14 +62,14 @@ fn search_empty_or_has_match(image_id: &String, search: &Vec<String>) -> bool {
     false
 }
 
-fn process_results(
+async fn process_results(
     results: &M20ApiResults,
     thumbnails: bool,
     list_only: bool,
     search: &Vec<String>,
     only_new: bool,
     output_path: &str,
-) -> error::Result<i32> {
+) -> Result<i32> {
     let mut valid_img_count = 0;
 
     for image in results.images.iter() {
@@ -87,7 +87,7 @@ fn process_results(
         print_image(output_path, image);
 
         if !list_only {
-            match fetch_image(&image.image_files.full_res, only_new, Some(output_path)) {
+            match fetch_image(&image.image_files.full_res, only_new, Some(output_path)).await {
                 Ok(_) => (),
                 Err(e) => return Err(e),
             };
@@ -148,7 +148,7 @@ pub fn make_instrument_map() -> InstrumentMap {
     }
 }
 
-fn submit_query(
+async fn submit_query(
     cameras: &[String],
     num_per_page: i32,
     page: Option<i32>,
@@ -156,7 +156,7 @@ fn submit_query(
     maxsol: i32,
     thumbnails: bool,
     movie_only: bool,
-) -> error::Result<String> {
+) -> Result<String> {
     let joined_cameras = cameras.join("|");
 
     let mut category = "mars2020";
@@ -190,16 +190,16 @@ fn submit_query(
 
     let uri = constants::url::M20_RAW_WEBSERVICE_URL;
 
-    let mut req = jsonfetch::JsonFetcher::new(uri);
+    let mut req = jsonfetch::JsonFetcher::new(uri)?;
 
     for p in params {
         req.param(p[0].as_str(), p[1].as_str());
     }
 
-    req.fetch_str()
+    Ok(req.fetch_str().await?)
 }
 
-pub fn fetch_page(
+pub async fn fetch_page(
     cameras: &[String],
     num_per_page: i32,
     page: i32,
@@ -211,7 +211,7 @@ pub fn fetch_page(
     search: &Vec<String>,
     only_new: bool,
     output_path: &str,
-) -> error::Result<i32> {
+) -> Result<i32> {
     match submit_query(
         cameras,
         num_per_page,
@@ -220,10 +220,12 @@ pub fn fetch_page(
         maxsol,
         thumbnails,
         movie_only,
-    ) {
+    )
+    .await
+    {
         Ok(v) => {
-            let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
-            process_results(&res, thumbnails, list_only, search, only_new, output_path)
+            let res: M20ApiResults = serde_json::from_str(v.as_str())?;
+            process_results(&res, thumbnails, list_only, search, only_new, output_path).await
         }
         Err(e) => Err(e),
     }
@@ -237,14 +239,14 @@ pub struct M20RemoteStats {
     pub total_images: i32,
 }
 
-pub fn fetch_stats(
+pub async fn fetch_stats(
     cameras: &[String],
     minsol: i32,
     maxsol: i32,
     thumbnails: bool,
     movie_only: bool,
-) -> error::Result<M20RemoteStats> {
-    match submit_query(cameras, 0, Some(0), minsol, maxsol, thumbnails, movie_only) {
+) -> Result<M20RemoteStats> {
+    match submit_query(cameras, 0, Some(0), minsol, maxsol, thumbnails, movie_only).await {
         Ok(v) => {
             let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
             Ok(M20RemoteStats {
@@ -258,7 +260,7 @@ pub fn fetch_stats(
     }
 }
 
-pub fn fetch_all(
+pub async fn fetch_all(
     cameras: &[String],
     num_per_page: i32,
     minsol: i32,
@@ -269,8 +271,8 @@ pub fn fetch_all(
     search: &Vec<String>,
     only_new: bool,
     output_path: &str,
-) -> error::Result<i32> {
-    let stats = match fetch_stats(cameras, minsol, maxsol, thumbnails, movie_only) {
+) -> Result<i32> {
+    let stats = match fetch_stats(cameras, minsol, maxsol, thumbnails, movie_only).await {
         Ok(s) => s,
         Err(e) => return Err(e),
     };
@@ -291,7 +293,9 @@ pub fn fetch_all(
             search,
             only_new,
             output_path,
-        ) {
+        )
+        .await
+        {
             Ok(c) => {
                 count += c;
             }
@@ -305,7 +309,7 @@ pub fn fetch_all(
     Ok(count)
 }
 
-pub fn remote_fetch(
+pub async fn remote_fetch(
     cameras: &[String],
     num_per_page: i32,
     page: Option<i32>,
@@ -317,45 +321,51 @@ pub fn remote_fetch(
     search: &Vec<String>,
     only_new: bool,
     output_path: &str,
-) -> error::Result<i32> {
+) -> Result<i32> {
     match page {
-        Some(p) => fetch_page(
-            cameras,
-            num_per_page,
-            p,
-            minsol,
-            maxsol,
-            thumbnails,
-            movie_only,
-            list_only,
-            search,
-            only_new,
-            output_path,
-        ),
-        None => fetch_all(
-            cameras,
-            num_per_page,
-            minsol,
-            maxsol,
-            thumbnails,
-            movie_only,
-            list_only,
-            search,
-            only_new,
-            output_path,
-        ),
+        Some(p) => {
+            fetch_page(
+                cameras,
+                num_per_page,
+                p,
+                minsol,
+                maxsol,
+                thumbnails,
+                movie_only,
+                list_only,
+                search,
+                only_new,
+                output_path,
+            )
+            .await
+        }
+        None => {
+            fetch_all(
+                cameras,
+                num_per_page,
+                minsol,
+                maxsol,
+                thumbnails,
+                movie_only,
+                list_only,
+                search,
+                only_new,
+                output_path,
+            )
+            .await
+        }
     }
 }
 
-pub fn fetch_latest() -> error::Result<latest::LatestData> {
+pub async fn fetch_latest() -> Result<latest::LatestData> {
     let uri = constants::url::M20_LATEST_WEBSERVICE_URL;
 
-    let req = jsonfetch::JsonFetcher::new(uri);
-    match req.fetch_str() {
+    let req = jsonfetch::JsonFetcher::new(uri)?;
+    match req.fetch_str().await {
         Ok(v) => {
             let res: latest::LatestData = serde_json::from_str(v.as_str()).unwrap();
             Ok(res)
         }
-        Err(e) => Err(e),
+        Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
     }
 }

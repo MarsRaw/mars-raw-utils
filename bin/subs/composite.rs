@@ -1,7 +1,7 @@
+use crate::subs::runnable::RunnableSubcommand;
+use async_trait::async_trait;
 use mars_raw_utils::{composite, prelude::*};
 use sciimg::{prelude::*, quaternion::Quaternion};
-
-use crate::subs::runnable::RunnableSubcommand;
 
 use std::process;
 
@@ -26,9 +26,9 @@ pub struct Composite {
     #[clap(long, short = 'r', help = "Azimuth rotation")]
     azimuth: Option<f64>,
 }
-
+#[async_trait]
 impl RunnableSubcommand for Composite {
-    fn run(&self) {
+    async fn run(&self) {
         print::print_experimental();
 
         let in_files: Vec<String> = self
