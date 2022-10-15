@@ -54,7 +54,8 @@ enum Mru {
     Xeye(xeye::CrossEye),
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Cli::parse_from(wild::args());
 
     if args.verbose {
@@ -63,76 +64,76 @@ fn main() {
 
     match args.command {
         Mru::MslFetch(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::M20Fetch(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::NsytFetch(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::Calibrate(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::MslDate(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::MslLatest(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::M20Date(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::M20Latest(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::NsytDate(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::M20EcamAssemble(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::NsytLatest(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::MerDate(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::Anaglyph(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::Composite(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::Crop(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::Debayer(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::DiffGif(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::FocusMerge(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::MeanStack(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::HpcFilter(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::Inpaint(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::Levels(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::Info(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
         Mru::Xeye(args) => {
-            _ = args.run();
+            _ = args.run().await;
         }
     };
 }

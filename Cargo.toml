@@ -50,7 +50,7 @@ lab = "0.11.0"
 toml = "0.5.8"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
-sciimg = {version= "0.3.5", git = "https://github.com/alphastrata/sciimg"}
+sciimg = "0.4.0"
 weezl = "0.1.5"
 gif = "0.11.3"
 rayon = "1.5.1"
