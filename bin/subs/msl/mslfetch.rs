@@ -1,6 +1,6 @@
 use mars_raw_utils::prelude::*;
 
-use crate::subs::runnable::RunnableSubcommand;
+
 
 use std::process;
 
@@ -44,8 +44,8 @@ pub struct MslFetch {
     new: bool,
 }
 
-impl RunnableSubcommand for MslFetch {
-    fn run(&self) {
+impl MslFetch {
+    pub async fn run(&self) {
         let instruments = msl::remote::make_instrument_map();
         if self.instruments {
             instruments.print_instruments();
@@ -129,7 +129,9 @@ impl RunnableSubcommand for MslFetch {
             &search,
             self.new,
             output.as_str(),
-        ) {
+        )
+        .await
+        {
             Ok(c) => println!("{} images found", c),
             Err(e) => eprintln!("Error: {}", e),
         }

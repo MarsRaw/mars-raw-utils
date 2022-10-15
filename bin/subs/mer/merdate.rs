@@ -6,8 +6,9 @@ use crate::subs::runnable::RunnableSubcommand;
 #[clap(author, version, about = "Get current MER mission date information", long_about = None)]
 pub struct MerDate {}
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for MerDate {
-    fn run(&self) {
+    async fn run(&self) {
         match mer::missiontime::get_lmst_mer_a() {
             Ok(mtime) => {
                 println!("MER-A / Spirit:");

@@ -3,9 +3,6 @@ mod subs;
 use subs::runnable::RunnableSubcommand;
 use subs::*;
 
-// use std::ffi::OsString;
-// use std::path::PathBuf;
-
 extern crate wild;
 use clap::{Parser, Subcommand};
 
@@ -54,7 +51,9 @@ enum Mru {
     Xeye(xeye::CrossEye),
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    let t1 = std::time::Instant::now();
     let args = Cli::parse_from(wild::args());
 
     if args.verbose {
@@ -63,76 +62,77 @@ fn main() {
 
     match args.command {
         Mru::MslFetch(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::M20Fetch(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::NsytFetch(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::Calibrate(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::MslDate(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::MslLatest(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::M20Date(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::M20Latest(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::NsytDate(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::M20EcamAssemble(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::NsytLatest(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::MerDate(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::Anaglyph(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::Composite(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::Crop(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::Debayer(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::DiffGif(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::FocusMerge(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::MeanStack(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::HpcFilter(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::Inpaint(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::Levels(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::Info(args) => {
-            args.run();
+            _ = args.run().await;
         }
         Mru::Xeye(args) => {
-            args.run();
+            _ = args.run().await;
         }
     };
+    println!("Runtime: {}s", t1.elapsed().as_secs_f64());
 }

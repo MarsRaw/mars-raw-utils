@@ -20,9 +20,9 @@ pub struct Crop {
     #[clap(long, short, help = "Crop as x,y,width,height")]
     crop: String,
 }
-
+#[async_trait::async_trait]
 impl RunnableSubcommand for Crop {
-    fn run(&self) {
+    async fn run(&self) {
         //https://stackoverflow.com/questions/26536871/how-can-i-convert-a-string-of-numbers-to-an-array-or-vector-of-integers-in-rust
         let crop_numbers: Vec<usize> = self
             .crop

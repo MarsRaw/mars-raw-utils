@@ -1,9 +1,9 @@
 use crate::{constants, httpfetch, path, vprintln};
 
+use sciimg::error;
 use sciimg::util as sciutil;
-use sciimg::{error, ok};
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs::File;
@@ -156,21 +156,18 @@ pub async fn fetch_image(
     };
 
     // would rather do this as if !... but I'm assuming these vprintln! calls are.. impotant for some reason...
-    if path::file_exists(&write_to) && only_new {
-        vprintln!("Output file {} exists, skipping", write_to);
-        return Ok(());
-    } else {
-        let image_data = httpfetch::simple_fetch_bin(image_url).await?;
+    if !path::file_exists(&write_to) && only_new {
+        if let Ok(image_data) = httpfetch::simple_fetch_bin(image_url).await {
+            let path = Path::new(write_to.as_str());
+            vprintln!("Writing image data to {}", write_to);
 
-        let path = Path::new(write_to.as_str());
-        vprintln!("Writing image data to {}", write_to);
+            let mut file = File::create(path)?;
+            file.write_all(&image_data[..])?;
 
-        let mut file = File::create(path)?;
-
-        file.write_all(&image_data[..])?;
-
-        Ok(path.to_path_buf())
+            return Ok(path.to_path_buf());
+        }
     }
+    Err(anyhow!("File already exists on disk, skip it."))
 }
 
 pub fn save_image_json<T: Serialize>(

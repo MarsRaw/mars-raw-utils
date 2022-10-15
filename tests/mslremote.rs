@@ -1,16 +1,17 @@
 use mars_raw_utils::msl::{latest::LatestData, remote::fetch_latest, remote::remote_fetch};
 
-#[test]
+
+#[tokio::test]
 #[ignore]
-fn test_msl_latest() {
-    let latest: LatestData = fetch_latest().expect("Failed to fetch latest data");
+async fn test_msl_latest() {
+    let latest: LatestData = fetch_latest().await.expect("Failed to fetch latest data");
     assert_eq!(latest.latest, "2022-02-19T15:01:11Z");
     assert_eq!(latest.latest_sols.len(), 3);
 }
 
-#[test]
+#[tokio::test]
 #[ignore] // Going to ignore this by default to prevent unneccessary load on NASA's servers
-fn test_msl_instrument_fetches() {
+async fn test_msl_instrument_fetches() {
     let f: Vec<String> = vec![];
 
     remote_fetch(
@@ -25,6 +26,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("MAST_RIGHT")],
@@ -38,6 +40,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("MARDI")],
@@ -51,6 +54,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("MAHLI")],
@@ -64,6 +68,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("CHEMCAM_RMI")],
@@ -77,6 +82,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("MAST_LEFT")],
@@ -90,6 +96,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("NAV_RIGHT_A")],
@@ -103,6 +110,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("NAV_RIGHT_B")],
@@ -116,6 +124,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("NAV_LEFT_A")],
@@ -129,6 +138,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("NAV_LEFT_B")],
@@ -142,6 +152,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("FHAZ_RIGHT_A")],
@@ -155,6 +166,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("FHAZ_RIGHT_B")],
@@ -168,6 +180,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("FHAZ_LEFT_A")],
@@ -181,6 +194,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("FHAZ_LEFT_B")],
@@ -194,6 +208,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("RHAZ_RIGHT_A")],
@@ -207,6 +222,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("RHAZ_RIGHT_B")],
@@ -220,6 +236,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("RHAZ_LEFT_A")],
@@ -233,6 +250,7 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
     remote_fetch(
         &[String::from("RHAZ_LEFT_B")],
@@ -246,5 +264,6 @@ fn test_msl_instrument_fetches() {
         false,
         "",
     )
+    .await
     .unwrap();
 }

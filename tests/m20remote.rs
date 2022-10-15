@@ -1,16 +1,18 @@
 use mars_raw_utils::m20::{latest, remote};
 
-#[test]
+#[tokio::test]
 #[ignore]
-fn test_msl_latest() {
-    let latest: latest::LatestData = remote::fetch_latest().expect("Failed to fetch latest data");
+async fn test_msl_latest() {
+    let latest: latest::LatestData = remote::fetch_latest()
+        .await
+        .expect("Failed to fetch latest data");
     assert_eq!(latest.latest, "2022-02-19T16:36:39Z");
     assert_eq!(latest.latest_sols.len(), 3);
 }
 
-#[test]
-#[ignore] // Going to ignore this by default to prevent unneccessary load on NASA's servers
-fn test_m20_instrument_fetches() {
+#[tokio::test]
+//#[ignore] // Going to ignore this by default to prevent unneccessary load on NASA's servers
+async fn test_m20_instrument_fetches() {
     let instruments = vec![
         "FRONT_HAZCAM_LEFT_A",
         "FRONT_HAZCAM_LEFT_B",
@@ -50,6 +52,7 @@ fn test_m20_instrument_fetches() {
             false,
             "",
         )
+        .await
         .unwrap();
     }
 }

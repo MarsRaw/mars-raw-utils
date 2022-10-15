@@ -1,10 +1,8 @@
 use mars_raw_utils::prelude::*;
 
-use crate::subs::runnable::RunnableSubcommand;
-
 use std::process;
 
-#[derive(clap::Args)]
+#[derive(Debug, Clone, clap::Args)]
 #[clap(author, version, about = "Fetch raw Mars2020 images", long_about = None)]
 pub struct M20Fetch {
     #[clap(
@@ -52,8 +50,8 @@ pub struct M20Fetch {
     new: bool,
 }
 
-impl RunnableSubcommand for M20Fetch {
-    fn run(&self) {
+impl M20Fetch {
+    pub async fn run(&self) {
         let im = m20::remote::make_instrument_map();
         if self.instruments {
             im.print_instruments();
@@ -138,7 +136,9 @@ impl RunnableSubcommand for M20Fetch {
             &search,
             self.new,
             output.as_str(),
-        ) {
+        )
+        .await
+        {
             Ok(c) => println!("{} images found", c),
             Err(e) => eprintln!("Error: {}", e),
         };

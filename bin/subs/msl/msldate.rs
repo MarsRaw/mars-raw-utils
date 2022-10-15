@@ -6,8 +6,9 @@ use crate::subs::runnable::RunnableSubcommand;
 #[clap(author, version, about = "Get current MSL mission date information", long_about = None)]
 pub struct MslDate {}
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for MslDate {
-    fn run(&self) {
+    async fn run(&self) {
         match msl::missiontime::get_lmst() {
             Ok(mtime) => {
                 println!("Mars Sol Date:          {}", mtime.msd);

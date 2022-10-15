@@ -11,9 +11,11 @@ pub struct NsytLatest {
     list: bool,
 }
 
+use async_trait::async_trait;
+#[async_trait]
 impl RunnableSubcommand for NsytLatest {
-    fn run(&self) {
-        let latest: nsyt::latest::LatestData = match nsyt::remote::fetch_latest() {
+    async fn run(&self) {
+        let latest: nsyt::latest::LatestData = match nsyt::remote::fetch_latest().await {
             Ok(v) => v,
             Err(e) => {
                 eprintln!(

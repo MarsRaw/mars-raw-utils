@@ -57,7 +57,7 @@ impl HttpFetcher {
         CLIENT.get(self.uri.as_str()).send().await
     }
 
-    async fn into_bytes(&self) -> Result<Bytes, reqwest::Error> {
+    pub async fn into_bytes(&self) -> Result<Bytes, reqwest::Error> {
         self.fetch().await?.bytes().await
     }
 

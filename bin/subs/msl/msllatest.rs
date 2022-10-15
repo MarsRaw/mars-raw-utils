@@ -1,6 +1,6 @@
-use mars_raw_utils::prelude::*;
-
 use crate::subs::runnable::RunnableSubcommand;
+use async_trait::async_trait;
+use mars_raw_utils::prelude::*;
 
 use std::process;
 
@@ -11,9 +11,10 @@ pub struct MslLatest {
     list: bool,
 }
 
+#[async_trait]
 impl RunnableSubcommand for MslLatest {
-    fn run(&self) {
-        let latest: msl::latest::LatestData = match msl::remote::fetch_latest() {
+    async fn run(&self) {
+        let latest: msl::latest::LatestData = match msl::remote::fetch_latest().await {
             Ok(v) => v,
             Err(e) => {
                 eprintln!("Error fetching latest data from MSL remote server: {}", e);

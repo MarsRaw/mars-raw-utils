@@ -24,8 +24,9 @@ pub struct FocusMerge {
     depth_map: bool,
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for FocusMerge {
-    fn run(&self) {
+    async fn run(&self) {
         let quality_window_size = self.window.unwrap_or(15);
 
         let output = self.output.as_os_str().to_str().unwrap();

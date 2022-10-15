@@ -27,8 +27,9 @@ pub struct Levels {
     gamma: Option<f32>,
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for Levels {
-    fn run(&self) {
+    async fn run(&self) {
         let white_level = self.white.unwrap_or(1.0);
 
         let black_level = self.black.unwrap_or(0.0);
