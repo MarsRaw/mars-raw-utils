@@ -223,8 +223,9 @@ fn linearize_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut RgbIm
     //simple_create(left_img, right_img, map);
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for CrossEye {
-    fn run(&self) {
+    async fn run(&self) {
         print::print_experimental();
 
         let left_image_path = String::from(self.left.as_os_str().to_str().unwrap());

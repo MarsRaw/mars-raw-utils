@@ -1,7 +1,5 @@
 use mars_raw_utils::prelude::*;
 
-use crate::subs::runnable::RunnableSubcommand;
-
 use std::process;
 
 #[derive(clap::Args)]
@@ -49,8 +47,8 @@ pub struct NsytFetch {
     new: bool,
 }
 
-impl RunnableSubcommand for NsytFetch {
-    fn run(&self) {
+impl NsytFetch {
+    pub async fn run(&self) {
         let instruments = nsyt::remote::make_instrument_map();
         if self.instruments {
             instruments.print_instruments();
@@ -123,6 +121,7 @@ impl RunnableSubcommand for NsytFetch {
         };
 
         nsyt::remote::print_header();
+
         match nsyt::remote::remote_fetch(
             &cameras,
             num_per_page,
@@ -134,7 +133,9 @@ impl RunnableSubcommand for NsytFetch {
             &search,
             self.new,
             output.as_str(),
-        ) {
+        )
+        .await
+        {
             Ok(c) => println!("{} images found", c),
             Err(e) => eprintln!("Error: {}", e),
         }

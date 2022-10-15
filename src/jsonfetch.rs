@@ -1,8 +1,9 @@
 use crate::{constants, httpfetch::HttpFetcher, util::string_is_valid_f64};
-use serde_json::Value;
 
 use sciimg::prelude::*;
 
+use anyhow::Result;
+use serde_json::Value;
 use string_builder::Builder;
 
 pub struct JsonFetcher {
@@ -10,32 +11,26 @@ pub struct JsonFetcher {
 }
 
 impl JsonFetcher {
-    pub fn new(uri: &str) -> JsonFetcher {
-        JsonFetcher {
-            fetcher: HttpFetcher::new(uri),
-        }
+    pub fn new(uri: &str) -> Result<JsonFetcher> {
+        Ok(JsonFetcher {
+            fetcher: match HttpFetcher::new(uri) {
+                Ok(it) => it,
+                Err(err) => return Err(err),
+            },
+        })
     }
 
     pub fn param(&mut self, key: &str, value: &str) {
-        self.fetcher.param(key, value);
+        _ = self.fetcher.param(key, value);
     }
 
-    pub fn fetch(&self) -> error::Result<Value> {
-        let json_text = self.fetcher.fetch_text();
-
-        match json_text {
-            Err(_e) => Err(constants::status::REMOTE_SERVER_ERROR),
-            Ok(v) => Ok(serde_json::from_str(&v).unwrap()),
-        }
+    pub async fn fetch(&self) -> Result<Value> {
+        let json_text = self.fetcher.into_string().await?; //as_string() is also a common name for this.
+        Ok(serde_json::from_str(&json_text)?)
     }
 
-    pub fn fetch_str(&self) -> error::Result<String> {
-        let json_text = self.fetcher.fetch_text();
-
-        match json_text {
-            Err(_e) => Err(constants::status::REMOTE_SERVER_ERROR),
-            Ok(v) => Ok(v),
-        }
+    pub async fn fetch_str(&self) -> Result<String, reqwest::Error> {
+        self.fetcher.into_string().await
     }
 }
 

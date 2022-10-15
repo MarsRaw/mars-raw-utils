@@ -38,14 +38,23 @@ pub struct DiffGif {
     prodtype: Option<diffgif::ProductType>,
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for DiffGif {
-    fn run(&self) {
+    async fn run(&self) {
         let white_level = self.white.unwrap_or(1.0);
+
         let black_level = self.black.unwrap_or(0.0);
+
         let gamma = self.gamma.unwrap_or(1.0);
+
         let delay = self.delay.unwrap_or(10);
+
         let lowpass_window_size = self.lowpass.unwrap_or(0);
-        let product_type = self.prodtype.unwrap_or(diffgif::ProductType::STANDARD);
+
+        let product_type = match self.prodtype {
+            Some(p) => p,
+            None => diffgif::ProductType::STANDARD,
+        };
 
         println!(
             "{}, {}, {}, {}, {}",

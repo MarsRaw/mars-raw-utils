@@ -30,8 +30,9 @@ impl YesNo for bool {
     }
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for Info {
-    fn run(&self) {
+    async fn run(&self) {
         for in_file in self.input_files.iter() {
             if in_file.exists() {
                 println!("Image: {:?}", in_file);

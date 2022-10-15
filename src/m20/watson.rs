@@ -35,7 +35,7 @@ impl Calibration for M20Watson {
             data_max = decompanding::get_max_for_instrument(enums::Instrument::M20Watson) as f32;
         }
 
-        if input_file.find("ECM") != None && raw.image.is_grayscale() {
+        if input_file.contains("ECM") && raw.image.is_grayscale() {
             vprintln!("Image appears to be grayscale, applying debayering...");
             raw.debayer();
         }

@@ -41,12 +41,12 @@ impl Calibration for MslChemCam {
 
         let data_max = 255.0;
 
-        if input_file.find("EDR") != None {
+        if input_file.contains("EDR") {
             vprintln!("Image appears to be in standard contrast");
 
             vprintln!("Flatfielding...");
             raw.flatfield();
-        } else if input_file.find("EDR") != None {
+        } else if input_file.contains("EDR") {
             vprintln!("Image appears to be in enhanced contrast");
             // ... Don't do flatfielding, these appear to already been applied.
             // ... Do something about that

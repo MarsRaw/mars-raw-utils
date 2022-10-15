@@ -1,15 +1,14 @@
 use crate::{constants, httpfetch, path, vprintln};
 
-use sciimg::{error, ok};
-
+use sciimg::error;
 use sciimg::util as sciutil;
 
+use anyhow::{anyhow, Result};
+use serde::Serialize;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
-
-use serde::Serialize;
+use std::path::{Path, PathBuf};
 
 pub fn string_is_valid_f64(s: &str) -> bool {
     sciutil::string_is_valid_f64(s)
@@ -31,6 +30,7 @@ pub fn filename_char_at_pos(filename: &str, pos: usize) -> char {
     sciutil::filename_char_at_pos(filename, pos)
 }
 
+//INFO: there's great .min() .max() in std
 #[macro_export]
 macro_rules! max {
     ($x: expr) => ($x);
@@ -142,11 +142,11 @@ pub fn image_exists_on_filesystem(image_url: &str) -> bool {
     path::file_exists(bn.as_str())
 }
 
-pub fn fetch_image(
+pub async fn fetch_image(
     image_url: &str,
     only_new: bool,
     output_path: Option<&str>,
-) -> error::Result<&'static str> {
+) -> Result<PathBuf> {
     let write_to = match output_path {
         Some(p) => {
             let bn = path::basename(image_url);
@@ -155,28 +155,19 @@ pub fn fetch_image(
         None => String::from(image_url),
     };
 
-    if path::file_exists(&write_to) && only_new {
-        vprintln!("Output file {} exists, skipping", write_to);
-        return ok!();
-    } else {
-        let image_data = match httpfetch::simple_fetch_bin(image_url) {
-            Ok(i) => i,
-            Err(e) => return Err(e),
-        };
+    // would rather do this as if !... but I'm assuming these vprintln! calls are.. impotant for some reason...
+    if !path::file_exists(&write_to) && only_new {
+        if let Ok(image_data) = httpfetch::simple_fetch_bin(image_url).await {
+            let path = Path::new(write_to.as_str());
+            vprintln!("Writing image data to {}", write_to);
 
-        let path = Path::new(write_to.as_str());
-        vprintln!("Writing image data to {}", write_to);
+            let mut file = File::create(path)?;
+            file.write_all(&image_data[..])?;
 
-        let mut file = match File::create(&path) {
-            Err(why) => panic!("couldn't create {}", why),
-            Ok(file) => file,
-        };
-
-        match file.write_all(&image_data[..]) {
-            Ok(_) => ok!(),
-            Err(_e) => Err("Error writing image to filesystem"),
+            return Ok(path.to_path_buf());
         }
     }
+    Err(anyhow!("File already exists on disk, skip it."))
 }
 
 pub fn save_image_json<T: Serialize>(
@@ -184,8 +175,8 @@ pub fn save_image_json<T: Serialize>(
     item: &T,
     only_new: bool,
     output_path: Option<&str>,
-) -> error::Result<&'static str> {
-    let item_str = serde_json::to_string_pretty(item).unwrap();
+) -> Result<()> {
+    let item_str = serde_json::to_string_pretty(item)?;
 
     let write_to = match output_path {
         Some(p) => {
@@ -198,35 +189,22 @@ pub fn save_image_json<T: Serialize>(
     save_image_json_from_string(&write_to, &item_str, only_new)
 }
 
-pub fn save_image_json_from_string(
-    image_path: &str,
-    item: &String,
-    only_new: bool,
-) -> error::Result<&'static str> {
+pub fn save_image_json_from_string(image_path: &str, item: &String, only_new: bool) -> Result<()> {
     let out_file = image_path
         .replace(".jpg", "-metadata.json")
         .replace(".JPG", "-metadata.json")
         .replace(".png", "-metadata.json")
         .replace(".PNG", "-metadata.json");
 
-    if path::file_exists(out_file.as_str()) && only_new {
-        vprintln!("Output file {} exists, skipping", image_path);
-        return ok!();
+    if !path::file_exists(out_file.as_str()) && only_new {
+        let path = Path::new(out_file.as_str());
+        vprintln!("Writing metadata file to {}", path.to_str().unwrap());
+
+        let mut file = File::create(path)?;
+        file.write_all(item.as_bytes())?;
     }
 
-    let path = Path::new(out_file.as_str());
-
-    vprintln!("Writing metadata file to {}", path.to_str().unwrap());
-
-    let mut file = match File::create(&path) {
-        Err(why) => panic!("couldn't create {}", why),
-        Ok(file) => file,
-    };
-
-    match file.write_all(item.as_bytes()) {
-        Ok(_) => ok!(),
-        Err(_e) => Err("Error writing metadata to filesystem"),
-    }
+    Ok(())
 }
 
 pub fn append_file_name(input_file: &str, append: &str) -> String {

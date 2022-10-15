@@ -20,8 +20,9 @@ pub struct M20EcamAssemble {
     output: std::path::PathBuf,
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for M20EcamAssemble {
-    fn run(&self) {
+    async fn run(&self) {
         let in_files: Vec<String> = self
             .input_files
             .iter()

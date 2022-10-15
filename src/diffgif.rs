@@ -45,7 +45,7 @@ fn imagebuffer_to_vec_v8(
     for y in 0..buff_0.height {
         for x in 0..buff_0.width {
             let idx = (y * buff_0.width + x) * 3;
-            f[idx + 0] = buff_0.get(x, y).unwrap().round() as u8;
+            f[idx] = buff_0.get(x, y).unwrap().round() as u8;
             f[idx + 1] = buff_1.get(x, y).unwrap().round() as u8;
             f[idx + 2] = buff_2.get(x, y).unwrap().round() as u8;
         }
@@ -303,7 +303,8 @@ fn process_file(
         }
     };
 
-    let mut frame = gif::Frame::from_rgb(raw.width as u16, height as u16, &*pixels);
+    let mut frame = gif::Frame::from_rgb(raw.width as u16, height as u16, &mut pixels);
+
     frame.delay = delay;
     encoder.write_frame(&frame).unwrap();
 }

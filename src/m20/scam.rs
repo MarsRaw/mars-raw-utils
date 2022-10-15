@@ -41,7 +41,7 @@ impl Calibration for M20SuperCam {
 
         let data_max = 255.0;
 
-        if input_file.find("ECM") != None && raw.image.is_grayscale() {
+        if input_file.contains("ECM") && raw.image.is_grayscale() {
             vprintln!("Image appears to be grayscale, applying debayering...");
             raw.debayer();
         }

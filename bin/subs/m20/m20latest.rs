@@ -11,9 +11,10 @@ pub struct M20Latest {
     list: bool,
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for M20Latest {
-    fn run(&self) {
-        let latest: m20::latest::LatestData = match m20::remote::fetch_latest() {
+    async fn run(&self) {
+        let latest: m20::latest::LatestData = match m20::remote::fetch_latest().await {
             Ok(v) => v,
             Err(e) => {
                 eprintln!("Error fetching latest data from M20 remote server: {}", e);

@@ -136,7 +136,7 @@ pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
 }
 
 pub fn load_image_metadata(json_path: &String) -> error::Result<Metadata> {
-    let mut file = match File::open(&json_path) {
+    let mut file = match File::open(json_path) {
         Err(why) => panic!("couldn't open {}", why),
         Ok(file) => file,
     };

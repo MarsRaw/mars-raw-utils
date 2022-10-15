@@ -18,8 +18,9 @@ pub struct Inpaint {
     input_files: Vec<std::path::PathBuf>,
 }
 
+#[async_trait::async_trait]
 impl RunnableSubcommand for Inpaint {
-    fn run(&self) {
+    async fn run(&self) {
         for in_file in self.input_files.iter() {
             if in_file.exists() {
                 vprintln!("Processing File: {:?}", in_file);

@@ -93,7 +93,7 @@ impl Calibration for M20MastcamZ {
         // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
         // Update: Not always. Added a check to determine whether or not is is grayscale.
         // It's not perfect so please validate results. Gonna keep the 'ECM' check for now.
-        if input_file.find("ECM") != None && raw.image.is_grayscale() {
+        if input_file.contains("ECM") && raw.image.is_grayscale() {
             vprintln!("Image appears to be grayscale, applying debayering...");
             raw.debayer();
         }

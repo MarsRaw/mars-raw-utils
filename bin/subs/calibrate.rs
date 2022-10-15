@@ -76,9 +76,10 @@ impl Calibrate {
         }
     }
 }
-
+use async_trait::async_trait;
+#[async_trait]
 impl RunnableSubcommand for Calibrate {
-    fn run(&self) {
+    async fn run(&self) {
         let cal_context = CalProfile {
             apply_ilt: !self.raw,
             red_scalar: self.red_weight.unwrap_or(1.0),
