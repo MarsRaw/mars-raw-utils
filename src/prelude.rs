@@ -79,7 +79,7 @@ pub fn calibrator_for_instrument(instrument: Instrument) -> Option<&'static CalC
 }
 
 pub fn calibrator_for_instrument_from_str(instrument: &String) -> Option<&'static CalContainer> {
-    calibrator_for_instrument(Instrument::from_str(instrument.as_str()))
+    calibrator_for_instrument(Instrument::from_str(instrument.as_str()).unwrap())
 }
 
 use backtrace::Backtrace;

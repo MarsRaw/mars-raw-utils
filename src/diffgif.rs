@@ -303,7 +303,7 @@ fn process_file(
         }
     };
 
-    let mut frame = gif::Frame::from_rgb(raw.width as u16, height as u16, &mut pixels);
+    let mut frame = gif::Frame::from_rgb(raw.width as u16, height as u16, &pixels);
 
     frame.delay = delay;
     encoder.write_frame(&frame).unwrap();

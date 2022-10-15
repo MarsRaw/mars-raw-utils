@@ -1,4 +1,4 @@
-#![feature(associated_type_bounds)]
+// #![feature(associated_type_bounds)]
 
 use reqwest::Client;
 use std::time::Duration;
