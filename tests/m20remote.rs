@@ -1,6 +1,5 @@
 use mars_raw_utils::m20::{latest, remote};
 
-
 #[tokio::test]
 #[ignore]
 async fn test_msl_latest() {
@@ -12,7 +11,7 @@ async fn test_msl_latest() {
 }
 
 #[tokio::test]
-#[ignore] // Going to ignore this by default to prevent unneccessary load on NASA's servers
+//#[ignore] // Going to ignore this by default to prevent unneccessary load on NASA's servers
 async fn test_m20_instrument_fetches() {
     let instruments = vec![
         "FRONT_HAZCAM_LEFT_A",

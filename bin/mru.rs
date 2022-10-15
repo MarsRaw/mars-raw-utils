@@ -3,9 +3,6 @@ mod subs;
 use subs::runnable::RunnableSubcommand;
 use subs::*;
 
-// use std::ffi::OsString;
-// use std::path::PathBuf;
-
 extern crate wild;
 use clap::{Parser, Subcommand};
 
@@ -56,6 +53,7 @@ enum Mru {
 
 #[tokio::main]
 async fn main() {
+    let t1 = std::time::Instant::now();
     let args = Cli::parse_from(wild::args());
 
     if args.verbose {
@@ -136,4 +134,5 @@ async fn main() {
             _ = args.run().await;
         }
     };
+    println!("Runtime: {}s", t1.elapsed().as_secs_f64());
 }
