@@ -10,10 +10,7 @@ pub struct M20Pixl {}
 
 impl Calibration for M20Pixl {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::M20Pixl => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::M20Pixl)
     }
 
     fn process_file(

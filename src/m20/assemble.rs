@@ -516,7 +516,7 @@ impl Composite {
         }
     }
 
-    fn determine_composite_size(tiles: &Vec<Tile>) -> (usize, usize) {
+    fn determine_composite_size(tiles: &[Tile]) -> (usize, usize) {
         let mut max_x: usize = 0;
         let mut max_y: usize = 0;
 
@@ -536,7 +536,7 @@ impl Composite {
         (max_x, max_y)
     }
 
-    pub fn paste_tiles(&mut self, tiles: &Vec<Tile>) {
+    pub fn paste_tiles(&mut self, tiles: &[Tile]) {
         tiles.iter().for_each(|t| {
             self.paste_tile(t);
         });

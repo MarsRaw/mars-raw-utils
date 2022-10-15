@@ -33,7 +33,6 @@ impl RunnableSubcommand for Levels {
         let white_level = self.white.unwrap_or(1.0);
 
         let black_level = self.black.unwrap_or(0.0);
-
         let gamma = self.gamma.unwrap_or(1.0);
 
         // Some rules on the parameters

@@ -61,7 +61,7 @@ fn rgbimage_to_vec_v8(img3band: &rgbimage::RgbImage) -> Vec<u8> {
     imagebuffer_to_vec_v8(b0, b1, b2)
 }
 
-fn generate_mean_stack(input_files: &Vec<String>) -> rgbimage::RgbImage {
+fn generate_mean_stack(input_files: &[String]) -> rgbimage::RgbImage {
     let mut mean: rgbimage::RgbImage = rgbimage::RgbImage::new_empty().unwrap();
     let mut count: imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
     let mut ones: imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
@@ -258,7 +258,7 @@ fn process_file(
 
     let raw = rgbimage::RgbImage::open16(in_file).unwrap();
 
-    let (mut pixels, height) = match product_type {
+    let (pixels, height) = match product_type {
         ProductType::STACKED => {
             let img_std = process_frame_3channel(
                 &raw,
@@ -304,6 +304,7 @@ fn process_file(
     };
 
     let mut frame = gif::Frame::from_rgb(raw.width as u16, height as u16, &mut pixels);
+
     frame.delay = delay;
     encoder.write_frame(&frame).unwrap();
 }

@@ -10,10 +10,7 @@ pub struct M20HeliNav {}
 
 impl Calibration for M20HeliNav {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::M20HeliNav => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::M20HeliRte)
     }
 
     fn process_file(

@@ -10,10 +10,7 @@ pub struct MslMahli {}
 
 impl Calibration for MslMahli {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::MslMAHLI => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::MslMAHLI)
     }
 
     fn process_file(

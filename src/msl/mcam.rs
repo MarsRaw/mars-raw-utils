@@ -10,10 +10,10 @@ pub struct MslMastcam {}
 
 impl Calibration for MslMastcam {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::MslMastcamLeft | Instrument::MslMastcamRight => true,
-            _ => false,
-        }
+        matches!(
+            instrument,
+            Instrument::MslMastcamLeft | Instrument::MslMastcamRight
+        )
     }
 
     fn process_file(

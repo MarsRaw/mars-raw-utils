@@ -10,10 +10,7 @@ pub struct MslMardi {}
 
 impl Calibration for MslMardi {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::MslMARDI => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::MslMARDI)
     }
 
     fn process_file(

@@ -19,15 +19,15 @@ pub struct MslEcam {}
 
 impl Calibration for MslEcam {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
+        matches!(
+            instrument,
             Instrument::MslNavCamLeft
-            | Instrument::MslNavCamRight
-            | Instrument::MslFrontHazLeft
-            | Instrument::MslFrontHazRight
-            | Instrument::MslRearHazLeft
-            | Instrument::MslRearHazRight => true,
-            _ => false,
-        }
+                | Instrument::MslNavCamRight
+                | Instrument::MslFrontHazLeft
+                | Instrument::MslFrontHazRight
+                | Instrument::MslRearHazLeft
+                | Instrument::MslRearHazRight
+        )
     }
 
     fn process_file(

@@ -85,10 +85,7 @@ impl RunnableSubcommand for Calibrate {
             red_scalar: self.red_weight.unwrap_or(1.0),
             green_scalar: self.green_weight.unwrap_or(1.0),
             blue_scalar: self.blue_weight.unwrap_or(1.0),
-            color_noise_reduction: match self.color_noise_reduction_amount {
-                Some(_) => true,
-                None => false,
-            },
+            color_noise_reduction: self.color_noise_reduction_amount.is_some(),
             color_noise_reduction_amount: self.color_noise_reduction_amount.unwrap_or(0),
             hot_pixel_detection_threshold: self.hpc_threshold.unwrap_or(0.0),
             hot_pixel_window_size: self.hpc_window.unwrap_or(3),
@@ -146,7 +143,7 @@ impl RunnableSubcommand for Calibrate {
                                 ),
                                 Err(why) => {
                                     eprintln!("Error: {}", why);
-                                    print_fail(&input_file.to_string());
+                                    print_fail(input_file);
                                 }
                             }
                         });
@@ -162,7 +159,7 @@ impl RunnableSubcommand for Calibrate {
                             ),
                             Err(why) => {
                                 eprintln!("Error: {}", why);
-                                print_fail(&input_file.to_string());
+                                print_fail(input_file);
                             }
                         }
                     }

@@ -143,11 +143,7 @@ impl ImageMetadata for Image {
         }
 
         let sf = self.extended.scale_factor.parse::<u32>();
-        if sf.is_ok() {
-            sf.unwrap()
-        } else {
-            1
-        }
+        sf.unwrap_or(1)
     }
 
     fn get_instrument(&self) -> String {

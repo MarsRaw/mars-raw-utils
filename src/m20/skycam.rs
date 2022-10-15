@@ -10,10 +10,7 @@ pub struct M20SkyCam {}
 
 impl Calibration for M20SkyCam {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::M20SkyCam => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::M20SkyCam)
     }
 
     fn process_file(

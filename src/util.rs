@@ -98,7 +98,7 @@ impl InstrumentMap {
 
     pub fn find_remote_instrument_names_fromlist(
         &self,
-        instrument_inputs: &Vec<String>,
+        instrument_inputs: &[String],
     ) -> error::Result<Vec<String>> {
         let mut inst_list: Vec<String> = Vec::new();
 

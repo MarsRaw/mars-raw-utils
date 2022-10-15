@@ -10,15 +10,15 @@ pub struct M20EECam {}
 
 impl Calibration for M20EECam {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
+        matches!(
+            instrument,
             Instrument::M20FrontHazLeft
-            | Instrument::M20FrontHazRight
-            | Instrument::M20NavcamLeft
-            | Instrument::M20NavcamRight
-            | Instrument::M20RearHazLeft
-            | Instrument::M20RearHazRight => true,
-            _ => false,
-        }
+                | Instrument::M20FrontHazRight
+                | Instrument::M20NavcamLeft
+                | Instrument::M20NavcamRight
+                | Instrument::M20RearHazLeft
+                | Instrument::M20RearHazRight
+        )
     }
 
     fn process_file(

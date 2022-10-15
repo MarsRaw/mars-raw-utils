@@ -9,10 +9,7 @@ use sciimg::error;
 pub struct NsytIcc {}
 impl Calibration for NsytIcc {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::NsytICC => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::NsytICC)
     }
 
     fn process_file(

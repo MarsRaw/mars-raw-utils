@@ -10,10 +10,7 @@ pub struct MslChemCam {}
 
 impl Calibration for MslChemCam {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::MslChemCam => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::MslChemCam)
     }
 
     fn process_file(

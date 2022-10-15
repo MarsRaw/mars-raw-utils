@@ -10,10 +10,7 @@ pub struct M20SuperCam {}
 
 impl Calibration for M20SuperCam {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::M20SuperCam => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::M20SuperCam)
     }
 
     fn process_file(

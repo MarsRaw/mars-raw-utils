@@ -60,7 +60,7 @@ function update_on_sol() {
 if [ "x$1" !=  "x" ]; then 
     update_on_sol $1
 else
-    for sol in `nsyt_latest -l`; do 
+    for sol in `mru nsyt-latest -l`; do 
         update_on_sol $sol
     done
 fi

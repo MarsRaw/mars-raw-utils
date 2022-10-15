@@ -19,7 +19,7 @@ fn print_image(output_path: &str, image: &Image) {
         "{:37} {:15} {:<6} {:20} {:27} {:7} {:10}",
         image.imageid,
         image.instrument.to_uppercase(),
-        format!("{:<6}", image.sol), // This is such a hack...
+        image.sol,
         &image.date_taken[..16],
         image.extended.localtime,
         if image.is_thumbnail {
@@ -35,7 +35,7 @@ fn print_image(output_path: &str, image: &Image) {
     );
 }
 
-fn search_empty_or_has_match(image_id: &String, search: &Vec<String>) -> bool {
+fn search_empty_or_has_match(image_id: &str, search: &[String]) -> bool {
     if search.is_empty() {
         return true;
     }
@@ -51,7 +51,7 @@ async fn process_results(
     results: &NsytApiResults,
     thumbnails: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> i32 {
@@ -66,7 +66,6 @@ async fn process_results(
         if !search_empty_or_has_match(&image.imageid, search) {
             continue;
         }
-
         valid_img_count += 1; //ITM is an anti-pattern. TODO: enumerate(), and have the 'e' fall out.
         print_image(output_path, image);
 
@@ -136,7 +135,7 @@ pub async fn fetch_page(
     maxsol: i32,
     thumbnails: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> Result<i32> {
@@ -191,7 +190,7 @@ pub async fn fetch_all(
     maxsol: i32,
     thumbnails: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> Result<i32> {
@@ -228,7 +227,6 @@ pub async fn fetch_all(
 
     Ok(count)
 }
-
 pub async fn remote_fetch(
     cameras: &Vec<String>,
     num_per_page: i32,
@@ -237,7 +235,7 @@ pub async fn remote_fetch(
     maxsol: i32,
     thumbnails: bool,
     list_only: bool,
-    search: &Vec<String>,
+    search: &[String],
     only_new: bool,
     output_path: &str,
 ) -> Result<i32> {

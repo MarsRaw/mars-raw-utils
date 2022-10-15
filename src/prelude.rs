@@ -16,6 +16,7 @@ pub use crate::path;
 pub use crate::print;
 pub use crate::util;
 pub use crate::vprintln;
+use std::str::FromStr;
 
 pub use crate::print::{print_complete, print_done, print_fail, print_warn};
 

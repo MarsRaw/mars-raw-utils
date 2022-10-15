@@ -20,11 +20,11 @@ pub struct CrossEye {
 }
 
 trait OpenFromBytes {
-    fn open_from_bytes(bytes: &Vec<u8>) -> RgbImage;
+    fn open_from_bytes(bytes: &[u8]) -> RgbImage;
 }
 
 impl OpenFromBytes for RgbImage {
-    fn open_from_bytes(bytes: &Vec<u8>) -> RgbImage {
+    fn open_from_bytes(bytes: &[u8]) -> RgbImage {
         let image_data = load_from_memory(bytes).unwrap().into_rgba8();
         let dims = image_data.dimensions();
 
@@ -74,10 +74,7 @@ impl GetCameraModel for MarsImage {
     }
 
     fn has_camera_model(&self) -> bool {
-        match self.get_camera_model() {
-            Some(_) => true,
-            None => false,
-        }
+        self.get_camera_model().is_some()
     }
 
     fn implements_linearized(&self) -> bool {
@@ -279,7 +276,7 @@ impl RunnableSubcommand for CrossEye {
         }
 
         vprintln!("Adding X icon");
-        let x_icon = RgbImage::open_from_bytes(&include_bytes!("icons/Xicon.png").to_vec());
+        let x_icon = RgbImage::open_from_bytes(include_bytes!("icons/Xicon.png").as_ref());
         map.paste(
             &x_icon,
             left_img.image.width - x_icon.width / 2,
@@ -287,7 +284,7 @@ impl RunnableSubcommand for CrossEye {
         );
 
         vprintln!("Adding verteq icon");
-        let eq_icon = RgbImage::open_from_bytes(&include_bytes!("icons/VertEqIcon.png").to_vec());
+        let eq_icon = RgbImage::open_from_bytes(include_bytes!("icons/VertEqIcon.png").as_ref());
         map.paste(
             &eq_icon,
             left_img.image.width * 2 - eq_icon.width / 2,

@@ -51,10 +51,10 @@ pub struct M20MastcamZ {}
 
 impl Calibration for M20MastcamZ {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::M20MastcamZLeft | Instrument::M20MastcamZRight => true,
-            _ => false,
-        }
+        matches!(
+            instrument,
+            Instrument::M20MastcamZLeft | Instrument::M20MastcamZRight
+        )
     }
 
     fn process_file(

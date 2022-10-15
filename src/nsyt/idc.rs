@@ -10,10 +10,7 @@ pub struct NsytIdc {}
 
 impl Calibration for NsytIdc {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::NsytIDC => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::NsytIDC)
     }
 
     fn process_file(

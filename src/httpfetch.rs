@@ -65,6 +65,7 @@ impl HttpFetcher {
         self.fetch().await?.text().await
     }
 }
+
 pub async fn simple_fetch_bin(uri: &str) -> Result<Vec<u8>> {
     let resp = HttpFetcher::new(uri)?.fetch().await?;
     Ok(resp.bytes().await?.to_vec())

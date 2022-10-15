@@ -31,7 +31,7 @@ fn make_diff_container(image: &rgbimage::RgbImage, blur_amount: usize) -> Diff {
 }
 
 pub fn focusmerge(
-    input_files: &Vec<String>,
+    input_files: &[String],
     quality_window_size: usize,
     depth_map: bool,
     output_file: &str,
@@ -110,9 +110,7 @@ pub fn focusmerge(
             let mut max_quality = 0.0_f32;
             let mut depth_value = 0;
 
-            for image_num in 0..images.len() {
-                let image: &Diff = &images[image_num];
-
+            for (image_num, image) in images.iter().enumerate() {
                 let q0 = quality::get_point_quality_estimation_on_diff_buffer(
                     &image.band_0,
                     quality_window_size,

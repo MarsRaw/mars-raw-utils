@@ -10,10 +10,7 @@ pub struct M20Watson {}
 
 impl Calibration for M20Watson {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
-        match instrument {
-            Instrument::M20Watson => true,
-            _ => false,
-        }
+        matches!(instrument, Instrument::M20Watson)
     }
 
     fn process_file(
