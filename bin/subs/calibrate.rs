@@ -106,13 +106,10 @@ impl RunnableSubcommand for Calibrate {
             // If the user has exported MRU_EXIT_ON_PANIC=1, then we should exit here.
             // This will prevent situations where errors fly by on the screen and
             // aren't noticed when testing.
-            match option_env!("MRU_EXIT_ON_PANIC") {
-                Some(v) => {
-                    if v == "1" {
-                        process::exit(1);
-                    }
+            if let Some(v) = option_env!("MRU_EXIT_ON_PANIC") {
+                if v == "1" {
+                    process::exit(1);
                 }
-                None => {}
             };
         }));
 

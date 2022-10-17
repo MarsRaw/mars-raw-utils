@@ -17,7 +17,7 @@ async fn test_nsyt_instrument_fetches() {
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
         remote_fetch(
-            &vec![String::from(i)],
+            &[String::from(i)],
             5,
             Some(0),
             3119,

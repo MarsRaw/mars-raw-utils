@@ -78,54 +78,51 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> MapCo
 
     input_files.iter().for_each(|input_file| {
         let img = MarsImage::open(input_file.to_owned(), Instrument::M20MastcamZLeft);
-        match get_cahvor(&img) {
-            Some(c) => {
-                if let Ok(ll) = get_lat_lon(&c, 0, 0, quat) {
-                    context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                    context.top_lat = max!(context.top_lat, ll.lat);
-                    context.left_lon = min!(context.left_lon, ll.lon);
-                    context.right_lon = max!(context.right_lon, ll.lon);
-                }
-
-                if let Ok(ll) = get_lat_lon(&c, img.image.width, 0, quat) {
-                    context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                    context.top_lat = max!(context.top_lat, ll.lat);
-                    context.left_lon = min!(context.left_lon, ll.lon);
-                    context.right_lon = max!(context.right_lon, ll.lon);
-                }
-
-                if let Ok(ll) = get_lat_lon(&c, 0, img.image.height, quat) {
-                    context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                    context.top_lat = max!(context.top_lat, ll.lat);
-                    context.left_lon = min!(context.left_lon, ll.lon);
-                    context.right_lon = max!(context.right_lon, ll.lon);
-                }
-
-                if let Ok(ll) = get_lat_lon(&c, img.image.width, img.image.height, quat) {
-                    context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                    context.top_lat = max!(context.top_lat, ll.lat);
-                    context.left_lon = min!(context.left_lon, ll.lon);
-                    context.right_lon = max!(context.right_lon, ll.lon);
-                }
-
-                if let Ok(ll) = get_lat_lon(&c, img.image.width / 2, 0, quat) {
-                    context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                    context.top_lat = max!(context.top_lat, ll.lat);
-                    context.left_lon = min!(context.left_lon, ll.lon);
-                    context.right_lon = max!(context.right_lon, ll.lon);
-                }
-
-                if let Ok(ll) = get_lat_lon(&c, img.image.width / 2, img.image.height, quat) {
-                    context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                    context.top_lat = max!(context.top_lat, ll.lat);
-                    context.left_lon = min!(context.left_lon, ll.lon);
-                    context.right_lon = max!(context.right_lon, ll.lon);
-                }
-
-                let ang_horiz = c.pixel_angle_horiz().to_degrees();
-                context.degrees_per_pixel = max!(context.degrees_per_pixel, ang_horiz);
+        if let Some(c) = get_cahvor(&img) {
+            if let Ok(ll) = get_lat_lon(&c, 0, 0, quat) {
+                context.bottom_lat = min!(context.bottom_lat, ll.lat);
+                context.top_lat = max!(context.top_lat, ll.lat);
+                context.left_lon = min!(context.left_lon, ll.lon);
+                context.right_lon = max!(context.right_lon, ll.lon);
             }
-            None => {}
+
+            if let Ok(ll) = get_lat_lon(&c, img.image.width, 0, quat) {
+                context.bottom_lat = min!(context.bottom_lat, ll.lat);
+                context.top_lat = max!(context.top_lat, ll.lat);
+                context.left_lon = min!(context.left_lon, ll.lon);
+                context.right_lon = max!(context.right_lon, ll.lon);
+            }
+
+            if let Ok(ll) = get_lat_lon(&c, 0, img.image.height, quat) {
+                context.bottom_lat = min!(context.bottom_lat, ll.lat);
+                context.top_lat = max!(context.top_lat, ll.lat);
+                context.left_lon = min!(context.left_lon, ll.lon);
+                context.right_lon = max!(context.right_lon, ll.lon);
+            }
+
+            if let Ok(ll) = get_lat_lon(&c, img.image.width, img.image.height, quat) {
+                context.bottom_lat = min!(context.bottom_lat, ll.lat);
+                context.top_lat = max!(context.top_lat, ll.lat);
+                context.left_lon = min!(context.left_lon, ll.lon);
+                context.right_lon = max!(context.right_lon, ll.lon);
+            }
+
+            if let Ok(ll) = get_lat_lon(&c, img.image.width / 2, 0, quat) {
+                context.bottom_lat = min!(context.bottom_lat, ll.lat);
+                context.top_lat = max!(context.top_lat, ll.lat);
+                context.left_lon = min!(context.left_lon, ll.lon);
+                context.right_lon = max!(context.right_lon, ll.lon);
+            }
+
+            if let Ok(ll) = get_lat_lon(&c, img.image.width / 2, img.image.height, quat) {
+                context.bottom_lat = min!(context.bottom_lat, ll.lat);
+                context.top_lat = max!(context.top_lat, ll.lat);
+                context.left_lon = min!(context.left_lon, ll.lon);
+                context.right_lon = max!(context.right_lon, ll.lon);
+            }
+
+            let ang_horiz = c.pixel_angle_horiz().to_degrees();
+            context.degrees_per_pixel = max!(context.degrees_per_pixel, ang_horiz);
         };
     });
 
