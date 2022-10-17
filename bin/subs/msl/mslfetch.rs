@@ -1,7 +1,5 @@
 use mars_raw_utils::prelude::*;
 
-
-
 use std::process;
 
 #[derive(clap::Args)]

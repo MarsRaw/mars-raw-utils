@@ -54,15 +54,9 @@ fn test_is_name_a_remote_instrument() {
         .collect(),
     };
 
-    assert_eq!(instrument_list.is_name_a_remote_instrument("MAHLI"), true);
-    assert_eq!(
-        instrument_list.is_name_a_remote_instrument("CHEMCAM"),
-        false
-    );
-    assert_eq!(
-        instrument_list.is_name_a_remote_instrument("CHEMCAM_RMI"),
-        true
-    );
+    assert!(instrument_list.is_name_a_remote_instrument("MAHLI"));
+    assert!(!instrument_list.is_name_a_remote_instrument("CHEMCAM"));
+    assert!(instrument_list.is_name_a_remote_instrument("CHEMCAM_RMI"));
 }
 
 #[test]

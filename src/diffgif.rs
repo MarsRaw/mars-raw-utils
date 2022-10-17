@@ -7,7 +7,7 @@ use gif;
 use std::fs::File;
 use std::str::FromStr;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ProductType {
     STANDARD,
     DIFFERENTIAL,

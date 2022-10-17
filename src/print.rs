@@ -65,13 +65,10 @@ pub fn print_fail(file_base_name: &String) {
 pub fn print_complete(file_base_name: &String, status: CompleteStatus) {
     let mut width = 88;
 
-    match termsize::get() {
-        Some(size) => {
-            if size.cols < width {
-                width = size.cols;
-            }
+    if let Some(size) = termsize::get() {
+        if size.cols < width {
+            width = size.cols;
         }
-        None => {}
     };
 
     let mut formatted = format!("{: <80}", file_base_name);

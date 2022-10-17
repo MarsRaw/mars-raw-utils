@@ -1,6 +1,5 @@
 use mars_raw_utils::jsonfetch;
 
-
 #[tokio::test]
 #[ignore]
 async fn test_json_fetch() {

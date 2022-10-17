@@ -162,11 +162,7 @@ pub struct NsytRemoteStats {
     pub per_page: i32,
 }
 
-pub async fn fetch_stats(
-    cameras: &Vec<String>,
-    minsol: i32,
-    maxsol: i32,
-) -> Result<NsytRemoteStats> {
+pub async fn fetch_stats(cameras: &[String], minsol: i32, maxsol: i32) -> Result<NsytRemoteStats> {
     match submit_query(cameras, 0, Some(0), minsol, maxsol).await {
         Ok(v) => {
             let res: NsytApiResults = serde_json::from_str(v.as_str()).unwrap();
@@ -184,7 +180,7 @@ pub async fn fetch_stats(
 }
 
 pub async fn fetch_all(
-    cameras: &Vec<String>,
+    cameras: &[String],
     num_per_page: i32,
     minsol: i32,
     maxsol: i32,
@@ -228,7 +224,7 @@ pub async fn fetch_all(
     Ok(count)
 }
 pub async fn remote_fetch(
-    cameras: &Vec<String>,
+    cameras: &[String],
     num_per_page: i32,
     page: Option<i32>,
     minsol: i32,

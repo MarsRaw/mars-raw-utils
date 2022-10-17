@@ -2,7 +2,7 @@ use std::num::ParseIntError;
 use std::str::FromStr;
 
 // Supported missions
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Mission {
     MSL,
     MARS2020,
@@ -10,7 +10,7 @@ pub enum Mission {
 }
 
 /// Representation of left/right side of a stereo image with an option to simply not care (or unknown).
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Eye {
     Right,
     Left,
@@ -18,7 +18,7 @@ pub enum Eye {
 }
 
 // Supported instruments
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Instrument {
     MslMAHLI,
     MslMastcamLeft,
@@ -89,7 +89,7 @@ impl FromStr for Instrument {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum CalFileType {
     FlatField,
     InpaintMask,

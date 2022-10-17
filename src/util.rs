@@ -156,7 +156,7 @@ pub async fn fetch_image(
     };
 
     // would rather do this as if !... but I'm assuming these vprintln! calls are.. impotant for some reason...
-    if !only_new || (!path::file_exists(&write_to) && only_new) {
+    if !only_new || !path::file_exists(&write_to) {
         if let Ok(image_data) = httpfetch::simple_fetch_bin(image_url).await {
             let path = Path::new(write_to.as_str());
             vprintln!("Writing image data to {}", write_to);
@@ -196,7 +196,7 @@ pub fn save_image_json_from_string(image_path: &str, item: &String, only_new: bo
         .replace(".png", "-metadata.json")
         .replace(".PNG", "-metadata.json");
 
-    if !only_new || (!path::file_exists(out_file.as_str()) && only_new) {
+    if !only_new || !path::file_exists(out_file.as_str()) {
         let path = Path::new(out_file.as_str());
         vprintln!("Writing metadata file to {}", path.to_str().unwrap());
 

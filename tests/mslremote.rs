@@ -1,6 +1,5 @@
 use mars_raw_utils::msl::{latest::LatestData, remote::fetch_latest, remote::remote_fetch};
 
-
 #[tokio::test]
 #[ignore]
 async fn test_msl_latest() {
