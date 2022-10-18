@@ -18,7 +18,7 @@ pub enum Eye {
 }
 
 // Supported instruments
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum Instrument {
     MslMAHLI,
     MslMastcamLeft,
@@ -47,6 +47,7 @@ pub enum Instrument {
     M20HeliRte,
     NsytICC,
     NsytIDC,
+    #[default]
     None,
 }
 

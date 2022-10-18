@@ -44,14 +44,14 @@ async fn process_results(
     output_path: &str,
 ) -> i32 {
     let mut valid_img_count = 0;
-    for (idx, image) in results
+    let images = results
         .items
         .iter()
         .filter(|image| {
             image.is_thumbnail && !thumbnails && search.iter().any(|i| image.imageid.contains(i))
-        })
-        .enumerate()
-    {
+        });
+    // let iter_count = images.clone().into_iter().count();
+    for (idx, image) in images.enumerate() {
         valid_img_count = idx as i32; //ITM is an anti-pattern. TODO: enumerate(), and have the 'e' fall out.
         print_image(output_path, image);
         if !list_only {
@@ -64,7 +64,7 @@ async fn process_results(
                 Some(output_path),
             );
         }
-    }
+    };
     valid_img_count
 }
 
@@ -253,9 +253,9 @@ pub async fn remote_fetch(
 }
 
 pub async fn fetch_latest() -> Result<latest::LatestData> {
-    let uri = constants::url::NSYT_LATEST_WEBSERVICE_URL;
+    let url = constants::url::NSYT_LATEST_WEBSERVICE_URL;
 
-    let req = jsonfetch::JsonFetcher::new(uri)?;
+    let req = jsonfetch::JsonFetcher::new(url)?;
     let res: latest::Latest = serde_json::from_str(&req.fetch_str().await?)?;
     if !res.success {
         return Err(anyhow!("unable to fetch latest."));
