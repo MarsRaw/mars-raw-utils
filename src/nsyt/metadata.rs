@@ -98,7 +98,7 @@ impl ImageMetadata for Image {
     }
 
     fn get_dimension(&self) -> Option<Vec<f64>> {
-        unimplemented!()
+        None
     }
 
     fn get_sample_type(&self) -> String {
@@ -170,11 +170,11 @@ impl ImageMetadata for Image {
     }
 
     fn get_mast_az(&self) -> Option<f64> {
-        unimplemented!()
+        None
     }
 
     fn get_mast_el(&self) -> Option<f64> {
-        unimplemented!()
+        None
     }
 
     fn get_sclk(&self) -> Option<f64> {

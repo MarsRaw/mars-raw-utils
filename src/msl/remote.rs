@@ -58,19 +58,6 @@ fn print_image(output_path: &str, image: &Image) {
     );
 }
 
-fn search_empty_or_has_match(image_id: &str, search: &[String]) -> bool {
-    if search.is_empty() {
-        return true;
-    }
-
-    for i in search.iter() {
-        if image_id.contains(i) {
-            return true;
-        }
-    }
-    false
-}
-
 async fn process_results(
     results: &MslApiResults,
     thumbnails: bool,
@@ -78,22 +65,17 @@ async fn process_results(
     search: &[String],
     only_new: bool,
     output_path: &str,
-) -> Result<i32> {
+) -> usize {
     let mut valid_img_count = 0;
-    for image in results.items.iter() {
-        // If this image is a thumbnail and we're ignoring those, then ignore it.
-        if image.is_thumbnail && !thumbnails {
-            continue;
-        }
-
-        // If we're searching for a substring and this image doesn't match, skip it.
-        if !search_empty_or_has_match(&image.imageid, search) {
-            continue;
-        }
-
-        valid_img_count += 1;
+    let images = results
+        .items
+        .iter()
+        .filter(|image| {
+            (!image.is_thumbnail && !thumbnails || thumbnails) && (search.is_empty() || search.iter().any(|i| image.imageid.contains(i)))
+        });
+    for (idx, image) in images.enumerate() {
+        valid_img_count = idx; 
         print_image(output_path, image);
-
         if !list_only {
             _ = fetch_image(&image.url, only_new, Some(output_path)).await;
             let image_base_name = path::basename(image.url.as_str());
@@ -104,9 +86,8 @@ async fn process_results(
                 Some(output_path),
             );
         }
-    }
-
-    Ok(valid_img_count)
+    };
+    valid_img_count
 }
 
 pub fn make_instrument_map() -> InstrumentMap {
@@ -179,15 +160,19 @@ pub async fn fetch_page(
     search: &[String],
     only_new: bool,
     output_path: &str,
-) -> Result<i32> {
-    let v = submit_query(cameras, num_per_page, Some(page), minsol, maxsol).await?;
-    let res: MslApiResults = serde_json::from_str(&v)?;
-    if let Ok(proc) =
-        process_results(&res, thumbnails, list_only, search, only_new, output_path).await
-    {
-        Ok(proc)
-    } else {
-        Err(anyhow!("Serde parsing from_str failed. {}", v))
+) -> Result<usize> {
+    match submit_query(cameras, num_per_page, Some(page), minsol, maxsol).await {
+        Ok(v) => match serde_json::from_str(&v) {
+            Ok(res) => {
+                Ok(
+                    process_results(&res, thumbnails, list_only, search, only_new, output_path)
+                        .await,
+                )
+            }
+            // NOTE: The anyhow! macro is glorious for making on-the-fly errors in application code, there's a sister libary called thiserror which is for making explicit libary code error types.
+            Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
+        },
+        Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
     }
 }
 
@@ -241,7 +226,7 @@ pub async fn fetch_all(
     search: &[String],
     only_new: bool,
     output_path: &str,
-) -> Result<i32> {
+) -> Result<usize> {
     let stats = match fetch_stats(cameras, minsol, maxsol).await {
         Ok(s) => s,
         Err(e) => return Err(e),
@@ -286,7 +271,7 @@ pub async fn remote_fetch(
     search: &[String],
     only_new: bool,
     output_path: &str,
-) -> Result<i32> {
+) -> Result<usize> {
     match page {
         Some(p) => {
             fetch_page(

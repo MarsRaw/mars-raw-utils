@@ -42,17 +42,17 @@ async fn process_results(
     search: &[String],
     only_new: bool,
     output_path: &str,
-) -> i32 {
+) -> usize {
     let mut valid_img_count = 0;
     let images = results
         .items
         .iter()
         .filter(|image| {
-            image.is_thumbnail && !thumbnails && search.iter().any(|i| image.imageid.contains(i))
+            (!image.is_thumbnail && !thumbnails || thumbnails) && (search.is_empty() || search.iter().any(|i| image.imageid.contains(i)))
         });
     // let iter_count = images.clone().into_iter().count();
     for (idx, image) in images.enumerate() {
-        valid_img_count = idx as i32; //ITM is an anti-pattern. TODO: enumerate(), and have the 'e' fall out.
+        valid_img_count = idx; 
         print_image(output_path, image);
         if !list_only {
             _ = fetch_image(&image.url, only_new, Some(output_path)).await;
@@ -122,7 +122,7 @@ pub async fn fetch_page(
     search: &[String],
     only_new: bool,
     output_path: &str,
-) -> Result<i32> {
+) -> Result<usize> {
     match submit_query(cameras, num_per_page, Some(page), minsol, maxsol).await {
         Ok(v) => match serde_json::from_str(&v) {
             Ok(res) => {
@@ -173,7 +173,7 @@ pub async fn fetch_all(
     search: &[String],
     only_new: bool,
     output_path: &str,
-) -> Result<i32> {
+) -> Result<usize> {
     let stats = match fetch_stats(cameras, minsol, maxsol).await {
         Ok(s) => Ok(s),
         Err(e) => Err(anyhow!("unable to fetch statistics:\n{}", e)),
@@ -218,7 +218,7 @@ pub async fn remote_fetch(
     search: &[String],
     only_new: bool,
     output_path: &str,
-) -> Result<i32> {
+) -> Result<usize> {
     match page {
         Some(p) => {
             fetch_page(
