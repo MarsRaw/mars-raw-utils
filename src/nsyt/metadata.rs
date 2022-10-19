@@ -9,17 +9,20 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Extended {
+    //FIXME make datetime type
     pub localtime: String,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Image {
+    //FIXME: make uuid type
     pub id: u32,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub camera_vector: Option<Vec<f64>>,
 
     pub site: Option<u32>,
+    //FIXME make uuid type
     pub imageid: String,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
@@ -32,7 +35,9 @@ pub struct Image {
     pub camera_model_component_list: CameraModel,
 
     pub instrument: String,
+    //FIXME make url type
     pub url: String,
+    // FIXME use different type?
     pub spacecraft_clock: f64,
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
@@ -47,26 +52,32 @@ pub struct Image {
 
     #[serde(with = "crate::jsonfetch::tuple_format")]
     pub xyz: Option<Vec<f64>>,
-
+    // FIXME datetime type
     pub created_at: String,
+    // FIXME datetime type
     pub updated_at: String,
     pub mission: String,
     pub extended: Extended,
+    // FIXME datetime type
     pub date_taken: String,
+    // FIXME datetime type
     pub date_received: String,
     pub instrument_sort: u32,
     pub sample_type_sort: u32,
     pub is_thumbnail: bool,
     pub title: String,
     pub description: String,
+    // FIXME make url type
     pub link: String,
     pub image_credit: String,
+    //FIXME make url type
     pub https_url: String,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct NsytApiResults {
     pub items: Vec<Image>,
+    // FIXME update name
     pub more: bool,
     pub total: u32,
     pub page: u32,
@@ -87,11 +98,11 @@ impl ImageMetadata for Image {
     }
 
     fn get_dimension(&self) -> Option<Vec<f64>> {
-        None
+        unimplemented!()
     }
 
     fn get_sample_type(&self) -> String {
-        "".to_string()
+        String::new()
     }
 
     fn get_credit(&self) -> String {
@@ -131,7 +142,7 @@ impl ImageMetadata for Image {
     }
 
     fn get_filter_name(&self) -> Option<String> {
-        Some(String::from(""))
+        Some(String::new())
     }
 
     fn get_camera_vector(&self) -> Option<Vec<f64>> {
@@ -159,11 +170,11 @@ impl ImageMetadata for Image {
     }
 
     fn get_mast_az(&self) -> Option<f64> {
-        None
+        unimplemented!()
     }
 
     fn get_mast_el(&self) -> Option<f64> {
-        None
+        unimplemented!()
     }
 
     fn get_sclk(&self) -> Option<f64> {

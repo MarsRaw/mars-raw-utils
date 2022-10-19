@@ -35,18 +35,6 @@ fn print_image(output_path: &str, image: &Image) {
     );
 }
 
-fn search_empty_or_has_match(image_id: &str, search: &[String]) -> bool {
-    if search.is_empty() {
-        return true;
-    }
-
-    for i in search.iter() {
-        if image_id.contains(i) {
-            return true;
-        }
-    }
-    false
-}
 async fn process_results(
     results: &NsytApiResults,
     thumbnails: bool,
@@ -56,19 +44,16 @@ async fn process_results(
     output_path: &str,
 ) -> i32 {
     let mut valid_img_count = 0;
-    for image in results.items.iter() {
-        // If this image is a thumbnail and we're ignoring those, then ignore it.
-        if image.is_thumbnail && !thumbnails {
-            continue;
-        }
-
-        // If we're searching for a substring and this image doesn't match, skip it.
-        if !search_empty_or_has_match(&image.imageid, search) {
-            continue;
-        }
-        valid_img_count += 1; //ITM is an anti-pattern. TODO: enumerate(), and have the 'e' fall out.
+    let images = results
+        .items
+        .iter()
+        .filter(|image| {
+            image.is_thumbnail && !thumbnails && search.iter().any(|i| image.imageid.contains(i))
+        });
+    // let iter_count = images.clone().into_iter().count();
+    for (idx, image) in images.enumerate() {
+        valid_img_count = idx as i32; //ITM is an anti-pattern. TODO: enumerate(), and have the 'e' fall out.
         print_image(output_path, image);
-
         if !list_only {
             _ = fetch_image(&image.url, only_new, Some(output_path)).await;
             let image_base_name = path::basename(image.url.as_str());
@@ -79,8 +64,7 @@ async fn process_results(
                 Some(output_path),
             );
         }
-    }
-
+    };
     valid_img_count
 }
 
@@ -269,9 +253,9 @@ pub async fn remote_fetch(
 }
 
 pub async fn fetch_latest() -> Result<latest::LatestData> {
-    let uri = constants::url::NSYT_LATEST_WEBSERVICE_URL;
+    let url = constants::url::NSYT_LATEST_WEBSERVICE_URL;
 
-    let req = jsonfetch::JsonFetcher::new(uri)?;
+    let req = jsonfetch::JsonFetcher::new(url)?;
     let res: latest::Latest = serde_json::from_str(&req.fetch_str().await?)?;
     if !res.success {
         return Err(anyhow!("unable to fetch latest."));
