@@ -58,14 +58,12 @@ async fn process_results(
     output_path: &str,
 ) -> usize {
     let mut valid_img_count = 0;
-    let images = results
-        .images
-        .iter()
-        .filter(|image| {
-            (image.sample_type != "Thumbnail" && !thumbnails || thumbnails) && (search.is_empty() || search.iter().any(|i| image.imageid.contains(i)))
-        });
+    let images = results.images.iter().filter(|image| {
+        (image.sample_type != "Thumbnail" && !thumbnails || thumbnails)
+            && (search.is_empty() || search.iter().any(|i| image.imageid.contains(i)))
+    });
     for (idx, image) in images.enumerate() {
-        valid_img_count = idx; 
+        valid_img_count = idx;
         print_image(output_path, image);
         if !list_only {
             _ = fetch_image(&image.image_files.full_res, only_new, Some(output_path)).await;
@@ -77,7 +75,7 @@ async fn process_results(
                 Some(output_path),
             );
         }
-    };
+    }
     valid_img_count
 }
 
@@ -114,6 +112,7 @@ pub fn make_instrument_map() -> InstrumentMap {
             ("CACHECAM", vec!["CACHECAM"]),
             ("PIXL", vec!["PIXL_MCC"]),
             ("SKYCAM", vec!["SKYCAM"]),
+            ("SHERLOC", vec!["SHERLOC_ACI"]),
         ]
         .iter()
         .cloned()
@@ -198,9 +197,7 @@ pub async fn fetch_page(
     {
         Ok(v) => {
             let res: M20ApiResults = serde_json::from_str(v.as_str())?;
-            Ok(
-                process_results(&res, thumbnails, list_only, search, only_new, output_path).await
-            )
+            Ok(process_results(&res, thumbnails, list_only, search, only_new, output_path).await)
         }
         Err(e) => Err(e),
     }

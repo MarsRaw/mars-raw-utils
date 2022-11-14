@@ -8,6 +8,7 @@ pub mod missiontime;
 pub mod pixlmcc;
 pub mod remote;
 pub mod scam;
+pub mod sherlocaci;
 pub mod skycam;
 pub mod watson;
 pub mod zcam;

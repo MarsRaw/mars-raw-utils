@@ -120,7 +120,31 @@ impl MarsImage {
     pub fn flatfield(&mut self) {
         let mut flat = flatfield::load_flat(self.instrument).unwrap();
 
-        // Crop the flatfield image if it's larger than the input image.
+        let subframe_opt = if let Some(md) = &self.metadata {
+            md.subframe_rect.clone()
+        } else {
+            None
+        };
+
+        if let Some(sf) = subframe_opt {
+            vprintln!(
+                "Cropping flat with x/y/width/height: {},{} {}x{}",
+                sf[0],
+                sf[1],
+                sf[2],
+                sf[3]
+            );
+
+            flat.image.crop(
+                sf[0] as usize - 1,
+                sf[1] as usize - 1,
+                sf[2] as usize,
+                sf[3] as usize,
+            );
+        }
+
+        // If the flat is still too big we'll
+        // crop the flatfield image if it's larger than the input image.
         // Sizes need to match
         if flat.image.width > self.image.width {
             let x = (flat.image.width - self.image.width) / 2;

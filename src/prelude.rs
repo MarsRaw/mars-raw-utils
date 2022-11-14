@@ -64,11 +64,14 @@ lazy_static! {
             calibrator: Box::new(m20::watson::M20Watson {})
         },
         CalContainer {
+            calibrator: Box::new(m20::sherlocaci::M20SherlocAci {})
+        },
+        CalContainer {
             calibrator: Box::new(nsyt::icc::NsytIcc {})
         },
         CalContainer {
             calibrator: Box::new(nsyt::idc::NsytIdc {})
-        }
+        },
     ];
 }
 

@@ -64,6 +64,7 @@ pub struct M20CalData {
     pub heli_rte: InstrumentProperties,
     pub pixl_mcc: InstrumentProperties,
     pub skycam: InstrumentProperties,
+    pub sherloc_aci: InstrumentProperties,
 }
 
 #[allow(non_snake_case)]
@@ -292,6 +293,10 @@ pub fn get_calibration_base_file_for_instrument(
         )),
         enums::Instrument::M20SkyCam => Ok(get_calibration_file_for_type(
             &config.m20.skycam,
+            cal_file_type,
+        )),
+        enums::Instrument::M20SherlocAci => Ok(get_calibration_file_for_type(
+            &config.m20.sherloc_aci,
             cal_file_type,
         )),
         enums::Instrument::NsytICC => Ok(get_calibration_file_for_type(
