@@ -1,4 +1,4 @@
-use crate::{calibfile, constants, vprintln};
+use crate::{calibfile, constants, veprintln, vprintln};
 
 use sciimg::error;
 
@@ -9,6 +9,8 @@ use std::io::Read;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CalProfile {
+    pub calfiletype: String,
+
     #[serde(default = "default_false")]
     pub apply_ilt: bool,
 
@@ -35,11 +37,18 @@ pub struct CalProfile {
 
     #[serde(default = "default_filename_suffix")]
     pub filename_suffix: String,
+
+    pub mission: Option<String>,
+
+    pub instrument: Option<String>,
+
+    pub description: Option<String>,
 }
 
 impl CalProfile {
     pub fn default() -> CalProfile {
         CalProfile {
+            calfiletype: "profile".to_string(),
             apply_ilt: default_false(),
             red_scalar: default_color_scalar(),
             green_scalar: default_color_scalar(),
@@ -49,6 +58,9 @@ impl CalProfile {
             hot_pixel_detection_threshold: default_hpc_threshold(),
             hot_pixel_window_size: default_hpc_window_size(),
             filename_suffix: default_filename_suffix(),
+            mission: None,
+            instrument: None,
+            description: None,
         }
     }
 }
@@ -96,7 +108,7 @@ pub fn load_calibration_profile(file_path: &String) -> error::Result<CalProfile>
                     Ok(calprof)
                 }
                 Err(why) => {
-                    eprintln!("Error parsing calibration profile: {:?}", why);
+                    veprintln!("Error parsing calibration profile: {:?}", why);
                     Err("Error parsing calibration profile file")
                 }
             }

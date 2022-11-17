@@ -49,6 +49,7 @@ enum Mru {
     Levels(levels::Levels),
     Info(info::Info),
     Xeye(xeye::CrossEye),
+    Profile(profile::Profile),
 }
 
 #[tokio::main]
@@ -131,6 +132,9 @@ async fn main() {
             args.run().await;
         }
         Mru::Xeye(args) => {
+            args.run().await;
+        }
+        Mru::Profile(args) => {
             args.run().await;
         }
     };

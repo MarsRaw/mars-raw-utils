@@ -81,6 +81,7 @@ use async_trait::async_trait;
 impl RunnableSubcommand for Calibrate {
     async fn run(&self) {
         let cal_context = CalProfile {
+            calfiletype: "profile".to_string(),
             apply_ilt: !self.raw,
             red_scalar: self.red_weight.unwrap_or(1.0),
             green_scalar: self.green_weight.unwrap_or(1.0),
@@ -90,6 +91,9 @@ impl RunnableSubcommand for Calibrate {
             hot_pixel_detection_threshold: self.hpc_threshold.unwrap_or(0.0),
             hot_pixel_window_size: self.hpc_window.unwrap_or(3),
             filename_suffix: String::from(constants::OUTPUT_FILENAME_APPEND),
+            mission: None,
+            instrument: None,
+            description: None,
         };
 
         let profiles: Vec<String> = match &self.profile {

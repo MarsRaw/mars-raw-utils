@@ -19,4 +19,5 @@ pub mod info;
 pub mod inpaint;
 pub mod levels;
 pub mod meanstack;
+pub mod profile;
 pub mod xeye;

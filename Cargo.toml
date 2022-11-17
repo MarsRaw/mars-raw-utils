@@ -66,6 +66,8 @@ bytes = "1.2.1"
 thiserror = "1.0.37"
 async-trait = "0.1.57"
 tokio = {version="1.21.2", features= ["full"]}
+glob = "0.3.0"
+
 
 [package.metadata.rpm]
 package = "mars_raw_utils"
