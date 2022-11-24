@@ -67,6 +67,9 @@ lazy_static! {
             calibrator: Box::new(m20::sherlocaci::M20SherlocAci {})
         },
         CalContainer {
+            calibrator: Box::new(m20::cachecam::M20CacheCam {})
+        },
+        CalContainer {
             calibrator: Box::new(nsyt::icc::NsytIcc {})
         },
         CalContainer {

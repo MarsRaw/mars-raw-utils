@@ -1,4 +1,5 @@
 pub mod assemble;
+pub mod cachecam;
 pub mod ecam;
 pub mod helinav;
 pub mod helirte;

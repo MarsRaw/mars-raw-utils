@@ -46,6 +46,7 @@ pub enum Instrument {
     M20HeliNav,
     M20HeliRte,
     M20SherlocAci,
+    M20CacheCam,
     NsytICC,
     NsytIDC,
     #[default]
@@ -72,7 +73,7 @@ impl FromStr for Instrument {
             "SKYCAM" => Instrument::M20SkyCam,
             "SUPERCAM_RMI" => Instrument::M20SuperCam,
             "SHERLOC_ACI" => Instrument::M20SherlocAci,
-
+            "CACHECAM" => Instrument::M20CacheCam,
             "MAST_LEFT" => Instrument::MslMastcamLeft,
             "MAST_RIGHT" => Instrument::MslMastcamRight,
             "MAHLI" => Instrument::MslMAHLI,
