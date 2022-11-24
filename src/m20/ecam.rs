@@ -1,6 +1,6 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, enums, enums::Instrument, image::MarsImage, path, util,
-    vprintln,
+    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, image::MarsImage,
+    path, util, vprintln,
 };
 
 use sciimg::error;
@@ -67,13 +67,13 @@ impl Calibration for M20EECam {
 
         let mut raw = MarsImage::open(String::from(input_file), instrument);
 
-        let data_max = 255.0;
-
-        // if ! no_ilt {
-        //     vprintln!("Decompanding...");
-        //     raw.decompand().unwrap();
-        //     data_max = decompanding::get_max_for_instrument(instrument) as f32;
-        // }
+        let data_max = if cal_context.apply_ilt {
+            vprintln!("Decompanding...");
+            raw.decompand(&decompanding::get_ilt_for_instrument(instrument));
+            decompanding::get_max_for_instrument(instrument) as f32
+        } else {
+            255.0
+        };
 
         // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
         if raw.image.is_grayscale() {
@@ -86,12 +86,14 @@ impl Calibration for M20EECam {
         //vprintln!("Inpainting...");
         //raw.apply_inpaint_fix().unwrap();
 
-        vprintln!("Applying color weights...");
-        raw.apply_weight(
-            cal_context.red_scalar,
-            cal_context.green_scalar,
-            cal_context.blue_scalar,
-        );
+        if !raw.image.is_grayscale() {
+            vprintln!("Applying color weights...");
+            raw.apply_weight(
+                cal_context.red_scalar,
+                cal_context.green_scalar,
+                cal_context.blue_scalar,
+            );
+        }
 
         vprintln!("Normalizing...");
         raw.image.normalize_to_16bit_with_max(data_max);

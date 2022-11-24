@@ -59,6 +59,7 @@ pub fn get_ilt_for_instrument(instrument: enums::Instrument) -> [u32; 256] {
         enums::Instrument::NsytICC => NSYT_ILT,
         enums::Instrument::NsytIDC => NSYT_ILT,
         enums::Instrument::M20CacheCam => LUT2,
+        enums::Instrument::M20NavcamLeft | enums::Instrument::M20NavcamRight => LUT2,
         _ => ILT,
     }
 }
