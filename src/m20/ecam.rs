@@ -81,6 +81,9 @@ impl Calibration for M20EECam {
             raw.debayer();
         }
 
+        vprintln!("Flatfielding...");
+        raw.flatfield();
+
         // We're going to need a reliable way of figuring out what part of the sensor
         // is represented before we can flatfield or apply an inpainting mask
         //vprintln!("Inpainting...");

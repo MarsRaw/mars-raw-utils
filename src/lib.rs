@@ -19,6 +19,7 @@ pub mod calprofile;
 pub mod composite;
 pub mod constants;
 pub mod decompanding;
+pub mod decorr;
 pub mod diffgif;
 pub mod drawable;
 pub mod enums;

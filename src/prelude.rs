@@ -2,6 +2,7 @@ pub use crate::anaglyph;
 pub use crate::calibrate::*;
 pub use crate::calprofile::CalProfile;
 pub use crate::constants;
+pub use crate::decorr;
 pub use crate::drawable::*;
 pub use crate::enums::*;
 pub use crate::image::MarsImage;

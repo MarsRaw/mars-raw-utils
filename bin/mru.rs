@@ -50,6 +50,7 @@ enum Mru {
     Info(info::Info),
     Xeye(xeye::CrossEye),
     Profile(profile::Profile),
+    Decorr(decorr::DecorrelationStretch),
 }
 
 #[tokio::main]
@@ -135,6 +136,9 @@ async fn main() {
             args.run().await;
         }
         Mru::Profile(args) => {
+            args.run().await;
+        }
+        Mru::Decorr(args) => {
             args.run().await;
         }
     };

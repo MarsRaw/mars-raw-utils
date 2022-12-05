@@ -1,7 +1,7 @@
-use mars_raw_utils::prelude::*;
-use sciimg::prelude::*;
-
 use crate::subs::runnable::RunnableSubcommand;
+use mars_raw_utils::prelude::*;
+use rayon::prelude::*;
+use sciimg::prelude::*;
 
 use std::process;
 
@@ -36,7 +36,7 @@ impl RunnableSubcommand for HpcFilter {
             process::exit(1);
         }
 
-        for in_file in self.input_files.iter() {
+        self.input_files.par_iter().for_each(|in_file| {
             if in_file.exists() {
                 vprintln!("Processing File: {:?}", in_file);
                 let mut raw =
@@ -61,6 +61,6 @@ impl RunnableSubcommand for HpcFilter {
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }
-        }
+        });
     }
 }
