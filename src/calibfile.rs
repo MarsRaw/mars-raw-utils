@@ -66,6 +66,7 @@ pub struct M20CalData {
     pub skycam: InstrumentProperties,
     pub sherloc_aci: InstrumentProperties,
     pub cachecam: InstrumentProperties,
+    pub edl_rdcam: InstrumentProperties,
 }
 
 #[allow(non_snake_case)]
@@ -302,6 +303,10 @@ pub fn get_calibration_base_file_for_instrument(
         )),
         enums::Instrument::M20CacheCam => Ok(get_calibration_file_for_type(
             &config.m20.cachecam,
+            cal_file_type,
+        )),
+        enums::Instrument::M20EdlRdcam => Ok(get_calibration_file_for_type(
+            &config.m20.edl_rdcam,
             cal_file_type,
         )),
         enums::Instrument::NsytICC => Ok(get_calibration_file_for_type(

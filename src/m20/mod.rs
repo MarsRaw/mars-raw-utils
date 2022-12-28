@@ -1,6 +1,7 @@
 pub mod assemble;
 pub mod cachecam;
 pub mod ecam;
+pub mod edlrdcam;
 pub mod helinav;
 pub mod helirte;
 pub mod latest;
