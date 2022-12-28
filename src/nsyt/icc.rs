@@ -26,15 +26,14 @@ impl Calibration for NsytIcc {
 
         let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::NsytICC);
 
-        let mut data_max = 255.0;
-
-        if cal_context.apply_ilt {
+        let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
-            raw.decompand(&decompanding::get_ilt_for_instrument(
-                enums::Instrument::NsytICC,
-            ));
-            data_max = decompanding::get_max_for_instrument(enums::Instrument::NsytICC) as f32;
-        }
+            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::NsytICC).unwrap();
+            raw.decompand(&lut);
+            lut.max() as f32
+        } else {
+            255.0
+        };
 
         vprintln!("Flatfielding...");
         raw.flatfield();

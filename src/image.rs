@@ -1,4 +1,7 @@
-use crate::{drawable::Drawable, enums, flatfield, inpaintmask, metadata::*, path, util, vprintln};
+use crate::{
+    decompanding::LookUpTable, drawable::Drawable, enums, flatfield, inpaintmask, metadata::*,
+    path, util, vprintln,
+};
 
 use sciimg::{enums::ImageMode, imagebuffer::ImageBuffer, inpaint, rgbimage::RgbImage};
 
@@ -85,16 +88,16 @@ impl MarsImage {
         }
     }
 
-    pub fn decompand(&mut self, ilt: &[u32; 256]) {
-        self.image.decompand(ilt);
+    pub fn decompand(&mut self, ilt: &LookUpTable) {
+        self.image.decompand(&ilt.to_array());
 
         if let Some(ref mut md) = self.metadata {
             md.decompand = true;
         }
     }
 
-    pub fn compand(&mut self, ilt: &[u32; 256]) {
-        self.image.compand(ilt);
+    pub fn compand(&mut self, ilt: &LookUpTable) {
+        self.image.compand(&ilt.to_array());
 
         if let Some(ref mut md) = self.metadata {
             md.decompand = false;
@@ -118,7 +121,12 @@ impl MarsImage {
     }
 
     pub fn flatfield(&mut self) {
-        let mut flat = flatfield::load_flat(self.instrument).unwrap();
+        let mut flat = if let Ok(flat) = flatfield::load_flat(self.instrument) {
+            flat
+        } else {
+            vprintln!("No flat field found for instrument {:?}", self.instrument);
+            return;
+        };
 
         let subframe_opt = if let Some(md) = &self.metadata {
             md.subframe_rect.clone()

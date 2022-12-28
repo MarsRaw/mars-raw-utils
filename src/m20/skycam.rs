@@ -1,6 +1,6 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, enums, enums::Instrument, image::MarsImage, path, util,
-    vprintln,
+    calibrate::*, calprofile::CalProfile, enums, enums::Instrument, flatfield, image::MarsImage,
+    path, util, vprintln,
 };
 
 use sciimg::error;
@@ -28,7 +28,8 @@ impl Calibration for M20SkyCam {
         let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20SkyCam);
 
         vprintln!("Flatfielding...");
-        raw.flatfield();
+        let flat = flatfield::load_flat(enums::Instrument::M20SkyCam).unwrap();
+        raw.flatfield_with_flat(&flat);
 
         if cal_context.hot_pixel_detection_threshold > 0.0 {
             vprintln!(

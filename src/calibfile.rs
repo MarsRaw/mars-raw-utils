@@ -1,6 +1,6 @@
 use std::env;
 
-use crate::{constants, enums, path};
+use crate::{constants, enums, path, vprintln};
 
 use sciimg::error;
 
@@ -11,6 +11,19 @@ use std::io::Read;
 
 //use serde_derive::Deserialize;
 use serde::Deserialize;
+
+fn default_blank() -> String {
+    "".to_string()
+}
+
+fn default_instrument_properties() -> InstrumentProperties {
+    InstrumentProperties {
+        flat: default_blank(),
+        inpaint_mask: default_blank(),
+        mask: default_blank(),
+        lut: default_blank(),
+    }
+}
 
 #[derive(Deserialize)]
 #[allow(dead_code)]
@@ -24,25 +37,54 @@ pub struct Config {
 #[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct InstrumentProperties {
+    #[serde(default = "default_blank")]
     pub flat: String,
+
+    #[serde(default = "default_blank")]
     pub inpaint_mask: String,
+
+    #[serde(default = "default_blank")]
     pub mask: String,
+
+    #[serde(default = "default_blank")]
+    pub lut: String,
 }
 
 #[allow(non_snake_case)]
 #[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct MslCalData {
+    #[serde(default = "default_instrument_properties")]
     pub mahli: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub nav_right: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub nav_left: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub fhaz_right: InstrumentProperties, // We're gonna ignore ECAMs on RCE-A for now
+
+    #[serde(default = "default_instrument_properties")]
     pub fhaz_left: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub rhaz_right: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub rhaz_left: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub mastcam_right: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub mastcam_left: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub chemcam: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub mardi: InstrumentProperties,
 }
 
@@ -50,22 +92,55 @@ pub struct MslCalData {
 #[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct M20CalData {
+    #[serde(default = "default_instrument_properties")]
     pub mastcamz_right: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub mastcamz_left: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub watson: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub supercam_rmi: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub nav_left: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub nav_right: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub fhaz_right: InstrumentProperties, // We're gonna use ECAMs on RCE-A for now
+
+    #[serde(default = "default_instrument_properties")]
     pub fhaz_left: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub rhaz_right: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub rhaz_left: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub heli_nav: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub heli_rte: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub pixl_mcc: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub skycam: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub sherloc_aci: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub cachecam: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub edl_rdcam: InstrumentProperties,
 }
 
@@ -73,7 +148,10 @@ pub struct M20CalData {
 #[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct NsytCalData {
+    #[serde(default = "default_instrument_properties")]
     pub idc: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
     pub icc: InstrumentProperties,
 }
 
@@ -82,6 +160,8 @@ pub fn load_caldata_mapping_file() -> error::Result<Config> {
 
     match cal_file_path {
         Ok(caldata_toml) => {
+            vprintln!("Loading calibration spec from {}", caldata_toml);
+
             let mut file = match File::open(&caldata_toml) {
                 Err(why) => panic!("couldn't open {}", why),
                 Ok(file) => file,
@@ -187,6 +267,7 @@ pub fn get_calibration_file_for_type(
         enums::CalFileType::FlatField => inst_props.flat.clone(),
         enums::CalFileType::InpaintMask => inst_props.inpaint_mask.clone(),
         enums::CalFileType::Mask => inst_props.mask.clone(),
+        enums::CalFileType::Lut => inst_props.lut.clone(),
     }
 }
 

@@ -83,15 +83,14 @@ impl Calibration for M20MastcamZ {
 
         let mut raw = MarsImage::open(String::from(input_file), instrument);
 
-        let data_max;
-
-        if cal_context.apply_ilt {
+        let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
-            raw.decompand(&decompanding::get_ilt_for_instrument(instrument));
-            data_max = decompanding::get_max_for_instrument(instrument) as f32;
+            let lut = decompanding::get_ilt_for_instrument(instrument).unwrap();
+            raw.decompand(&lut);
+            lut.max() as f32
         } else {
-            data_max = 255.0;
-        }
+            255.0
+        };
 
         // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
         // Update: Not always. Added a check to determine whether or not is is grayscale.

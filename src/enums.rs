@@ -100,4 +100,5 @@ pub enum CalFileType {
     FlatField,
     InpaintMask,
     Mask,
+    Lut,
 }

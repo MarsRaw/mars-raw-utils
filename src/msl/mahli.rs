@@ -44,15 +44,14 @@ impl Calibration for MslMahli {
         vprintln!("Inpainting...");
         raw.apply_inpaint_fix();
 
-        let mut data_max = 255.0;
-
-        if cal_context.apply_ilt {
+        let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
-            raw.decompand(&decompanding::get_ilt_for_instrument(
-                enums::Instrument::MslMAHLI,
-            ));
-            data_max = decompanding::get_max_for_instrument(enums::Instrument::MslMAHLI) as f32;
-        }
+            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::MslMAHLI).unwrap();
+            raw.decompand(&lut);
+            lut.max() as f32
+        } else {
+            255.0
+        };
 
         vprintln!("Flatfielding...");
         let mut flat = flatfield::load_flat(enums::Instrument::MslMAHLI).unwrap();

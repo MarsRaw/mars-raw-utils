@@ -69,8 +69,9 @@ impl Calibration for M20EECam {
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
-            raw.decompand(&decompanding::get_ilt_for_instrument(instrument));
-            decompanding::get_max_for_instrument(instrument) as f32
+            let lut = decompanding::get_ilt_for_instrument(instrument).unwrap();
+            raw.decompand(&lut);
+            lut.max() as f32
         } else {
             255.0
         };

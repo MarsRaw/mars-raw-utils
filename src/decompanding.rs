@@ -1,4 +1,13 @@
+use crate::calibfile;
 use crate::enums;
+use crate::path;
+use crate::veprintln;
+use crate::vprintln;
+use regex::Regex;
+use sciimg::error;
+use std::convert::TryInto;
+use std::fs::File;
+use std::io::{self, BufRead};
 
 pub const ILT: [u32; 256] = [
     0, 2, 3, 3, 4, 5, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 18, 19, 20, 22, 24, 25, 27, 29, 31,
@@ -54,7 +63,51 @@ pub const LUT2: [u32; 256] = [
     3681, 3708, 3734, 3761, 3788, 3815, 3842, 3870, 3897, 3924, 3952, 3980, 4007, 4035, 4095,
 ];
 
-pub fn get_ilt_for_instrument(instrument: enums::Instrument) -> [u32; 256] {
+lazy_static! {
+    static ref LUT_SPEC_PAIR: Regex = Regex::new(r"([0-9]+) ([0-9]+)").unwrap();
+}
+
+#[derive(Debug, Clone)]
+pub struct LookUpTable {
+    pub lut: Vec<u32>,
+}
+
+impl LookUpTable {
+    pub fn new(lut: &[u32; 256]) -> LookUpTable {
+        LookUpTable { lut: lut.to_vec() }
+    }
+    pub fn new_from_vec(lut: &Vec<u32>) -> error::Result<LookUpTable> {
+        if lut.len() != 256 {
+            Err("Invalid LUT specification length")
+        } else {
+            Ok(LookUpTable { lut: lut.clone() })
+        }
+    }
+    pub fn max(&self) -> u32 {
+        self.lut[255]
+    }
+
+    pub fn to_array(&self) -> [u32; 256] {
+        self.lut
+            .clone()
+            .try_into()
+            .unwrap_or_else(|_: Vec<u32>| panic!("LUT array is of invalid length"))
+    }
+}
+
+pub fn get_ilt_for_instrument(instrument: enums::Instrument) -> error::Result<LookUpTable> {
+    let lut_file_path =
+        calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::Lut)
+            .unwrap_or("".to_string());
+
+    if lut_file_path.len() == 0 {
+        Ok(LookUpTable::new(&ILT))
+    } else {
+        load_ilut_spec_file(&lut_file_path)
+    }
+
+    // load_ilut_spec_file(&"mars-raw-utils-data/caldata/msl/ilut/DECOMPAND0.TXT".to_string())
+    /*
     match instrument {
         enums::Instrument::NsytICC => NSYT_ILT,
         enums::Instrument::NsytIDC => NSYT_ILT,
@@ -62,9 +115,33 @@ pub fn get_ilt_for_instrument(instrument: enums::Instrument) -> [u32; 256] {
         enums::Instrument::M20NavcamLeft | enums::Instrument::M20NavcamRight => LUT2,
         _ => ILT,
     }
+    */
 }
 
-pub fn get_max_for_instrument(instrument: enums::Instrument) -> u32 {
-    let ilt = get_ilt_for_instrument(instrument);
-    ilt[255]
+pub fn load_ilut_spec_file(file_path: &String) -> error::Result<LookUpTable> {
+    vprintln!("Loading LUT file: {}", file_path);
+
+    if !path::file_exists(file_path) {
+        veprintln!("ERROR: LUT file not found: {}", file_path);
+        return Err("Lookup table file not found");
+    }
+
+    match File::open(file_path) {
+        Ok(file) => {
+            let mut lut_vec: Vec<u32> = vec![];
+            let lines = io::BufReader::new(file).lines();
+            for line_res in lines {
+                if let Ok(line) = line_res {
+                    // This regex capture will validate if the line is in the format "<number><space><number>"
+                    // which ignores any embedded VICAR label information
+                    if let Some(caps) = LUT_SPEC_PAIR.captures(&line) {
+                        let s_lut_value = caps.get(2).unwrap().as_str().parse::<u32>().unwrap_or(0);
+                        lut_vec.push(s_lut_value);
+                    }
+                }
+            }
+            LookUpTable::new_from_vec(&lut_vec)
+        }
+        Err(_) => Err("Unable to open look-up table file"),
+    }
 }

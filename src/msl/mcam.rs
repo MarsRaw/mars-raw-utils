@@ -39,13 +39,14 @@ impl Calibration for MslMastcam {
 
         let mut raw = MarsImage::open(String::from(input_file), instrument);
 
-        let mut data_max = 255.0;
-
-        if cal_context.apply_ilt {
+        let lut = decompanding::get_ilt_for_instrument(instrument).unwrap();
+        let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
-            raw.decompand(&decompanding::get_ilt_for_instrument(instrument));
-            data_max = decompanding::get_max_for_instrument(instrument) as f32;
-        }
+            raw.decompand(&lut);
+            lut.max() as f32
+        } else {
+            255.0
+        };
 
         if
         /*util::filename_char_at_pos(&input_file, 22) == 'E' &&*/
@@ -83,11 +84,9 @@ impl Calibration for MslMastcam {
             }
 
             if raw.image.get_mode() == ImageMode::U8BIT {
-                flat.image.normalize_to_12bit_with_max(
-                    decompanding::get_max_for_instrument(instrument) as f32,
-                    255.0,
-                );
-                flat.compand(&decompanding::get_ilt_for_instrument(instrument));
+                flat.image
+                    .normalize_to_12bit_with_max(lut.max() as f32, 255.0);
+                flat.compand(&lut);
             }
         }
 
@@ -108,11 +107,9 @@ impl Calibration for MslMastcam {
             }
 
             if raw.image.get_mode() == ImageMode::U8BIT {
-                flat.image.normalize_to_12bit_with_max(
-                    decompanding::get_max_for_instrument(instrument) as f32,
-                    255.0,
-                );
-                flat.compand(&decompanding::get_ilt_for_instrument(instrument));
+                flat.image
+                    .normalize_to_12bit_with_max(lut.max() as f32, 255.0);
+                flat.compand(&lut);
             }
         }
 

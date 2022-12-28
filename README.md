@@ -14,15 +14,15 @@ Implemented calibration steps include (varying per instrument):
 | MSL        | Front Haz   |           |         | &#9745;      | &#9745;| &#9745;|
 | MSL        | ChemCam RMI |           |         |              | &#9745;|        |
 | Mars2020   | Mastcam-Z   | &#9745;   | &#9745; | &#9745;      | &#9745;|        |
-| Mars2020   | NavCam      |           | &#9745; |              |        |        |
-| Mars2020   | Rear Haz    |           | &#9745; |              |        |        |
-| Mars2020   | Front Haz   |           | &#9745; |              |        |        |
+| Mars2020   | NavCam      | &#9745;   | &#9745; |              |        |        |
+| Mars2020   | Rear Haz    | &#9745;   | &#9745; |              |        |        |
+| Mars2020   | Front Haz   | &#9745;   | &#9745; |              |        |        |
 | Mars2020   | Watson      | &#9745;   | &#9745; | &#9745;      |        |        |
 | Mars2020   | SuperCam    |           | &#9745; |              | &#9745;|        |
 | Mars2020   | PIXL MCC    |           |         |              | &#9745;|        |
 | Mars2020   | SkyCam      |           |         |              | &#9745;| &#9745;|
 | Mars2020   | SHERLOC ACI |           |         |              | &#9745;|        |
-| Mars2020   | RDCAM       |           | &#9745; |              |        |        |
+| Mars2020   | RDCAM       |           | &#9745; |              | &#9745;|        |
 | Ingenuity  | Nav         |           |         |              | &#9745;|        |
 | Ingenuity  | Color       |           |         |              | &#9745;|        |
 | InSight    | IDC         | &#9745;   |         |              | &#9745;|        |

@@ -29,10 +29,9 @@ impl Calibration for M20CacheCam {
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
-            raw.decompand(&decompanding::get_ilt_for_instrument(
-                enums::Instrument::M20CacheCam,
-            ));
-            decompanding::get_max_for_instrument(enums::Instrument::M20CacheCam) as f32
+            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::M20CacheCam).unwrap();
+            raw.decompand(&lut);
+            lut.max() as f32
         } else {
             255.0
         };
