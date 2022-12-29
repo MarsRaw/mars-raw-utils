@@ -1,6 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
 use mars_raw_utils::prelude::*;
 use rayon::prelude::*;
+use sciimg::lowpass;
 use sciimg::prelude::*;
 use sciimg::MinMax;
 use std::path::PathBuf;
@@ -69,6 +70,20 @@ impl NormalizeRgbImageSingleChannels for RgbImage {
     }
 }
 
+fn color_range_determine_prep(image: &RgbImage) -> RgbImage {
+    let mut cloned = image.clone();
+
+    // Here we need to correct for energetic particle hits, hot pixels, and outlier values.
+    // To accomplish this, we perform a small-radius hot pixel correction and then a
+    // low-pass blur. This is only for range determination, and not for the output image.
+    // Testing will indicate whether this is more or less than we actually need to do to
+    // accomplish this goal.
+    cloned.hot_pixel_correction(4, 2.0);
+    cloned = lowpass::lowpass(&cloned, 5);
+
+    cloned
+}
+
 fn cross_file_decorrelation(input_files: &Vec<PathBuf>) {
     let mut ranges = vec![
         MinMax {
@@ -91,8 +106,10 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>) {
             let image =
                 RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
+            let prepped = color_range_determine_prep(&image);
+
             for b in 0..3 {
-                let mm = image.get_band(b).get_min_max();
+                let mm = prepped.get_band(b).get_min_max();
                 ranges[b].min = min!(mm.min, ranges[b].min);
                 ranges[b].max = max!(mm.max, ranges[b].max);
             }
@@ -134,7 +151,11 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>) {
             let mut image =
                 RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
-            image.normalize_to(0.0, 65535.0);
+            let prepped = color_range_determine_prep(&image);
+            for b in 0..3 {
+                let mm = prepped.get_band(b).get_min_max();
+                image.normalize_band_to_with_min_max(b, 0.0, 65535.0, mm.min, mm.max);
+            }
 
             image.set_mode(ImageMode::U16BIT);
 
