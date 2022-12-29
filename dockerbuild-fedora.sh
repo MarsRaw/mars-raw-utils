@@ -1,15 +1,13 @@
 #!/bin/bash
 
 # Dockerized build method for Fedora rpms
-
-: ${PROJECT:=mars_raw_utils}
-: ${VENDOR:=kevinmgill}
-
+MRU_VERSION=`cargo pkgid | cut -d @ -f 2`
+. docker/config.sh
 
 # Build RPMS for Fedora
 DOCKER_IMAGE_NAME=${VENDOR}/build_rpms_${PROJECT}
 
-docker build -t ${DOCKER_IMAGE_NAME} -f Dockerfile.fedora . 
+docker build -t ${DOCKER_IMAGE_NAME} --build-arg MRU_VERSION=$MRU_VERSION -f docker/Dockerfile.fedora . 
 
 CONTAINER_ID=$(docker run -d ${DOCKER_IMAGE_NAME})
 

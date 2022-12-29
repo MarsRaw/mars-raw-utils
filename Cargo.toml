@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.5.2"
+version = "0.6.0"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2021"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
@@ -12,7 +12,7 @@ exclude = ["mars-raw-utils-data"]
 
 [package.metadata.deb]
 maintainer = "Kevin M. Gill <apoapsys@gmail.com>"
-copyright = "2022, Kevin M. Gill <apoapsys@gmail.com>"
+copyright = "2023, Kevin M. Gill <apoapsys@gmail.com>"
 license-file = ["LICENSE", "2"]
 extended-description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images" 
 depends = "$auto"
@@ -24,6 +24,11 @@ assets = [
     ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
     ["mars-raw-utils-data/caldata/*jpg", "usr/share/mars_raw_utils/data/", "644"],
     ["mars-raw-utils-data/caldata/*.toml", "usr/share/mars_raw_utils/data/", "644"],
+    ["mars-raw-utils-data/caldata/msl/ilut/DECOMPAND0.TXT", "usr/share/mars_raw_utils/data/msl/ilut/", "644"],
+    ["mars-raw-utils-data/caldata/m20/ilut/M20_MCZ_LUT2.txt", "usr/share/mars_raw_utils/data/m20/ilut/", "644"],
+    ["mars-raw-utils-data/caldata/m20/ilut/M20_SI_LUT0.txt", "usr/share/mars_raw_utils/data/m20/ilut/", "644"],
+    ["mars-raw-utils-data/caldata/m20/ilut/M20_LUT2_v2a.txt", "usr/share/mars_raw_utils/data/m20/ilut/", "644"],
+    ["mars-raw-utils-data/caldata/nsyt/ilut/NSYT_LUT0.txt", "usr/share/mars_raw_utils/data/nsyt/ilut/", "644"]
 ]
 
 [lib]
@@ -81,7 +86,7 @@ mru = { path = "/usr/bin/mru" }
 [package.metadata.rpm.files]
 "M20_MCZ_LEFT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png", mode = "644"}
 "M20_MCZ_RIGHT_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_MCZ_RIGHT_INPAINT_MASK_V1.png", mode = "644"}
-"M20_SCAM_FLAT_RGB_Sol77_V2.png" = { path =  "/usr/share/mars_raw_utils/data/M20_SCAM_FLAT_RGB_Sol77_V2.png", mode = "644"}
+"M20_SCAM_FLAT_RGB_Sol77_V2.jpg" = { path =  "/usr/share/mars_raw_utils/data/M20_SCAM_FLAT_RGB_Sol77_V2.jpg", mode = "644"}
 "M20_SCAM_MASK_Sol1_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_SCAM_MASK_Sol1_V1.png", mode = "644"}
 "M20_WATSON_FLAT_V0.png" = { path =  "/usr/share/mars_raw_utils/data/M20_WATSON_FLAT_V0.png", mode = "644"}
 "M20_WATSON_INPAINT_MASK_V1.png" = { path =  "/usr/share/mars_raw_utils/data/M20_WATSON_INPAINT_MASK_V1.png", mode = "644"}
@@ -125,6 +130,8 @@ mru = { path = "/usr/bin/mru" }
 "m20_zcam_cwb.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_cwb.toml", mode = "644"}
 "m20_zcam_cb2.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_zcam_cb2.toml", mode = "644"}
 "m20_hrte_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_hrte_rad.toml", mode = "644"}
+"m20_ncam_ilt.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_ncam_ilt.toml", mode = "644"}
+"m20_ncam_rad.toml" = { path =  "/usr/share/mars_raw_utils/data/m20_ncam_rad.toml", mode = "644"}
 "L0_-motorcount-_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_-motorcount-_cont_v1.jpg", mode = "644"}
 "L0_0000_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_0000_cont_v1.jpg", mode = "644"}
 "L0_2448_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/L0_2448_cont_v1.jpg", mode = "644"}
@@ -141,4 +148,8 @@ mru = { path = "/usr/bin/mru" }
 "R0_6720_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_6720_cont_v1.jpg", mode = "644"}
 "R0_8652_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_8652_cont_v1.jpg", mode = "644"}
 "R0_9600_cont_v1.jpg" = { path = "/usr/share/mars_raw_utils/data/R0_9600_cont_v1.jpg", mode = "644"}
-
+"msl/ilut/DECOMPAND0.TXT" = { path = "/usr/share/mars_raw_utils/data/msl/ilut/DECOMPAND0.TXT", mode = "644"}
+"m20/ilut/M20_MCZ_LUT2.txt" = { path = "/usr/share/mars_raw_utils/data/m20/ilut/M20_MCZ_LUT2.txt", mode = "644"}
+"m20/ilut/M20_SI_LUT0.txt" = { path = "/usr/share/mars_raw_utils/data/m20/ilut/M20_SI_LUT0.txt", mode = "644"}
+"m20/ilut/M20_LUT2_v2a.txt" = { path = "/usr/share/mars_raw_utils/data/m20/ilut/M20_LUT2_v2a.txt", mode = "644"}
+"nsyt/ilut/NSYT_LUT0.txt" = { path = "/usr/share/mars_raw_utils/data/nsyt/ilut/NSYT_LUT0.txt", mode = "644"}

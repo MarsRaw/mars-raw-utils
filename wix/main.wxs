@@ -259,9 +259,9 @@
                         <Component Id='caldata16' Guid='*'>
                             <File
                                 Id='data16'
-                                Name='M20_SCAM_FLAT_RGB_Sol77_V2.png'
+                                Name='M20_SCAM_FLAT_RGB_Sol77_V2.jpg'
                                 DiskId='1'
-                                Source='mars-raw-utils-data\caldata\M20_SCAM_FLAT_RGB_Sol77_V2.png'
+                                Source='mars-raw-utils-data\caldata\M20_SCAM_FLAT_RGB_Sol77_V2.jpg'
                                 KeyPath='yes'/>
                         </Component>
                         <Component Id='caldata17' Guid='*'>
@@ -625,8 +625,63 @@
                                 KeyPath='yes'/>
                         </Component>
 
+                        <Directory Id='msl' Name='msl'>
+                            <Directory Id='mslilut' Name='ilut'>
+                                <Component Id='caldata62' Guid='*'>
+                                    <File
+                                        Id='data62'
+                                        Name='DECOMPAND0.TXT'
+                                        DiskId='1'
+                                        Source='mars-raw-utils-data\caldata\msl\ilut\DECOMPAND0.TXT'
+                                        KeyPath='yes'/>
+                                </Component>
+                            </Directory>
+                        </Directory>
 
+                        <Directory Id='m20' Name='m20'>
+                            <Directory Id='m20ilut' Name='ilut'>
+                                <Component Id='caldata63' Guid='*'>
+                                    <File
+                                        Id='data63'
+                                        Name='M20_MCZ_LUT2.txt'
+                                        DiskId='1'
+                                        Source='mars-raw-utils-data\caldata\m20\ilut\M20_MCZ_LUT2.txt'
+                                        KeyPath='yes'/>
+                                </Component>
 
+                                <Component Id='caldata64' Guid='*'>
+                                    <File
+                                        Id='data64'
+                                        Name='M20_SI_LUT0.txt'
+                                        DiskId='1'
+                                        Source='mars-raw-utils-data\caldata\m20\ilut\M20_SI_LUT0.txt'
+                                        KeyPath='yes'/>
+                                </Component>
+
+                                <Component Id='caldata65' Guid='*'>
+                                    <File
+                                        Id='data65'
+                                        Name='M20_LUT2_v2a.txt'
+                                        DiskId='1'
+                                        Source='mars-raw-utils-data\caldata\m20\ilut\M20_LUT2_v2a.txt'
+                                        KeyPath='yes'/>
+                                </Component>
+                            </Directory>
+                        </Directory>
+
+                        <Directory Id='nsyt' Name='nsyt'>
+                            <Directory Id='nsytilut' Name='ilut'>
+                                <Component Id='caldata66' Guid='*'>
+                                    <File
+                                        Id='data66'
+                                        Name='NSYT_LUT0.txt'
+                                        DiskId='1'
+                                        Source='mars-raw-utils-data\caldata\nsyt\ilut\NSYT_LUT0.txt'
+                                        KeyPath='yes'/>
+                                </Component>
+                            </Directory>
+                        </Directory>
+                        
 
                     </Directory>
 
@@ -754,6 +809,11 @@
             <ComponentRef Id='caldata59'/>
             <ComponentRef Id='caldata60'/>
             <ComponentRef Id='caldata61'/>
+            <ComponentRef Id='caldata62'/>
+            <ComponentRef Id='caldata63'/>
+            <ComponentRef Id='caldata64'/>
+            <ComponentRef Id='caldata65'/>
+            <ComponentRef Id='caldata66'/>
             <Feature
                 Id='Environment'
                 Title='PATH Environment Variable'

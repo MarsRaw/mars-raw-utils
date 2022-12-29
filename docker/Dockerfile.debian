@@ -1,0 +1,21 @@
+FROM rust:latest
+
+ARG MRU_VERSION=0.5.0
+ENV MRU_VERSION ${MRU_VERSION}
+
+WORKDIR /mars
+
+RUN cargo install cargo-deb
+COPY . .
+
+RUN cargo deb 
+
+RUN ls -l target/debian/
+
+# Validate installation package
+RUN apt install ./target/debian/mars-raw-utils_${MRU_VERSION}_amd64.deb 
+
+WORKDIR /data
+
+
+
