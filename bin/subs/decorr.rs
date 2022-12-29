@@ -19,14 +19,6 @@ pub struct DecorrelationStretch {
 
 trait NormalizeRgbImageSingleChannels {
     fn normalize_to(&mut self, to_min: f32, to_max: f32);
-    // fn normalize_band_to_with_min_max(
-    //     &mut self,
-    //     band: usize,
-    //     to_min: f32,
-    //     to_max: f32,
-    //     from_min: f32,
-    //     from_max: f32,
-    // );
 }
 
 impl NormalizeRgbImageSingleChannels for RgbImage {
@@ -42,23 +34,6 @@ impl NormalizeRgbImageSingleChannels for RgbImage {
             );
         }
     }
-
-    // fn normalize_band_to_with_min_max(
-    //     &mut self,
-    //     band: usize,
-    //     to_min: f32,
-    //     to_max: f32,
-    //     from_min: f32,
-    //     from_max: f32,
-    // ) {
-    //     self.set_band(
-    //         &self
-    //             .get_band(band)
-    //             .normalize_force_minmax(to_min, to_max, from_min, from_max)
-    //             .unwrap(),
-    //         band,
-    //     );
-    // }
 }
 
 #[async_trait::async_trait]
@@ -70,8 +45,6 @@ impl RunnableSubcommand for DecorrelationStretch {
 
                 let mut image =
                     RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
-
-                decorr::decorrelation_stretch(&mut image);
 
                 image.normalize_to(0.0, 65535.0);
                 image.set_mode(ImageMode::U16BIT);
