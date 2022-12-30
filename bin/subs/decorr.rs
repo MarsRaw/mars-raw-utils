@@ -18,12 +18,16 @@ pub struct DecorrelationStretch {
         multiple_values(true)
     )]
     input_files: Vec<std::path::PathBuf>,
+
     #[clap(
         long,
         short,
         help = "Cross-File decorrelation (value ranges determined across all files rather than individually)"
     )]
     cross_file: bool,
+
+    #[clap(long, short = 'b', help = "Ignore black values")]
+    ignore_black: bool,
 }
 
 trait NormalizeRgbImageSingleChannels {
@@ -70,6 +74,26 @@ impl NormalizeRgbImageSingleChannels for RgbImage {
     }
 }
 
+trait MinMaxIgnoreBlack {
+    fn get_min_max_ignore_black(&self) -> MinMax;
+}
+
+impl MinMaxIgnoreBlack for ImageBuffer {
+    fn get_min_max_ignore_black(&self) -> MinMax {
+        let mut mm = MinMax {
+            min: std::f32::MAX,
+            max: std::f32::MIN,
+        };
+        (0..self.buffer.len()).into_iter().for_each(|i| {
+            if self.buffer[i] != std::f32::INFINITY && self.buffer[i] > 0.0 {
+                mm.min = min!(mm.min, self.buffer[i]);
+                mm.max = max!(mm.max, self.buffer[i]);
+            }
+        });
+        mm
+    }
+}
+
 fn color_range_determine_prep(image: &RgbImage) -> RgbImage {
     let mut cloned = image.clone();
 
@@ -84,7 +108,7 @@ fn color_range_determine_prep(image: &RgbImage) -> RgbImage {
     cloned
 }
 
-fn cross_file_decorrelation(input_files: &Vec<PathBuf>) {
+fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
     let mut ranges = vec![
         MinMax {
             min: std::f32::MAX,
@@ -109,7 +133,10 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>) {
             let prepped = color_range_determine_prep(&image);
 
             for b in 0..3 {
-                let mm = prepped.get_band(b).get_min_max();
+                let mm = match ignore_black {
+                    true => prepped.get_band(b).get_min_max_ignore_black(),
+                    false => prepped.get_band(b).get_min_max(),
+                };
                 ranges[b].min = min!(mm.min, ranges[b].min);
                 ranges[b].max = max!(mm.max, ranges[b].max);
             }
@@ -143,7 +170,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>) {
     });
 }
 
-fn individual_file_decorrelation(input_files: &Vec<PathBuf>) {
+fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
     input_files.par_iter().for_each(|in_file| {
         if in_file.exists() {
             vprintln!("Processing File: {:?}", in_file);
@@ -153,7 +180,10 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>) {
 
             let prepped = color_range_determine_prep(&image);
             for b in 0..3 {
-                let mm = prepped.get_band(b).get_min_max();
+                let mm = match ignore_black {
+                    true => prepped.get_band(b).get_min_max_ignore_black(),
+                    false => prepped.get_band(b).get_min_max(),
+                };
                 image.normalize_band_to_with_min_max(b, 0.0, 65535.0, mm.min, mm.max);
             }
 
@@ -174,8 +204,8 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>) {
 impl RunnableSubcommand for DecorrelationStretch {
     async fn run(&self) {
         match self.cross_file {
-            true => cross_file_decorrelation(&self.input_files),
-            false => individual_file_decorrelation(&self.input_files),
+            true => cross_file_decorrelation(&self.input_files, self.ignore_black),
+            false => individual_file_decorrelation(&self.input_files, self.ignore_black),
         };
     }
 }
