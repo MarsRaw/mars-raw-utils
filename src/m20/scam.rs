@@ -1,6 +1,6 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    image::MarsImage, path, util, vprintln,
+    flatfield, image::MarsImage, path, util, vprintln,
 };
 
 use sciimg::{error, imagebuffer};
@@ -28,7 +28,7 @@ impl Calibration for M20SuperCam {
         let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20SuperCam);
 
         vprintln!("Loading image mask");
-        let mask = imagebuffer::ImageBuffer::from_file(
+        let mut mask = imagebuffer::ImageBuffer::from_file(
             calibfile::get_calibration_file_for_instrument(
                 enums::Instrument::M20SuperCam,
                 enums::CalFileType::Mask,
@@ -37,13 +37,15 @@ impl Calibration for M20SuperCam {
             .as_str(),
         )
         .unwrap();
+        mask = mask
+            .get_subframe(1, 1, mask.width - 2, mask.height - 2)
+            .expect("Failed to extract subframe of M20 SuperCam mask image");
         raw.apply_alpha(&mask);
-
-        // let data_max = 255.0;
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
-            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::M20SuperCam).unwrap();
+            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::M20SuperCam)
+                .expect("Failed to determine ILT for M20 SuperCam");
             raw.decompand(&lut);
             lut.max() as f32
         } else {
@@ -57,8 +59,14 @@ impl Calibration for M20SuperCam {
 
         // Gonna start with standard rectangular flat field, but should really
         // mask it to just the round light-collecting area of the image.
+        raw.image
+            .crop(1, 1, raw.image.width - 2, raw.image.height - 2);
         vprintln!("Flatfielding...");
-        raw.flatfield();
+        let mut flat = flatfield::load_flat(enums::Instrument::M20SuperCam)
+            .expect("Failed to load flatfield image for M20 SuperCam");
+        flat.image
+            .crop(1, 1, flat.image.width - 2, flat.image.height - 2);
+        raw.flatfield_with_flat(&flat);
 
         vprintln!("Applying color weights...");
         raw.apply_weight(
