@@ -1,6 +1,6 @@
 use crate::{
-    calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument, image::MarsImage,
-    path, util, vprintln,
+    calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
+    image::MarsImage, path, util, vprintln,
 };
 
 use sciimg::{error, imagebuffer};
@@ -39,7 +39,16 @@ impl Calibration for M20SuperCam {
         .unwrap();
         raw.apply_alpha(&mask);
 
-        let data_max = 255.0;
+        // let data_max = 255.0;
+
+        let data_max = if cal_context.apply_ilt {
+            vprintln!("Decompanding...");
+            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::M20SuperCam).unwrap();
+            raw.decompand(&lut);
+            lut.max() as f32
+        } else {
+            255.0
+        };
 
         if input_file.contains("ECM") && raw.image.is_grayscale() {
             vprintln!("Image appears to be grayscale, applying debayering...");
