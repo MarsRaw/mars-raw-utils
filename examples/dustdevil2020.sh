@@ -2,10 +2,14 @@
 
 sol=$1
 seqid=
+open_file_manager=0
 
-if [ "x$2" != "x" ];then
-    seqid=$2
-fi
+while [ $# -gt 0 ]; do
+    if [ $1 == "-e" ]; then
+        open_file_manager=1
+    fi
+    shift
+done
 
 cd /data/M20
 
@@ -26,6 +30,7 @@ mru m20-fetch -c NAVCAM_LEFT -s $sol -f NCAM00500 NCAM0052 NCAM0053 ${seqid} -n
 
 mru calibrate -i *J0?.png 
 
+
 for seqid in `ls *NCAM005{2,3}*2I*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     mru -v diffgif -i *${seqid}*2I*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 3.0 -g 1.0 -l 5 -d 20 -p stacked
 done
@@ -44,3 +49,12 @@ if [ `ls *NCAM00500*-rjcal.png 2> /dev/null | wc -l` -eq 15 ]; then
 fi
 
 
+if [ $open_file_manager -eq 1 ]; then 
+    if [ `which dolphin | wc -l` -eq 1 ]; then         # KDE on Linux
+        dolphin --new-window . &
+    elif [ 'which explorer.exe | wc -' -eq 1 ]; then   # Windows Subsystem for Linux
+        explorer.exe .
+    elif [ 'which open | wc -l' -eq 1 ]; then          # macOS
+        open . &
+    fi # Nautilus (GNOME), whatever Xfce uses, etc.
+fi

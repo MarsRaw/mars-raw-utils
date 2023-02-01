@@ -3,10 +3,14 @@
 
 sol=$1
 seqid=NCAM00595
+open_file_manager=0
 
-if [ "x$2" != "x" ];then
-    seqid=$2
-fi
+while [ $# -gt 0 ]; do
+    if [ $1 == "-e" ]; then
+        open_file_manager=1
+    fi
+    shift
+done
 
 cd /data/MSL
 
@@ -16,9 +20,9 @@ fi
 
 cd $sol/ECAM 
 
-mru msl-fetch -c NAV_RIGHT NAV_LEFT  -s $sol -n
+mru msl-fetch -c NAV_RIGHT NAV_LEFT  -s $sol -n -f NCAM
 
-mru calibrate -i *JPG -t 2.0
+mru calibrate -i *NCAM*JPG -t 2.0
 
 if [ ! -d RDR ]; then
     mkdir RDR
@@ -26,7 +30,6 @@ fi
 
 mv *rjcal* RDR
 cd RDR
-
 
 
 # NCAM00594, Dust Devil Survey 3x8 360deg, takes three pictures then rotates for eight pointings.
@@ -54,6 +57,17 @@ if [ $num_parts_ncam00594 -gt 0 ]; then
     if [ -f /usr/bin/convert ]; then
         /usr/bin/convert DustDevil_${sol}_NCAM00594_part*_rjcal.gif  DustDevil_${sol}_NCAM00594_rjcal.gif 
         rm DustDevil_${sol}_NCAM00594_part*_rjcal.gif 
+    fi
+fi
+
+if [ `ls *NCAM00545*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
+    mru -v diffgif -i `ls *NCAM00545*png | awk 'NR % 3 == 0'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_1.gif  -b 0 -w 100.0 -g 2.0 -l 5 -d 20
+    mru -v diffgif -i `ls *NCAM00545*png | awk 'NR % 3 == 1'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_2.gif  -b 0 -w 100.0 -g 2.0 -l 5 -d 20
+    mru -v diffgif -i `ls *NCAM00545*png | awk 'NR % 3 == 2'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_3.gif  -b 0 -w 100.0 -g 2.0 -l 5 -d 20
+
+    if [ -f /usr/bin/convert ]; then
+        /usr/bin/convert TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif   TwilightCloudSearch_${sol}_NCAM00545_rjcal.gif 
+        rm TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif 
     fi
 fi
 
@@ -90,6 +104,10 @@ if [ `ls *NCAM00543*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
     mru -v diffgif -i *NCAM00543*-rjcal.png -o ZenithMovie_EnvNorth_${sol}.gif -b 0 -w 1.0 -g 2.5 -l 5 -d 20
 fi
 
+if [ `ls *NCAM00547*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
+    mru -v diffgif -i *NCAM00547*-rjcal.png -o TwilightCloudMovie_EnvSouth_${sol}.gif -b 0 -w 100.0 -g 2.0 -l 5 -d 20
+fi
+
 if [ `ls *NCAM00567*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
     mru -v diffgif -i *NCAM00567*-rjcal.png -o SupraHorizonMovie_${sol}.gif -b 0 -w 1.0 -g 2.5 -l 5 -d 20
 fi
@@ -107,4 +125,15 @@ if [ `ls *NCAM00597*-rjcal.png 2> /dev/null | wc -l` -gt 0 ]; then
     mru -v diffgif -i *_F*NCAM00597*rjcal.png -o SPENDI_NCAM00597_Set2_${sol}.gif -b 0 -w 3.0 -g 1.5 -l 5 -d 40
     mru -v diffgif -i `ls *NCAM00597*-rjcal.png | tail -n 23` -o SPENDI_NCAM00597_Set3_${sol}.gif  -b 0 -w 5.0 -g 1.5 -l 5 -d 40 -p stacked
 fi
+
+if [ $open_file_manager -eq 1 ]; then 
+    if [ `which dolphin | wc -l` -eq 1 ]; then         # KDE on Linux
+        dolphin --new-window . &
+    elif [ 'which explorer.exe | wc -' -eq 1 ]; then   # Windows Subsystem for Linux
+        explorer.exe .
+    elif [ 'which open | wc -l' -eq 1 ]; then          # macOS
+        open . &
+    fi # Nautilus (GNOME), whatever Xfce uses, etc.
+fi
+
 
