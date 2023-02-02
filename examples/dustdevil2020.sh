@@ -52,9 +52,9 @@ fi
 if [ $open_file_manager -eq 1 ]; then 
     if [ `which dolphin | wc -l` -eq 1 ]; then         # KDE on Linux
         dolphin --new-window . &
-    elif [ 'which explorer.exe | wc -' -eq 1 ]; then   # Windows Subsystem for Linux
+    elif [ `which explorer.exe | wc -l` -eq 1 ]; then   # Windows Subsystem for Linux
         explorer.exe .
-    elif [ 'which open | wc -l' -eq 1 ]; then          # macOS
+    elif [ `which open | wc -l` -eq 1 ]; then          # macOS
         open . &
     fi # Nautilus (GNOME), whatever Xfce uses, etc.
 fi
