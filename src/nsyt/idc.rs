@@ -49,8 +49,13 @@ impl Calibration for NsytIdc {
         vprintln!("Cropping...");
         raw.image.crop(0, 3, 1024, 1018);
 
-        vprintln!("Normalizing...");
-        raw.image.normalize_to_16bit_with_max(data_max);
+        if cal_context.decorrelate_color {
+            vprintln!("Normalizing with decorrelated colors...");
+            raw.image.normalize_to_16bit_decorrelated();
+        } else {
+            vprintln!("Normalizing with correlated colors...");
+            raw.image.normalize_to_16bit_with_max(data_max);
+        }
 
         vprintln!("Writing to disk...");
         raw.save(&out_file);

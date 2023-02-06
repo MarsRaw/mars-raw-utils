@@ -43,6 +43,9 @@ pub struct Calibrate {
     #[clap(long, short = 'w', help = "HPC window size")]
     hpc_window: Option<i32>,
 
+    #[clap(long, short = 'd', help = "Decorrelate color channels")]
+    decorrelate: bool,
+
     #[clap(long, short = 'P', help = "Calibration profile", multiple_values(true))]
     profile: Option<Vec<String>>,
 }
@@ -91,6 +94,7 @@ impl RunnableSubcommand for Calibrate {
             hot_pixel_detection_threshold: self.hpc_threshold.unwrap_or(0.0),
             hot_pixel_window_size: self.hpc_window.unwrap_or(3),
             filename_suffix: String::from(constants::OUTPUT_FILENAME_APPEND),
+            decorrelate_color: self.decorrelate,
             mission: None,
             instrument: None,
             description: None,

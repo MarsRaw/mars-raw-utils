@@ -62,12 +62,17 @@ impl Calibration for M20Watson {
             cal_context.blue_scalar,
         );
 
-        vprintln!("Normalizing...");
-        raw.image.normalize_to_16bit_with_max(data_max);
-
         if raw.image.width == 1648 {
             vprintln!("Cropping...");
             raw.image.crop(24, 4, 1600, 1192);
+        }
+
+        if cal_context.decorrelate_color {
+            vprintln!("Normalizing with decorrelated colors...");
+            raw.image.normalize_to_16bit_decorrelated();
+        } else {
+            vprintln!("Normalizing with correlated colors...");
+            raw.image.normalize_to_16bit_with_max(data_max);
         }
 
         vprintln!("Writing to disk...");

@@ -38,6 +38,9 @@ pub struct CalProfile {
     #[serde(default = "default_filename_suffix")]
     pub filename_suffix: String,
 
+    #[serde(default = "default_decorrelate_color")]
+    pub decorrelate_color: bool,
+
     pub mission: Option<String>,
 
     pub instrument: Option<String>,
@@ -58,6 +61,7 @@ impl CalProfile {
             hot_pixel_detection_threshold: default_hpc_threshold(),
             hot_pixel_window_size: default_hpc_window_size(),
             filename_suffix: default_filename_suffix(),
+            decorrelate_color: default_decorrelate_color(),
             mission: None,
             instrument: None,
             description: None,
@@ -71,6 +75,10 @@ fn default_hpc_window_size() -> i32 {
 
 fn default_filename_suffix() -> String {
     String::from(constants::OUTPUT_FILENAME_APPEND)
+}
+
+fn default_decorrelate_color() -> bool {
+    false
 }
 
 fn default_false() -> bool {
