@@ -1,6 +1,6 @@
 [package]
 name = "mars_raw_utils"
-version = "0.6.1"
+version = "0.6.2"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2021"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
