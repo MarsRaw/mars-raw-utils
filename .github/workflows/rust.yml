@@ -2,23 +2,91 @@ name: Rust
 
 on:
   push:
-    branches: [ master ]
+    branches: [ github-actions-impl ]
   pull_request:
-    branches: [ master ]
+    branches: [ github-actions-impl ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
 
-    runs-on: ubuntu-latest
-
+  check:
+    name: "Cargo check"
+    runs-on: "ubuntu-latest"
     steps:
-    - uses: actions/checkout@v2
+    - name: "Checkout repo"
+      uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+    - uses: "actions-rs/toolchain@v1"
+      with:
+        profile: "minimal"
+        toolchain: "stable"
+        override: true
+    - uses: "actions-rs/cargo@v1"
+      with:
+        command: "check"
+    
+  check:
+    name: "Cargo test"
+    runs-on: "ubuntu-latest"
+    steps:
+    - name: "Checkout repo"
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - uses: "actions-rs/toolchain@v1"
+      with:
+        profile: "minimal"
+        toolchain: "stable"
+        override: true
+
+    - uses: "actions-rs/cargo@v1"
+      with:
+        command: "test"
+  
+  check:
+    name: "Cargo format"
+    runs-on: "ubuntu-latest"
+    steps:
+    - name: "Checkout repo"
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - uses: "actions-rs/toolchain@v1"
+      with:
+        profile: "minimal"
+        toolchain: "stable"
+        override: true
+
+    - run: "rustup component add rustfmt"
+    
+    - uses: "actions-rs/cargo@v1"
+      with:
+        command: "fmt"
+        args: "--all -- --check"
+
+  check:
+    name: "Cargo clippy"
+    runs-on: "ubuntu-latest"
+    steps:
+    - name: "Checkout repo"
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - uses: "actions-rs/toolchain@v1"
+      with:
+        profile: "minimal"
+        toolchain: "stable"
+        override: true
+
+    - run: "rustup component add clippy"
+    
+    - uses: "actions-rs/cargo@v1"
+      with:
+        command: "fmt"
+        args: "-- -D warnings"
