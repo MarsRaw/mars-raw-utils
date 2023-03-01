@@ -88,5 +88,5 @@ jobs:
     
     - uses: "actions-rs/cargo@v1"
       with:
-        command: "fmt"
+        command: "clippy"
         args: "-- -D warnings"
