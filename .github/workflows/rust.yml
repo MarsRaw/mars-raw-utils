@@ -28,7 +28,7 @@ jobs:
       with:
         command: "check"
     
-  check:
+  test:
     name: "Cargo test"
     runs-on: "ubuntu-latest"
     steps:
@@ -47,7 +47,7 @@ jobs:
       with:
         command: "test"
   
-  check:
+  fmt:
     name: "Cargo format"
     runs-on: "ubuntu-latest"
     steps:
@@ -69,7 +69,7 @@ jobs:
         command: "fmt"
         args: "--all -- --check"
 
-  check:
+  clippy:
     name: "Cargo clippy"
     runs-on: "ubuntu-latest"
     steps:
