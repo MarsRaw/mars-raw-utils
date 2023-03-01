@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)]
+
 use crate::{path, vprintln};
 
 use sciimg::{enums::ImageMode, imagebuffer, lowpass, rgbimage};

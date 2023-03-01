@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)]
+
 use crate::{
     constants, jsonfetch, m20::latest, m20::metadata::*, metadata::convert_to_std_metadata, path,
     util::*,
@@ -59,15 +61,15 @@ async fn process_results(
 ) -> usize {
     let mut valid_img_count = 0;
     let images = results.images.iter().filter(|image| {
-        (image.sample_type != "Thumbnail" && !thumbnails || thumbnails)
-            && (search.is_empty() || search.iter().any(|i| image.imageid.contains(i)))
+        !(image.sample_type == "Thumbnail" && !thumbnails
+            || !search.is_empty() && !search.iter().any(|i| image.imageid.contains(i)))
     });
     for (idx, image) in images.enumerate() {
         valid_img_count = idx;
         print_image(output_path, image);
         if !list_only {
             _ = fetch_image(&image.image_files.full_res, only_new, Some(output_path)).await;
-            let image_base_name = path::basename(&image.image_files.full_res.as_str());
+            let image_base_name = path::basename(image.image_files.full_res.as_str());
             _ = save_image_json(
                 &image_base_name,
                 &convert_to_std_metadata(image),

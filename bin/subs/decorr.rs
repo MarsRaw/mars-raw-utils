@@ -1,3 +1,5 @@
+#![allow(clippy::needless_range_loop)]
+
 use crate::subs::runnable::RunnableSubcommand;
 use mars_raw_utils::prelude::*;
 use rayon::prelude::*;
@@ -132,7 +134,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
 
             let prepped = color_range_determine_prep(&image);
 
-            for b in 0..3 {
+            for b in 0..prepped.num_bands() {
                 let mm = match ignore_black {
                     true => prepped.get_band(b).get_min_max_ignore_black(),
                     false => prepped.get_band(b).get_min_max(),
@@ -153,7 +155,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
             let mut image =
                 RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
-            for b in 0..3 {
+            for b in 0..image.num_bands() {
                 image.normalize_band_to_with_min_max(b, 0.0, 65535.0, ranges[b].min, ranges[b].max);
             }
 

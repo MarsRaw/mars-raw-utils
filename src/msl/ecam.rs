@@ -57,7 +57,7 @@ impl Calibration for MslEcam {
                 // FHAZ
                 match util::filename_char_at_pos(input_file, 1) == 'L' {
                     // Left
-                    true => instrument = enums::Instrument::MslFrontHazLeft, 
+                    true => instrument = enums::Instrument::MslFrontHazLeft,
                     // Assume Right
                     false => instrument = enums::Instrument::MslFrontHazRight,
                 }

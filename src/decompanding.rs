@@ -100,7 +100,7 @@ pub fn get_ilt_for_instrument(instrument: enums::Instrument) -> error::Result<Lo
         calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::Lut)
             .unwrap_or("".to_string());
 
-    if lut_file_path.len() == 0 {
+    if lut_file_path.is_empty() {
         Ok(LookUpTable::new(&ILT))
     } else {
         load_ilut_spec_file(&lut_file_path)
@@ -130,14 +130,12 @@ pub fn load_ilut_spec_file(file_path: &String) -> error::Result<LookUpTable> {
         Ok(file) => {
             let mut lut_vec: Vec<u32> = vec![];
             let lines = io::BufReader::new(file).lines();
-            for line_res in lines {
-                if let Ok(line) = line_res {
-                    // This regex capture will validate if the line is in the format "<number><space><number>"
-                    // which ignores any embedded VICAR label information
-                    if let Some(caps) = LUT_SPEC_PAIR.captures(&line) {
-                        let s_lut_value = caps.get(2).unwrap().as_str().parse::<u32>().unwrap_or(0);
-                        lut_vec.push(s_lut_value);
-                    }
+            for line_res in lines.flatten() {
+                // This regex capture will validate if the line is in the format "<number><space><number>"
+                // which ignores any embedded VICAR label information
+                if let Some(caps) = LUT_SPEC_PAIR.captures(&line_res) {
+                    let s_lut_value = caps.get(2).unwrap().as_str().parse::<u32>().unwrap_or(0);
+                    lut_vec.push(s_lut_value);
                 }
             }
             LookUpTable::new_from_vec(&lut_vec)
