@@ -1,6 +1,6 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, image::MarsImage, flatfield,
-    path, util, vprintln,
+    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, flatfield,
+    image::MarsImage, path, util, vprintln,
 };
 
 use sciimg::error;
@@ -88,14 +88,14 @@ impl Calibration for M20EECam {
         if let Some(md) = raw.metadata.clone() {
             if let Some(rect) = &md.subframe_rect {
                 flat.crop(
-                    rect[0]  as usize - 1,
+                    rect[0] as usize - 1,
                     rect[1] as usize - 1,
                     rect[2] as usize,
                     rect[3] as usize,
                 );
                 vprintln!("Flat cropped to {}x{}", flat.image.width, flat.image.height);
             }
-            if md.scale_factor == 2 {
+            if md.scale_factor > 1 {
                 flat.resize_to(raw.image.width, raw.image.height);
                 vprintln!("Flat resized to {}x{}", raw.image.width, raw.image.height);
             }
