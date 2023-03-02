@@ -22,25 +22,23 @@ fn print_list_header() {
 fn list_profiles_in_directory(path: &str) {
     let profile_search_pattern = format!("{}/*.toml", path);
 
-    for entry in glob(&profile_search_pattern).expect("Failed to read glob pattern") {
-        if let Ok(file_path) = entry {
-            let file_path_str = String::from(file_path.to_str().unwrap());
-            match load_calibration_profile(&file_path_str) {
-                Ok(profile) => {
-                    println!(
-                        "{:30} {:20} {:20} {}",
-                        Path::new(&file_path_str)
-                            .file_stem()
-                            .unwrap()
-                            .to_str()
-                            .unwrap(),
-                        profile.mission.unwrap_or("Not set".to_string()),
-                        profile.instrument.unwrap_or("Not set".to_string()),
-                        file_path_str
-                    );
-                }
-                Err(_) => {}
-            }
+    for file_path in glob(&profile_search_pattern)
+        .expect("Failed to read glob pattern")
+        .flatten()
+    {
+        let file_path_str = String::from(file_path.to_str().unwrap());
+        if let Ok(profile) = load_calibration_profile(&file_path_str) {
+            println!(
+                "{:30} {:20} {:20} {}",
+                Path::new(&file_path_str)
+                    .file_stem()
+                    .unwrap()
+                    .to_str()
+                    .unwrap(),
+                profile.mission.unwrap_or("Not set".to_string()),
+                profile.instrument.unwrap_or("Not set".to_string()),
+                file_path_str
+            );
         }
     }
 }
@@ -63,11 +61,11 @@ impl RunnableSubcommand for Profile {
 
             if let Some(dir) = dirs::home_dir() {
                 let homedatadir = format!("{}/.marsdata", dir.to_str().unwrap());
-                list_profiles_in_directory(&homedatadir.as_str());
+                list_profiles_in_directory(homedatadir.as_str());
             }
 
             if let Ok(dir) = env::var("MARS_RAW_DATA") {
-                list_profiles_in_directory(&dir.as_str());
+                list_profiles_in_directory(dir.as_str());
             }
         } else if let Some(profile) = self.profile.clone() {
             match load_calibration_profile(&profile) {

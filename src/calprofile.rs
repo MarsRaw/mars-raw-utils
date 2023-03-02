@@ -48,8 +48,8 @@ pub struct CalProfile {
     pub description: Option<String>,
 }
 
-impl CalProfile {
-    pub fn default() -> CalProfile {
+impl Default for CalProfile {
+    fn default() -> CalProfile {
         CalProfile {
             calfiletype: "profile".to_string(),
             apply_ilt: default_false(),

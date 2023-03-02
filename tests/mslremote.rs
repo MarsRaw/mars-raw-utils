@@ -1,15 +1,11 @@
 use mars_raw_utils::msl::{latest::LatestData, remote::fetch_latest, remote::remote_fetch};
 
 #[tokio::test]
-#[ignore]
 async fn test_msl_latest() {
-    let latest: LatestData = fetch_latest().await.expect("Failed to fetch latest data");
-    assert_eq!(latest.latest, "2022-02-19T15:01:11Z");
-    assert_eq!(latest.latest_sols.len(), 3);
+    fetch_latest().await.expect("Failed to fetch latest data");
 }
 
 #[tokio::test]
-#[ignore] // Going to ignore this by default to prevent unneccessary load on NASA's servers
 async fn test_msl_instrument_fetches() {
     let f: Vec<String> = vec![];
 
