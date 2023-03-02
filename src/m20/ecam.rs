@@ -1,5 +1,5 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, image::MarsImage,
+    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, image::MarsImage, flatfield,
     path, util, vprintln,
 };
 
@@ -83,7 +83,24 @@ impl Calibration for M20EECam {
         }
 
         vprintln!("Flatfielding...");
-        raw.flatfield();
+
+        let mut flat = flatfield::load_flat(instrument).unwrap();
+        if let Some(md) = raw.metadata.clone() {
+            if let Some(rect) = &md.subframe_rect {
+                flat.crop(
+                    rect[0]  as usize - 1,
+                    rect[1] as usize - 1,
+                    rect[2] as usize,
+                    rect[3] as usize,
+                );
+                vprintln!("Flat cropped to {}x{}", flat.image.width, flat.image.height);
+            }
+            if md.scale_factor == 2 {
+                flat.resize_to(raw.image.width, raw.image.height);
+                vprintln!("Flat resized to {}x{}", raw.image.width, raw.image.height);
+            }
+        }
+        raw.flatfield_with_flat(&flat);
 
         // We're going to need a reliable way of figuring out what part of the sensor
         // is represented before we can flatfield or apply an inpainting mask

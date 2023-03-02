@@ -209,4 +209,8 @@ impl MarsImage {
     pub fn to_mono(&mut self) {
         self.image.to_mono();
     }
+
+    pub fn resize_to(&mut self, to_width:usize, to_height:usize) {
+        self.image.resize_to(to_width, to_height);
+    }
 }
