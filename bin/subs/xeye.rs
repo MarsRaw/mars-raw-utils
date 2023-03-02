@@ -102,7 +102,7 @@ fn simple_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut RgbImage
 fn project_line_sample(
     img: &RgbImage,
     input_model: &CameraModel,
-    output_model: &Cahv,
+    output_model: &CameraModel,
     line: usize,
     sample: usize,
     map: &mut RgbImage,

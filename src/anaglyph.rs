@@ -5,7 +5,7 @@ pub fn process_image(
     img: &MarsImage,
     map: &mut RgbImage,
     input_model: &CameraModel,
-    output_model: &Cahv,
+    output_model: &CameraModel,
     ground: &Vector,
     eye: Eye,
 ) {

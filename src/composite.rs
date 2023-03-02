@@ -199,6 +199,13 @@ pub fn process_file<D: Drawable>(
 
     match get_cahvor(&img) {
         Some(input_model) => {
+            // let input_model = match input_model_nonlinear.model_type() {
+            //     ModelType::CAHVORE => {
+            //         input_model_nonlinear.convert_to_type(ModelType::CAHVOR).expect("Failed to linearize camera model (forced CAHVOR)")
+            //     },
+            //     _ => input_model_nonlinear
+            // };
+
             vprintln!("");
             vprintln!("Input Model C: {:?}", input_model.c());
             vprintln!("Input Model A: {:?}", input_model.a());
