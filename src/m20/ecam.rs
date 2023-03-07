@@ -1,12 +1,81 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, flatfield,
-    image::MarsImage, path, util, vprintln,
+    calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
+    flatfield, image::MarsImage, path, util, vprintln,
 };
 
-use sciimg::error;
+use sciimg::{error, prelude::ImageBuffer, rgbimage::RgbImage, DnVec, VecMath};
 
 #[derive(Copy, Clone)]
 pub struct M20EECam {}
+
+fn calc_histogram(buffer: &ImageBuffer) -> DnVec {
+    let mut hist = DnVec::fill(255, 0.0);
+    (0..buffer.buffer.len()).into_iter().for_each(|i| {
+        hist[buffer.buffer[i].round() as usize] += 1.0;
+    });
+    hist
+}
+
+fn is_index_a_histogram_gap(hist: &DnVec, index: usize) -> bool {
+    // We will define a histogram gap as an index with a zero value that is bounded by
+    // non-zero values.
+    if index == 0 {
+        // So by definition, the zeroth index cannot be a gap
+        false
+    } else if index == 254 {
+        // Same idea hear, last index cannot be a gap.
+        false
+    } else if hist[index] == 0.0 && hist[index - 1] > 0.0 && hist[index + 1] > 0.0 {
+        true
+    } else {
+        false
+    }
+}
+
+fn compute_destretch_lut(buffer: &ImageBuffer) -> DnVec {
+    let hist = calc_histogram(buffer);
+    let mut lut = DnVec::zeros(255);
+
+    let mut value_minus = 0.0;
+    (0..255).into_iter().for_each(|i| {
+        if is_index_a_histogram_gap(&hist, i) {
+            value_minus += 1.0;
+        }
+        lut[i] = i as f32 - value_minus;
+    });
+    lut
+}
+
+fn destretch_buffer_with_lut(buffer: &ImageBuffer, lut: &DnVec) -> ImageBuffer {
+    let mut corrected = buffer.clone();
+    (0..255).into_iter().for_each(|i| {
+        corrected.buffer[i] = lut[corrected.buffer[i].round() as usize];
+    });
+    corrected
+}
+
+fn destretch_image(image: &mut RgbImage) {
+    let lut = compute_destretch_lut(&image.get_band(0));
+    image.set_band(&destretch_buffer_with_lut(&image.get_band(0), &lut), 0);
+    image.set_band(&destretch_buffer_with_lut(&image.get_band(1), &lut), 1);
+    image.set_band(&destretch_buffer_with_lut(&image.get_band(2), &lut), 2);
+}
+
+// Converts an image mask with values 0-255 to 0, 1
+fn create_adjusted_mask(buffer: &ImageBuffer) -> ImageBuffer {
+    let mut adjusted = buffer.clone();
+    (0..adjusted.buffer.len()).into_iter().for_each(|i| {
+        if adjusted.buffer[i] > 200.0 {
+            // We're bias towards darkening here to account for interpolated pixel values
+            // following an image resize (scale_factor>1). I'd rather grow the dark area (zeros)
+            // then grow the light area.
+            adjusted.buffer[i] = 1.0;
+        } else {
+            adjusted.buffer[i] = 0.0;
+        }
+    });
+    adjusted
+}
 
 impl Calibration for M20EECam {
     fn accepts_instrument(&self, instrument: Instrument) -> bool {
@@ -67,6 +136,10 @@ impl Calibration for M20EECam {
 
         let mut raw = MarsImage::open(String::from(input_file), instrument);
 
+        // Apply destretching based off histogram gaps
+        vprintln!("Destretching...");
+        destretch_image(&mut raw.image);
+
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
             let lut = decompanding::get_ilt_for_instrument(instrument).unwrap();
@@ -85,9 +158,22 @@ impl Calibration for M20EECam {
         vprintln!("Flatfielding...");
 
         let mut flat = flatfield::load_flat(instrument).unwrap();
+        vprintln!("Loading image mask");
+        let mut mask = MarsImage::open(
+            calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::Mask)
+                .unwrap(),
+            instrument,
+        );
+
         if let Some(md) = raw.metadata.clone() {
             if let Some(rect) = &md.subframe_rect {
                 flat.crop(
+                    rect[0] as usize - 1,
+                    rect[1] as usize - 1,
+                    rect[2] as usize,
+                    rect[3] as usize,
+                );
+                mask.crop(
                     rect[0] as usize - 1,
                     rect[1] as usize - 1,
                     rect[2] as usize,
@@ -97,11 +183,35 @@ impl Calibration for M20EECam {
             }
             if md.scale_factor > 1 {
                 flat.resize_to(raw.image.width, raw.image.height);
+                mask.resize_to(raw.image.width, raw.image.height);
                 vprintln!("Flat resized to {}x{}", raw.image.width, raw.image.height);
             }
         }
-        raw.flatfield_with_flat(&flat);
 
+        let mask_adjusted = create_adjusted_mask(&mask.image.get_band(0));
+        raw.image
+            .set_band(&raw.image.get_band(0).multiply(&mask_adjusted).unwrap(), 0);
+        raw.image
+            .set_band(&raw.image.get_band(1).multiply(&mask_adjusted).unwrap(), 1);
+        raw.image
+            .set_band(&raw.image.get_band(2).multiply(&mask_adjusted).unwrap(), 2);
+        raw.flatfield_with_flat(&flat);
+        /*
+        raw.image.get_band(0).set_mask(flat.image.get_band(0));
+        raw.image.set_band(
+            &raw.image
+                .get_band(1)
+                .multiply(flat.image.get_band(0))
+                .unwrap(),
+            1,
+        );
+        raw.image.set_band(
+            &raw.image
+                .get_band(1)
+                .multiply(flat.image.get_band(0))
+                .unwrap(),
+            2,
+        );*/
         // We're going to need a reliable way of figuring out what part of the sensor
         // is represented before we can flatfield or apply an inpainting mask
         //vprintln!("Inpainting...");
