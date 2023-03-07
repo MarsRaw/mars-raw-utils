@@ -19,16 +19,11 @@ fn calc_histogram(buffer: &ImageBuffer) -> DnVec {
 fn is_index_a_histogram_gap(hist: &DnVec, index: usize) -> bool {
     // We will define a histogram gap as an index with a zero value that is bounded by
     // non-zero values.
-    if index == 0 {
-        // So by definition, the zeroth index cannot be a gap
+    if index == 0 || index == 254 {
+        // So by definition, the zeroth and last index cannot be a gap
         false
-    } else if index == 254 {
-        // Same idea hear, last index cannot be a gap.
-        false
-    } else if hist[index] == 0.0 && hist[index - 1] > 0.0 && hist[index + 1] > 0.0 {
-        true
     } else {
-        false
+        hist[index] == 0.0 && hist[index - 1] > 0.0 && hist[index + 1] > 0.0
     }
 }
 
@@ -55,10 +50,10 @@ fn destretch_buffer_with_lut(buffer: &ImageBuffer, lut: &DnVec) -> ImageBuffer {
 }
 
 fn destretch_image(image: &mut RgbImage) {
-    let lut = compute_destretch_lut(&image.get_band(0));
-    image.set_band(&destretch_buffer_with_lut(&image.get_band(0), &lut), 0);
-    image.set_band(&destretch_buffer_with_lut(&image.get_band(1), &lut), 1);
-    image.set_band(&destretch_buffer_with_lut(&image.get_band(2), &lut), 2);
+    let lut = compute_destretch_lut(image.get_band(0));
+    image.set_band(&destretch_buffer_with_lut(image.get_band(0), &lut), 0);
+    image.set_band(&destretch_buffer_with_lut(image.get_band(1), &lut), 1);
+    image.set_band(&destretch_buffer_with_lut(image.get_band(2), &lut), 2);
 }
 
 // Converts an image mask with values 0-255 to 0, 1
@@ -188,7 +183,7 @@ impl Calibration for M20EECam {
             }
         }
 
-        let mask_adjusted = create_adjusted_mask(&mask.image.get_band(0));
+        let mask_adjusted = create_adjusted_mask(mask.image.get_band(0));
         raw.image
             .set_band(&raw.image.get_band(0).multiply(&mask_adjusted).unwrap(), 0);
         raw.image
