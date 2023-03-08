@@ -26,6 +26,8 @@ impl Calibration for M20SuperCam {
         }
 
         let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20SuperCam);
+        vprintln!("Destretching...");
+        raw.destretch_image();
 
         vprintln!("Loading image mask");
         let mut mask = imagebuffer::ImageBuffer::from_file(
