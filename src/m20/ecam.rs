@@ -191,26 +191,6 @@ impl Calibration for M20EECam {
         raw.image
             .set_band(&raw.image.get_band(2).multiply(&mask_adjusted).unwrap(), 2);
         raw.flatfield_with_flat(&flat);
-        /*
-        raw.image.get_band(0).set_mask(flat.image.get_band(0));
-        raw.image.set_band(
-            &raw.image
-                .get_band(1)
-                .multiply(flat.image.get_band(0))
-                .unwrap(),
-            1,
-        );
-        raw.image.set_band(
-            &raw.image
-                .get_band(1)
-                .multiply(flat.image.get_band(0))
-                .unwrap(),
-            2,
-        );*/
-        // We're going to need a reliable way of figuring out what part of the sensor
-        // is represented before we can flatfield or apply an inpainting mask
-        //vprintln!("Inpainting...");
-        //raw.apply_inpaint_fix().unwrap();
 
         if !raw.image.is_grayscale() {
             vprintln!("Applying color weights...");
@@ -230,9 +210,21 @@ impl Calibration for M20EECam {
         }
 
         // Trim off border pixels
-        //let crop_to_width = raw.image.width - 4;
-        //let crop_to_height = raw.image.height - 4;
-        //raw.crop(2, 2, crop_to_width, crop_to_height).unwrap();
+        if let Some(mut md) = raw.metadata.clone() {
+            if md.scale_factor == 1 {
+                if let Some(rect) = &md.subframe_rect {
+                    //rect[0] += 1.0;
+                    let new_rect = vec![rect[0] + 2.0, rect[1] + 2.0, rect[2] - 2.0, rect[3] - 2.0];
+                    md.subframe_rect = Some(new_rect);
+                }
+            }
+            raw.metadata = Some(md);
+            let crop_to_width = raw.image.width - 4;
+            let crop_to_height = raw.image.height - 4;
+            raw.crop(2, 2, crop_to_width, crop_to_height);
+        }
+        //
+        //
 
         vprintln!("Writing to disk...");
         raw.save(&out_file);
