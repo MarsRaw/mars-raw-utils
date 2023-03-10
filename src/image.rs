@@ -3,13 +3,16 @@ use crate::{
     path, util, vprintln,
 };
 
-use sciimg::{enums::ImageMode, imagebuffer::ImageBuffer, inpaint, rgbimage::RgbImage};
+use sciimg::{
+    enums::ImageMode, imagebuffer::ImageBuffer, inpaint, rgbimage::RgbImage, DnVec, VecMath,
+};
 
 #[derive(Clone)]
 pub struct MarsImage {
     pub image: RgbImage,
     pub instrument: enums::Instrument,
     pub metadata: Option<Metadata>,
+    empty: bool,
 }
 
 impl MarsImage {
@@ -18,7 +21,21 @@ impl MarsImage {
             image: RgbImage::new_with_bands(width, height, 3, ImageMode::U8BIT).unwrap(),
             instrument,
             metadata: None,
+            empty: false,
         }
+    }
+
+    pub fn new_emtpy() -> Self {
+        MarsImage {
+            image: RgbImage::new_empty().unwrap(),
+            instrument: enums::Instrument::None,
+            metadata: None,
+            empty: true,
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.empty
     }
 
     pub fn open(file_path: String, instrument: enums::Instrument) -> Self {
@@ -32,6 +49,7 @@ impl MarsImage {
             image: RgbImage::open(&file_path).unwrap(),
             instrument,
             metadata: MarsImage::load_image_metadata(&file_path),
+            empty: false,
         }
     }
 
@@ -212,5 +230,57 @@ impl MarsImage {
 
     pub fn resize_to(&mut self, to_width: usize, to_height: usize) {
         self.image.resize_to(to_width, to_height);
+    }
+
+    pub fn calc_histogram(&self, band: usize) -> DnVec {
+        let buffer = self.image.get_band(band);
+        let mut hist = DnVec::fill(255, 0.0);
+        (0..buffer.buffer.len()).into_iter().for_each(|i| {
+            hist[buffer.buffer[i].round() as usize] += 1.0;
+        });
+        hist
+    }
+
+    fn is_index_a_histogram_gap(hist: &DnVec, index: usize) -> bool {
+        // We will define a histogram gap as an index with a zero value that is bounded by
+        // non-zero values.
+        if index == 0 || index == 254 {
+            // So by definition, the zeroth and last index cannot be a gap
+            false
+        } else {
+            hist[index] == 0.0 && hist[index - 1] > 0.0 && hist[index + 1] > 0.0
+        }
+    }
+
+    fn compute_destretch_lut(&self) -> DnVec {
+        let hist = self.calc_histogram(0);
+        let mut lut = DnVec::zeros(255);
+
+        let mut value_minus = 0.0;
+        (0..255).into_iter().for_each(|i| {
+            if MarsImage::is_index_a_histogram_gap(&hist, i) {
+                value_minus += 1.0;
+            }
+            lut[i] = i as f32 - value_minus;
+        });
+        lut
+    }
+
+    fn destretch_buffer_with_lut(buffer: &ImageBuffer, lut: &DnVec) -> ImageBuffer {
+        let mut corrected = buffer.clone();
+        (0..corrected.buffer.len()).into_iter().for_each(|i| {
+            corrected.buffer[i] = lut[corrected.buffer[i].round() as usize];
+        });
+        corrected
+    }
+
+    pub fn destretch_image(&mut self) {
+        let lut = self.compute_destretch_lut();
+        (0..self.image.num_bands()).into_iter().for_each(|i| {
+            self.image.set_band(
+                &MarsImage::destretch_buffer_with_lut(self.image.get_band(i), &lut),
+                i,
+            );
+        });
     }
 }
