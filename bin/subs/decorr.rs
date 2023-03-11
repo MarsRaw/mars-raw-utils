@@ -86,7 +86,7 @@ impl MinMaxIgnoreBlack for ImageBuffer {
             min: std::f32::MAX,
             max: std::f32::MIN,
         };
-        (0..self.buffer.len()).into_iter().for_each(|i| {
+        (0..self.buffer.len()).for_each(|i| {
             if self.buffer[i] != std::f32::INFINITY && self.buffer[i] > 0.0 {
                 mm.min = min!(mm.min, self.buffer[i]);
                 mm.max = max!(mm.max, self.buffer[i]);

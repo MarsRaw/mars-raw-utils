@@ -235,7 +235,7 @@ impl MarsImage {
     pub fn calc_histogram(&self, band: usize) -> DnVec {
         let buffer = self.image.get_band(band);
         let mut hist = DnVec::fill(255, 0.0);
-        (0..buffer.buffer.len()).into_iter().for_each(|i| {
+        (0..buffer.buffer.len()).for_each(|i| {
             hist[buffer.buffer[i].round() as usize] += 1.0;
         });
         hist
@@ -257,7 +257,7 @@ impl MarsImage {
         let mut lut = DnVec::zeros(255);
 
         let mut value_minus = 0.0;
-        (0..255).into_iter().for_each(|i| {
+        (0..255).for_each(|i| {
             if MarsImage::is_index_a_histogram_gap(&hist, i) {
                 value_minus += 1.0;
             }
@@ -268,7 +268,7 @@ impl MarsImage {
 
     fn destretch_buffer_with_lut(buffer: &ImageBuffer, lut: &DnVec) -> ImageBuffer {
         let mut corrected = buffer.clone();
-        (0..corrected.buffer.len()).into_iter().for_each(|i| {
+        (0..corrected.buffer.len()).for_each(|i| {
             corrected.buffer[i] = lut[corrected.buffer[i].round() as usize];
         });
         corrected
@@ -276,7 +276,7 @@ impl MarsImage {
 
     pub fn destretch_image(&mut self) {
         let lut = self.compute_destretch_lut();
-        (0..self.image.num_bands()).into_iter().for_each(|i| {
+        (0..self.image.num_bands()).for_each(|i| {
             self.image.set_band(
                 &MarsImage::destretch_buffer_with_lut(self.image.get_band(i), &lut),
                 i,

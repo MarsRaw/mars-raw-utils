@@ -11,7 +11,7 @@ pub struct M20EECam {}
 // Converts an image mask with values 0-255 to 0, 1
 fn create_adjusted_mask(buffer: &ImageBuffer) -> ImageBuffer {
     let mut adjusted = buffer.clone();
-    (0..adjusted.buffer.len()).into_iter().for_each(|i| {
+    (0..adjusted.buffer.len()).for_each(|i| {
         if adjusted.buffer[i] > 200.0 {
             // We're bias towards darkening here to account for interpolated pixel values
             // following an image resize (scale_factor>1). I'd rather grow the dark area (zeros)
