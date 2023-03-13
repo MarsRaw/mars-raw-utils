@@ -84,8 +84,8 @@ impl Calibration for M20EECam {
         let mut raw = MarsImage::open(String::from(input_file), instrument);
 
         // Apply destretching based off histogram gaps
-        vprintln!("Destretching...");
-        raw.destretch_image();
+        //vprintln!("Destretching...");
+        //raw.destretch_image();
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");

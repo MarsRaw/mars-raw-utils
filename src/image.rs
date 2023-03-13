@@ -236,7 +236,12 @@ impl MarsImage {
         let buffer = self.image.get_band(band);
         let mut hist = DnVec::fill(255, 0.0);
         (0..buffer.buffer.len()).for_each(|i| {
-            hist[buffer.buffer[i].round() as usize] += 1.0;
+            let r = self.image.get_band(0).buffer[i];
+            let g = self.image.get_band(1).buffer[i];
+            let b = self.image.get_band(2).buffer[i];
+            hist[r as usize] += 1.0;
+            hist[g as usize] += 1.0;
+            hist[b as usize] += 1.0;
         });
         hist
     }
