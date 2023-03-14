@@ -1,4 +1,4 @@
-use mars_raw_utils::nsyt::{latest::LatestData, remote::fetch_latest, remote::remote_fetch};
+use mars_raw_utils::nsyt::{remote::fetch_latest, remote::remote_fetch};
 
 #[tokio::test]
 async fn test_nsyt_latest() {

@@ -1,4 +1,4 @@
-use mars_raw_utils::msl::{latest::LatestData, remote::fetch_latest, remote::remote_fetch};
+use mars_raw_utils::msl::{remote::fetch_latest, remote::remote_fetch};
 
 #[tokio::test]
 async fn test_msl_latest() {

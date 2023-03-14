@@ -1,7 +1,7 @@
 use crate::image::MarsImage;
 
 use lazy_static;
-use sciimg::{error::Result, prelude::ImageBuffer};
+use sciimg::{error::Result, prelude::ImageBuffer, rgbimage::RgbImage};
 
 lazy_static! {
     static ref SUBFRAME_IDS_SCALE_FACTOR_1: Vec<Vec<usize>> = vec![
@@ -79,6 +79,77 @@ impl BufferGetBorderOverLap for ImageBuffer {
     }
 }
 
+impl BufferGetBorderOverLap for RgbImage {
+    fn get_left(&self) -> Result<RgbImage> {
+        RgbImage::new_from_buffers_rgb(
+            &self
+                .get_band(0)
+                .get_left()
+                .expect("Failed to retrieve subframe, channel 0"),
+            &self
+                .get_band(1)
+                .get_left()
+                .expect("Failed to retrieve subframe, channel 1"),
+            &self
+                .get_band(2)
+                .get_left()
+                .expect("Failed to retrieve subframe, channel 2"),
+            self.get_mode(),
+        )
+    }
+    fn get_right(&self) -> Result<RgbImage> {
+        RgbImage::new_from_buffers_rgb(
+            &self
+                .get_band(0)
+                .get_right()
+                .expect("Failed to retrieve subframe, channel 0"),
+            &self
+                .get_band(1)
+                .get_right()
+                .expect("Failed to retrieve subframe, channel 1"),
+            &self
+                .get_band(2)
+                .get_right()
+                .expect("Failed to retrieve subframe, channel 2"),
+            self.get_mode(),
+        )
+    }
+    fn get_top(&self) -> Result<RgbImage> {
+        RgbImage::new_from_buffers_rgb(
+            &self
+                .get_band(0)
+                .get_top()
+                .expect("Failed to retrieve subframe, channel 0"),
+            &self
+                .get_band(1)
+                .get_top()
+                .expect("Failed to retrieve subframe, channel 1"),
+            &self
+                .get_band(2)
+                .get_top()
+                .expect("Failed to retrieve subframe, channel 2"),
+            self.get_mode(),
+        )
+    }
+    fn get_bottom(&self) -> Result<RgbImage> {
+        RgbImage::new_from_buffers_rgb(
+            &self
+                .get_band(0)
+                .get_bottom()
+                .expect("Failed to retrieve subframe, channel 0"),
+            &self
+                .get_band(1)
+                .get_bottom()
+                .expect("Failed to retrieve subframe, channel 1"),
+            &self
+                .get_band(2)
+                .get_bottom()
+                .expect("Failed to retrieve subframe, channel 2"),
+            self.get_mode(),
+        )
+    }
+}
+
 impl NavcamTile for MarsImage {
     fn get_tile_id(&self) -> usize {
         match self.get_scale_factor() {
@@ -88,6 +159,9 @@ impl NavcamTile for MarsImage {
         }
     }
     fn get_tile_id_scale_factor_1(&self) -> usize {
+        if self.get_scale_factor() != 1 {
+            panic!("Cannot determine scale factor 1 tile id on a scale factor != 1 image");
+        }
         let sf = self.get_subframe_region();
         let x_frac = (sf[0] / 5121.0 * 4.0).round() as usize;
         let y_frac = (sf[1] / 3841.0 * 4.0).round() as usize;
@@ -95,6 +169,9 @@ impl NavcamTile for MarsImage {
     }
 
     fn get_tile_id_scale_factor_2(&self) -> usize {
+        if self.get_scale_factor() != 2 {
+            panic!("Cannot determine scale factor 2 tile id on a scale factor != 2 image");
+        }
         let sf = self.get_subframe_region();
         let x_frac = (sf[0] / 2560.0).round() as usize;
         let y_frac = (sf[1] / 1920.0).round() as usize;

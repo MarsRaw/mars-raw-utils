@@ -55,10 +55,53 @@ fn test_get_buffer_border_overlap() {
 }
 
 #[test]
+fn test_get_rgbimage_border_overlap() {
+    let raw = load_test_image_navright_sf_2();
+
+    let top = raw.image.get_top().expect("Error extracting top subframe");
+
+    let bottom = raw
+        .image
+        .get_bottom()
+        .expect("Error extracting bottom subframe");
+    let left = raw
+        .image
+        .get_left()
+        .expect("Error extracting left subframe");
+    let right = raw
+        .image
+        .get_right()
+        .expect("Error extracting right subframe");
+
+    assert_eq!(top.width, raw.image.width);
+    assert_eq!(top.height, 12);
+    assert_eq!(top.num_bands(), 3);
+
+    assert_eq!(bottom.width, raw.image.width);
+    assert_eq!(bottom.height, 12);
+    assert_eq!(bottom.num_bands(), 3);
+
+    assert_eq!(left.width, 12);
+    assert_eq!(left.height, raw.image.height);
+    assert_eq!(left.num_bands(), 3);
+
+    assert_eq!(right.width, 12);
+    assert_eq!(right.height, raw.image.height);
+    assert_eq!(right.num_bands(), 3);
+}
+
+#[test]
 fn test_tile_id_determination() {
     let raw = load_test_image_navright_sf_2();
     assert_eq!(raw.get_subframe_region(), vec![2545.0, 1.0, 2576.0, 1936.0]);
     assert_eq!(raw.get_tile_id(), 4);
     assert_eq!(raw.get_tile_id_scale_factor_2(), 4);
     assert_eq!(raw.get_scale_factor(), 2);
+}
+
+#[test]
+#[should_panic]
+fn test_tile_id_determination_wrong_scale_factor() {
+    let raw = load_test_image_navright_sf_2();
+    let _ = raw.get_tile_id_scale_factor_1();
 }
