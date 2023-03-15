@@ -1,0 +1,41 @@
+{
+  "link": "https://mars.nasa.gov/mars2020-raw-images/pub/ods/surface/sol/00670/ids/edr/browse/ncam/NLF_0670_0726421423_362ECM_N0320604NCAM08111_01_095J01.png",
+  "credit": "NASA/JPL-Caltech",
+  "sol": 670,
+  "imageid": "NLF_0670_0726421423_362ECM_N0320604NCAM08111_01_095J",
+  "caption": "NASA's Mars Perseverance rover acquired this image using its onboard Left Navigation Camera (Navcam). The camera is located high on the rover's mast and aids in driving. \n\nThis image was acquired on Jan. 8, 2023 (Sol 670) at the local mean solar time of 13:03:40.",
+  "date_taken_utc": "2023-01-08T03:53:04.187",
+  "date_taken_mars": "Sol-00670M13:03:40.477",
+  "subframe_rect": [
+    1.0,
+    1.0,
+    1288.0,
+    968.0
+  ],
+  "scale_factor": 1,
+  "instrument": "NAVCAM_LEFT",
+  "filter_name": "UNK",
+  "camera_vector": [
+    0.8682679938710433,
+    -0.4802771453762573,
+    0.12427612179492654
+  ],
+  "mast_az": 1.19218,
+  "mast_el": -33.9935,
+  "sclk": 726421425.133,
+  "date_received": "2023-01-08T20:55:21Z",
+  "sample_type": "Full",
+  "dimension": "(1288,968)",
+  "camera_position": "(0.950849,0.349753,-1.89429)",
+  "xyz": "(12.8213,60.1509,0.32331)",
+  "camera_model_type": "CAHVORE",
+  "site": 32,
+  "drive": 604,
+  "camera_model_component_list": "(0.950849,0.349753,-1.89429);(0.824195,0.0290508,0.565575);(2041.2,3032.24,1457.62);(-71.0941,9.0217,3538);(0.824089,0.0304646,0.565654);(0.000001736,0.0501396,-0.0171254);(-0.000000008,0.00000001,-0.000000029);2;0.0",
+  "decompand": false,
+  "debayer": false,
+  "flatfield": false,
+  "radiometric": false,
+  "inpaint": false,
+  "cropped": false
+}

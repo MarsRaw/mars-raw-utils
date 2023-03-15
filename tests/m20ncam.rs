@@ -1,5 +1,6 @@
 use mars_raw_utils::enums::Instrument;
 use mars_raw_utils::image::MarsImage;
+use mars_raw_utils::m20::ncamtile;
 use mars_raw_utils::m20::ncamtile::BufferGetBorderOverLap;
 use mars_raw_utils::m20::ncamtile::NavcamTile;
 
@@ -13,6 +14,28 @@ fn load_test_image_navright_sf_2() -> MarsImage {
     assert_eq!(raw.image.height, expected_height);
     assert_eq!(raw.image.width, expected_width);
     raw
+}
+
+fn load_test_image_navright_sf_1() -> MarsImage {
+    let raw = MarsImage::open(
+        String::from("tests/testdata/NLF_0670_0726421423_362ECM_N0320604NCAM08111_01_095J01.png"),
+        Instrument::M20NavcamLeft,
+    );
+    let expected_width = 1288;
+    let expected_height = 968;
+    assert_eq!(raw.image.height, expected_height);
+    assert_eq!(raw.image.width, expected_width);
+    raw
+}
+
+#[test]
+fn test_load_image_sf_2() {
+    let _ = load_test_image_navright_sf_2();
+}
+
+#[test]
+fn test_load_image_sf_1() {
+    let _ = load_test_image_navright_sf_1();
 }
 
 #[test]
@@ -91,7 +114,7 @@ fn test_get_rgbimage_border_overlap() {
 }
 
 #[test]
-fn test_tile_id_determination() {
+fn test_tile_id_determination_scale_factor_2() {
     let raw = load_test_image_navright_sf_2();
     assert_eq!(raw.get_subframe_region(), vec![2545.0, 1.0, 2576.0, 1936.0]);
     assert_eq!(raw.get_tile_id(), 4);
@@ -100,8 +123,60 @@ fn test_tile_id_determination() {
 }
 
 #[test]
+fn test_tile_id_determination_scale_factor_1() {
+    let raw = load_test_image_navright_sf_1();
+    assert_eq!(raw.get_subframe_region(), vec![1.0, 1.0, 1288.0, 968.0]);
+    assert_eq!(raw.get_tile_id(), 1);
+    assert_eq!(raw.get_tile_id_scale_factor_1(), 1);
+    assert_eq!(raw.get_scale_factor(), 1);
+}
+
+#[test]
 #[should_panic]
-fn test_tile_id_determination_wrong_scale_factor() {
+fn test_tile_id_determination_wrong_scale_factor_1() {
     let raw = load_test_image_navright_sf_2();
     let _ = raw.get_tile_id_scale_factor_1();
+}
+
+#[test]
+#[should_panic]
+fn test_tile_id_determination_wrong_scale_factor_2() {
+    let raw = load_test_image_navright_sf_1();
+    let _ = raw.get_tile_id_scale_factor_2();
+}
+
+#[test]
+fn test_get_subframes_for_tile_id_pairs_scale_factor_2() {
+    let image1 = load_test_image_navright_sf_2();
+    let image2 = load_test_image_navright_sf_2();
+
+    ncamtile::FRAME_MATCH_PAIRS_SCALEFACTOR_2
+        .iter()
+        .for_each(|pair| {
+            let _ = ncamtile::get_subframes_for_tile_id_pair(
+                &image1.image,
+                &image2.image,
+                pair[0],
+                pair[1],
+                2,
+            );
+        });
+}
+
+#[test]
+fn test_get_subframes_for_tile_id_pairs_scale_factor_1() {
+    let image1 = load_test_image_navright_sf_1();
+    let image2 = load_test_image_navright_sf_1();
+
+    ncamtile::FRAME_MATCH_PAIRS_SCALEFACTOR_1
+        .iter()
+        .for_each(|pair| {
+            let _ = ncamtile::get_subframes_for_tile_id_pair(
+                &image1.image,
+                &image2.image,
+                pair[0],
+                pair[1],
+                1,
+            );
+        });
 }

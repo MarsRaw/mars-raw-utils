@@ -2,6 +2,10 @@ use mars_raw_utils::{m20::assemble::*, prelude::*};
 
 use crate::subs::runnable::RunnableSubcommand;
 
+use mars_raw_utils::m20::ncamtile;
+use mars_raw_utils::m20::ncamtile::BufferGetBorderOverLap;
+use mars_raw_utils::m20::ncamtile::NavcamTile;
+
 use std::process;
 
 #[derive(clap::Args)]
@@ -28,8 +32,32 @@ impl RunnableSubcommand for M20EcamAssemble {
             .iter()
             .map(|s| String::from(s.as_os_str().to_str().unwrap()))
             .collect();
-        let output = self.output.as_os_str().to_str().unwrap();
+        //let output = self.output.as_os_str().to_str().unwrap();
 
+        let mut tiles: Vec<MarsImage> = vec![];
+        for in_file in in_files.iter() {
+            if !path::file_exists(in_file) {
+                eprintln!("File not found: {}", in_file);
+                process::exit(1);
+            }
+            let mut image = MarsImage::open(String::from(in_file), Instrument::M20NavcamRight);
+            image.destretch_image();
+
+            tiles.push(image);
+        }
+
+        ncamtile::match_levels(&mut tiles);
+
+        for tile in tiles {
+            if let Some(file_path) = &tile.file_path {
+                let out_file = util::append_file_name(&file_path, "matched");
+                vprintln!("Writing to disk...");
+
+                tile.save(&out_file);
+            }
+        }
+
+        /*
         let mut tiles: Vec<Tile> = vec![];
 
         for in_file in in_files.iter() {
@@ -50,5 +78,6 @@ impl RunnableSubcommand for M20EcamAssemble {
 
         vprintln!("Saving composite to {}", output);
         composite.finalize_and_save(output);
+        */
     }
 }

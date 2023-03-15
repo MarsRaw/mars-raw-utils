@@ -13,6 +13,7 @@ pub struct MarsImage {
     pub instrument: enums::Instrument,
     pub metadata: Option<Metadata>,
     empty: bool,
+    pub file_path: Option<String>,
 }
 
 impl MarsImage {
@@ -22,6 +23,7 @@ impl MarsImage {
             instrument,
             metadata: None,
             empty: false,
+            file_path: None,
         }
     }
 
@@ -31,6 +33,7 @@ impl MarsImage {
             instrument: enums::Instrument::None,
             metadata: None,
             empty: true,
+            file_path: None,
         }
     }
 
@@ -50,6 +53,7 @@ impl MarsImage {
             instrument,
             metadata: MarsImage::load_image_metadata(&file_path),
             empty: false,
+            file_path: Some(file_path),
         }
     }
 
