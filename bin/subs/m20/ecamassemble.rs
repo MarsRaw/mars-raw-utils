@@ -1,10 +1,8 @@
-use mars_raw_utils::{m20::assemble::*, prelude::*};
+use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 
 use mars_raw_utils::m20::ncamtile;
-use mars_raw_utils::m20::ncamtile::BufferGetBorderOverLap;
-use mars_raw_utils::m20::ncamtile::NavcamTile;
 
 use std::process;
 
@@ -50,7 +48,7 @@ impl RunnableSubcommand for M20EcamAssemble {
 
         for tile in tiles {
             if let Some(file_path) = &tile.file_path {
-                let out_file = util::append_file_name(&file_path, "matched");
+                let out_file = util::append_file_name(file_path, "matched");
                 vprintln!("Writing to disk...");
 
                 tile.save(&out_file);

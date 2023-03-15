@@ -2,7 +2,7 @@ use crate::image::MarsImage;
 use crate::vprintln;
 
 use lazy_static;
-use sciimg::{error::Result, not_implemented, prelude::ImageBuffer, rgbimage::RgbImage};
+use sciimg::{error::Result, prelude::ImageBuffer, rgbimage::RgbImage};
 
 lazy_static! {
     static ref SUBFRAME_IDS_SCALE_FACTOR_1: Vec<Vec<usize>> = vec![
@@ -372,9 +372,9 @@ fn determine_match_normalize_high(target: &MarsImage, adjust: &MarsImage) -> (f3
     (adjust_min, adjust_max, normalization_factor_high)
 }
 
-fn get_image_index_by_id(images: &Vec<MarsImage>, tile_id: usize) -> Option<usize> {
+fn get_image_index_by_id(images: &[MarsImage], tile_id: usize) -> Option<usize> {
     let mut found_image_index = None;
-    for i in 0..images.len() {
+    for (i, _) in images.iter().enumerate() {
         if images[i].get_tile_id() == tile_id {
             vprintln!("Image found for tile id {}", tile_id);
             found_image_index = Some(i);
@@ -384,7 +384,7 @@ fn get_image_index_by_id(images: &Vec<MarsImage>, tile_id: usize) -> Option<usiz
     found_image_index
 }
 
-pub fn match_levels(images: &mut Vec<MarsImage>) {
+pub fn match_levels(images: &mut [MarsImage]) {
     for pair in FRAME_MATCH_PAIRS_SCALEFACTOR_2.iter() {
         let target_index_opt = get_image_index_by_id(images, pair[0]);
         let adjust_index_opt = get_image_index_by_id(images, pair[1]);
