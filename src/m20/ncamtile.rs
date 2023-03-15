@@ -144,12 +144,8 @@ pub fn get_subframes_for_tile_id_pair(
 
 impl RgbImageAdjust for RgbImage {
     fn mean(&self) -> f32 {
-        // This is not correct, just me being lazy at the moment.
-        let mut m = 0.0;
-        (0..self.num_bands()).for_each(|i| {
-            m += self.get_band(i).mean();
-        });
-        m / self.num_bands() as f32
+        (self.get_band(0).sum() + self.get_band(1).sum() + self.get_band(2).sum())
+            / (self.get_band(0).width as f32 * self.get_band(0).height as f32 * 3.0)
     }
     fn determine_match_normalize_high(&self, target: &Self) -> f32 {
         let mut prev_diff = None;
@@ -164,9 +160,9 @@ impl RgbImageAdjust for RgbImage {
             //vprintln!("Checking normalization value {}", i);
 
             let mut normed_2 = self.clone();
-            normed_2.normalize_band_to_with_min_max(0, self_min, self_max, self_min, i);
-            normed_2.normalize_band_to_with_min_max(1, self_min, self_max, self_min, i);
-            normed_2.normalize_band_to_with_min_max(2, self_min, self_max, self_min, i);
+            normed_2.normalize_band_to_with_min_max(0, self_min, i, self_min, self_max);
+            normed_2.normalize_band_to_with_min_max(1, self_min, i, self_min, self_max);
+            normed_2.normalize_band_to_with_min_max(2, self_min, i, self_min, self_max);
 
             if prev_normed_2.is_some() && prev_diff.is_some() {
                 let curr_diff = (target_mean - normed_2.mean()).abs();
@@ -197,10 +193,10 @@ impl BufferGetBorderOverLap for ImageBuffer {
         self.get_subframe(self.width - 16, 0, 16, self.height)
     }
     fn get_top(&self) -> Result<ImageBuffer> {
-        self.get_subframe(0, 0, self.width, 12)
+        self.get_subframe(0, 0, self.width, 16)
     }
     fn get_bottom(&self) -> Result<ImageBuffer> {
-        self.get_subframe(0, self.height - 12, self.width, 12)
+        self.get_subframe(0, self.height - 16, self.width, 16)
     }
 }
 
@@ -361,8 +357,8 @@ fn determine_match_normalize_high(target: &MarsImage, adjust: &MarsImage) -> (f3
         target.get_scale_factor(),
     );
 
-    target_subframe.save("/mnt/e/Data/M20/0670/NCAM/NLF_0670_0726428748_523ECM_N0320672NCAM12670_01_195J01-subframe.png");
-    adjust_subframe.save("/mnt/e/Data/M20/0670/NCAM/NLF_0670_0726428748_523ECM_N0320672NCAM12670_04_195J01-subframe.png");
+    target_subframe.save("/data/M20/0629/NCAM/scale2-vert/NLF_0629_0722785336_039ECM_N0301524NCAM00428_01_195J01-subframe.png");
+    adjust_subframe.save("/data/M20/0629/NCAM/scale2-vert/NLF_0629_0722785336_039ECM_N0301524NCAM00428_07_195J01-subframe.png");
 
     let normalization_factor_high =
         adjust_subframe.determine_match_normalize_high(&target_subframe);
@@ -411,23 +407,23 @@ pub fn match_levels(images: &mut [MarsImage]) {
         images[adjust_index].image.normalize_band_to_with_min_max(
             0,
             adjust_min,
-            adjust_max,
-            adjust_min,
             normalization_factor_high,
+            adjust_min,
+            adjust_max,
         );
         images[adjust_index].image.normalize_band_to_with_min_max(
             1,
             adjust_min,
             normalization_factor_high,
             adjust_min,
-            normalization_factor_high,
+            adjust_max,
         );
         images[adjust_index].image.normalize_band_to_with_min_max(
             2,
             adjust_min,
-            adjust_max,
-            adjust_min,
             normalization_factor_high,
+            adjust_min,
+            adjust_max,
         );
     }
 }

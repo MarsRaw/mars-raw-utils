@@ -65,10 +65,10 @@ fn test_get_buffer_border_overlap() {
         .expect("Error extracting right subframe");
 
     assert_eq!(top.width, raw.image.width);
-    assert_eq!(top.height, 12);
+    assert_eq!(top.height, 16);
 
     assert_eq!(bottom.width, raw.image.width);
-    assert_eq!(bottom.height, 12);
+    assert_eq!(bottom.height, 16);
 
     assert_eq!(left.width, 16);
     assert_eq!(left.height, raw.image.height);
@@ -97,11 +97,11 @@ fn test_get_rgbimage_border_overlap() {
         .expect("Error extracting right subframe");
 
     assert_eq!(top.width, raw.image.width);
-    assert_eq!(top.height, 12);
+    assert_eq!(top.height, 16);
     assert_eq!(top.num_bands(), 3);
 
     assert_eq!(bottom.width, raw.image.width);
-    assert_eq!(bottom.height, 12);
+    assert_eq!(bottom.height, 16);
     assert_eq!(bottom.num_bands(), 3);
 
     assert_eq!(left.width, 16);
