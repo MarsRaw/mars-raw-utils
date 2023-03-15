@@ -1,55 +1,9 @@
-use crate::image::MarsImage;
+use crate::m20::assemble::{
+    NavcamTile, FRAME_MATCH_PAIRS_SCALEFACTOR_1, FRAME_MATCH_PAIRS_SCALEFACTOR_2,
+};
 use crate::vprintln;
 
-use lazy_static;
 use sciimg::{error::Result, prelude::ImageBuffer, rgbimage::RgbImage};
-
-lazy_static! {
-    static ref SUBFRAME_IDS_SCALE_FACTOR_1: Vec<Vec<usize>> = vec![
-        vec![1, 5, 9, 13],
-        vec![2, 6, 10, 14],
-        vec![3, 7, 11, 15],
-        vec![4, 8, 12, 16],
-    ];
-}
-
-lazy_static! {
-    static ref SUBFRAME_IDS_SCALE_FACTOR_2: Vec<Vec<usize>> = vec![vec![1, 4], vec![7, 10]];
-}
-
-lazy_static! {
-    pub static ref FRAME_MATCH_PAIRS_SCALEFACTOR_1: Vec<Vec<usize>> = vec![
-        vec![1, 5],
-        vec![5, 9],
-        vec![9, 13],
-        vec![1, 2],
-        vec![2, 3],
-        vec![3, 4],
-        vec![5, 6],
-        vec![6, 7],
-        vec![7, 8],
-        vec![9, 10],
-        vec![10, 11],
-        vec![11, 12],
-        vec![13, 14],
-        vec![14, 15],
-        vec![15, 16],
-    ];
-}
-
-lazy_static! {
-    pub static ref FRAME_MATCH_PAIRS_SCALEFACTOR_2: Vec<Vec<usize>> =
-        vec![vec![1, 4], vec![1, 7], vec![4, 10]];
-}
-
-pub trait NavcamTile {
-    fn get_tile_id_scale_factor_1(&self) -> usize;
-    fn get_tile_id_scale_factor_2(&self) -> usize;
-    fn get_tile_id(&self) -> usize;
-    fn get_scale_factor(&self) -> u32;
-    fn get_subframe_region(&self) -> Vec<f64>;
-    fn match_levels(&self, adjust: &mut Self);
-}
 
 pub trait BufferGetBorderOverLap {
     fn get_left(&self) -> Result<Self>
@@ -66,7 +20,7 @@ pub trait BufferGetBorderOverLap {
         Self: Sized;
 }
 
-trait RgbImageAdjust {
+pub trait RgbImageAdjust {
     fn mean(&self) -> f32;
     fn determine_match_normalize_high(&self, target: &Self) -> f32;
 }
@@ -157,7 +111,6 @@ impl RgbImageAdjust for RgbImage {
 
         for i in (self_min as i16 * 10)..3500 {
             let i = f32::from(i) * 0.1;
-            //vprintln!("Checking normalization value {}", i);
 
             let mut normed_2 = self.clone();
             normed_2.normalize_band_to_with_min_max(0, self_min, i, self_min, self_max);
@@ -166,7 +119,7 @@ impl RgbImageAdjust for RgbImage {
 
             if prev_normed_2.is_some() && prev_diff.is_some() {
                 let curr_diff = (target_mean - normed_2.mean()).abs();
-                println!("Curr Diff: {} ({})", curr_diff, i);
+                vprintln!("Curr Diff: {} ({})", curr_diff, i);
                 if let Some(pd) = prev_diff {
                     if curr_diff > pd {
                         vprintln!("Correcting high to within a mean difference of {}", pd);
@@ -271,94 +224,20 @@ impl BufferGetBorderOverLap for RgbImage {
     }
 }
 
-impl NavcamTile for MarsImage {
-    fn get_tile_id(&self) -> usize {
-        match self.get_scale_factor() {
-            1 => self.get_tile_id_scale_factor_1(),
-            2 => self.get_tile_id_scale_factor_2(),
-            _ => panic!("Error: Cannot determine tile id: Unsupported scale factor"),
-        }
-    }
-    fn get_tile_id_scale_factor_1(&self) -> usize {
-        if self.get_scale_factor() != 1 {
-            panic!("Cannot determine scale factor 1 tile id on a scale factor != 1 image");
-        }
-        let sf = self.get_subframe_region();
-        let x_frac = (sf[0] / 5121.0 * 4.0).round() as usize;
-        let y_frac = (sf[1] / 3841.0 * 4.0).round() as usize;
-        SUBFRAME_IDS_SCALE_FACTOR_1[y_frac][x_frac]
-    }
-
-    fn get_tile_id_scale_factor_2(&self) -> usize {
-        if self.get_scale_factor() != 2 {
-            panic!("Cannot determine scale factor 2 tile id on a scale factor != 2 image");
-        }
-        let sf = self.get_subframe_region();
-        let x_frac = (sf[0] / 2560.0).round() as usize;
-        let y_frac = (sf[1] / 1920.0).round() as usize;
-        SUBFRAME_IDS_SCALE_FACTOR_2[y_frac][x_frac]
-    }
-
-    fn get_scale_factor(&self) -> u32 {
-        if let Some(md) = &self.metadata {
-            md.scale_factor
-        } else {
-            1
-        }
-    }
-    fn get_subframe_region(&self) -> Vec<f64> {
-        if let Some(md) = &self.metadata {
-            if let Some(sf) = &md.subframe_rect {
-                sf.clone()
-            } else {
-                vec![0.0]
-            }
-        } else {
-            vec![0.0]
-        }
-    }
-
-    fn match_levels(&self, adjust: &mut Self) {
-        let target_tile_id = self.get_tile_id();
-        let adjust_tile_id = adjust.get_tile_id();
-
-        let (target_subframe, adjust_subframe) = get_subframes_for_tile_id_pair(
-            &self.image,
-            &adjust.image,
-            target_tile_id,
-            adjust_tile_id,
-            self.get_scale_factor(),
-        );
-
-        let normalization_factor_high =
-            adjust_subframe.determine_match_normalize_high(&target_subframe);
-
-        // corrected_image_2 = normalize(adjust_image[:,:], sub_frame_2_0.min(), sub_frame_2_0.max(), sub_frame_2_0.min(), normalize_to_high)
-        let (adjust_min, adjust_max) = adjust_subframe.get_min_max_all_channel();
-        adjust.image.normalize_band_to_with_min_max(
-            0,
-            adjust_min,
-            normalization_factor_high,
-            adjust_min,
-            adjust_max,
-        );
-    }
-}
-
-fn determine_match_normalize_high(target: &MarsImage, adjust: &MarsImage) -> (f32, f32, f32) {
+pub fn determine_match_normalize_high(target: &NavcamTile, adjust: &NavcamTile) -> (f32, f32, f32) {
     let target_tile_id = target.get_tile_id();
     let adjust_tile_id = adjust.get_tile_id();
 
     let (target_subframe, adjust_subframe) = get_subframes_for_tile_id_pair(
-        &target.image,
-        &adjust.image,
+        &target.image.image,
+        &adjust.image.image,
         target_tile_id,
         adjust_tile_id,
         target.get_scale_factor(),
     );
 
-    target_subframe.save("/data/M20/0629/NCAM/scale2-vert/NLF_0629_0722785336_039ECM_N0301524NCAM00428_01_195J01-subframe.png");
-    adjust_subframe.save("/data/M20/0629/NCAM/scale2-vert/NLF_0629_0722785336_039ECM_N0301524NCAM00428_07_195J01-subframe.png");
+    //target_subframe.save("/data/M20/0629/NCAM/scale2-vert/NLF_0629_0722785336_039ECM_N0301524NCAM00428_01_195J01-subframe.png");
+    //adjust_subframe.save("/data/M20/0629/NCAM/scale2-vert/NLF_0629_0722785336_039ECM_N0301524NCAM00428_07_195J01-subframe.png");
 
     let normalization_factor_high =
         adjust_subframe.determine_match_normalize_high(&target_subframe);
@@ -368,7 +247,7 @@ fn determine_match_normalize_high(target: &MarsImage, adjust: &MarsImage) -> (f3
     (adjust_min, adjust_max, normalization_factor_high)
 }
 
-fn get_image_index_by_id(images: &[MarsImage], tile_id: usize) -> Option<usize> {
+fn get_image_index_by_id(images: &[NavcamTile], tile_id: usize) -> Option<usize> {
     let mut found_image_index = None;
     for (i, _) in images.iter().enumerate() {
         if images[i].get_tile_id() == tile_id {
@@ -380,7 +259,7 @@ fn get_image_index_by_id(images: &[MarsImage], tile_id: usize) -> Option<usize> 
     found_image_index
 }
 
-pub fn match_levels(images: &mut [MarsImage]) {
+pub fn match_levels(images: &mut [NavcamTile]) {
     for pair in FRAME_MATCH_PAIRS_SCALEFACTOR_2.iter() {
         let target_index_opt = get_image_index_by_id(images, pair[0]);
         let adjust_index_opt = get_image_index_by_id(images, pair[1]);
@@ -404,26 +283,35 @@ pub fn match_levels(images: &mut [MarsImage]) {
             normalization_factor_high
         );
         // corrected_image_2 = normalize(adjust_image[:,:], sub_frame_2_0.min(), sub_frame_2_0.max(), sub_frame_2_0.min(), normalize_to_high)
-        images[adjust_index].image.normalize_band_to_with_min_max(
-            0,
-            adjust_min,
-            normalization_factor_high,
-            adjust_min,
-            adjust_max,
-        );
-        images[adjust_index].image.normalize_band_to_with_min_max(
-            1,
-            adjust_min,
-            normalization_factor_high,
-            adjust_min,
-            adjust_max,
-        );
-        images[adjust_index].image.normalize_band_to_with_min_max(
-            2,
-            adjust_min,
-            normalization_factor_high,
-            adjust_min,
-            adjust_max,
-        );
+        images[adjust_index]
+            .image
+            .image
+            .normalize_band_to_with_min_max(
+                0,
+                adjust_min,
+                normalization_factor_high,
+                adjust_min,
+                adjust_max,
+            );
+        images[adjust_index]
+            .image
+            .image
+            .normalize_band_to_with_min_max(
+                1,
+                adjust_min,
+                normalization_factor_high,
+                adjust_min,
+                adjust_max,
+            );
+        images[adjust_index]
+            .image
+            .image
+            .normalize_band_to_with_min_max(
+                2,
+                adjust_min,
+                normalization_factor_high,
+                adjust_min,
+                adjust_max,
+            );
     }
 }

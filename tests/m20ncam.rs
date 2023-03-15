@@ -1,8 +1,10 @@
 use mars_raw_utils::enums::Instrument;
 use mars_raw_utils::image::MarsImage;
-use mars_raw_utils::m20::ncamtile;
-use mars_raw_utils::m20::ncamtile::BufferGetBorderOverLap;
-use mars_raw_utils::m20::ncamtile::NavcamTile;
+use mars_raw_utils::m20::assemble::{
+    NavcamTile, FRAME_MATCH_PAIRS_SCALEFACTOR_1, FRAME_MATCH_PAIRS_SCALEFACTOR_2,
+};
+use mars_raw_utils::m20::ncamlevels;
+use mars_raw_utils::m20::ncamlevels::BufferGetBorderOverLap;
 
 fn load_test_image_navright_sf_2() -> MarsImage {
     let raw = MarsImage::open(
@@ -116,33 +118,40 @@ fn test_get_rgbimage_border_overlap() {
 #[test]
 fn test_tile_id_determination_scale_factor_2() {
     let raw = load_test_image_navright_sf_2();
-    assert_eq!(raw.get_subframe_region(), vec![2545.0, 1.0, 2576.0, 1936.0]);
-    assert_eq!(raw.get_tile_id(), 4);
-    assert_eq!(raw.get_tile_id_scale_factor_2(), 4);
-    assert_eq!(raw.get_scale_factor(), 2);
+    let tile = NavcamTile::new_with_image(&raw);
+    assert_eq!(
+        tile.get_subframe_region(),
+        vec![2545.0, 1.0, 2576.0, 1936.0]
+    );
+    assert_eq!(tile.get_tile_id(), 4);
+    assert_eq!(tile.get_tile_id_scale_factor_2(), 4);
+    assert_eq!(tile.get_scale_factor(), 2);
 }
 
 #[test]
 fn test_tile_id_determination_scale_factor_1() {
     let raw = load_test_image_navright_sf_1();
-    assert_eq!(raw.get_subframe_region(), vec![1.0, 1.0, 1288.0, 968.0]);
-    assert_eq!(raw.get_tile_id(), 1);
-    assert_eq!(raw.get_tile_id_scale_factor_1(), 1);
-    assert_eq!(raw.get_scale_factor(), 1);
+    let tile = NavcamTile::new_with_image(&raw);
+    assert_eq!(tile.get_subframe_region(), vec![1.0, 1.0, 1288.0, 968.0]);
+    assert_eq!(tile.get_tile_id(), 1);
+    assert_eq!(tile.get_tile_id_scale_factor_1(), 1);
+    assert_eq!(tile.get_scale_factor(), 1);
 }
 
 #[test]
 #[should_panic]
 fn test_tile_id_determination_wrong_scale_factor_1() {
     let raw = load_test_image_navright_sf_2();
-    let _ = raw.get_tile_id_scale_factor_1();
+    let tile = NavcamTile::new_with_image(&raw);
+    let _ = tile.get_tile_id_scale_factor_1();
 }
 
 #[test]
 #[should_panic]
 fn test_tile_id_determination_wrong_scale_factor_2() {
     let raw = load_test_image_navright_sf_1();
-    let _ = raw.get_tile_id_scale_factor_2();
+    let tile = NavcamTile::new_with_image(&raw);
+    let _ = tile.get_tile_id_scale_factor_2();
 }
 
 #[test]
@@ -150,17 +159,15 @@ fn test_get_subframes_for_tile_id_pairs_scale_factor_2() {
     let image1 = load_test_image_navright_sf_2();
     let image2 = load_test_image_navright_sf_2();
 
-    ncamtile::FRAME_MATCH_PAIRS_SCALEFACTOR_2
-        .iter()
-        .for_each(|pair| {
-            let _ = ncamtile::get_subframes_for_tile_id_pair(
-                &image1.image,
-                &image2.image,
-                pair[0],
-                pair[1],
-                2,
-            );
-        });
+    FRAME_MATCH_PAIRS_SCALEFACTOR_2.iter().for_each(|pair| {
+        let _ = ncamlevels::get_subframes_for_tile_id_pair(
+            &image1.image,
+            &image2.image,
+            pair[0],
+            pair[1],
+            2,
+        );
+    });
 }
 
 #[test]
@@ -168,15 +175,13 @@ fn test_get_subframes_for_tile_id_pairs_scale_factor_1() {
     let image1 = load_test_image_navright_sf_1();
     let image2 = load_test_image_navright_sf_1();
 
-    ncamtile::FRAME_MATCH_PAIRS_SCALEFACTOR_1
-        .iter()
-        .for_each(|pair| {
-            let _ = ncamtile::get_subframes_for_tile_id_pair(
-                &image1.image,
-                &image2.image,
-                pair[0],
-                pair[1],
-                1,
-            );
-        });
+    FRAME_MATCH_PAIRS_SCALEFACTOR_1.iter().for_each(|pair| {
+        let _ = ncamlevels::get_subframes_for_tile_id_pair(
+            &image1.image,
+            &image2.image,
+            pair[0],
+            pair[1],
+            1,
+        );
+    });
 }

@@ -7,7 +7,7 @@ pub mod helirte;
 pub mod latest;
 pub mod metadata;
 pub mod missiontime;
-pub mod ncamtile;
+pub mod ncamlevels;
 pub mod pixlmcc;
 pub mod remote;
 pub mod scam;
