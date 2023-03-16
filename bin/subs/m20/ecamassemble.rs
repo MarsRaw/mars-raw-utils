@@ -39,23 +39,14 @@ impl RunnableSubcommand for M20EcamAssemble {
                 eprintln!("File not found: {}", in_file);
                 process::exit(1);
             }
-            let mut image =
+            let image =
                 NavcamTile::new_from_file(&String::from(in_file), Instrument::M20NavcamRight);
-            image.image.destretch_image();
+            //image.image.destretch_image();
 
             tiles.push(image);
         }
 
         ncamlevels::match_levels(&mut tiles);
-
-        // for tile in &tiles {
-        //     if let Some(file_path) = &tile.image.file_path {
-        //         let out_file = util::append_file_name(file_path, "matched");
-        //         vprintln!("Writing to disk...");
-
-        //         tile.image.save(&out_file);
-        //     }
-        // }
 
         vprintln!("Creating composite structure");
         let mut composite = Composite::new(&tiles);
@@ -70,20 +61,5 @@ impl RunnableSubcommand for M20EcamAssemble {
             md.subframe_rect = Some(vec![1.0, 1.0, 5120.0, 3840.0]);
             util::save_image_json(output, &md, false, None).unwrap();
         }
-        /*
-        let mut tiles: Vec<Tile> = vec![];
-
-        for in_file in in_files.iter() {
-            if !path::file_exists(in_file) {
-                eprintln!("File not found: {}", in_file);
-                process::exit(1);
-            }
-            let tile = Tile::new(in_file);
-            tiles.push(tile);
-        }
-
-        // TODO: This is bad form.
-
-        */
     }
 }

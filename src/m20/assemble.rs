@@ -1,5 +1,3 @@
-use crate::m20::ncamlevels::{get_subframes_for_tile_id_pair, RgbImageAdjust};
-
 use crate::prelude::*;
 use sciimg::{enums::ImageMode, rgbimage};
 
@@ -61,9 +59,6 @@ impl NavcamTile {
     }
 
     pub fn new_with_image(image: &MarsImage) -> Self {
-        //let instrument = Instrument::M20NavcamLeft;
-        //let image = MarsImage::open(String::from(&source_path.to_owned()), instrument);
-
         NavcamTile {
             image: image.clone(),
         }
@@ -75,7 +70,6 @@ impl NavcamTile {
 
         if sf.len() != 4 {
             return None;
-            //panic!("Subframe rect field an invalid length");
         }
         let tl_x = (sf[0] / scale as f64).floor() as usize + 2;
         let tl_y = (sf[1] / scale as f64).floor() as usize + 2;
@@ -135,32 +129,6 @@ impl NavcamTile {
         } else {
             vec![0.0]
         }
-    }
-
-    pub fn match_levels(&self, adjust: &mut Self) {
-        let target_tile_id = self.get_tile_id();
-        let adjust_tile_id = adjust.get_tile_id();
-
-        let (target_subframe, adjust_subframe) = get_subframes_for_tile_id_pair(
-            &self.image.image,
-            &adjust.image.image,
-            target_tile_id,
-            adjust_tile_id,
-            self.get_scale_factor(),
-        );
-
-        let normalization_factor_high =
-            adjust_subframe.determine_match_normalize_high(&target_subframe);
-
-        // corrected_image_2 = normalize(adjust_image[:,:], sub_frame_2_0.min(), sub_frame_2_0.max(), sub_frame_2_0.min(), normalize_to_high)
-        let (adjust_min, adjust_max) = adjust_subframe.get_min_max_all_channel();
-        adjust.image.image.normalize_band_to_with_min_max(
-            0,
-            adjust_min,
-            normalization_factor_high,
-            adjust_min,
-            adjust_max,
-        );
     }
 }
 
@@ -238,7 +206,7 @@ impl Composite {
     }
 
     pub fn finalize_and_save(&mut self, output_path: &str) {
-        self.composite_image.normalize_to_16bit();
+        self.composite_image.normalize_to_16bit_with_max(255.0);
         self.composite_image.save(output_path);
     }
 }

@@ -1,9 +1,7 @@
-use crate::m20::assemble::{
-    NavcamTile, FRAME_MATCH_PAIRS_SCALEFACTOR_1, FRAME_MATCH_PAIRS_SCALEFACTOR_2,
-};
+use crate::m20::assemble::NavcamTile;
 use crate::vprintln;
 
-use sciimg::{error::Result, prelude::ImageBuffer, rgbimage::RgbImage};
+use sciimg::{blur, error::Result, prelude::ImageBuffer, rgbimage::RgbImage};
 
 pub trait BufferGetBorderOverLap {
     fn get_left(&self) -> Result<Self>
@@ -224,11 +222,14 @@ impl BufferGetBorderOverLap for RgbImage {
     }
 }
 
-pub fn determine_match_normalize_high(target: &NavcamTile, adjust: &NavcamTile) -> (f32, f32, f32) {
+pub fn determine_match_normalize_high(
+    target: &NavcamTile,
+    adjust: &NavcamTile,
+) -> (f32, f32, f32, f32) {
     let target_tile_id = target.get_tile_id();
     let adjust_tile_id = adjust.get_tile_id();
 
-    let (target_subframe, adjust_subframe) = get_subframes_for_tile_id_pair(
+    let (mut target_subframe, mut adjust_subframe) = get_subframes_for_tile_id_pair(
         &target.image.image,
         &adjust.image.image,
         target_tile_id,
@@ -236,15 +237,40 @@ pub fn determine_match_normalize_high(target: &NavcamTile, adjust: &NavcamTile) 
         target.get_scale_factor(),
     );
 
-    //target_subframe.save("/data/M20/0629/NCAM/scale2-vert/NLF_0629_0722785336_039ECM_N0301524NCAM00428_01_195J01-subframe.png");
-    //adjust_subframe.save("/data/M20/0629/NCAM/scale2-vert/NLF_0629_0722785336_039ECM_N0301524NCAM00428_07_195J01-subframe.png");
+    //target_subframe.save("/home/kgill/data/M20/0732/NCAM/foo-sf-0.png");
+    //adjust_subframe.save("/home/kgill/data/M20/0732/NCAM/foo-sf-1.png");
 
-    let normalization_factor_high =
-        adjust_subframe.determine_match_normalize_high(&target_subframe);
+    //let normalization_factor_high =
+    //    adjust_subframe.determine_match_normalize_high(&target_subframe);
+    target_subframe.set_band(
+        &blur::blur_imagebuffer(target_subframe.get_band(0), 10.0),
+        0,
+    );
+    target_subframe.set_band(
+        &blur::blur_imagebuffer(target_subframe.get_band(1), 10.0),
+        1,
+    );
+    target_subframe.set_band(
+        &blur::blur_imagebuffer(target_subframe.get_band(2), 10.0),
+        2,
+    );
+
+    adjust_subframe.set_band(
+        &blur::blur_imagebuffer(adjust_subframe.get_band(0), 10.0),
+        0,
+    );
+    adjust_subframe.set_band(
+        &blur::blur_imagebuffer(adjust_subframe.get_band(1), 10.0),
+        1,
+    );
+    adjust_subframe.set_band(
+        &blur::blur_imagebuffer(adjust_subframe.get_band(2), 10.0),
+        2,
+    );
 
     let (adjust_min, adjust_max) = adjust_subframe.get_min_max_all_channel();
-
-    (adjust_min, adjust_max, normalization_factor_high)
+    let (target_min, target_max) = target_subframe.get_min_max_all_channel();
+    (adjust_min, adjust_max, target_min, target_max)
 }
 
 fn get_image_index_by_id(images: &[NavcamTile], tile_id: usize) -> Option<usize> {
@@ -259,8 +285,8 @@ fn get_image_index_by_id(images: &[NavcamTile], tile_id: usize) -> Option<usize>
     found_image_index
 }
 
-pub fn match_levels(images: &mut [NavcamTile]) {
-    for pair in FRAME_MATCH_PAIRS_SCALEFACTOR_2.iter() {
+pub fn match_levels_with_pairs(images: &mut [NavcamTile], pair_list: &Vec<Vec<usize>>) {
+    for pair in pair_list {
         let target_index_opt = get_image_index_by_id(images, pair[0]);
         let adjust_index_opt = get_image_index_by_id(images, pair[1]);
 
@@ -273,7 +299,7 @@ pub fn match_levels(images: &mut [NavcamTile]) {
 
         vprintln!("Checking pair ({}, {})", pair[0], pair[1]);
 
-        let (adjust_min, adjust_max, normalization_factor_high) =
+        let (adjust_min, adjust_max, normalization_factor_low, normalization_factor_high) =
             determine_match_normalize_high(&images[target_index], &images[adjust_index]);
 
         vprintln!(
@@ -288,7 +314,7 @@ pub fn match_levels(images: &mut [NavcamTile]) {
             .image
             .normalize_band_to_with_min_max(
                 0,
-                adjust_min,
+                normalization_factor_low,
                 normalization_factor_high,
                 adjust_min,
                 adjust_max,
@@ -298,7 +324,7 @@ pub fn match_levels(images: &mut [NavcamTile]) {
             .image
             .normalize_band_to_with_min_max(
                 1,
-                adjust_min,
+                normalization_factor_low,
                 normalization_factor_high,
                 adjust_min,
                 adjust_max,
@@ -308,10 +334,98 @@ pub fn match_levels(images: &mut [NavcamTile]) {
             .image
             .normalize_band_to_with_min_max(
                 2,
-                adjust_min,
+                normalization_factor_low,
                 normalization_factor_high,
                 adjust_min,
                 adjust_max,
             );
     }
+}
+
+pub fn match_levels(images: &mut [NavcamTile]) {
+    if images.is_empty() {
+        return;
+    }
+
+    if images[0].get_scale_factor() == 2 {
+        match_levels_with_pairs(images, &vec![vec![1, 4], vec![7, 10]]);
+    } else if images[0].get_scale_factor() == 1 {
+        match_levels_with_pairs(
+            images,
+            &vec![
+                vec![1, 5],
+                vec![5, 9],
+                vec![9, 13],
+                vec![1, 2],
+                vec![2, 3],
+                vec![3, 4],
+                vec![5, 6],
+                vec![6, 7],
+                vec![7, 8],
+                vec![9, 10],
+                vec![10, 11],
+                vec![11, 12],
+                vec![13, 14],
+                vec![14, 15],
+                vec![15, 16],
+            ],
+        );
+    }
+
+    /*
+    for pair in FRAME_MATCH_PAIRS_SCALEFACTOR_2.iter() {
+        let target_index_opt = get_image_index_by_id(images, pair[0]);
+        let adjust_index_opt = get_image_index_by_id(images, pair[1]);
+
+        if target_index_opt.is_none() || adjust_index_opt.is_none() {
+            continue;
+        }
+
+        let target_index = target_index_opt.unwrap();
+        let adjust_index = adjust_index_opt.unwrap();
+
+        vprintln!("Checking pair ({}, {})", pair[0], pair[1]);
+
+        let (adjust_min, adjust_max, normalization_factor_low, normalization_factor_high) =
+            determine_match_normalize_high(&images[target_index], &images[adjust_index]);
+
+        vprintln!(
+            "Adjusting pair ({}, {}) with high value of {}",
+            pair[0],
+            pair[1],
+            normalization_factor_high
+        );
+        // corrected_image_2 = normalize(adjust_image[:,:], sub_frame_2_0.min(), sub_frame_2_0.max(), sub_frame_2_0.min(), normalize_to_high)
+        images[adjust_index]
+            .image
+            .image
+            .normalize_band_to_with_min_max(
+                0,
+                normalization_factor_low,
+                normalization_factor_high,
+                adjust_min,
+                adjust_max,
+            );
+        images[adjust_index]
+            .image
+            .image
+            .normalize_band_to_with_min_max(
+                1,
+                normalization_factor_low,
+                normalization_factor_high,
+                adjust_min,
+                adjust_max,
+            );
+        images[adjust_index]
+            .image
+            .image
+            .normalize_band_to_with_min_max(
+                2,
+                normalization_factor_low,
+                normalization_factor_high,
+                adjust_min,
+                adjust_max,
+            );
+    }
+    */
 }
