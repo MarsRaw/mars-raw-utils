@@ -54,6 +54,11 @@ impl RunnableSubcommand for M20EcamAssemble {
         vprintln!("Adding {} tiles to composite", tiles.len());
         composite.paste_tiles(&tiles);
 
+        // if tiles[0].get_scale_factor() == 1 {
+        //     vprintln!("Cropping telemetry pixels");
+        //     composite.crop(0, 0, 5120, 3840);
+        // }
+
         vprintln!("Saving composite to {}", output);
         composite.finalize_and_save(output);
 

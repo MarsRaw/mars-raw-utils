@@ -138,16 +138,16 @@ impl RgbImageAdjust for RgbImage {
 
 impl BufferGetBorderOverLap for ImageBuffer {
     fn get_left(&self) -> Result<ImageBuffer> {
-        self.get_subframe(0, 0, 16, self.height)
+        self.get_subframe(2, 2, 12, self.height - 4)
     }
     fn get_right(&self) -> Result<ImageBuffer> {
-        self.get_subframe(self.width - 16, 0, 16, self.height)
+        self.get_subframe(self.width - 14, 2, 12, self.height - 4)
     }
     fn get_top(&self) -> Result<ImageBuffer> {
-        self.get_subframe(0, 0, self.width, 16)
+        self.get_subframe(2, 2, self.width - 4, 12)
     }
     fn get_bottom(&self) -> Result<ImageBuffer> {
-        self.get_subframe(0, self.height - 16, self.width, 16)
+        self.get_subframe(2, self.height - 14, self.width - 4, 12)
     }
 }
 
@@ -237,8 +237,8 @@ pub fn determine_match_normalize_high(
         target.get_scale_factor(),
     );
 
-    //target_subframe.save("/home/kgill/data/M20/0732/NCAM/foo-sf-0.png");
-    //adjust_subframe.save("/home/kgill/data/M20/0732/NCAM/foo-sf-1.png");
+    //target_subframe.save("/home/kgill/data/M20/0629/NCAM/foo-sf-0.png");
+    //adjust_subframe.save("/home/kgill/data/M20/0629/NCAM/foo-sf-1.png");
 
     //let normalization_factor_high =
     //    adjust_subframe.determine_match_normalize_high(&target_subframe);
@@ -348,7 +348,7 @@ pub fn match_levels(images: &mut [NavcamTile]) {
     }
 
     if images[0].get_scale_factor() == 2 {
-        match_levels_with_pairs(images, &vec![vec![1, 4], vec![7, 10]]);
+        match_levels_with_pairs(images, &vec![vec![1, 4], vec![1, 7], vec![7, 10]]);
     } else if images[0].get_scale_factor() == 1 {
         match_levels_with_pairs(
             images,

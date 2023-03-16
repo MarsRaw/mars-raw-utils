@@ -167,26 +167,19 @@ impl Composite {
         }
     }
 
+    pub fn crop(&mut self, x: usize, y: usize, width: usize, height: usize) {
+        self.composite_image.crop(x, y, width, height);
+        self.width = width;
+        self.height = height;
+    }
+
     fn determine_composite_size(tiles: &[NavcamTile]) -> (usize, usize) {
-        let mut max_x: usize = 0;
-        let mut max_y: usize = 0;
-
-        tiles.iter().for_each(|t| {
-            if let Some(tc) = t.get_tile_coordinates() {
-                max_x = if tc.bottom_right_x > max_x {
-                    tc.bottom_right_x
-                } else {
-                    max_x
-                };
-                max_y = if tc.bottom_right_y > max_y {
-                    tc.bottom_right_y
-                } else {
-                    max_y
-                };
-            }
-        });
-
-        (max_x, max_y)
+        match tiles[0].get_scale_factor() {
+            1 => (5120, 3840),
+            2 => (2560, 1920),
+            4 => (1280, 960),
+            _ => panic!("Unsupported scale factor"),
+        }
     }
 
     pub fn paste_tiles(&mut self, tiles: &[NavcamTile]) {
@@ -197,10 +190,13 @@ impl Composite {
 
     pub fn paste_tile(&mut self, tile: &NavcamTile) {
         if let Some(tilecoord) = tile.get_tile_coordinates() {
+            let mut paste_image = tile.image.image.clone();
+            paste_image.crop(2, 2, paste_image.width - 2, paste_image.height - 2);
+
             self.composite_image.paste(
-                &tile.image.image,
-                tilecoord.top_left_x,
-                tilecoord.top_left_y,
+                &paste_image,
+                tilecoord.top_left_x - 1,
+                tilecoord.top_left_y - 1,
             );
         }
     }
