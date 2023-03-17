@@ -26,6 +26,7 @@ pub fn is_verbose() -> bool {
     unsafe { IS_VERBOSE }
 }
 
+/// Print to stdout if user specified increased output verbosity
 #[macro_export]
 macro_rules! vprintln {
     () => (if $crate::print::is_verbose() { std::print!("\n"); });
@@ -38,6 +39,7 @@ macro_rules! vprintln {
     };
 }
 
+/// Print to stderr if user specified increased output verbosity
 #[macro_export]
 macro_rules! veprintln {
     () => (if $crate::print::is_verbose() { std::eprint!("\n"); });

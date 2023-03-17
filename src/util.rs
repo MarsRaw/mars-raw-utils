@@ -30,7 +30,7 @@ pub fn filename_char_at_pos(filename: &str, pos: usize) -> char {
     sciutil::filename_char_at_pos(filename, pos)
 }
 
-//INFO: there's great .min() .max() in std
+/// Returns the maximum value from a list of values
 #[macro_export]
 macro_rules! max {
     ($x: expr) => ($x);
@@ -44,6 +44,7 @@ macro_rules! max {
     }}
 }
 
+/// Returns the minimum value from a list of values
 #[macro_export]
 macro_rules! min {
     ($x: expr) => ($x);

@@ -3,26 +3,37 @@ use crate::vprintln;
 
 use sciimg::{blur, error::Result, prelude::ImageBuffer, rgbimage::RgbImage};
 
+/// Extensions to `ImageBuffer` and `RgbImage` to allow standardized subframing of NavCam overlap regions
 pub trait BufferGetBorderOverLap {
+
+    /// Extracts the leftmost 12 columns of pixels
     fn get_left(&self) -> Result<Self>
     where
         Self: Sized;
+
+    /// Extracts the rightmost 12 columns of pixels
     fn get_right(&self) -> Result<Self>
     where
         Self: Sized;
+
+    /// Exxtracts the top 12 rows of pixels
     fn get_top(&self) -> Result<Self>
     where
         Self: Sized;
+
+    /// Extracts the bottom 12 rows of pixels
     fn get_bottom(&self) -> Result<Self>
     where
         Self: Sized;
 }
 
-pub trait RgbImageAdjust {
-    fn mean(&self) -> f32;
-    fn determine_match_normalize_high(&self, target: &Self) -> f32;
-}
+// pub trait RgbImageAdjust {
+//     fn mean(&self) -> f32;
+//     fn determine_match_normalize_high(&self, target: &Self) -> f32;
+// }
 
+
+/// Extracts overlapping regions from target and adjust images
 pub fn get_subframes_for_tile_id_pair_scale_factor_2(
     target: &RgbImage,
     adjust: &RgbImage,
@@ -42,6 +53,7 @@ pub fn get_subframes_for_tile_id_pair_scale_factor_2(
     }
 }
 
+/// Extracts overlapping regions from target and adjust images
 pub fn get_subframes_for_tile_id_pair_scale_factor_1(
     target: &RgbImage,
     adjust: &RgbImage,
@@ -70,6 +82,8 @@ pub fn get_subframes_for_tile_id_pair_scale_factor_1(
     }
 }
 
+/// Extracts overlapping regions from target and adjust images. 
+/// Proxies to scale factor specific functions.
 pub fn get_subframes_for_tile_id_pair(
     target: &RgbImage,
     adjust: &RgbImage,
@@ -94,6 +108,7 @@ pub fn get_subframes_for_tile_id_pair(
     }
 }
 
+/*
 impl RgbImageAdjust for RgbImage {
     fn mean(&self) -> f32 {
         (self.get_band(0).sum() + self.get_band(1).sum() + self.get_band(2).sum())
@@ -135,6 +150,7 @@ impl RgbImageAdjust for RgbImage {
         normalize_to_high
     }
 }
+*/
 
 impl BufferGetBorderOverLap for ImageBuffer {
     fn get_left(&self) -> Result<ImageBuffer> {
@@ -222,6 +238,8 @@ impl BufferGetBorderOverLap for RgbImage {
     }
 }
 
+/// Determines normalization parameters for the adjust image based on the 
+/// values of the target.
 pub fn determine_match_normalize_high(
     target: &NavcamTile,
     adjust: &NavcamTile,
