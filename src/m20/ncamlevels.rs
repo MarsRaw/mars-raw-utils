@@ -5,7 +5,6 @@ use sciimg::{blur, error::Result, prelude::ImageBuffer, rgbimage::RgbImage};
 
 /// Extensions to `ImageBuffer` and `RgbImage` to allow standardized subframing of NavCam overlap regions
 pub trait BufferGetBorderOverLap {
-
     /// Extracts the leftmost 12 columns of pixels
     fn get_left(&self) -> Result<Self>
     where
@@ -31,7 +30,6 @@ pub trait BufferGetBorderOverLap {
 //     fn mean(&self) -> f32;
 //     fn determine_match_normalize_high(&self, target: &Self) -> f32;
 // }
-
 
 /// Extracts overlapping regions from target and adjust images
 pub fn get_subframes_for_tile_id_pair_scale_factor_2(
@@ -82,7 +80,7 @@ pub fn get_subframes_for_tile_id_pair_scale_factor_1(
     }
 }
 
-/// Extracts overlapping regions from target and adjust images. 
+/// Extracts overlapping regions from target and adjust images.
 /// Proxies to scale factor specific functions.
 pub fn get_subframes_for_tile_id_pair(
     target: &RgbImage,
@@ -238,7 +236,7 @@ impl BufferGetBorderOverLap for RgbImage {
     }
 }
 
-/// Determines normalization parameters for the adjust image based on the 
+/// Determines normalization parameters for the adjust image based on the
 /// values of the target.
 pub fn determine_match_normalize_high(
     target: &NavcamTile,

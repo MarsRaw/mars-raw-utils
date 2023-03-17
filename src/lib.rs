@@ -84,7 +84,7 @@ pub mod path;
 /// Single-point import for most utilized MRU API
 pub mod prelude;
 
-/// Utilities for outputting verbose and error text 
+/// Utilities for outputting verbose and error text
 pub mod print;
 
 /// Time and date support

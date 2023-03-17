@@ -1,4 +1,3 @@
-
 /// Support for assembling NavCam tiles
 pub mod assemble;
 
