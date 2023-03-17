@@ -1,6 +1,7 @@
 use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
+use colored::{self, Colorize};
 use mars_raw_utils::m20::assemble::{Composite, NavcamTile};
 use mars_raw_utils::m20::ncamlevels;
 use mars_raw_utils::util;
@@ -41,27 +42,48 @@ impl RunnableSubcommand for M20EcamAssemble {
             }
             let image =
                 NavcamTile::new_from_file(&String::from(in_file), Instrument::M20NavcamRight);
+
+            // Disabling destretch for now as the tool will just restretch it anyway
+            // when the image is reencoded for 16 bit.
             //image.image.destretch_image();
 
-            tiles.push(image);
+            // Oftentimes an image will be subframed at scale factor 1 with a full frame at scale factor 4. We cannot
+            // (or rather, choose not to) mix image sizes, so we will discard that full frame image.
+            if !image.is_supported_scale_factor() {
+                println!(
+                    "{}: Discarding image at unsupported scale factor of {}: {}",
+                    "WARNING".yellow(),
+                    image.get_scale_factor(),
+                    in_file
+                );
+            } else {
+                tiles.push(image);
+            }
         }
 
+        // We can 'assemble' with just one. At a minimum, it just embeds it into
+        // the full frame, even if most of that full frame is black.
+        if tiles.is_empty() {
+            eprintln!("{}: No images to assemble, exiting...", "ERROR".red());
+            process::exit(1);
+        }
+
+        // Runs each tile through the level matching algorithms
         ncamlevels::match_levels(&mut tiles);
 
+        // Build a composite canvas. This will be the output image
         vprintln!("Creating composite structure");
         let mut composite = Composite::new(&tiles);
 
+        // Pastes the tiles into the canvas
         vprintln!("Adding {} tiles to composite", tiles.len());
         composite.paste_tiles(&tiles);
 
-        // if tiles[0].get_scale_factor() == 1 {
-        //     vprintln!("Cropping telemetry pixels");
-        //     composite.crop(0, 0, 5120, 3840);
-        // }
-
+        // Stretches image to 16 bit and saves to disk
         vprintln!("Saving composite to {}", output);
         composite.finalize_and_save(output);
 
+        // Update 'scale_factor' in the metadata and save to disk
         if let Some(mut md) = tiles[0].image.metadata.clone() {
             md.subframe_rect = Some(vec![1.0, 1.0, 5120.0, 3840.0]);
             util::save_image_json(output, &md, false, None).unwrap();
