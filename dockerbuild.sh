@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 MRU_VERSION=`cargo pkgid | cut -d @ -f 2`

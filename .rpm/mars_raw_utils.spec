@@ -29,6 +29,12 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %{_bindir}/*
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/FM103_flat_rgb_bias_mask.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/FM103_mask.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/FM105_flat_rgb_bias.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/FM108_flat_rgb_bias.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/FM110_flat_rgb_bias.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/FM111_flat_rgb_bias.jpg
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_MCZ_RIGHT_INPAINT_MASK_V1.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_SCAM_FLAT_RGB_Sol77_V2.jpg
@@ -65,6 +71,18 @@ rm -rf %{buildroot}
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_bay.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_ilt.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_rad.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mcam_dcc.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/msl_mahli_dcc.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_cachecam_ilt.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_cachecam_rad.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_watson_dcc.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_zcam_dcc.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_ncam_dcc.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_ncam_mcz.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_scam_bay.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_scam_ilt.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_scam_rad.toml
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_scam_dcc.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_hrte_rad.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_watson_bay.toml
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/m20_watson_ilt.toml
