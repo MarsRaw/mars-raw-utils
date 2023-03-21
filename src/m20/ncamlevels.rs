@@ -3,6 +3,20 @@ use crate::vprintln;
 
 use sciimg::{blur, error::Result, prelude::ImageBuffer, rgbimage::RgbImage};
 
+/*
+Standardized Scale Factor 1 Tile Ids:
+1   5   9  13
+2   6  10  14
+3   7  11  15
+4   8  12  16
+
+Scale Factor 2 Tile Ids:
+1   5
+9  13
+    */
+
+
+
 /// Extensions to `ImageBuffer` and `RgbImage` to allow standardized subframing of NavCam overlap regions
 pub trait BufferGetBorderOverLap {
     /// Extracts the leftmost 12 columns of pixels
@@ -59,7 +73,18 @@ pub fn get_subframes_for_tile_id_pair_scale_factor_1(
     adjust_tile_id: usize,
 ) -> (RgbImage, RgbImage) {
     let pair = (target_tile_id, adjust_tile_id);
-    if pair == (1, 5) || pair == (5, 9) || pair == (9, 13) {
+    if pair == (1, 5) 
+        || pair == (5, 9) 
+        || pair == (9, 13)  
+        || pair == (2, 6) 
+        || pair == (6, 10) 
+        || pair == (10, 14) 
+        || pair == (3, 7) 
+        || pair == (7, 11) 
+        || pair == (11, 15) 
+        || pair == (4, 8) 
+        || pair == (8, 12) 
+        || pair == (12, 16) {
         (target.get_right().unwrap(), adjust.get_left().unwrap())
     } else if pair == (1, 2)
         || pair == (2, 3)
@@ -293,7 +318,7 @@ fn get_image_index_by_id(images: &[NavcamTile], tile_id: usize) -> Option<usize>
     let mut found_image_index = None;
     for (i, _) in images.iter().enumerate() {
         if images[i].get_tile_id() == tile_id {
-            vprintln!("Image found for tile id {}", tile_id);
+            vprintln!("Image found for tile id {}: {:?}", tile_id, images[i].image.file_path);
             found_image_index = Some(i);
             break;
         }
@@ -375,15 +400,15 @@ pub fn match_levels(images: &mut [NavcamTile]) {
                 vec![1, 2],
                 vec![2, 3],
                 vec![3, 4],
-                vec![5, 6],
-                vec![6, 7],
-                vec![7, 8],
-                vec![9, 10],
-                vec![10, 11],
-                vec![11, 12],
-                vec![13, 14],
-                vec![14, 15],
-                vec![15, 16],
+                vec![2, 6],
+                vec![6, 10],
+                vec![10, 14],
+                vec![3, 7],
+                vec![7, 11],
+                vec![11, 15],
+                vec![4, 8],
+                vec![8, 12],
+                vec![12, 16]
             ],
         );
     }
