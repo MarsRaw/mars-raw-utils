@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
 
@@ -40,7 +42,7 @@ impl RunnableSubcommand for Debayer {
                 }
 
                 let debayer_method = if let Some(debayer) = &self.debayer {
-                    DebayerMethod::from_str(debayer).unwrap_or(DebayerMethod::Malvar)
+                    DebayerMethod::from_str(debayer.as_str()).unwrap_or(DebayerMethod::Malvar)
                 } else {
                     DebayerMethod::Malvar
                 };

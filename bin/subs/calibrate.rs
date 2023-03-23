@@ -8,6 +8,7 @@ use backtrace::Backtrace;
 use rayon::prelude::*;
 use std::panic;
 use std::process;
+use std::str::FromStr;
 
 #[derive(clap::Args)]
 #[clap(author, version, about = "Batch raw image calibration", long_about = None)]
