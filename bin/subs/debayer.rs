@@ -14,6 +14,9 @@ pub struct Debayer {
         multiple_values(true)
     )]
     input_files: Vec<std::path::PathBuf>,
+
+    #[clap(long, short = 'D', help = "Debayer method (malvar, amaze)")]
+    debayer: Option<String>,
 }
 
 #[async_trait::async_trait]
@@ -36,8 +39,14 @@ impl RunnableSubcommand for Debayer {
                     vprintln!("Results may be inaccurate");
                 }
 
+                let debayer_method = if let Some(debayer) = &self.debayer {
+                    DebayerMethod::from_str(debayer).unwrap_or(DebayerMethod::Malvar)
+                } else {
+                    DebayerMethod::Malvar
+                };
+
                 vprintln!("Debayering image...");
-                raw.debayer();
+                raw.debayer_with_method(debayer_method);
 
                 vprintln!("Writing to disk...");
                 raw.save(&out_file);
