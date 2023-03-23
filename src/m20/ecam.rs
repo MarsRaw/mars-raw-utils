@@ -99,7 +99,7 @@ impl Calibration for M20EECam {
         // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
         if raw.image.is_grayscale() {
             vprintln!("Debayering...");
-            raw.debayer();
+            raw.debayer_with_method(cal_context.debayer_method);
         }
 
         vprintln!("Flatfielding...");

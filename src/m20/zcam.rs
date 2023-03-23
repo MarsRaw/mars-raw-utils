@@ -97,7 +97,7 @@ impl Calibration for M20MastcamZ {
         // It's not perfect so please validate results. Gonna keep the 'ECM' check for now.
         if input_file.contains("ECM") && raw.image.is_grayscale() {
             vprintln!("Image appears to be grayscale, applying debayering...");
-            raw.debayer();
+            raw.debayer_with_method(cal_context.debayer_method);
         }
 
         // I'm not wild about this

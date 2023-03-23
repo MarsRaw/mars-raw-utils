@@ -1,6 +1,6 @@
 use crate::{calibfile, constants, veprintln, vprintln};
 
-use sciimg::error;
+use sciimg::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -46,6 +46,9 @@ pub struct CalProfile {
     pub instrument: Option<String>,
 
     pub description: Option<String>,
+
+    #[serde(default = "default_debayer_method")]
+    pub debayer_method: DebayerMethod,
 }
 
 impl Default for CalProfile {
@@ -65,8 +68,13 @@ impl Default for CalProfile {
             mission: None,
             instrument: None,
             description: None,
+            debayer_method: default_debayer_method(),
         }
     }
+}
+
+fn default_debayer_method() -> DebayerMethod {
+    DebayerMethod::Malvar
 }
 
 fn default_hpc_window_size() -> i32 {

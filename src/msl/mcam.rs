@@ -52,7 +52,7 @@ impl Calibration for MslMastcam {
         /*util::filename_char_at_pos(&input_file, 22) == 'E' &&*/
         raw.image.is_grayscale() {
             vprintln!("Image appears to be grayscale, applying debayering...");
-            raw.debayer();
+            raw.debayer_with_method(cal_context.debayer_method);
         }
 
         let mut inpaint_mask = inpaintmask::load_mask(instrument).unwrap();

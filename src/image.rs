@@ -4,7 +4,8 @@ use crate::{
 };
 
 use sciimg::{
-    enums::ImageMode, imagebuffer::ImageBuffer, inpaint, rgbimage::RgbImage, DnVec, VecMath,
+    debayer::DebayerMethod, enums::ImageMode, imagebuffer::ImageBuffer, inpaint,
+    rgbimage::RgbImage, DnVec, VecMath,
 };
 
 #[derive(Clone)]
@@ -104,6 +105,15 @@ impl MarsImage {
 
     pub fn debayer(&mut self) {
         self.image.debayer();
+
+        if let Some(ref mut md) = self.metadata {
+            md.debayer = true;
+        }
+    }
+
+    pub fn debayer_with_method(&mut self, method: DebayerMethod) {
+        vprintln!("Debayering with method: {:?}", method);
+        self.image.debayer_with_method(method);
 
         if let Some(ref mut md) = self.metadata {
             md.debayer = true;

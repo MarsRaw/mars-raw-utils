@@ -56,7 +56,7 @@ impl Calibration for M20SuperCam {
 
         if input_file.contains("ECM") && raw.image.is_grayscale() {
             vprintln!("Image appears to be grayscale, applying debayering...");
-            raw.debayer();
+            raw.debayer_with_method(cal_context.debayer_method);
         }
 
         // Gonna start with standard rectangular flat field, but should really
