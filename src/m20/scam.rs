@@ -30,15 +30,13 @@ impl Calibration for M20SuperCam {
         raw.destretch_image();
 
         vprintln!("Loading image mask");
-        let mut mask = imagebuffer::ImageBuffer::from_file(
-            calibfile::get_calibration_file_for_instrument(
-                enums::Instrument::M20SuperCam,
-                enums::CalFileType::Mask,
-            )
-            .unwrap()
-            .as_str(),
+        let mask_file_path = calibfile::get_calibration_file_for_instrument(
+            enums::Instrument::M20SuperCam,
+            enums::CalFileType::Mask,
         )
         .unwrap();
+        vprintln!("Loading supercam mask from {}", mask_file_path);
+        let mut mask = imagebuffer::ImageBuffer::from_file(mask_file_path.as_str()).unwrap();
         mask = mask
             .get_subframe(1, 1, mask.width - 2, mask.height - 2)
             .expect("Failed to extract subframe of M20 SuperCam mask image");
