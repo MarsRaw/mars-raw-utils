@@ -259,9 +259,9 @@
                         <Component Id='caldata16' Guid='*'>
                             <File
                                 Id='data16'
-                                Name='M20_SCAM_FLAT_RGB_Sol77_V2.jpg'
+                                Name='M20_RMI_PREFLIGHT_FOD_V1.jpg'
                                 DiskId='1'
-                                Source='mars-raw-utils-data\caldata\M20_SCAM_FLAT_RGB_Sol77_V2.jpg'
+                                Source='mars-raw-utils-data\caldata\M20_RMI_PREFLIGHT_FOD_V1.jpg'
                                 KeyPath='yes'/>
                         </Component>
                         <Component Id='caldata17' Guid='*'>

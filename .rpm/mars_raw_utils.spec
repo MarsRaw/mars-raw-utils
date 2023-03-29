@@ -37,7 +37,7 @@ rm -rf %{buildroot}
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/FM111_flat_rgb_bias.jpg
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_MCZ_LEFT_INPAINT_MASK_V1.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_MCZ_RIGHT_INPAINT_MASK_V1.png
-%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_SCAM_FLAT_RGB_Sol77_V2.jpg
+%attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_RMI_PREFLIGHT_FOD_V1.jpg
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_SCAM_MASK_Sol1_V1.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_WATSON_FLAT_V0.png
 %attr(0644,root,root) %config(noreplace) /usr/share/mars_raw_utils/data/M20_FLAT_SN_5001.jpg
