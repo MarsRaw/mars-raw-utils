@@ -74,7 +74,7 @@ fn generate_mean_stack(input_files: &[String]) -> rgbimage::RgbImage {
         if path::file_exists(in_file) {
             vprintln!("Adding file to stack: {}", in_file);
 
-            let raw = rgbimage::RgbImage::open16(in_file).unwrap();
+            let raw = rgbimage::RgbImage::open(in_file).unwrap();
 
             if mean.is_empty() {
                 mean = raw;
@@ -258,7 +258,7 @@ fn process_file(
 ) {
     vprintln!("Processing frame differential on file: {}", in_file);
 
-    let raw = rgbimage::RgbImage::open16(in_file).unwrap();
+    let raw = rgbimage::RgbImage::open(in_file).unwrap();
 
     let (pixels, height) = match product_type {
         ProductType::STACKED => {

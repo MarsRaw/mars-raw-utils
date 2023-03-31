@@ -221,7 +221,7 @@ impl Composite {
     /// scale factor
     fn determine_composite_size(tiles: &[NavcamTile]) -> (usize, usize) {
         match tiles[0].get_scale_factor() {
-            1 => (5116, 3836), // Removing 2 pixel wide border (telemetry pixels)
+            1 => (5120, 3840), // Removing 2 pixel wide border (telemetry pixels)
             2 => (2560, 1920),
             4 => (1280, 960),
             _ => panic!("Unsupported scale factor"),
@@ -246,8 +246,8 @@ impl Composite {
 
                 self.composite_image.paste(
                     &paste_image,
-                    tilecoord.top_left_x - 3,
-                    tilecoord.top_left_y - 3,
+                    tilecoord.top_left_x - 1,
+                    tilecoord.top_left_y - 1,
                 );
             } else {
                 paste_image.crop(0, 0, paste_image.width, paste_image.height);

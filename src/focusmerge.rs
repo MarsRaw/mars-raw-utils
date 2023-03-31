@@ -45,7 +45,7 @@ pub fn focusmerge(
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
 
-            let image = rgbimage::RgbImage::open16(in_file).unwrap();
+            let image = rgbimage::RgbImage::open(in_file).unwrap();
 
             if out_width == 0 {
                 out_width = image.width;
