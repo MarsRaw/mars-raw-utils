@@ -1,4 +1,4 @@
-use crate::{calibfile, enums, image::MarsImage, vprintln};
+use crate::{calibfile, enums, marsimage::MarsImage, vprintln};
 
 use sciimg::error;
 

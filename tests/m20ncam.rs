@@ -1,10 +1,10 @@
 use mars_raw_utils::enums::Instrument;
-use mars_raw_utils::image::MarsImage;
 use mars_raw_utils::m20::assemble::{
     NavcamTile, FRAME_MATCH_PAIRS_SCALEFACTOR_1, FRAME_MATCH_PAIRS_SCALEFACTOR_2,
 };
 use mars_raw_utils::m20::ncamlevels;
 use mars_raw_utils::m20::ncamlevels::BufferGetBorderOverLap;
+use mars_raw_utils::marsimage::MarsImage;
 
 fn load_test_image_navright_sf_2() -> MarsImage {
     let raw = MarsImage::open(

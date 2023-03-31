@@ -55,7 +55,7 @@ pub struct Camera {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct Image {
+pub struct ImageRecord {
     pub extended: Extended,
     pub sol: u32,
     pub attitude: String,
@@ -77,7 +77,7 @@ pub struct Image {
 
 #[derive(Serialize, Deserialize)]
 pub struct M20ApiResults {
-    pub images: Vec<Image>,
+    pub images: Vec<ImageRecord>,
     pub per_page: String,
     pub total_results: u32,
 
@@ -88,7 +88,7 @@ pub struct M20ApiResults {
     pub total_images: u32,
 }
 
-impl ImageMetadata for Image {
+impl ImageMetadata for ImageRecord {
     fn get_date_received(&self) -> String {
         self.date_received.clone()
     }
@@ -219,7 +219,7 @@ pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
     file.read_to_end(&mut buf).unwrap();
     let s = String::from_utf8(buf).unwrap();
 
-    let res: Image = serde_json::from_str(s.as_str()).unwrap();
+    let res: ImageRecord = serde_json::from_str(s.as_str()).unwrap();
 
     Ok(convert_to_std_metadata(&res))
 }

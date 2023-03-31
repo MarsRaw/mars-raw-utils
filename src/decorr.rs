@@ -1,6 +1,6 @@
 use sciimg::prelude::*;
 
-pub fn decorrelation_stretch(image: &mut RgbImage) {
+pub fn decorrelation_stretch(image: &mut Image) {
     let mut r_sum = 0.0;
     let mut g_sum = 0.0;
     let mut b_sum = 0.0;

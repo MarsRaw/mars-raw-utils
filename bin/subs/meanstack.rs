@@ -26,7 +26,7 @@ impl RunnableSubcommand for MeanStack {
     async fn run(&self) {
         let output = self.output.as_os_str().to_str().unwrap();
 
-        let mut mean: RgbImage = RgbImage::new_empty().unwrap();
+        let mut mean: Image = Image::new_empty().unwrap();
         let mut count: ImageBuffer = ImageBuffer::new_empty().unwrap();
         let mut ones: ImageBuffer = ImageBuffer::new_empty().unwrap();
 
@@ -35,7 +35,7 @@ impl RunnableSubcommand for MeanStack {
                 vprintln!("Processing File: {:?}", in_file);
 
                 let raw =
-                    RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+                    Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
                 if mean.is_empty() {
                     mean = raw;

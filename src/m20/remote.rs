@@ -22,7 +22,7 @@ pub fn print_header() {
     );
 }
 
-fn print_image(output_path: &str, image: &Image) {
+fn print_image(output_path: &str, image: &ImageRecord) {
     let p = format!(
         "{}/{}",
         output_path,

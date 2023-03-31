@@ -29,7 +29,7 @@ impl RunnableSubcommand for Debayer {
                 vprintln!("Processing File: {:?}", in_file);
 
                 let mut raw =
-                    RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+                    Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
                 let out_file =
                     util::append_file_name(in_file.as_os_str().to_str().unwrap(), "debayer");

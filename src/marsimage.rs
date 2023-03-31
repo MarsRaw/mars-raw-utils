@@ -4,13 +4,13 @@ use crate::{
 };
 
 use sciimg::{
-    debayer::DebayerMethod, enums::ImageMode, imagebuffer::ImageBuffer, inpaint,
-    rgbimage::RgbImage, DnVec, VecMath,
+    debayer::DebayerMethod, enums::ImageMode, image::Image, imagebuffer::ImageBuffer, inpaint,
+    DnVec, VecMath,
 };
 
 #[derive(Clone)]
 pub struct MarsImage {
-    pub image: RgbImage,
+    pub image: Image,
     pub instrument: enums::Instrument,
     pub metadata: Option<Metadata>,
     empty: bool,
@@ -20,7 +20,7 @@ pub struct MarsImage {
 impl MarsImage {
     pub fn new(width: usize, height: usize, instrument: enums::Instrument) -> Self {
         MarsImage {
-            image: RgbImage::new_with_bands(width, height, 3, ImageMode::U8BIT).unwrap(),
+            image: Image::new_with_bands(width, height, 3, ImageMode::U8BIT).unwrap(),
             instrument,
             metadata: None,
             empty: false,
@@ -30,7 +30,7 @@ impl MarsImage {
 
     pub fn new_emtpy() -> Self {
         MarsImage {
-            image: RgbImage::new_empty().unwrap(),
+            image: Image::new_empty().unwrap(),
             instrument: enums::Instrument::None,
             metadata: None,
             empty: true,
@@ -50,7 +50,7 @@ impl MarsImage {
         vprintln!("Loading image from {}", file_path);
 
         MarsImage {
-            image: RgbImage::open(&file_path).unwrap(),
+            image: Image::open(&file_path).unwrap(),
             instrument,
             metadata: MarsImage::load_image_metadata(&file_path),
             empty: false,
@@ -136,7 +136,7 @@ impl MarsImage {
         }
     }
 
-    fn apply_flat(&mut self, flat: &RgbImage) {
+    fn apply_flat(&mut self, flat: &Image) {
         self.image.apply_flat(flat);
 
         if let Some(ref mut md) = self.metadata {

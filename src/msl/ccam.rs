@@ -1,6 +1,6 @@
 use crate::{
-    calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument, image::MarsImage,
-    path, util, vprintln,
+    calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument,
+    marsimage::MarsImage, path, util, vprintln,
 };
 
 use sciimg::{error, imagebuffer};

@@ -1,7 +1,7 @@
 use crate::m20::assemble::NavcamTile;
 use crate::vprintln;
 
-use sciimg::{blur, error::Result, prelude::ImageBuffer, rgbimage::RgbImage};
+use sciimg::{blur, error::Result, image::Image, prelude::ImageBuffer};
 
 /*
 Standardized Scale Factor 1 Tile Ids:
@@ -45,11 +45,11 @@ pub trait BufferGetBorderOverLap {
 
 /// Extracts overlapping regions from target and adjust images
 pub fn get_subframes_for_tile_id_pair_scale_factor_2(
-    target: &RgbImage,
-    adjust: &RgbImage,
+    target: &Image,
+    adjust: &Image,
     target_tile_id: usize,
     adjust_tile_id: usize,
-) -> (RgbImage, RgbImage) {
+) -> (Image, Image) {
     let pair = (target_tile_id, adjust_tile_id);
     if pair == (1, 4) || pair == (7, 10) {
         (target.get_right().unwrap(), adjust.get_left().unwrap())
@@ -65,11 +65,11 @@ pub fn get_subframes_for_tile_id_pair_scale_factor_2(
 
 /// Extracts overlapping regions from target and adjust images
 pub fn get_subframes_for_tile_id_pair_scale_factor_1(
-    target: &RgbImage,
-    adjust: &RgbImage,
+    target: &Image,
+    adjust: &Image,
     target_tile_id: usize,
     adjust_tile_id: usize,
-) -> (RgbImage, RgbImage) {
+) -> (Image, Image) {
     let pair = (target_tile_id, adjust_tile_id);
     if pair == (1, 5)
         || pair == (5, 9)
@@ -107,12 +107,12 @@ pub fn get_subframes_for_tile_id_pair_scale_factor_1(
 /// Extracts overlapping regions from target and adjust images.
 /// Proxies to scale factor specific functions.
 pub fn get_subframes_for_tile_id_pair(
-    target: &RgbImage,
-    adjust: &RgbImage,
+    target: &Image,
+    adjust: &Image,
     target_tile_id: usize,
     adjust_tile_id: usize,
     scale_factor: u32,
-) -> (RgbImage, RgbImage) {
+) -> (Image, Image) {
     match scale_factor {
         1 => get_subframes_for_tile_id_pair_scale_factor_1(
             target,
@@ -189,9 +189,9 @@ impl BufferGetBorderOverLap for ImageBuffer {
     }
 }
 
-impl BufferGetBorderOverLap for RgbImage {
-    fn get_left(&self) -> Result<RgbImage> {
-        RgbImage::new_from_buffers_rgb(
+impl BufferGetBorderOverLap for Image {
+    fn get_left(&self) -> Result<Image> {
+        Image::new_from_buffers_rgb(
             &self
                 .get_band(0)
                 .get_left()
@@ -207,8 +207,8 @@ impl BufferGetBorderOverLap for RgbImage {
             self.get_mode(),
         )
     }
-    fn get_right(&self) -> Result<RgbImage> {
-        RgbImage::new_from_buffers_rgb(
+    fn get_right(&self) -> Result<Image> {
+        Image::new_from_buffers_rgb(
             &self
                 .get_band(0)
                 .get_right()
@@ -224,8 +224,8 @@ impl BufferGetBorderOverLap for RgbImage {
             self.get_mode(),
         )
     }
-    fn get_top(&self) -> Result<RgbImage> {
-        RgbImage::new_from_buffers_rgb(
+    fn get_top(&self) -> Result<Image> {
+        Image::new_from_buffers_rgb(
             &self
                 .get_band(0)
                 .get_top()
@@ -241,8 +241,8 @@ impl BufferGetBorderOverLap for RgbImage {
             self.get_mode(),
         )
     }
-    fn get_bottom(&self) -> Result<RgbImage> {
-        RgbImage::new_from_buffers_rgb(
+    fn get_bottom(&self) -> Result<Image> {
+        Image::new_from_buffers_rgb(
             &self
                 .get_band(0)
                 .get_bottom()

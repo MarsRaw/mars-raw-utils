@@ -1,6 +1,6 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    image::MarsImage, inpaintmask, path, util, vprintln,
+    inpaintmask, marsimage::MarsImage, path, util, vprintln,
 };
 
 use sciimg::prelude::*;

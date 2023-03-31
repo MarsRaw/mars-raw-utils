@@ -26,7 +26,7 @@ impl RunnableSubcommand for Inpaint {
                 vprintln!("Processing File: {:?}", in_file);
 
                 let raw =
-                    RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+                    Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
                 vprintln!("Generating mask from red pixels...");
                 let mask = inpaint::make_mask_from_red(&raw).unwrap();

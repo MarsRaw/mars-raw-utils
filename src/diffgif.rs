@@ -2,7 +2,7 @@
 
 use crate::{path, vprintln};
 
-use sciimg::{enums::ImageMode, imagebuffer, lowpass, rgbimage};
+use sciimg::{enums::ImageMode, image, imagebuffer, lowpass};
 
 use gif;
 
@@ -56,15 +56,15 @@ fn imagebuffer_to_vec_v8(
     f
 }
 
-fn rgbimage_to_vec_v8(img3band: &rgbimage::RgbImage) -> Vec<u8> {
+fn rgbimage_to_vec_v8(img3band: &image::Image) -> Vec<u8> {
     let b0 = img3band.get_band(0);
     let b1 = img3band.get_band(1);
     let b2 = img3band.get_band(2);
     imagebuffer_to_vec_v8(b0, b1, b2)
 }
 
-fn generate_mean_stack(input_files: &[String]) -> rgbimage::RgbImage {
-    let mut mean: rgbimage::RgbImage = rgbimage::RgbImage::new_empty().unwrap();
+fn generate_mean_stack(input_files: &[String]) -> image::Image {
+    let mut mean: image::Image = image::Image::new_empty().unwrap();
     let mut count: imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
     let mut ones: imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
 
@@ -74,7 +74,7 @@ fn generate_mean_stack(input_files: &[String]) -> rgbimage::RgbImage {
         if path::file_exists(in_file) {
             vprintln!("Adding file to stack: {}", in_file);
 
-            let raw = rgbimage::RgbImage::open(in_file).unwrap();
+            let raw = image::Image::open(in_file).unwrap();
 
             if mean.is_empty() {
                 mean = raw;
@@ -196,14 +196,14 @@ fn process_band(
 }
 
 fn process_frame_3channel(
-    raw: &rgbimage::RgbImage,
-    mean_stack: &rgbimage::RgbImage,
+    raw: &image::Image,
+    mean_stack: &image::Image,
     black_level: f32,
     white_level: f32,
     gamma: f32,
     lowpass_window_size: u8,
     product_type: ProductType,
-) -> rgbimage::RgbImage {
+) -> image::Image {
     let mut processed_band_0 = process_band(
         raw.get_band(0),
         mean_stack.get_band(0),
@@ -236,7 +236,7 @@ fn process_frame_3channel(
     processed_band_1.normalize_mut(0.0, 255.0);
     processed_band_2.normalize_mut(0.0, 255.0);
 
-    rgbimage::RgbImage::new_from_buffers_rgb(
+    image::Image::new_from_buffers_rgb(
         &processed_band_0,
         &processed_band_1,
         &processed_band_2,
@@ -248,7 +248,7 @@ fn process_frame_3channel(
 fn process_file(
     encoder: &mut gif::Encoder<&mut std::fs::File>,
     in_file: &String,
-    mean_stack: &rgbimage::RgbImage,
+    mean_stack: &image::Image,
     black_level: f32,
     white_level: f32,
     gamma: f32,
@@ -258,7 +258,7 @@ fn process_file(
 ) {
     vprintln!("Processing frame differential on file: {}", in_file);
 
-    let raw = rgbimage::RgbImage::open(in_file).unwrap();
+    let raw = image::Image::open(in_file).unwrap();
 
     let (pixels, height) = match product_type {
         ProductType::STACKED => {
@@ -280,7 +280,7 @@ fn process_file(
                 lowpass_window_size,
                 ProductType::DIFFERENTIAL,
             );
-            let mut stacked = rgbimage::RgbImage::new_with_bands(
+            let mut stacked = image::Image::new_with_bands(
                 img_std.width,
                 img_std.height * 2,
                 3,

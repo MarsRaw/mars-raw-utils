@@ -14,7 +14,7 @@ pub struct Extended {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct Image {
+pub struct ImageRecord {
     //FIXME: make uuid type
     pub id: u32,
 
@@ -76,7 +76,7 @@ pub struct Image {
 
 #[derive(Serialize, Deserialize)]
 pub struct NsytApiResults {
-    pub items: Vec<Image>,
+    pub items: Vec<ImageRecord>,
     // FIXME update name
     pub more: bool,
     pub total: u32,
@@ -84,7 +84,7 @@ pub struct NsytApiResults {
     pub per_page: u32,
 }
 
-impl ImageMetadata for Image {
+impl ImageMetadata for ImageRecord {
     fn get_link(&self) -> String {
         self.url.clone()
     }
@@ -198,7 +198,7 @@ pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
     file.read_to_end(&mut buf).unwrap();
     let s = String::from_utf8(buf).unwrap();
 
-    let res: Image = serde_json::from_str(s.as_str()).unwrap();
+    let res: ImageRecord = serde_json::from_str(s.as_str()).unwrap();
 
     Ok(convert_to_std_metadata(&res))
 }

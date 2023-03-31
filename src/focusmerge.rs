@@ -2,7 +2,7 @@ use std::process;
 
 use crate::{path, util, vprintln};
 
-use sciimg::{imagebuffer, lowpass, quality, rgbimage, stats};
+use sciimg::{image, imagebuffer, lowpass, quality, stats};
 
 use colored::*;
 
@@ -10,7 +10,7 @@ struct Diff {
     band_0: imagebuffer::ImageBuffer,
     band_1: imagebuffer::ImageBuffer,
     band_2: imagebuffer::ImageBuffer,
-    image: rgbimage::RgbImage,
+    image: image::Image,
 }
 
 fn make_diff_for_band(
@@ -21,7 +21,7 @@ fn make_diff_for_band(
     blurred.subtract(buffer).unwrap()
 }
 
-fn make_diff_container(image: &rgbimage::RgbImage, blur_amount: usize) -> Diff {
+fn make_diff_container(image: &image::Image, blur_amount: usize) -> Diff {
     Diff {
         band_0: make_diff_for_band(image.get_band(0), blur_amount),
         band_1: make_diff_for_band(image.get_band(1), blur_amount),
@@ -45,7 +45,7 @@ pub fn focusmerge(
         if path::file_exists(in_file) {
             vprintln!("Processing File: {}", in_file);
 
-            let image = rgbimage::RgbImage::open(in_file).unwrap();
+            let image = image::Image::open(in_file).unwrap();
 
             if out_width == 0 {
                 out_width = image.width;
@@ -147,7 +147,7 @@ pub fn focusmerge(
         }
     }
 
-    let merge_buffer = rgbimage::RgbImage::new_from_buffers_rgb(
+    let merge_buffer = image::Image::new_from_buffers_rgb(
         &b0_merge_buffer,
         &b1_merge_buffer,
         &b2_merge_buffer,

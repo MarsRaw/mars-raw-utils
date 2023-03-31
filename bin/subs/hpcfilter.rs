@@ -40,7 +40,7 @@ impl RunnableSubcommand for HpcFilter {
             if in_file.exists() {
                 vprintln!("Processing File: {:?}", in_file);
                 let mut raw =
-                    RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+                    Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
                 vprintln!(
                     "Hot pixel correction with variance threshold {}...",

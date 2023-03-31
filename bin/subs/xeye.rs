@@ -20,11 +20,11 @@ pub struct CrossEye {
 }
 
 trait OpenFromBytes {
-    fn open_from_bytes(bytes: &[u8]) -> RgbImage;
+    fn open_from_bytes(bytes: &[u8]) -> Image;
 }
 
-impl OpenFromBytes for RgbImage {
-    fn open_from_bytes(bytes: &[u8]) -> RgbImage {
+impl OpenFromBytes for Image {
+    fn open_from_bytes(bytes: &[u8]) -> Image {
         let image_data = load_from_memory(bytes).unwrap().into_rgba8();
         let dims = image_data.dimensions();
 
@@ -32,7 +32,7 @@ impl OpenFromBytes for RgbImage {
         let height = dims.1 as usize;
 
         let mut rgbimage =
-            RgbImage::new_with_bands_masked(width, height, 3, ImageMode::U8BIT, true).unwrap();
+            Image::new_with_bands_masked(width, height, 3, ImageMode::U8BIT, true).unwrap();
 
         for y in 0..height {
             for x in 0..width {
@@ -92,7 +92,7 @@ impl GetCameraModel for MarsImage {
     }
 }
 
-fn simple_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut RgbImage) {
+fn simple_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut Image) {
     vprintln!("Adding images");
     map.paste(&right_img.image, 0, 0);
     map.paste(&left_img.image, left_img.image.width, 0);
@@ -100,12 +100,12 @@ fn simple_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut RgbImage
 }
 
 fn project_line_sample(
-    img: &RgbImage,
+    img: &Image,
     input_model: &CameraModel,
     output_model: &CameraModel,
     line: usize,
     sample: usize,
-    map: &mut RgbImage,
+    map: &mut Image,
     x_offset: usize,
 ) {
     let ground = Vector::new(0.0, 0.0, -1.84566);
@@ -161,7 +161,7 @@ fn project_line_sample(
     }
 }
 
-fn linearize_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut RgbImage) {
+fn linearize_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut Image) {
     // TODO: This.
 
     let left_input_cahv = left_img
@@ -265,7 +265,7 @@ impl RunnableSubcommand for CrossEye {
 
         let out_width = left_img.image.width * 3;
         let out_height = left_img.image.height + 56;
-        let mut map = RgbImage::create(out_width, out_height);
+        let mut map = Image::create(out_width, out_height);
 
         if left_img.implements_linearized() && right_img.implements_linearized() {
             vprintln!("Both images support CAHV linearization. Taking that path");
@@ -276,7 +276,7 @@ impl RunnableSubcommand for CrossEye {
         }
 
         vprintln!("Adding X icon");
-        let x_icon = RgbImage::open_from_bytes(include_bytes!("icons/Xicon.png").as_ref());
+        let x_icon = Image::open_from_bytes(include_bytes!("icons/Xicon.png").as_ref());
         map.paste(
             &x_icon,
             left_img.image.width - x_icon.width / 2,
@@ -284,7 +284,7 @@ impl RunnableSubcommand for CrossEye {
         );
 
         vprintln!("Adding verteq icon");
-        let eq_icon = RgbImage::open_from_bytes(include_bytes!("icons/VertEqIcon.png").as_ref());
+        let eq_icon = Image::open_from_bytes(include_bytes!("icons/VertEqIcon.png").as_ref());
         map.paste(
             &eq_icon,
             left_img.image.width * 2 - eq_icon.width / 2,

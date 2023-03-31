@@ -35,7 +35,7 @@ fn null_to_str<T: std::fmt::Display>(o: &Option<T>) -> String {
     }
 }
 
-fn print_image(output_path: &str, image: &Image) {
+fn print_image(output_path: &str, image: &ImageRecord) {
     let p = format!("{}/{}", output_path, path::basename(&image.url));
 
     println!(

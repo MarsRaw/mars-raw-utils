@@ -79,7 +79,7 @@ impl RunnableSubcommand for Anaglyph {
 
         let ground = Vector::new(0.0, 0.0, 1.84566);
 
-        let mut map = RgbImage::create(left_img.image.width, left_img.image.height);
+        let mut map = Image::create(left_img.image.width, left_img.image.height);
         let output_model = left_cahv
             .linearize(
                 left_img.image.width,

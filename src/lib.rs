@@ -55,7 +55,7 @@ pub mod focusmerge;
 pub mod httpfetch;
 
 /// Extensions to `RgbImage` to support Mars mission image data
-pub mod image;
+pub mod marsimage;
 
 /// Image inpainting
 pub mod inpaintmask;

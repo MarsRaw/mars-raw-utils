@@ -44,7 +44,7 @@ trait NormalizeRgbImageSingleChannels {
     );
 }
 
-impl NormalizeRgbImageSingleChannels for RgbImage {
+impl NormalizeRgbImageSingleChannels for Image {
     fn normalize_to(&mut self, to_min: f32, to_max: f32) {
         for b in 0..self.num_bands() {
             let mm = self.get_band(b).get_min_max();
@@ -96,7 +96,7 @@ impl MinMaxIgnoreBlack for ImageBuffer {
     }
 }
 
-fn color_range_determine_prep(image: &RgbImage) -> RgbImage {
+fn color_range_determine_prep(image: &Image) -> Image {
     let mut cloned = image.clone();
 
     // Here we need to correct for energetic particle hits, hot pixels, and outlier values.
@@ -129,8 +129,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
     vprintln!("Computing value ranges...");
     input_files.iter().for_each(|in_file| {
         if in_file.exists() {
-            let image =
-                RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+            let image = Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
             let prepped = color_range_determine_prep(&image);
 
@@ -153,7 +152,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
             vprintln!("Processing File: {:?}", in_file);
 
             let mut image =
-                RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+                Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
             for b in 0..image.num_bands() {
                 image.normalize_band_to_with_min_max(b, 0.0, 65535.0, ranges[b].min, ranges[b].max);
@@ -178,7 +177,7 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
             vprintln!("Processing File: {:?}", in_file);
 
             let mut image =
-                RgbImage::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+                Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
             let prepped = color_range_determine_prep(&image);
             for b in 0..3 {

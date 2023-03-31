@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use sciimg::{enums::ImageMode, rgbimage};
+use sciimg::{enums::ImageMode, image};
 
 lazy_static! {
     /// Matrix of expected tile ids in a scale factor 1 navcam image. These do not
@@ -177,7 +177,7 @@ pub struct Composite {
     pub scale: u32,
     pub width: usize,
     pub height: usize,
-    composite_image: rgbimage::RgbImage,
+    composite_image: image::Image,
 }
 
 impl Composite {
@@ -193,7 +193,7 @@ impl Composite {
         let (max_x, max_y) = Composite::determine_composite_size(tiles);
 
         let composite_image =
-            rgbimage::RgbImage::new_with_bands(max_x, max_y, 3, ImageMode::U16BIT).unwrap();
+            image::Image::new_with_bands(max_x, max_y, 3, ImageMode::U16BIT).unwrap();
 
         vprintln!(
             "Composite has width {}px, height {}px, and scale factor of {}",

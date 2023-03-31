@@ -3,7 +3,7 @@ use sciimg::{prelude::*, vector::Vector};
 
 pub fn process_image(
     img: &MarsImage,
-    map: &mut RgbImage,
+    map: &mut Image,
     input_model: &CameraModel,
     output_model: &CameraModel,
     ground: &Vector,
