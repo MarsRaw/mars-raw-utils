@@ -36,6 +36,11 @@ impl Calibration for M20CacheCam {
             255.0
         };
 
+        if input_file.contains("ECM") && raw.image.is_grayscale() {
+            vprintln!("Image appears to be grayscale, applying debayering...");
+            raw.debayer_with_method(cal_context.debayer_method);
+        }
+
         vprintln!("Applying color weights...");
         raw.apply_weight(
             cal_context.red_scalar,
