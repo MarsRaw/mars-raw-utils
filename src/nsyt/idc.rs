@@ -1,9 +1,10 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    marsimage::MarsImage, path, util, vprintln,
+    marsimage::MarsImage, util, vprintln,
 };
 
 use sciimg::error;
+use sciimg::path;
 
 #[derive(Copy, Clone)]
 pub struct NsytIdc {}

@@ -1,9 +1,11 @@
-use crate::{constants, httpfetch, path, vprintln};
+use crate::{constants, httpfetch, vprintln};
 
 use sciimg::error;
+use sciimg::path;
 use sciimg::util as sciutil;
 
 use anyhow::{anyhow, Result};
+
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs::File;

@@ -1,6 +1,7 @@
 use mars_raw_utils::calprofile::load_calibration_profile;
 use mars_raw_utils::prelude::*;
 use sciimg::debayer::DebayerMethod;
+use sciimg::path;
 
 use crate::subs::runnable::RunnableSubcommand;
 

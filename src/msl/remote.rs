@@ -5,9 +5,10 @@ use crate::{
     metadata::convert_to_std_metadata,
     msl::latest::{Latest, LatestData},
     msl::metadata::*,
-    path,
     util::*,
 };
+
+use sciimg::path;
 
 use anyhow::{anyhow, Result};
 

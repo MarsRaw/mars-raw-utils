@@ -1,8 +1,9 @@
 use rayon::prelude::*;
 
-use crate::{calprofile::*, enums::Instrument, path, print::*, vprintln};
+use crate::{calprofile::*, enums::Instrument, print::*, vprintln};
 
 use sciimg::error;
+use sciimg::path;
 
 pub enum CompleteStatus {
     OK,

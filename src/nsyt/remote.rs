@@ -1,9 +1,10 @@
 #![allow(clippy::too_many_arguments)]
 
 use crate::{
-    constants, jsonfetch, metadata::convert_to_std_metadata, nsyt::latest, nsyt::metadata::*, path,
+    constants, jsonfetch, metadata::convert_to_std_metadata, nsyt::latest, nsyt::metadata::*,
     util::*,
 };
+use sciimg::path;
 
 use anyhow::{anyhow, Result};
 

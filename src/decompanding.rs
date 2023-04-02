@@ -1,10 +1,10 @@
 use crate::calibfile;
 use crate::enums;
-use crate::path;
 use crate::veprintln;
 use crate::vprintln;
 use regex::Regex;
 use sciimg::error;
+use sciimg::path;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{self, BufRead};

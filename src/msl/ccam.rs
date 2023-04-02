@@ -1,9 +1,9 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument,
-    marsimage::MarsImage, path, util, vprintln,
+    marsimage::MarsImage, util, vprintln,
 };
 
-use sciimg::{error, imagebuffer};
+use sciimg::{error, imagebuffer, path};
 
 #[derive(Copy, Clone)]
 pub struct MslChemCam {}

@@ -1,9 +1,10 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, enums, enums::Instrument, marsimage::MarsImage, path,
-    util, vprintln,
+    calibrate::*, calprofile::CalProfile, enums, enums::Instrument, marsimage::MarsImage, util,
+    vprintln,
 };
 
 use sciimg::error;
+use sciimg::path;
 
 #[derive(Copy, Clone)]
 pub struct M20HeliNav {}

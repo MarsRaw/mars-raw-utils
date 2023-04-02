@@ -1,8 +1,8 @@
 // https://www.researchgate.net/publication/238183352_An_Image_Inpainting_Technique_Based_on_the_Fast_Marching_Method
 
-use crate::{calibfile, constants, enums, path, vprintln};
+use crate::{calibfile, constants, enums, vprintln};
 
-use sciimg::{error, imagebuffer::ImageBuffer};
+use sciimg::{error, imagebuffer::ImageBuffer, path};
 
 fn determine_mask_file(instrument: enums::Instrument) -> error::Result<String> {
     calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::InpaintMask)

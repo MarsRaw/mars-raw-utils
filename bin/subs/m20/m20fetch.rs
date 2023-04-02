@@ -1,5 +1,6 @@
 use mars_raw_utils::prelude::*;
 
+use sciimg::path;
 use std::process;
 
 #[derive(Debug, Clone, clap::Args)]

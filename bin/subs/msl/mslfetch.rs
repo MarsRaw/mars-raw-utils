@@ -1,5 +1,5 @@
 use mars_raw_utils::prelude::*;
-
+use sciimg::path;
 use std::process;
 
 #[derive(clap::Args)]

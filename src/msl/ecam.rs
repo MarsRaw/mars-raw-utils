@@ -1,9 +1,10 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument, inpaintmask,
-    marsimage::MarsImage, path, util, vprintln,
+    marsimage::MarsImage, util, vprintln,
 };
 
 use sciimg::error;
+use sciimg::path;
 
 // Doesn't support subframed images yet since we won't know what part of the sensor was
 // used from the raws alone. If it's in the JSON response from the raw image site, then

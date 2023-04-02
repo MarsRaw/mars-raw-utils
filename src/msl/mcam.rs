@@ -1,9 +1,9 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, flatfield,
-    inpaintmask, marsimage::MarsImage, path, util, vprintln,
+    inpaintmask, marsimage::MarsImage, util, vprintln,
 };
 
-use sciimg::{enums::ImageMode, error};
+use sciimg::{enums::ImageMode, error, path};
 
 #[derive(Copy, Clone)]
 pub struct MslMastcam {}

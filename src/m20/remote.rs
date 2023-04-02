@@ -1,9 +1,9 @@
 #![allow(clippy::too_many_arguments)]
 
 use crate::{
-    constants, jsonfetch, m20::latest, m20::metadata::*, metadata::convert_to_std_metadata, path,
-    util::*,
+    constants, jsonfetch, m20::latest, m20::metadata::*, metadata::convert_to_std_metadata, util::*,
 };
+use sciimg::path;
 
 use anyhow::{anyhow, Result};
 

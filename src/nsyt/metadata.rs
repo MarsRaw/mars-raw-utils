@@ -1,4 +1,4 @@
-use crate::{constants, metadata::*, path, vprintln};
+use crate::{constants, metadata::*, vprintln};
 
 use sciimg::prelude::*;
 

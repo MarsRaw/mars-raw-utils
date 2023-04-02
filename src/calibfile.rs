@@ -1,8 +1,9 @@
 use std::env;
 
-use crate::{constants, enums, path, vprintln};
+use crate::{constants, enums, vprintln};
 
 use sciimg::error;
+use sciimg::path;
 
 extern crate dirs;
 

@@ -1,9 +1,9 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    flatfield, marsimage::MarsImage, path, util, vprintln,
+    flatfield, marsimage::MarsImage, util, vprintln,
 };
 
-use sciimg::{error, prelude::ImageBuffer};
+use sciimg::{error, path, prelude::ImageBuffer};
 
 #[derive(Copy, Clone)]
 pub struct M20EECam {}

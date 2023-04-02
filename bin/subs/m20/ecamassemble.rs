@@ -5,7 +5,7 @@ use colored::{self, Colorize};
 use mars_raw_utils::m20::assemble::{Composite, NavcamTile};
 use mars_raw_utils::m20::ncamlevels;
 use mars_raw_utils::util;
-
+use sciimg::path;
 use std::process;
 
 #[derive(clap::Args)]

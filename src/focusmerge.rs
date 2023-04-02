@@ -1,8 +1,8 @@
 use std::process;
 
-use crate::{path, util, vprintln};
+use crate::{util, vprintln};
 
-use sciimg::{image, imagebuffer, lowpass, quality, stats};
+use sciimg::{image, imagebuffer, lowpass, path, quality, stats};
 
 use colored::*;
 

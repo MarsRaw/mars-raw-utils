@@ -13,7 +13,6 @@ pub use crate::metadata;
 pub use crate::min;
 pub use crate::msl;
 pub use crate::nsyt;
-pub use crate::path;
 pub use crate::print;
 pub use crate::util;
 pub use crate::vprintln;

@@ -78,9 +78,6 @@ pub mod msl;
 /// Routines for InSight image processing
 pub mod nsyt;
 
-/// Filesystem utilities
-pub mod path;
-
 /// Single-point import for most utilized MRU API
 pub mod prelude;
 
