@@ -124,36 +124,36 @@ fn project_line_sample(
 
         if ls_in.sample >= 0.0 && ls_in.line >= 0.0 && in_x < img.width - 1 && in_y < img.height - 1
         {
-            let tl = Point::create(
-                sample as f64 + x_offset as f64,
-                line as f64,
-                img.get_band(0).get(in_x, in_y).unwrap() as f64,
-                img.get_band(1).get(in_x, in_y).unwrap() as f64,
-                img.get_band(2).get(in_x, in_y).unwrap() as f64,
+            let tl = Point::create_rgb(
+                sample as f32 + x_offset as f32,
+                line as f32,
+                img.get_band(0).get(in_x, in_y).unwrap(),
+                img.get_band(1).get(in_x, in_y).unwrap(),
+                img.get_band(2).get(in_x, in_y).unwrap(),
             );
 
-            let bl = Point::create(
-                sample as f64 + x_offset as f64,
-                (line + 1) as f64,
-                img.get_band(0).get(in_x, in_y).unwrap() as f64,
-                img.get_band(1).get(in_x, in_y).unwrap() as f64,
-                img.get_band(2).get(in_x, in_y).unwrap() as f64,
+            let bl = Point::create_rgb(
+                sample as f32 + x_offset as f32,
+                (line + 1) as f32,
+                img.get_band(0).get(in_x, in_y).unwrap(),
+                img.get_band(1).get(in_x, in_y).unwrap(),
+                img.get_band(2).get(in_x, in_y).unwrap(),
             );
 
-            let tr = Point::create(
-                (sample + 1) as f64 + x_offset as f64,
-                line as f64,
-                img.get_band(0).get(in_x, in_y).unwrap() as f64,
-                img.get_band(1).get(in_x, in_y).unwrap() as f64,
-                img.get_band(2).get(in_x, in_y).unwrap() as f64,
+            let tr = Point::create_rgb(
+                (sample + 1) as f32 + x_offset as f32,
+                line as f32,
+                img.get_band(0).get(in_x, in_y).unwrap(),
+                img.get_band(1).get(in_x, in_y).unwrap(),
+                img.get_band(2).get(in_x, in_y).unwrap(),
             );
 
-            let br = Point::create(
-                (sample + 1) as f64 + x_offset as f64,
-                (line + 1) as f64,
-                img.get_band(0).get(in_x, in_y).unwrap() as f64,
-                img.get_band(1).get(in_x, in_y).unwrap() as f64,
-                img.get_band(2).get(in_x, in_y).unwrap() as f64,
+            let br = Point::create_rgb(
+                (sample + 1) as f32 + x_offset as f32,
+                (line + 1) as f32,
+                img.get_band(0).get(in_x, in_y).unwrap(),
+                img.get_band(1).get(in_x, in_y).unwrap(),
+                img.get_band(2).get(in_x, in_y).unwrap(),
             );
 
             map.paint_square(&tl, &bl, &br, &tr, false, Eye::DontCare);

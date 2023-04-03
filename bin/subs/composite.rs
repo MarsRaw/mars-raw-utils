@@ -89,7 +89,6 @@ impl RunnableSubcommand for Composite {
             }
         }
 
-        map.normalize_to_16bit_with_max(255.0);
         map.save(output);
     }
 }

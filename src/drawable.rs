@@ -1,21 +1,103 @@
 use crate::enums::*;
 use sciimg::{max, min, prelude::*};
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum Channels {
+    Mono,
+    RGB,
+}
+
+#[derive(Debug, Clone)]
+pub struct Color {
+    pub channels: Channels,
+    pub values: Vec<f32>,
+}
+
+impl Default for Color {
+    fn default() -> Self {
+        Color {
+            channels: Channels::Mono,
+            values: vec![0.0],
+        }
+    }
+}
+
+impl Color {
+    pub fn new_rgb(r: f32, g: f32, b: f32) -> Color {
+        Color {
+            channels: Channels::RGB,
+            values: vec![r, g, b],
+        }
+    }
+    pub fn new_mono(v: f32) -> Color {
+        Color {
+            channels: Channels::Mono,
+            values: vec![v],
+        }
+    }
+    pub fn get_channel_value(&self, c: usize) -> f32 {
+        if c >= self.values.len() {
+            panic!("Invalid color channel index: {}", c);
+        } else {
+            self.values[c]
+        }
+    }
+
+    pub fn is_nonzero(&self) -> bool {
+        match self.channels {
+            Channels::Mono => self.get_channel_value(0) != 0.0,
+            Channels::RGB => {
+                self.get_channel_value(0) != 0.0
+                    || self.get_channel_value(1) != 0.0
+                    || self.get_channel_value(2) != 0.0
+            }
+        }
+    }
+}
+
 /// A single two-dimensional point on a raster. Contains the x/y coordinate and the RGB values to be placed
 /// into the buffer.
 #[derive(Debug, Clone)]
 pub struct Point {
-    pub x: f64,
-    pub y: f64,
-    pub r: f64,
-    pub g: f64,
-    pub b: f64,
+    pub x: f32,
+    pub y: f32,
+    pub color: Color,
+}
+
+impl Default for Point {
+    fn default() -> Self {
+        Point {
+            x: 0.0,
+            y: 0.0,
+            color: Color::default(),
+        }
+    }
 }
 
 impl Point {
     /// Simple creation for a Point.
-    pub fn create(x: f64, y: f64, r: f64, g: f64, b: f64) -> Self {
-        Point { x, y, r, g, b }
+    pub fn create_rgb(x: f32, y: f32, r: f32, g: f32, b: f32) -> Self {
+        Point {
+            x,
+            y,
+            color: Color::new_rgb(r, g, b),
+        }
+    }
+
+    pub fn create_mono(x: f32, y: f32, v: f32) -> Self {
+        Point {
+            x,
+            y,
+            color: Color::new_mono(v),
+        }
+    }
+
+    pub fn create(x: f32, y: f32) -> Self {
+        Point {
+            x,
+            y,
+            color: Color::default(),
+        }
     }
 }
 
@@ -28,14 +110,8 @@ pub struct Triangle {
 
 impl Triangle {
     /// Determine if a two dimensional point is contained within the  area bounded by the triangle
-    pub fn contains(&self, x: f64, y: f64) -> bool {
-        let p = Point {
-            x,
-            y,
-            r: 0.0,
-            g: 0.0,
-            b: 0.0,
-        };
+    pub fn contains(&self, x: f32, y: f32) -> bool {
+        let p = Point::create(x, y);
         let b0 = Triangle::sign(&p, &self.p0, &self.p1) <= 0.0;
         let b1 = Triangle::sign(&p, &self.p1, &self.p2) <= 0.0;
         let b2 = Triangle::sign(&p, &self.p2, &self.p0) <= 0.0;
@@ -43,28 +119,28 @@ impl Triangle {
         (b0 == b1) && (b1 == b2)
     }
 
-    pub fn sign(p0: &Point, p1: &Point, p2: &Point) -> f64 {
+    pub fn sign(p0: &Point, p1: &Point, p2: &Point) -> f32 {
         (p0.x - p2.x) * (p1.y - p2.y) - (p1.x - p2.x) * (p0.y - p2.y)
     }
 
-    pub fn x_min(&self) -> f64 {
+    pub fn x_min(&self) -> f32 {
         min!(self.p0.x, self.p1.x, self.p2.x)
     }
 
-    pub fn x_max(&self) -> f64 {
+    pub fn x_max(&self) -> f32 {
         max!(self.p0.x, self.p1.x, self.p2.x)
     }
 
-    pub fn y_min(&self) -> f64 {
+    pub fn y_min(&self) -> f32 {
         min!(self.p0.y, self.p1.y, self.p2.y)
     }
 
-    pub fn y_max(&self) -> f64 {
+    pub fn y_max(&self) -> f32 {
         max!(self.p0.y, self.p1.y, self.p2.y)
     }
 
     /// Determines an interpolated single-channel color value for a point in the triangle
-    pub fn interpolate_color_channel(&self, x: f64, y: f64, c0: f64, c1: f64, c2: f64) -> f64 {
+    pub fn interpolate_color_channel(&self, x: f32, y: f32, c0: f32, c1: f32, c2: f32) -> f32 {
         let det = self.p0.x * self.p1.y - self.p1.x * self.p0.y + self.p1.x * self.p2.y
             - self.p2.x * self.p1.y
             + self.p2.x * self.p0.y
@@ -86,11 +162,49 @@ impl Triangle {
     }
 
     /// Determines an interpolated three-channel (RGB) color value for a point in the triangle
-    pub fn interpolate_color(&self, x: f64, y: f64) -> (f64, f64, f64) {
-        let r = self.interpolate_color_channel(x, y, self.p0.r, self.p1.r, self.p2.r);
-        let g = self.interpolate_color_channel(x, y, self.p0.g, self.p1.g, self.p2.g);
-        let b = self.interpolate_color_channel(x, y, self.p0.b, self.p1.b, self.p2.b);
-        (r, g, b)
+    pub fn interpolate_color_rgb(&self, x: f32, y: f32) -> Color {
+        Color::new_rgb(
+            self.interpolate_color_channel(
+                x,
+                y,
+                self.p0.color.get_channel_value(0),
+                self.p1.color.get_channel_value(0),
+                self.p2.color.get_channel_value(0),
+            ),
+            self.interpolate_color_channel(
+                x,
+                y,
+                self.p0.color.get_channel_value(1),
+                self.p1.color.get_channel_value(1),
+                self.p2.color.get_channel_value(1),
+            ),
+            self.interpolate_color_channel(
+                x,
+                y,
+                self.p0.color.get_channel_value(2),
+                self.p1.color.get_channel_value(2),
+                self.p2.color.get_channel_value(2),
+            ),
+        )
+    }
+
+    /// Determines an interpolated three-channel (RGB) color value for a point in the triangle
+    pub fn interpolate_color_mono(&self, x: f32, y: f32) -> Color {
+        Color::new_mono(self.interpolate_color_channel(
+            x,
+            y,
+            self.p0.color.get_channel_value(0),
+            self.p1.color.get_channel_value(0),
+            self.p2.color.get_channel_value(0),
+        ))
+    }
+
+    /// Determines an interpolated three-channel (RGB) color value for a point in the triangle
+    pub fn interpolate_color(&self, x: f32, y: f32) -> Color {
+        match self.p0.color.channels {
+            Channels::Mono => self.interpolate_color_mono(x, y),
+            Channels::RGB => self.interpolate_color_rgb(x, y),
+        }
     }
 }
 
@@ -158,38 +272,30 @@ impl Drawable for Image {
         if max_x - min_x < 100 && max_y - min_y < 100 {
             for y in min_y..=max_y {
                 for x in min_x..=max_x {
-                    if x < self.width && y < self.height && tri.contains(x as f64, y as f64) {
-                        let (mut r, mut g, mut b) = tri.interpolate_color(x as f64, y as f64);
+                    if x < self.width && y < self.height && tri.contains(x as f32, y as f32) {
+                        let interpolated_color: Color = tri.interpolate_color(x as f32, y as f32);
 
-                        let r0 = self.get_band(0).get(x, y).unwrap() as f64;
-                        let g0 = self.get_band(1).get(x, y).unwrap() as f64;
-                        let b0 = self.get_band(2).get(x, y).unwrap() as f64;
-
-                        if self.get_band(0).get_mask_at_point(x, y)
-                            && avg_pixels
-                            && (r0 > 0.0 || g0 > 0.0 || b0 > 0.0)
-                        {
-                            r = (r + r0) / 2.0;
-                            g = (g + g0) / 2.0;
-                            b = (b + b0) / 2.0;
-                        }
-
+                        let point_mask = self.get_band(0).get_mask_at_point(x, y);
                         self.put_alpha(x, y, true);
 
-                        match eye {
-                            Eye::Left => {
-                                self.put(x, y, r as f32, 0);
-                            }
-                            Eye::Right => {
-                                self.put(x, y, g as f32, 1);
-                                self.put(x, y, b as f32, 2);
-                            }
-                            Eye::DontCare => {
-                                self.put(x, y, r as f32, 0);
-                                self.put(x, y, g as f32, 1);
-                                self.put(x, y, b as f32, 2);
-                            }
+                        let num_channels = match interpolated_color.channels {
+                            Channels::Mono => 1,
+                            Channels::RGB => 3,
                         };
+
+                        for channel in 0..num_channels {
+                            let mut v = interpolated_color.get_channel_value(channel);
+                            let v0 = self.get_band(channel).get(x, y).unwrap();
+                            if point_mask && avg_pixels && interpolated_color.is_nonzero() {
+                                v = (v + v0) / 2.0;
+                            }
+                            if (channel == 0 && matches!(eye, Eye::Left | Eye::DontCare))
+                                || ((channel == 1 || channel == 2)
+                                    && matches!(eye, Eye::Right | Eye::DontCare))
+                            {
+                                self.put(x, y, v, channel);
+                            }
+                        }
                     }
                 }
             }
