@@ -244,32 +244,32 @@ pub fn process_file<D: Drawable>(
                     }
 
                     let tl = Point::create_rgb(
-                        tl_x as f64,
-                        tl_y as f64,
+                        tl_x,
+                        tl_y,
                         band_0.get(x, y).unwrap() as f64,
                         band_1.get(x, y).unwrap() as f64,
                         band_2.get(x, y).unwrap() as f64,
                     );
 
                     let tr = Point::create_rgb(
-                        tr_x as f64,
-                        tr_y as f64,
+                        tr_x,
+                        tr_y,
                         band_0.get(x + 1, y).unwrap() as f64,
                         band_1.get(x + 1, y).unwrap() as f64,
                         band_2.get(x + 1, y).unwrap() as f64,
                     );
 
                     let bl = Point::create_rgb(
-                        bl_x as f64,
-                        bl_y as f64,
+                        bl_x,
+                        bl_y,
                         band_0.get(x, y + 1).unwrap() as f64,
                         band_1.get(x, y + 1).unwrap() as f64,
                         band_2.get(x, y + 1).unwrap() as f64,
                     );
 
                     let br = Point::create_rgb(
-                        br_x as f64,
-                        br_y as f64,
+                        br_x,
+                        br_y,
                         band_0.get(x + 1, y + 1).unwrap() as f64,
                         band_1.get(x + 1, y + 1).unwrap() as f64,
                         band_2.get(x + 1, y + 1).unwrap() as f64,
