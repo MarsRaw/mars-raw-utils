@@ -39,8 +39,8 @@ pub mod decorr;
 /// Processing for ENV sequence change detection/dust devils.
 pub mod diffgif;
 
-/// Extensions for `RgbImage` to add basic 2d polygon rendering
-pub mod drawable;
+// /// Extensions for `RgbImage` to add basic 2d polygon rendering
+// pub mod drawable;
 
 /// Basic enumerations
 pub mod enums;

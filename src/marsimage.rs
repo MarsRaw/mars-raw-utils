@@ -1,11 +1,10 @@
 use crate::{
-    decompanding::LookUpTable, drawable::Drawable, enums, flatfield, inpaintmask, metadata::*,
-    util, vprintln,
+    decompanding::LookUpTable, enums, flatfield, inpaintmask, metadata::*, util, vprintln,
 };
 
 use sciimg::{
-    debayer::DebayerMethod, enums::ImageMode, image::Image, imagebuffer::ImageBuffer, inpaint,
-    path, DnVec, VecMath,
+    debayer::DebayerMethod, drawable::Drawable, enums::ImageMode, image::Image,
+    imagebuffer::ImageBuffer, inpaint, path, DnVec, VecMath,
 };
 
 #[derive(Clone)]

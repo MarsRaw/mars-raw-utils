@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use mars_raw_utils::prelude::*;
-use sciimg::{prelude::*, vector::Vector};
+use sciimg::{drawable::*, prelude::*, vector::Vector};
 
 use crate::subs::runnable::RunnableSubcommand;
 

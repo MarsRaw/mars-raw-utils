@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use sciimg::{max, min, prelude::*, quaternion::Quaternion, vector::Vector};
+use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::Vector};
 use std::str::FromStr;
 
 pub fn get_cahvor(img: &MarsImage) -> Option<CameraModel> {
@@ -244,38 +244,41 @@ pub fn process_file<D: Drawable>(
                     }
 
                     let tl = Point::create_rgb(
-                        tl_x as f32,
-                        tl_y as f32,
-                        band_0.get(x, y).unwrap(),
-                        band_1.get(x, y).unwrap(),
-                        band_2.get(x, y).unwrap(),
+                        tl_x as f64,
+                        tl_y as f64,
+                        band_0.get(x, y).unwrap() as f64,
+                        band_1.get(x, y).unwrap() as f64,
+                        band_2.get(x, y).unwrap() as f64,
                     );
 
                     let tr = Point::create_rgb(
-                        tr_x as f32,
-                        tr_y as f32,
-                        band_0.get(x + 1, y).unwrap(),
-                        band_1.get(x + 1, y).unwrap(),
-                        band_2.get(x + 1, y).unwrap(),
+                        tr_x as f64,
+                        tr_y as f64,
+                        band_0.get(x + 1, y).unwrap() as f64,
+                        band_1.get(x + 1, y).unwrap() as f64,
+                        band_2.get(x + 1, y).unwrap() as f64,
                     );
 
                     let bl = Point::create_rgb(
-                        bl_x as f32,
-                        bl_y as f32,
-                        band_0.get(x, y + 1).unwrap(),
-                        band_1.get(x, y + 1).unwrap(),
-                        band_2.get(x, y + 1).unwrap(),
+                        bl_x as f64,
+                        bl_y as f64,
+                        band_0.get(x, y + 1).unwrap() as f64,
+                        band_1.get(x, y + 1).unwrap() as f64,
+                        band_2.get(x, y + 1).unwrap() as f64,
                     );
 
                     let br = Point::create_rgb(
-                        br_x as f32,
-                        br_y as f32,
-                        band_0.get(x + 1, y + 1).unwrap(),
-                        band_1.get(x + 1, y + 1).unwrap(),
-                        band_2.get(x + 1, y + 1).unwrap(),
+                        br_x as f64,
+                        br_y as f64,
+                        band_0.get(x + 1, y + 1).unwrap() as f64,
+                        band_1.get(x + 1, y + 1).unwrap() as f64,
+                        band_2.get(x + 1, y + 1).unwrap() as f64,
                     );
 
-                    map.paint_square(&tl, &bl, &br, &tr, false, eye);
+                    map.paint_square_with_channel_rule(&tl, &bl, &br, &tr, false, |c| {
+                        (c == 0 && matches!(eye, Eye::Left | Eye::DontCare))
+                            || ((c == 1 || c == 2) && matches!(eye, Eye::Right | Eye::DontCare))
+                    });
                 }
             }
         }

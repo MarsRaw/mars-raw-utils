@@ -1,7 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
 use async_trait::async_trait;
 use mars_raw_utils::{composite, prelude::*};
-use sciimg::{prelude::*, quaternion::Quaternion};
+use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
 
 use std::process;
 

@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use sciimg::{prelude::*, vector::Vector};
+use sciimg::{drawable::*, prelude::*, vector::Vector};
 
 pub fn process_image(
     img: &MarsImage,
@@ -35,38 +35,41 @@ pub fn process_image(
                     && in_y < img.image.height - 1
                 {
                     let tl = Point::create_rgb(
-                        x as f32,
-                        y as f32,
-                        img.image.get_band(0).get(in_x, in_y).unwrap(),
-                        img.image.get_band(1).get(in_x, in_y).unwrap(),
-                        img.image.get_band(2).get(in_x, in_y).unwrap(),
+                        x as f64,
+                        y as f64,
+                        img.image.get_band(0).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(1).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(2).get(in_x, in_y).unwrap() as f64,
                     );
 
                     let bl = Point::create_rgb(
-                        x as f32,
-                        (y + 1) as f32,
-                        img.image.get_band(0).get(in_x, in_y).unwrap(),
-                        img.image.get_band(1).get(in_x, in_y).unwrap(),
-                        img.image.get_band(2).get(in_x, in_y).unwrap(),
+                        x as f64,
+                        (y + 1) as f64,
+                        img.image.get_band(0).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(1).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(2).get(in_x, in_y).unwrap() as f64,
                     );
 
                     let tr = Point::create_rgb(
-                        (x + 1) as f32,
-                        y as f32,
-                        img.image.get_band(0).get(in_x, in_y).unwrap(),
-                        img.image.get_band(1).get(in_x, in_y).unwrap(),
-                        img.image.get_band(2).get(in_x, in_y).unwrap(),
+                        (x + 1) as f64,
+                        y as f64,
+                        img.image.get_band(0).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(1).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(2).get(in_x, in_y).unwrap() as f64,
                     );
 
                     let br = Point::create_rgb(
-                        (x + 1) as f32,
-                        (y + 1) as f32,
-                        img.image.get_band(0).get(in_x, in_y).unwrap(),
-                        img.image.get_band(1).get(in_x, in_y).unwrap(),
-                        img.image.get_band(2).get(in_x, in_y).unwrap(),
+                        (x + 1) as f64,
+                        (y + 1) as f64,
+                        img.image.get_band(0).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(1).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(2).get(in_x, in_y).unwrap() as f64,
                     );
 
-                    map.paint_square(&tl, &bl, &br, &tr, false, eye);
+                    map.paint_square_with_channel_rule(&tl, &bl, &br, &tr, false, |c| {
+                        (c == 0 && matches!(eye, Eye::Left | Eye::DontCare))
+                            || ((c == 1 || c == 2) && matches!(eye, Eye::Right | Eye::DontCare))
+                    });
                 }
             }
         }
