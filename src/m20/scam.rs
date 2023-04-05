@@ -84,6 +84,7 @@ impl Calibration for M20SuperCam {
         }
 
         vprintln!("Writing to disk...");
+        raw.image.set_using_alpha(true);
         raw.save(&out_file);
 
         cal_ok(cal_context)

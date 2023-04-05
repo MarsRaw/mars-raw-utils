@@ -56,6 +56,7 @@ impl Calibration for MslChemCam {
         raw.image.normalize_to_16bit_with_max(data_max);
 
         vprintln!("Writing to disk...");
+        raw.image.set_using_alpha(true);
         raw.save(&out_file);
 
         cal_ok(cal_context)
