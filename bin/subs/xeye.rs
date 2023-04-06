@@ -17,6 +17,9 @@ pub struct CrossEye {
 
     #[clap(long, short, parse(from_os_str), help = "Output image")]
     output: std::path::PathBuf,
+
+    #[clap(long, short, help = "Use camera model, if available")]
+    use_cm: bool,
 }
 
 trait OpenFromBytes {
@@ -267,14 +270,6 @@ impl RunnableSubcommand for CrossEye {
         let out_height = left_img.image.height + 56;
         let mut map = Image::create(out_width, out_height);
 
-        if left_img.implements_linearized() && right_img.implements_linearized() {
-            vprintln!("Both images support CAHV linearization. Taking that path");
-            linearize_create(&left_img, &right_img, &mut map);
-        } else {
-            vprintln!("One or both images support CAHV linearization. Doing simple assembly");
-            simple_create(&left_img, &right_img, &mut map);
-        }
-
         vprintln!("Adding X icon");
         let x_icon = Image::open_from_bytes(include_bytes!("icons/Xicon.png").as_ref());
         map.paste(
@@ -290,8 +285,15 @@ impl RunnableSubcommand for CrossEye {
             left_img.image.width * 2 - eq_icon.width / 2,
             left_img.image.height + 3,
         );
-
         map.normalize_to_16bit_with_max(255.0);
+
+        if self.use_cm && left_img.implements_linearized() && right_img.implements_linearized() {
+            vprintln!("Both images support CAHV linearization. Taking that path");
+            linearize_create(&left_img, &right_img, &mut map);
+        } else {
+            vprintln!("One or both images support CAHV linearization. Doing simple assembly");
+            simple_create(&left_img, &right_img, &mut map);
+        }
 
         vprintln!("Output to {}", out_file_path);
         map.save(out_file_path);
