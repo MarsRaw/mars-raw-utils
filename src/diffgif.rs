@@ -203,6 +203,7 @@ fn process_frame_3channel(
     gamma: f32,
     lowpass_window_size: u8,
     product_type: ProductType,
+    convert_to_mono: bool,
 ) -> image::Image {
     let mut processed_band_0 = process_band(
         raw.get_band(0),
@@ -232,9 +233,22 @@ fn process_frame_3channel(
         product_type == ProductType::STANDARD,
     );
 
-    processed_band_0.normalize_mut(0.0, 255.0);
-    processed_band_1.normalize_mut(0.0, 255.0);
-    processed_band_2.normalize_mut(0.0, 255.0);
+    processed_band_0.normalize_force_minmax_mut(0.0, 255.0, 0.0, 65535.0);
+    processed_band_1.normalize_force_minmax_mut(0.0, 255.0, 0.0, 65535.0);
+    processed_band_2.normalize_force_minmax_mut(0.0, 255.0, 0.0, 65535.0);
+
+    if convert_to_mono {
+        processed_band_0.scale_mut(0.2125);
+        processed_band_1.scale_mut(0.7154);
+        processed_band_2.scale_mut(0.0721);
+        processed_band_0 = processed_band_0
+            .add(&processed_band_1)
+            .unwrap()
+            .add(&processed_band_2)
+            .unwrap();
+        processed_band_1 = processed_band_0.clone();
+        processed_band_2 = processed_band_0.clone();
+    }
 
     image::Image::new_from_buffers_rgb(
         &processed_band_0,
@@ -255,6 +269,7 @@ fn process_file(
     lowpass_window_size: u8,
     delay: u16,
     product_type: ProductType,
+    convert_to_mono: bool,
 ) {
     vprintln!("Processing frame differential on file: {}", in_file);
 
@@ -270,6 +285,7 @@ fn process_file(
                 gamma,
                 lowpass_window_size,
                 ProductType::STANDARD,
+                convert_to_mono,
             );
             let img_diff = process_frame_3channel(
                 &raw,
@@ -279,6 +295,7 @@ fn process_file(
                 gamma,
                 lowpass_window_size,
                 ProductType::DIFFERENTIAL,
+                convert_to_mono,
             );
             let mut stacked = image::Image::new_with_bands(
                 img_std.width,
@@ -300,6 +317,7 @@ fn process_file(
                 gamma,
                 lowpass_window_size,
                 product_type,
+                convert_to_mono,
             );
             (rgbimage_to_vec_v8(&img), img.height)
         }
@@ -320,6 +338,7 @@ pub struct DiffGif {
     pub gamma: f32,
     pub delay: u16,
     pub lowpass_window_size: u8,
+    pub convert_to_mono: bool,
 }
 
 pub fn process(params: &DiffGif) {
@@ -346,6 +365,7 @@ pub fn process(params: &DiffGif) {
                 params.lowpass_window_size,
                 params.delay,
                 params.product_type,
+                params.convert_to_mono,
             );
         } else {
             eprintln!("File not found: {}", in_file);

@@ -36,6 +36,9 @@ pub struct DiffGif {
 
     #[clap(long, short, help = "Product type")]
     prodtype: Option<diffgif::ProductType>,
+
+    #[clap(long, short, help = "Convert RGB to mono")]
+    mono: bool,
 }
 
 #[async_trait::async_trait]
@@ -92,6 +95,7 @@ impl RunnableSubcommand for DiffGif {
             gamma,
             delay,
             lowpass_window_size,
+            convert_to_mono: self.mono,
         });
     }
 }
