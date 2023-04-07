@@ -59,7 +59,7 @@ string-builder = "0.2.0"
 sciimg = {path = "sciimg", features = ["rayon"]}
 weezl = "0.1.5"
 gif = "0.12.0"
-rayon = "1.5.1"
+rayon = "1.7.0"
 chrono = "0.4.19"
 dirs = "4.0.0"
 wild = "2.0.4"

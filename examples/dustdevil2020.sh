@@ -32,7 +32,7 @@ mru calibrate -i *J0?.png
 
 
 for seqid in `ls *NCAM005{1,2,3}*2I*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
-    mru -v diffgif -i *${seqid}-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 2.0 -l 5 -d 20 -p stacked -m
+    mru -v diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 2.0 -l 5 -d 20 -p stacked -m
 done
 
 
