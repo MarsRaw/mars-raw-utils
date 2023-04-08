@@ -40,6 +40,10 @@ path = "bin/mru.rs"
 
 [profile.release]
 strip = true  # Automatically strip symbols from the binary.
+#debug = 1
+
+#[rust]
+#debuginfo-level = 1
 
 [features]
 
