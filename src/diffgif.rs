@@ -47,9 +47,9 @@ fn imagebuffer_to_vec_v8(
     for y in 0..buff_0.height {
         for x in 0..buff_0.width {
             let idx = (y * buff_0.width + x) * 3;
-            f[idx] = buff_0.get(x, y).unwrap().round() as u8;
-            f[idx + 1] = buff_1.get(x, y).unwrap().round() as u8;
-            f[idx + 2] = buff_2.get(x, y).unwrap().round() as u8;
+            f[idx] = buff_0.get(x, y).round() as u8;
+            f[idx + 1] = buff_1.get(x, y).round() as u8;
+            f[idx + 2] = buff_2.get(x, y).round() as u8;
         }
     }
 
@@ -118,7 +118,7 @@ fn process_band(
     // Convert for absolute value difference
     for y in 0..d.height {
         for x in 0..d.width {
-            let v = d.get(x, y).unwrap();
+            let v = d.get(x, y);
             d.put(x, y, v.abs());
         }
     }
@@ -135,11 +135,11 @@ fn process_band(
 
     for y in 0..d.height {
         for x in 0..d.width {
-            let mult = match diff.get(x, y).unwrap() >= 0.0 {
+            let mult = match diff.get(x, y) >= 0.0 {
                 true => 1.0,
                 false => -1.0,
             };
-            n.put(x, y, n.get(x, y).unwrap() * mult);
+            n.put(x, y, n.get(x, y) * mult);
         }
     }
 

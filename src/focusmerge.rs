@@ -134,9 +134,9 @@ pub fn focusmerge(
                 if q > max_quality {
                     depth_value = image_num;
                     max_quality = q;
-                    b0_value = image.image.get_band(0).get(x, y).unwrap();
-                    b1_value = image.image.get_band(1).get(x, y).unwrap();
-                    b2_value = image.image.get_band(2).get(x, y).unwrap();
+                    b0_value = image.image.get_band(0).get(x, y);
+                    b1_value = image.image.get_band(1).get(x, y);
+                    b2_value = image.image.get_band(2).get(x, y);
                 }
             }
 

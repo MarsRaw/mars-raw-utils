@@ -37,33 +37,33 @@ pub fn process_image(
                     let tl = Point::create_rgb(
                         x as f64,
                         y as f64,
-                        img.image.get_band(0).get(in_x, in_y).unwrap() as f64,
-                        img.image.get_band(1).get(in_x, in_y).unwrap() as f64,
-                        img.image.get_band(2).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(0).get(in_x, in_y) as f64,
+                        img.image.get_band(1).get(in_x, in_y) as f64,
+                        img.image.get_band(2).get(in_x, in_y) as f64,
                     );
 
                     let bl = Point::create_rgb(
                         x as f64,
                         (y + 1) as f64,
-                        img.image.get_band(0).get(in_x, in_y).unwrap() as f64,
-                        img.image.get_band(1).get(in_x, in_y).unwrap() as f64,
-                        img.image.get_band(2).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(0).get(in_x, in_y) as f64,
+                        img.image.get_band(1).get(in_x, in_y) as f64,
+                        img.image.get_band(2).get(in_x, in_y) as f64,
                     );
 
                     let tr = Point::create_rgb(
                         (x + 1) as f64,
                         y as f64,
-                        img.image.get_band(0).get(in_x, in_y).unwrap() as f64,
-                        img.image.get_band(1).get(in_x, in_y).unwrap() as f64,
-                        img.image.get_band(2).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(0).get(in_x, in_y) as f64,
+                        img.image.get_band(1).get(in_x, in_y) as f64,
+                        img.image.get_band(2).get(in_x, in_y) as f64,
                     );
 
                     let br = Point::create_rgb(
                         (x + 1) as f64,
                         (y + 1) as f64,
-                        img.image.get_band(0).get(in_x, in_y).unwrap() as f64,
-                        img.image.get_band(1).get(in_x, in_y).unwrap() as f64,
-                        img.image.get_band(2).get(in_x, in_y).unwrap() as f64,
+                        img.image.get_band(0).get(in_x, in_y) as f64,
+                        img.image.get_band(1).get(in_x, in_y) as f64,
+                        img.image.get_band(2).get(in_x, in_y) as f64,
                     );
 
                     map.paint_square_with_channel_rule(&tl, &bl, &br, &tr, false, |c| {

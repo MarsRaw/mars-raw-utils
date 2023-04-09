@@ -17,13 +17,13 @@ pub fn decorrelation_stretch(image: &mut Image) {
 
     for y in 0..image.height {
         for x in 0..image.width {
-            r_sum += image.get_band(0).get(x, y).unwrap();
-            g_sum += image.get_band(1).get(x, y).unwrap();
-            b_sum += image.get_band(2).get(x, y).unwrap();
+            r_sum += image.get_band(0).get(x, y);
+            g_sum += image.get_band(1).get(x, y);
+            b_sum += image.get_band(2).get(x, y);
 
-            r_squared_sum += image.get_band(0).get(x, y).unwrap().powf(2.0);
-            g_squared_sum += image.get_band(1).get(x, y).unwrap().powf(2.0);
-            b_squared_sum += image.get_band(2).get(x, y).unwrap().powf(2.0);
+            r_squared_sum += image.get_band(0).get(x, y).powf(2.0);
+            g_squared_sum += image.get_band(1).get(x, y).powf(2.0);
+            b_squared_sum += image.get_band(2).get(x, y).powf(2.0);
         }
     }
 
@@ -37,9 +37,9 @@ pub fn decorrelation_stretch(image: &mut Image) {
 
     for y in 0..image.height {
         for x in 0..image.width {
-            let mut r = image.get_band(0).get(x, y).unwrap();
-            let mut g = image.get_band(1).get(x, y).unwrap();
-            let mut b = image.get_band(2).get(x, y).unwrap();
+            let mut r = image.get_band(0).get(x, y);
+            let mut g = image.get_band(1).get(x, y);
+            let mut b = image.get_band(2).get(x, y);
 
             r = (r - r_mean) / r_stddev;
             g = (g - g_mean) / g_stddev;
