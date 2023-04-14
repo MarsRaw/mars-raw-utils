@@ -1,4 +1,5 @@
 use mars_raw_utils::prelude::*;
+use mars_raw_utils::remotequery::RemoteQuery;
 
 use sciimg::path;
 use std::process;
@@ -49,6 +50,14 @@ pub struct M20Fetch {
 
     #[clap(long, short = 'n', help = "Only new images. Skipped processed images.")]
     new: bool,
+
+    #[clap(
+        long,
+        short = 'P',
+        help = "Product type codes (ECM, EBY, etc)",
+        multiple_values(true)
+    )]
+    product_types: Option<Vec<String>>,
 }
 
 impl M20Fetch {
@@ -124,22 +133,25 @@ impl M20Fetch {
             Ok(v) => v,
         };
 
+        let product_types = self.product_types.clone().unwrap_or(vec![]);
         m20::remote::print_header();
-        match m20::remote::remote_fetch(
-            &cameras,
+
+        let query = RemoteQuery {
+            cameras,
             num_per_page,
             page,
             minsol,
             maxsol,
-            self.thumbnails,
-            self.movie,
-            self.list,
-            &search,
-            self.new,
-            output.as_str(),
-        )
-        .await
-        {
+            thumbnails: self.thumbnails,
+            movie_only: self.movie,
+            list_only: self.list,
+            search,
+            only_new: self.new,
+            product_types,
+            output_path: output,
+        };
+
+        match m20::remote::remote_fetch(&query).await {
             Ok(c) => println!("{} images found", c),
             Err(e) => eprintln!("Error: {}", e),
         };

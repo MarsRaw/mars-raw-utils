@@ -1,4 +1,5 @@
 use mars_raw_utils::prelude::*;
+use mars_raw_utils::remotequery::RemoteQuery;
 use sciimg::path;
 use std::process;
 
@@ -122,18 +123,20 @@ impl NsytFetch {
 
         nsyt::remote::print_header();
 
-        match nsyt::remote::remote_fetch(
-            &cameras,
+        match nsyt::remote::remote_fetch(&RemoteQuery {
+            cameras,
             num_per_page,
             page,
             minsol,
             maxsol,
-            self.thumbnails,
-            self.list,
-            &search,
-            self.new,
-            output.as_str(),
-        )
+            thumbnails: self.thumbnails,
+            movie_only: false,
+            list_only: self.list,
+            search,
+            only_new: self.new,
+            product_types: vec![],
+            output_path: output,
+        })
         .await
         {
             Ok(c) => println!("{} images found", c),

@@ -1,4 +1,5 @@
 use mars_raw_utils::nsyt::{remote::fetch_latest, remote::remote_fetch};
+use mars_raw_utils::remotequery::RemoteQuery;
 
 #[tokio::test]
 async fn test_nsyt_latest() {
@@ -8,22 +9,22 @@ async fn test_nsyt_latest() {
 #[tokio::test]
 async fn test_nsyt_instrument_fetches() {
     let instruments = vec!["idc", "icc"];
-    let f: Vec<String> = vec![];
-
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
-        remote_fetch(
-            &[String::from(i)],
-            5,
-            Some(0),
-            3119,
-            3119,
-            false,
-            true,
-            &f,
-            false,
-            "",
-        )
+        remote_fetch(&RemoteQuery {
+            cameras: vec![i.into()],
+            num_per_page: 5,
+            page: Some(0),
+            minsol: 1000,
+            maxsol: 1000,
+            thumbnails: false,
+            movie_only: false,
+            list_only: true,
+            search: vec![],
+            only_new: false,
+            product_types: vec![],
+            output_path: String::from(""),
+        })
         .await
         .unwrap();
     }

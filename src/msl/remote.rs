@@ -1,10 +1,9 @@
-#![allow(clippy::too_many_arguments)]
-
 use crate::{
     constants, jsonfetch,
     metadata::convert_to_std_metadata,
     msl::latest::{Latest, LatestData},
     msl::metadata::*,
+    remotequery::RemoteQuery,
     util::*,
 };
 
@@ -61,30 +60,23 @@ fn print_image(output_path: &str, image: &ImageRecord) {
     );
 }
 
-async fn process_results(
-    results: &MslApiResults,
-    thumbnails: bool,
-    list_only: bool,
-    search: &[String],
-    only_new: bool,
-    output_path: &str,
-) -> usize {
+async fn process_results(results: &MslApiResults, query: &RemoteQuery) -> usize {
     let mut valid_img_count = 0;
     let images = results.items.iter().filter(|image| {
-        !(image.is_thumbnail && !thumbnails
-            || !search.is_empty() && !search.iter().any(|i| image.imageid.contains(i)))
+        !(image.is_thumbnail && !query.thumbnails
+            || !query.search.is_empty() && !query.search.iter().any(|i| image.imageid.contains(i)))
     });
     for (idx, image) in images.enumerate() {
         valid_img_count = idx;
-        print_image(output_path, image);
-        if !list_only {
-            _ = fetch_image(&image.url, only_new, Some(output_path)).await;
+        print_image(query.output_path.as_str(), image);
+        if !query.list_only {
+            _ = fetch_image(&image.url, query.only_new, Some(query.output_path.as_str())).await;
             let image_base_name = path::basename(image.url.as_str());
             _ = save_image_json(
                 &image_base_name,
                 &convert_to_std_metadata(image),
-                only_new,
-                Some(output_path),
+                query.only_new,
+                Some(query.output_path.as_str()),
             );
         }
     }
@@ -115,26 +107,20 @@ pub fn make_instrument_map() -> InstrumentMap {
     }
 }
 
-async fn submit_query(
-    cameras: &[String],
-    num_per_page: i32,
-    page: Option<i32>,
-    minsol: i32,
-    maxsol: i32,
-) -> Result<String> {
+async fn submit_query(query: &RemoteQuery) -> Result<String> {
     let mut params = vec![
         stringvec("condition_1", "msl:mission"),
-        stringvec_b("per_page", format!("{}", num_per_page)),
+        stringvec_b("per_page", format!("{}", query.num_per_page)),
         stringvec(
             "order",
             "sol desc,instrument_sort asc,sample_type_sort asc, date_taken desc",
         ),
-        stringvec_b("search", cameras.join("|")),
-        stringvec_b("condition_2", format!("{}:sol:gte", minsol)),
-        stringvec_b("condition_3", format!("{}:sol:lte", maxsol)),
+        stringvec_b("search", query.cameras.join("|")),
+        stringvec_b("condition_2", format!("{}:sol:gte", query.minsol)),
+        stringvec_b("condition_3", format!("{}:sol:lte", query.maxsol)),
     ];
 
-    if let Some(p) = page {
+    if let Some(p) = query.page {
         params.push(stringvec_b("page", format!("{}", p)));
     }
 
@@ -150,26 +136,10 @@ async fn submit_query(
     Err(anyhow!("Unable to submit query."))
 }
 
-pub async fn fetch_page(
-    cameras: &[String],
-    num_per_page: i32,
-    page: i32,
-    minsol: i32,
-    maxsol: i32,
-    thumbnails: bool,
-    list_only: bool,
-    search: &[String],
-    only_new: bool,
-    output_path: &str,
-) -> Result<usize> {
-    match submit_query(cameras, num_per_page, Some(page), minsol, maxsol).await {
+pub async fn fetch_page(query: &RemoteQuery) -> Result<usize> {
+    match submit_query(query).await {
         Ok(v) => match serde_json::from_str(&v) {
-            Ok(res) => {
-                Ok(
-                    process_results(&res, thumbnails, list_only, search, only_new, output_path)
-                        .await,
-                )
-            }
+            Ok(res) => Ok(process_results(&res, query).await),
             // NOTE: The anyhow! macro is glorious for making on-the-fly errors in application code, there's a sister libary called thiserror which is for making explicit libary code error types.
             Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
         },
@@ -185,8 +155,8 @@ pub struct MslRemoteStats {
     pub per_page: i32,
 }
 
-pub async fn fetch_stats(cameras: &[String], minsol: i32, maxsol: i32) -> Result<MslRemoteStats> {
-    match submit_query(cameras, 0, Some(0), minsol, maxsol).await {
+pub async fn fetch_stats(query: &RemoteQuery) -> Result<MslRemoteStats> {
+    match submit_query(query).await {
         Ok(v) => {
             let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
             Ok(MslRemoteStats {
@@ -217,40 +187,19 @@ pub async fn fetch_latest() -> Result<LatestData> {
     }
 }
 
-pub async fn fetch_all(
-    cameras: &[String],
-    num_per_page: i32,
-    minsol: i32,
-    maxsol: i32,
-    thumbnails: bool,
-    list_only: bool,
-    search: &[String],
-    only_new: bool,
-    output_path: &str,
-) -> Result<usize> {
-    let stats = match fetch_stats(cameras, minsol, maxsol).await {
+pub async fn fetch_all(query: &RemoteQuery) -> Result<usize> {
+    let stats = match fetch_stats(query).await {
         Ok(s) => s,
         Err(e) => return Err(e),
     };
 
-    let pages = (stats.total as f32 / num_per_page as f32).ceil() as i32;
+    let pages = (stats.total as f32 / query.num_per_page as f32).ceil() as i32;
 
     let mut count = 0;
     for page in 0..pages {
-        match fetch_page(
-            cameras,
-            num_per_page,
-            page,
-            minsol,
-            maxsol,
-            thumbnails,
-            list_only,
-            search,
-            only_new,
-            output_path,
-        )
-        .await
-        {
+        let mut q: RemoteQuery = query.clone();
+        q.page = Some(page);
+        match fetch_page(&q).await {
             Ok(c) => {
                 count += c;
             }
@@ -261,47 +210,10 @@ pub async fn fetch_all(
     Ok(count)
 }
 
-pub async fn remote_fetch(
-    cameras: &[String],
-    num_per_page: i32,
-    page: Option<i32>,
-    minsol: i32,
-    maxsol: i32,
-    thumbnails: bool,
-    list_only: bool,
-    search: &[String],
-    only_new: bool,
-    output_path: &str,
-) -> Result<usize> {
-    match page {
-        Some(p) => {
-            fetch_page(
-                cameras,
-                num_per_page,
-                p,
-                minsol,
-                maxsol,
-                thumbnails,
-                list_only,
-                search,
-                only_new,
-                output_path,
-            )
-            .await
-        }
-        None => {
-            fetch_all(
-                cameras,
-                num_per_page,
-                minsol,
-                maxsol,
-                thumbnails,
-                list_only,
-                search,
-                only_new,
-                output_path,
-            )
-            .await
-        }
+pub async fn remote_fetch(query: &RemoteQuery) -> Result<usize> {
+    if query.page.is_some() {
+        fetch_page(query).await
+    } else {
+        fetch_all(query).await
     }
 }

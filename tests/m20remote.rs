@@ -1,4 +1,5 @@
 use mars_raw_utils::m20::remote;
+use mars_raw_utils::remotequery::RemoteQuery;
 
 #[tokio::test]
 async fn test_m20_latest() {
@@ -31,23 +32,22 @@ async fn test_m20_instrument_fetches() {
         "SHERLOC_WATSON",
     ];
 
-    let f: Vec<String> = vec![];
-
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
-        remote::remote_fetch(
-            &[String::from(i)],
-            5,
-            Some(0),
-            70,
-            79,
-            false,
-            false,
-            true,
-            &f,
-            false,
-            "",
-        )
+        remote::remote_fetch(&RemoteQuery {
+            cameras: vec![String::from(i)],
+            num_per_page: 5,
+            page: Some(0),
+            minsol: 70,
+            maxsol: 70,
+            thumbnails: false,
+            movie_only: false,
+            list_only: true,
+            search: vec![],
+            only_new: false,
+            product_types: vec![],
+            output_path: String::from(""),
+        })
         .await
         .unwrap();
     }

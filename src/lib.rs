@@ -89,3 +89,5 @@ pub mod time;
 
 /// General utilities
 pub mod util;
+
+pub mod remotequery;
