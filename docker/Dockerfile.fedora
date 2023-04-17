@@ -12,16 +12,17 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN yum install -y openssl-devel
 
-RUN cargo install cargo-rpm 
+RUN cargo install cargo-generate-rpm
 
 WORKDIR /build
 
 COPY . .
-RUN cp -vr mars-raw-utils-data/caldata/* .rpm/
-RUN cargo rpm build -v
-RUN ls -l target/release/rpmbuild/RPMS/x86_64/
+RUN cargo build --release
+RUN strip -s target/release/mru
+RUN cargo generate-rpm
+RUN ls -l target/generate-rpm/
 
 # RPM installation validation
-RUN rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-${MRU_VERSION}-1.fc35.x86_64.rpm
+RUN rpm -ivh target/generate-rpm/mars_raw_utils-${MRU_VERSION}-1.x86_64.rpm
 
 WORKDIR /data

@@ -1,6 +1,6 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    flatfield, marsimage::MarsImage, util, vprintln,
+    marsimage::MarsImage, util, vprintln,
 };
 
 use sciimg::{error, path, prelude::ImageBuffer};
@@ -103,43 +103,80 @@ impl Calibration for M20EECam {
         }
 
         vprintln!("Flatfielding...");
+        let scale_factor = if let Some(md) = raw.metadata.clone() {
+            md.scale_factor
+        } else {
+            1
+        };
+        let scale_factor_str = format!("sf{}", scale_factor);
 
-        let mut flat = flatfield::load_flat(instrument).unwrap();
+        // let mut flat = flatfield::load_flat(instrument).unwrap();
+        let mut flat = match calibfile::get_calibration_file_for_instrument(
+            instrument,
+            enums::CalFileType::FlatField,
+        ) {
+            Ok(s) => {
+                let flat_file_path = s.replace("-scalefactor-", scale_factor_str.as_str());
+                vprintln!(
+                    "Flat file path for scale factor {}: {}",
+                    scale_factor,
+                    flat_file_path
+                );
+                MarsImage::open(flat_file_path, instrument)
+            }
+            Err(why) => {
+                vprintln!(
+                    "Flat file not determined for instrument {:?}: {:?}",
+                    instrument,
+                    why
+                );
+                MarsImage::new_emtpy()
+            }
+        };
+
         vprintln!("Loading image mask");
         let mut mask = match calibfile::get_calibration_file_for_instrument(
             instrument,
             enums::CalFileType::Mask,
         ) {
-            Ok(s) => MarsImage::open(s, instrument),
-            Err(_) => MarsImage::new_emtpy(),
+            Ok(s) => {
+                let mask_file_path = s.replace("-scalefactor-", scale_factor_str.as_str());
+                vprintln!(
+                    "Mask file path for scale factor {}: {}",
+                    scale_factor,
+                    mask_file_path
+                );
+                MarsImage::open(mask_file_path, instrument)
+            }
+            Err(why) => {
+                vprintln!(
+                    "Flat file not determined for instrument {:?}: {:?}",
+                    instrument,
+                    why
+                );
+                MarsImage::new_emtpy()
+            }
         };
 
         if let Some(md) = raw.metadata.clone() {
             if let Some(rect) = &md.subframe_rect {
                 flat.crop(
-                    rect[0] as usize - 1,
-                    rect[1] as usize - 1,
-                    rect[2] as usize,
-                    rect[3] as usize,
+                    (rect[0] as usize - 1) / scale_factor as usize,
+                    (rect[1] as usize - 1) / scale_factor as usize,
+                    (rect[2] as usize) / scale_factor as usize,
+                    (rect[3] as usize) / scale_factor as usize,
                 );
 
                 if !mask.is_empty() {
                     mask.crop(
-                        rect[0] as usize - 1,
-                        rect[1] as usize - 1,
-                        rect[2] as usize,
-                        rect[3] as usize,
+                        (rect[0] as usize - 1) / scale_factor as usize,
+                        (rect[1] as usize - 1) / scale_factor as usize,
+                        (rect[2] as usize) / scale_factor as usize,
+                        (rect[3] as usize) / scale_factor as usize,
                     );
                 }
 
                 vprintln!("Flat cropped to {}x{}", flat.image.width, flat.image.height);
-            }
-            if md.scale_factor > 1 {
-                flat.resize_to(raw.image.width, raw.image.height);
-                if !mask.is_empty() {
-                    mask.resize_to(raw.image.width, raw.image.height);
-                }
-                vprintln!("Flat resized to {}x{}", raw.image.width, raw.image.height);
             }
         }
 
