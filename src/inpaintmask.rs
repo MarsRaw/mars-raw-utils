@@ -1,6 +1,6 @@
 // https://www.researchgate.net/publication/238183352_An_Image_Inpainting_Technique_Based_on_the_Fast_Marching_Method
 
-use crate::{calibfile, constants, enums, vprintln};
+use crate::{calibfile, constants, enums, memcache, vprintln};
 
 use sciimg::{error, imagebuffer::ImageBuffer, path};
 
@@ -19,7 +19,8 @@ fn load_mask_file(filename: &str, instrument: enums::Instrument) -> error::Resul
     if !path::file_exists(filename) {
         return Err(constants::status::FILE_NOT_FOUND);
     }
-    let mask = match ImageBuffer::from_file(filename) {
+
+    let mask = match memcache::load_imagebuffer(filename) {
         Ok(m) => m,
         Err(e) => return Err(e),
     };

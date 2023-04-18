@@ -1,9 +1,9 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    marsimage::MarsImage, util, vprintln,
+    marsimage::MarsImage, memcache::load_image, util, vprintln,
 };
 
-use sciimg::{error, path, prelude::ImageBuffer};
+use sciimg::{error, image::Image, path, prelude::ImageBuffer};
 
 #[derive(Copy, Clone)]
 pub struct M20EECam {}
@@ -122,7 +122,7 @@ impl Calibration for M20EECam {
                     scale_factor,
                     flat_file_path
                 );
-                MarsImage::open(flat_file_path, instrument)
+                load_image(&flat_file_path).unwrap()
             }
             Err(why) => {
                 vprintln!(
@@ -130,7 +130,7 @@ impl Calibration for M20EECam {
                     instrument,
                     why
                 );
-                MarsImage::new_emtpy()
+                Image::new_empty().unwrap()
             }
         };
 
@@ -146,7 +146,7 @@ impl Calibration for M20EECam {
                     scale_factor,
                     mask_file_path
                 );
-                MarsImage::open(mask_file_path, instrument)
+                load_image(&mask_file_path).unwrap()
             }
             Err(why) => {
                 vprintln!(
@@ -154,7 +154,7 @@ impl Calibration for M20EECam {
                     instrument,
                     why
                 );
-                MarsImage::new_emtpy()
+                Image::new_empty().unwrap()
             }
         };
 
@@ -176,12 +176,12 @@ impl Calibration for M20EECam {
                     );
                 }
 
-                vprintln!("Flat cropped to {}x{}", flat.image.width, flat.image.height);
+                vprintln!("Flat cropped to {}x{}", flat.width, flat.height);
             }
         }
 
         if !mask.is_empty() {
-            let mask_adjusted = create_adjusted_mask(mask.image.get_band(0));
+            let mask_adjusted = create_adjusted_mask(mask.get_band(0));
             raw.image
                 .set_band(&raw.image.get_band(0).multiply(&mask_adjusted).unwrap(), 0);
             raw.image
@@ -189,7 +189,7 @@ impl Calibration for M20EECam {
             raw.image
                 .set_band(&raw.image.get_band(2).multiply(&mask_adjusted).unwrap(), 2);
         }
-        raw.flatfield_with_flat(&flat);
+        raw.apply_flat(&flat);
 
         if !raw.image.is_grayscale() {
             vprintln!("Applying color weights...");

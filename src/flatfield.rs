@@ -1,4 +1,4 @@
-use crate::{calibfile, enums, marsimage::MarsImage, vprintln};
+use crate::{calibfile, enums, marsimage::MarsImage, memcache::load_image, vprintln};
 
 use sciimg::error;
 
@@ -7,7 +7,10 @@ pub fn load_flat(instrument: enums::Instrument) -> error::Result<MarsImage> {
     {
         Ok(cal_file) => {
             vprintln!("Loading calibration file from {}", cal_file);
-            Ok(MarsImage::open(cal_file, instrument))
+            Ok(MarsImage::from_image(
+                &load_image(&cal_file).unwrap(),
+                instrument,
+            ))
         }
         Err(e) => Err(e),
     }

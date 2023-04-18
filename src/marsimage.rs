@@ -27,6 +27,16 @@ impl MarsImage {
         }
     }
 
+    pub fn from_image(img: &Image, instrument: enums::Instrument) -> Self {
+        MarsImage {
+            image: img.clone(),
+            instrument,
+            metadata: None,
+            empty: false,
+            file_path: None,
+        }
+    }
+
     pub fn new_emtpy() -> Self {
         MarsImage {
             image: Image::new_empty().unwrap(),
@@ -135,7 +145,7 @@ impl MarsImage {
         }
     }
 
-    fn apply_flat(&mut self, flat: &Image) {
+    pub fn apply_flat(&mut self, flat: &Image) {
         self.image.apply_flat(flat);
 
         if let Some(ref mut md) = self.metadata {
