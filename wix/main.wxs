@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <!--
   Copyright (C) 2017 Christopher R. Field.
-  Copyright (C) 2022 Kevin M. Gill
+  Copyright (C) 2023 Kevin M. Gill
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -634,9 +634,9 @@
                         <Component Id='caldata67' Guid='*'>
                             <File
                                 Id='data67'
-                                Name='FM103_flat_rgb_bias_mask.jpg'
+                                Name='FM103_flat_rgb_bias_mask_-scalefactor-.jpg'
                                 DiskId='1'
-                                Source='mars-raw-utils-data\caldata\FM103_flat_rgb_bias_mask.jpg'
+                                Source='mars-raw-utils-data\caldata\FM103_flat_rgb_bias_mask_-scalefactor-.jpg'
                                 KeyPath='yes'/>
                         </Component>
 
@@ -644,9 +644,9 @@
                         <Component Id='caldata68' Guid='*'>
                             <File
                                 Id='data68'
-                                Name='FM103_mask.jpg'
+                                Name='FM103_mask_-scalefactor-.jpg'
                                 DiskId='1'
-                                Source='mars-raw-utils-data\caldata\FM103_mask.jpg'
+                                Source='mars-raw-utils-data\caldata\FM103_mask_-scalefactor-.jpg'
                                 KeyPath='yes'/>
                         </Component>
 
@@ -654,9 +654,9 @@
                         <Component Id='caldata69' Guid='*'>
                             <File
                                 Id='data69'
-                                Name='FM105_flat_rgb_bias.jpg'
+                                Name='FM105_flat_rgb_bias_-scalefactor-.jpg'
                                 DiskId='1'
-                                Source='mars-raw-utils-data\caldata\FM105_flat_rgb_bias.jpg'
+                                Source='mars-raw-utils-data\caldata\FM105_flat_rgb_bias_-scalefactor-.jpg'
                                 KeyPath='yes'/>
                         </Component>
 
@@ -664,9 +664,9 @@
                         <Component Id='caldata70' Guid='*'>
                             <File
                                 Id='data70'
-                                Name='FM108_flat_rgb_bias.jpg'
+                                Name='FM108_flat_rgb_bias_-scalefactor-.jpg'
                                 DiskId='1'
-                                Source='mars-raw-utils-data\caldata\FM108_flat_rgb_bias.jpg'
+                                Source='mars-raw-utils-data\caldata\FM108_flat_rgb_bias_-scalefactor-.jpg'
                                 KeyPath='yes'/>
                         </Component>
 
@@ -674,9 +674,9 @@
                         <Component Id='caldata71' Guid='*'>
                             <File
                                 Id='data71'
-                                Name='FM110_flat_rgb_bias.jpg'
+                                Name='FM110_flat_rgb_bias_-scalefactor-.jpg'
                                 DiskId='1'
-                                Source='mars-raw-utils-data\caldata\FM110_flat_rgb_bias.jpg'
+                                Source='mars-raw-utils-data\caldata\FM110_flat_rgb_bias_-scalefactor-.jpg'
                                 KeyPath='yes'/>
                         </Component>
 
@@ -684,9 +684,9 @@
                         <Component Id='caldata72' Guid='*'>
                             <File
                                 Id='data72'
-                                Name='FM111_flat_rgb_bias.jpg'
+                                Name='FM111_flat_rgb_bias_-scalefactor-.jpg'
                                 DiskId='1'
-                                Source='mars-raw-utils-data\caldata\FM111_flat_rgb_bias.jpg'
+                                Source='mars-raw-utils-data\caldata\FM111_flat_rgb_bias_-scalefactor-.jpg'
                                 KeyPath='yes'/>
                         </Component>
 
@@ -821,6 +821,180 @@
                         </Component>
 
 
+
+
+
+
+
+
+                        <Component Id='caldata86' Guid='*'>
+                            <File
+                                Id='data86'
+                                Name='FM103_flat_rgb_bias_mask_sf1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM103_flat_rgb_bias_mask_sf1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+
+                        <Component Id='caldata87' Guid='*'>
+                            <File
+                                Id='data87'
+                                Name='FM103_flat_rgb_bias_mask_sf2.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM103_flat_rgb_bias_mask_sf2.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+
+                        <Component Id='caldata88' Guid='*'>
+                            <File
+                                Id='data88'
+                                Name='FM103_flat_rgb_bias_mask_sf4.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM103_flat_rgb_bias_mask_sf4.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+
+
+
+                        
+                        <Component Id='caldata89' Guid='*'>
+                            <File
+                                Id='data89'
+                                Name='FM103_mask_sf1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM103_mask_sf1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata90' Guid='*'>
+                            <File
+                                Id='data90'
+                                Name='FM103_mask_sf2.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM103_mask_sf2.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata91' Guid='*'>
+                            <File
+                                Id='data91'
+                                Name='FM103_mask_sf4.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM103_mask_sf4.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+
+
+
+
+
+
+                        
+                        <Component Id='caldata92' Guid='*'>
+                            <File
+                                Id='data92'
+                                Name='FM105_flat_rgb_bias_sf1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM105_flat_rgb_bias_sf1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata93' Guid='*'>
+                            <File
+                                Id='data93'
+                                Name='FM105_flat_rgb_bias_sf2.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM105_flat_rgb_bias_sf2.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata94' Guid='*'>
+                            <File
+                                Id='data94'
+                                Name='FM105_flat_rgb_bias_sf4.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM105_flat_rgb_bias_sf4.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+
+
+
+                        
+                        <Component Id='caldata95' Guid='*'>
+                            <File
+                                Id='data95'
+                                Name='FM108_flat_rgb_bias_sf1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM108_flat_rgb_bias_sf1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata96' Guid='*'>
+                            <File
+                                Id='data96'
+                                Name='FM108_flat_rgb_bias_sf2.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM108_flat_rgb_bias_sf2.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata97' Guid='*'>
+                            <File
+                                Id='data97'
+                                Name='FM108_flat_rgb_bias_sf4.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM108_flat_rgb_bias_sf4.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+
+
+
+
+                        
+                        <Component Id='caldata98' Guid='*'>
+                            <File
+                                Id='data98'
+                                Name='FM110_flat_rgb_bias_sf1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM110_flat_rgb_bias_sf1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata99' Guid='*'>
+                            <File
+                                Id='data99'
+                                Name='FM110_flat_rgb_bias_sf2.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM110_flat_rgb_bias_sf2.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata100' Guid='*'>
+                            <File
+                                Id='data100'
+                                Name='FM110_flat_rgb_bias_sf4.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM110_flat_rgb_bias_sf4.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+
+                        
+                        <Component Id='caldata101' Guid='*'>
+                            <File
+                                Id='data101'
+                                Name='FM111_flat_rgb_bias_sf1.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM111_flat_rgb_bias_sf1.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata102' Guid='*'>
+                            <File
+                                Id='data102'
+                                Name='FM111_flat_rgb_bias_sf2.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM111_flat_rgb_bias_sf2.jpg'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata103' Guid='*'>
+                            <File
+                                Id='data103'
+                                Name='FM111_flat_rgb_bias_sf4.jpg'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\FM111_flat_rgb_bias_sf4.jpg'
+                                KeyPath='yes'/>
+                        </Component>
 
 
 
@@ -1037,6 +1211,25 @@
             <ComponentRef Id='caldata83'/>
             <ComponentRef Id='caldata84'/>
             <ComponentRef Id='caldata85'/>
+            <ComponentRef Id='caldata86'/>
+            <ComponentRef Id='caldata87'/>
+            <ComponentRef Id='caldata88'/>
+            <ComponentRef Id='caldata89'/>
+            <ComponentRef Id='caldata90'/>
+            <ComponentRef Id='caldata91'/>
+            <ComponentRef Id='caldata92'/>
+            <ComponentRef Id='caldata93'/>
+            <ComponentRef Id='caldata94'/>
+            <ComponentRef Id='caldata95'/>
+            <ComponentRef Id='caldata96'/>
+            <ComponentRef Id='caldata97'/>
+            <ComponentRef Id='caldata98'/>
+            <ComponentRef Id='caldata99'/>
+            <ComponentRef Id='caldata100'/>
+            <ComponentRef Id='caldata101'/>
+            <ComponentRef Id='caldata102'/>
+            <ComponentRef Id='caldata103'/>
+
             <Feature
                 Id='Environment'
                 Title='PATH Environment Variable'
