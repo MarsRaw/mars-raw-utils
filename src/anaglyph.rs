@@ -21,9 +21,9 @@ pub fn process_image(
                     Some(ray) => {
                         let diff = input_model.c().subtract(&output_model.c());
                         let ray_moved = ray.subtract(&diff);
-                        input_model.xyz_to_ls(&ray_moved, false)
+                        input_model.xyz_to_ls(&ray_moved, false).unwrap()
                     }
-                    None => input_model.xyz_to_ls(&lv.look_direction, true),
+                    None => input_model.xyz_to_ls(&lv.look_direction, true).unwrap(),
                 };
 
                 let in_x = ls_in.sample.round() as usize;

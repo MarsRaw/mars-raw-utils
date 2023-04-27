@@ -608,3 +608,5 @@ arXiv:2103.07001 (2021). https://arxiv.org/abs/2103.07001
 Gennery, D.B. Generalized Camera Calibration Including Fish-Eye Lenses. Int J Comput Vision 68, 239–266 (2006). https://doi.org/10.1007/s11263-006-5168-1
 
 Fries, M.D., Lee, C., Bhartia, R. et al. The SHERLOC Calibration Target on the Mars 2020 Perseverance Rover: Design, Operations, Outreach, and Future Human Exploration Functions. Space Sci Rev 218, 46 (2022). https://doi.org/10.1007/s11214-022-00907-1
+
+Deen, Bob, 2012, "In-Situ Mosaic Production at JPL/MIPL", https://hdl.handle.net/2014/42355, Root, V1 

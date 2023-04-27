@@ -1,7 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
 use async_trait::async_trait;
 use mars_raw_utils::{composite, prelude::*};
-use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
+use sciimg::{drawable::*, prelude::*, quaternion::Quaternion, vector::Vector};
 
 use std::process;
 
@@ -25,6 +25,9 @@ pub struct Composite {
 
     #[clap(long, short = 'r', help = "Azimuth rotation")]
     azimuth: Option<f64>,
+
+    #[clap(long, short, help = "Border margin size (pixels)")]
+    border: Option<usize>,
 }
 #[async_trait]
 impl RunnableSubcommand for Composite {
@@ -43,16 +46,39 @@ impl RunnableSubcommand for Composite {
 
         let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 
-        let map_context = composite::determine_map_context(&in_files, &quat);
+        let border = self.border.unwrap_or(30);
+
+        // Load images into memory
+        let input_files: Vec<MarsImage> = in_files
+            .iter()
+            .map(|fp| {
+                if !path::file_exists(fp) {
+                    panic!("Input file not found: {}", fp);
+                }
+                MarsImage::open(String::from(fp), Instrument::M20MastcamZLeft)
+            })
+            .collect();
+
+        // Determine output camera model
+        // NOT CORRECT
+        let model1 = if let Some(cm) = composite::get_cahvor(&input_files[0]) {
+            cm
+        } else {
+            panic!("Unable to determine output camera model");
+        };
+
+        let model2 = if let Some(cm) = composite::get_cahvor(&input_files[1]) {
+            cm
+        } else {
+            panic!("Unable to determine output camera model");
+        };
+
+        let out_model = composite::warp_cahv_models(&model1, &model2);
+
+        // Determine output image parameters
+        // NOT CORRECT
+        let map_context = composite::determine_map_context(&input_files, &quat, &out_model);
         vprintln!("Map Context: {:?}", map_context);
-        vprintln!(
-            "FOV Vertical: {}",
-            map_context.top_lat - map_context.bottom_lat
-        );
-        vprintln!(
-            "FOV Horizontal: {}",
-            map_context.right_lon - map_context.left_lon
-        );
 
         if map_context.width == 0 {
             eprintln!("Output expected to have zero width. Cannot continue with that. Exiting...");
@@ -62,16 +88,19 @@ impl RunnableSubcommand for Composite {
             process::exit(1);
         }
 
+        // Create output image
         let mut map = Image::create_masked(map_context.width, map_context.height, true);
+        //let mut map = Image::create_masked(360 * 4, 180 * 4, true);
 
-        let first_image = MarsImage::open(in_files[0].to_owned(), Instrument::M20MastcamZLeft);
-        let initial_origin = if let Some(model) = composite::get_cahvor(&first_image) {
-            model.c()
-        } else {
-            eprintln!("Cannot determine initial camera origin");
-            process::exit(2);
-        };
-
+        composite::process_files(
+            &input_files,
+            &mut map,
+            self.anaglyph,
+            &quat,
+            &out_model,
+            border,
+        );
+        /*
         for in_file in in_files.iter() {
             if path::file_exists(in_file) {
                 vprintln!("Processing File: {}", in_file);
@@ -81,14 +110,15 @@ impl RunnableSubcommand for Composite {
                     &mut map,
                     self.anaglyph,
                     &quat,
-                    &initial_origin,
+                    &out_model,
+                    border,
                 );
             } else {
                 eprintln!("File not found: {}", in_file);
                 process::exit(1);
             }
         }
-
+        */
         map.save(output);
     }
 }

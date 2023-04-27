@@ -118,8 +118,8 @@ fn project_line_sample(
         sample: sample as f64,
     }) {
         let ls_in = match lv.intersect_to_plane(&ground) {
-            Some(ray) => output_model.xyz_to_ls(&ray, false),
-            None => output_model.xyz_to_ls(&lv.look_direction, true),
+            Some(ray) => output_model.xyz_to_ls(&ray, false).unwrap(),
+            None => output_model.xyz_to_ls(&lv.look_direction, true).unwrap(),
         };
 
         let in_x = ls_in.sample.round() as usize;
