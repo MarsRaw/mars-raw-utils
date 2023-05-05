@@ -97,3 +97,5 @@ async-trait = "0.1.57"
 tokio = {version="1.21.2", features= ["full"]}
 glob = "0.3.0"
 regex = "1.7.0"
+url = "2.3.1"
+tempfile = "3.5.0"

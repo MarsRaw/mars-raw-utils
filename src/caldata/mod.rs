@@ -2,6 +2,7 @@ use crate::calibfile::{parse_caldata_from_string, Config};
 use crate::httpfetch;
 use sciimg::error;
 use std::env;
+use url::Url;
 
 // TODO: I would prefer this not being hardcoded. Find how to define it in Cargo.toml
 // which would then populate this const at compile time.
@@ -23,11 +24,12 @@ pub fn get_calibration_file_remote_root() -> String {
 
 ///  Appends the relative path to the system-defined remote calibration root URL
 pub fn get_calibration_file_remote_url(file_relative_path: &str) -> String {
-    format!(
-        "{}/{}",
-        get_calibration_file_remote_root(),
-        file_relative_path
-    )
+    let base = Url::parse(&get_calibration_file_remote_root())
+        .expect("hardcoded URL is known to be valid");
+    let joined = base
+        .join(file_relative_path)
+        .expect("Failed to combine URL segments");
+    joined.to_string()
 }
 
 /// Fetches the remote calibration manifest from a specified url and returns the parsed `calibfile::Config` struct
