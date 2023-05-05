@@ -70,3 +70,10 @@ pub async fn simple_fetch_bin(uri: &str) -> Result<Vec<u8>> {
     let resp = HttpFetcher::new(uri)?.fetch().await?;
     Ok(resp.bytes().await?.to_vec())
 }
+
+pub async fn simple_fetch_text(uri: &str) -> Result<String> {
+    match String::from_utf8(simple_fetch_bin(uri).await?) {
+        Ok(s) => Ok(s),
+        Err(why) => Err(why.into()),
+    }
+}

@@ -156,34 +156,34 @@ pub struct NsytCalData {
     pub icc: InstrumentProperties,
 }
 
-pub fn load_caldata_mapping_file() -> error::Result<Config> {
-    let cal_file_path = locate_calibration_file(&String::from("caldata.toml"));
-
-    match cal_file_path {
-        Ok(caldata_toml) => {
-            vprintln!("Loading calibration spec from {}", caldata_toml);
-
-            let mut file = match File::open(&caldata_toml) {
-                Err(why) => panic!("couldn't open {}", why),
-                Ok(file) => file,
-            };
-
-            let mut buf: Vec<u8> = Vec::default();
-            file.read_to_end(&mut buf).unwrap();
-            let toml = String::from_utf8(buf).unwrap();
-
-            let config: Config = toml::from_str(&toml).unwrap();
-
-            Ok(config)
-        }
-        Err(_) => {
-            panic!("Unable to locate calibration configuration file")
-        }
+pub fn parse_caldata_from_string(caldata_toml_str: &str) -> error::Result<Config> {
+    match toml::from_str(caldata_toml_str) {
+        Ok(c) => Ok(c),
+        Err(_) => Err("Failed to parse calibration manifest"),
     }
 }
 
-// Allows the user to specify files without an extension as a shortcut. Still needs to be able
-// to guess an extension, though
+pub fn load_caldata_mapping_file() -> error::Result<Config> {
+    if let Ok(caldata_toml) = locate_calibration_file(&String::from("caldata.toml")) {
+        vprintln!("Loading calibration spec from {}", caldata_toml);
+
+        let mut file = match File::open(&caldata_toml) {
+            Err(why) => panic!("couldn't open {}", why),
+            Ok(file) => file,
+        };
+
+        let mut buf: Vec<u8> = Vec::default();
+        file.read_to_end(&mut buf).unwrap();
+        let toml = String::from_utf8(buf).unwrap();
+
+        parse_caldata_from_string(&toml)
+    } else {
+        panic!("Unable to locate calibration configuration file");
+    }
+}
+
+/// Allows the user to specify files without an extension as a shortcut. Still needs to be able
+/// to guess an extension, though
 pub fn locate_calibration_file_no_extention(
     file_path: &String,
     extension: &String,

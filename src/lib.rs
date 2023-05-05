@@ -94,3 +94,6 @@ pub mod remotequery;
 
 /// A simple file cache for calibration files that would otherwise need to be loaded repeatedly in batch operations.
 pub mod memcache;
+
+///
+pub mod caldata;
