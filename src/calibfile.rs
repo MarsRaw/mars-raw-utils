@@ -1,5 +1,6 @@
 use std::env;
 
+use crate::enums::CalFileType;
 use crate::{constants, enums, vprintln};
 
 use sciimg::error;
@@ -26,7 +27,7 @@ fn default_instrument_properties() -> InstrumentProperties {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Config {
     pub msl: MslCalData,
@@ -36,7 +37,7 @@ pub struct Config {
 
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct InstrumentProperties {
     #[serde(default = "default_blank")]
     pub flat: String,
@@ -51,9 +52,42 @@ pub struct InstrumentProperties {
     pub lut: String,
 }
 
+#[derive(Clone)]
+pub struct CalFilePathAndType {
+    pub file: String,
+    pub file_type: CalFileType,
+}
+
+impl IntoIterator for InstrumentProperties {
+    type Item = CalFilePathAndType;
+    type IntoIter = std::array::IntoIter<CalFilePathAndType, 4>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        [
+            CalFilePathAndType {
+                file: self.flat,
+                file_type: enums::CalFileType::FlatField,
+            },
+            CalFilePathAndType {
+                file: self.inpaint_mask,
+                file_type: enums::CalFileType::InpaintMask,
+            },
+            CalFilePathAndType {
+                file: self.lut,
+                file_type: enums::CalFileType::Lut,
+            },
+            CalFilePathAndType {
+                file: self.mask,
+                file_type: enums::CalFileType::Mask,
+            },
+        ]
+        .into_iter()
+    }
+}
+
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct MslCalData {
     #[serde(default = "default_instrument_properties")]
     pub mahli: InstrumentProperties,
@@ -91,7 +125,7 @@ pub struct MslCalData {
 
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct M20CalData {
     #[serde(default = "default_instrument_properties")]
     pub mastcamz_right: InstrumentProperties,
@@ -147,7 +181,7 @@ pub struct M20CalData {
 
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct NsytCalData {
     #[serde(default = "default_instrument_properties")]
     pub idc: InstrumentProperties,
@@ -197,10 +231,10 @@ pub fn locate_calibration_file_no_extention(
     }
 }
 
-pub fn locate_calibration_file(file_path: &String) -> error::Result<String> {
+pub fn locate_calibration_file(file_path: &str) -> error::Result<String> {
     // If the file exists as-is, return it
     if path::file_exists(file_path) {
-        return Ok(file_path.clone());
+        return Ok(file_path.into());
     }
 
     // Some default locations

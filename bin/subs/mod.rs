@@ -8,6 +8,7 @@ pub mod nsyt;
 
 // Multimission subcommands:
 pub mod anaglyph;
+pub mod caldata;
 pub mod calibrate;
 pub mod composite;
 pub mod crop;

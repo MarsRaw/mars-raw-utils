@@ -20,6 +20,7 @@ pub struct Crop {
     #[clap(long, short, help = "Crop as x,y,width,height")]
     crop: String,
 }
+
 #[async_trait::async_trait]
 impl RunnableSubcommand for Crop {
     async fn run(&self) {

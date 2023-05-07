@@ -1,6 +1,8 @@
 use mars_raw_utils::{caldata, httpfetch};
 use sciimg::image::Image;
+use sciimg::path;
 use std::env;
+use std::fs;
 use std::fs::File;
 use std::io::Write;
 use tempfile::tempdir;
@@ -92,4 +94,42 @@ async fn test_fetch_remote_calibration_resource() {
     } else {
         panic!("Could not retrieve remote manifest");
     }
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_fetch_and_save_file() {
+    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+
+    // Delete this file
+    let local_file = format!(
+        "{}/{}",
+        dirs::home_dir().unwrap().to_str().unwrap(),
+        ".marsdata/m20/ilut/M20_LUT2_v2a.txt",
+    );
+    println!("Local file: {}", local_file);
+    if path::file_exists(&local_file) {
+        assert!(fs::remove_file(local_file).is_ok());
+    }
+
+    // Ask to download the file. It should not exist (because we just deleted it) and setting
+    // 'replace' to false shouldn't matter. Result should be that it consideres it a new file.
+    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    let res = caldata::fetch_and_save_file("m20/ilut/M20_LUT2_v2a.txt", false).await;
+    assert!(res.is_ok());
+    assert_eq!(res.unwrap(), caldata::SaveResult::IsNew);
+
+    // Ask to download the file. The file exists (becuase we just downloaded it in the previous step) and
+    // with 'replace' set to false, the result should be that it was not replaced
+    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    let res = caldata::fetch_and_save_file("m20/ilut/M20_LUT2_v2a.txt", false).await;
+    assert!(res.is_ok());
+    assert_eq!(res.unwrap(), caldata::SaveResult::NotReplaced);
+
+    // Ask to download the file. The file exists (because we downloaded it two steps ago) and with
+    // 'replace' set to true, the result should be that it was replaced.
+    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    let res = caldata::fetch_and_save_file("m20/ilut/M20_LUT2_v2a.txt", true).await;
+    assert!(res.is_ok());
+    assert_eq!(res.unwrap(), caldata::SaveResult::Replaced);
 }
