@@ -44,7 +44,7 @@ fn test_get_calibration_file_remote_url_env_value() {
     )
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_fetch_remote_calibration_manifest() {
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
     assert!(caldata::fetch_remote_calibration_manifest().await.is_ok())
@@ -97,16 +97,11 @@ async fn test_fetch_remote_calibration_resource() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_fetch_and_save_file() {
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
 
     // Delete this file
-    let local_file = format!(
-        "{}/{}",
-        dirs::home_dir().unwrap().to_str().unwrap(),
-        ".marsdata/m20/ilut/M20_LUT2_v2a.txt",
-    );
+    let local_file = "tests/testdata/caltesting/m20/ilut/M20_LUT2_v2a.txt";
     println!("Local file: {}", local_file);
     if path::file_exists(&local_file) {
         assert!(fs::remove_file(local_file).is_ok());
@@ -115,21 +110,48 @@ async fn test_fetch_and_save_file() {
     // Ask to download the file. It should not exist (because we just deleted it) and setting
     // 'replace' to false shouldn't matter. Result should be that it consideres it a new file.
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
-    let res = caldata::fetch_and_save_file("m20/ilut/M20_LUT2_v2a.txt", false).await;
+    let res = caldata::fetch_and_save_file(
+        "m20/ilut/M20_LUT2_v2a.txt",
+        false,
+        &Some("tests/testdata/caltesting".to_string()),
+    )
+    .await;
     assert!(res.is_ok());
     assert_eq!(res.unwrap(), caldata::SaveResult::IsNew);
 
     // Ask to download the file. The file exists (becuase we just downloaded it in the previous step) and
     // with 'replace' set to false, the result should be that it was not replaced
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
-    let res = caldata::fetch_and_save_file("m20/ilut/M20_LUT2_v2a.txt", false).await;
+    let res = caldata::fetch_and_save_file(
+        "m20/ilut/M20_LUT2_v2a.txt",
+        false,
+        &Some("tests/testdata/caltesting".to_string()),
+    )
+    .await;
     assert!(res.is_ok());
     assert_eq!(res.unwrap(), caldata::SaveResult::NotReplaced);
 
     // Ask to download the file. The file exists (because we downloaded it two steps ago) and with
     // 'replace' set to true, the result should be that it was replaced.
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
-    let res = caldata::fetch_and_save_file("m20/ilut/M20_LUT2_v2a.txt", true).await;
+    let res = caldata::fetch_and_save_file(
+        "m20/ilut/M20_LUT2_v2a.txt",
+        true,
+        &Some("tests/testdata/caltesting".to_string()),
+    )
+    .await;
     assert!(res.is_ok());
     assert_eq!(res.unwrap(), caldata::SaveResult::Replaced);
+}
+
+#[tokio::test]
+async fn test_update_calibration_data() {
+    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+
+    assert!(caldata::update_calibration_data(
+        false,
+        &Some("tests/testdata/caltesting".to_string())
+    )
+    .await
+    .is_ok());
 }

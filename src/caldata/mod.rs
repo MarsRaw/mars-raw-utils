@@ -2,8 +2,11 @@ use crate::calibfile::{
     parse_caldata_from_string, Config, InstrumentProperties, M20CalData, MslCalData, NsytCalData,
 };
 use crate::httpfetch;
+use crate::print;
+use crate::vprintln;
 use anyhow::Result;
 use dirs;
+use rayon::prelude::*;
 use std::env;
 use std::fs;
 use std::fs::File;
@@ -24,8 +27,10 @@ const CALIBRATION_FILE_REMOTE_ROOT: &str =
 /// or `/Program Files/mars_raw_utils/data` would be unwritable thus not considered
 /// by this function. This function also does not attempt to determine if the
 /// returned path exists or is writable.
-pub fn get_calibration_local_store() -> PathBuf {
-    if let Ok(dir) = env::var("MARS_RAW_DATA") {
+pub fn get_calibration_local_store(use_local_store: &Option<String>) -> PathBuf {
+    if let Some(local_store) = use_local_store {
+        PathBuf::from(&local_store)
+    } else if let Ok(dir) = env::var("MARS_RAW_DATA") {
         PathBuf::from(&dir)
     } else if let Some(dir) = dirs::home_dir() {
         PathBuf::from(format!("{}/.marsdata", dir.to_str().unwrap()))
@@ -37,8 +42,11 @@ pub fn get_calibration_local_store() -> PathBuf {
 /// Returns the expected location on disk (local) for a specific
 /// calibration file by joining the result from `get_calibration_local_store()`
 /// with the `remote_file_uri` parameter.
-pub fn get_calibration_file_local_path(remote_file_uri: &str) -> PathBuf {
-    get_calibration_local_store().join(PathBuf::from(remote_file_uri))
+pub fn get_calibration_file_local_path(
+    remote_file_uri: &str,
+    use_local_store: &Option<String>,
+) -> PathBuf {
+    get_calibration_local_store(use_local_store).join(PathBuf::from(remote_file_uri))
 }
 
 ///  Returns the remote root URL for fetching the calibration manifest (caldata.toml)
@@ -90,18 +98,20 @@ pub enum SaveResult {
 pub async fn fetch_and_save_file(
     remote_file_uri: &str,
     replace: bool,
+    use_local_store: &Option<String>,
 ) -> Result<SaveResult, String> {
-    let save_to = get_calibration_file_local_path(remote_file_uri);
+    let save_to = get_calibration_file_local_path(remote_file_uri, use_local_store);
     let save_to_exists = save_to.exists();
     if save_to_exists && !replace {
-        println!(
+        print::print_warn(&format!("Skipped: {}", remote_file_uri));
+        vprintln!(
             "Calibraton file {} already exists and replace is set to false",
             remote_file_uri
         );
         Ok(SaveResult::NotReplaced)
     } else {
-        println!("Fetching {}", remote_file_uri);
-        let calibration_local_store = get_calibration_local_store();
+        vprintln!("Fetching {}", remote_file_uri);
+        let calibration_local_store = get_calibration_local_store(use_local_store);
         if !calibration_local_store.exists() {
             fs::create_dir_all(&calibration_local_store).unwrap();
         }
@@ -110,17 +120,27 @@ pub async fn fetch_and_save_file(
 
         match httpfetch::simple_fetch_bin(&resource_url).await {
             Ok(bytes_array) => {
-                println!("Saving to {:?}", save_to);
+                vprintln!("Saving to {:?}", save_to);
+
+                if let Some(parent) = save_to.parent() {
+                    if !parent.exists() {
+                        fs::create_dir_all(parent).unwrap();
+                    }
+                }
+
                 let mut file = File::create(save_to).unwrap();
                 file.write_all(&bytes_array[..]).unwrap();
                 if save_to_exists {
+                    print::print_done(&format!("Replaced: {}", remote_file_uri));
                     Ok(SaveResult::Replaced)
                 } else {
+                    print::print_done(&format!("New File: {}", remote_file_uri));
                     Ok(SaveResult::IsNew)
                 }
             }
             Err(why) => {
                 println!("Error fetching {}: {}", remote_file_uri, why);
+                print::print_fail(&format!("Failed: {}", remote_file_uri));
                 Err(format!("{:?}", why))
             }
         }
@@ -130,10 +150,13 @@ pub async fn fetch_and_save_file(
 pub async fn fetch_and_save_files_for_instrument(
     inst_props: &InstrumentProperties,
     replace: bool,
+    use_local_store: &Option<String>,
 ) -> Result<(), String> {
     for inst_prop in inst_props.clone().into_iter() {
         if !inst_prop.file.is_empty()
-            && fetch_and_save_file(&inst_prop.file, replace).await.is_err()
+            && fetch_and_save_file(&inst_prop.file, replace, use_local_store)
+                .await
+                .is_err()
         {
             return Err(format!("Failed to download remote file {}", inst_prop.file));
         }
@@ -142,8 +165,12 @@ pub async fn fetch_and_save_files_for_instrument(
     Ok(())
 }
 
-pub async fn update_mission_msl(mission_config: &MslCalData, replace: bool) -> Result<(), String> {
-    for f in [
+pub async fn update_mission_msl(
+    mission_config: &MslCalData,
+    replace: bool,
+    use_local_store: &Option<String>,
+) -> Result<(), String> {
+    let futures: Vec<_> = vec![
         &mission_config.chemcam,
         &mission_config.fhaz_left,
         &mission_config.fhaz_right,
@@ -156,15 +183,23 @@ pub async fn update_mission_msl(mission_config: &MslCalData, replace: bool) -> R
         &mission_config.rhaz_left,
         &mission_config.rhaz_right,
     ]
-    .into_iter()
-    {
-        fetch_and_save_files_for_instrument(f, replace).await?;
+    .par_iter()
+    .map(|i| fetch_and_save_files_for_instrument(i, replace, use_local_store))
+    .collect();
+
+    for task in futures {
+        task.await?;
     }
+
     Ok(())
 }
 
-pub async fn update_mission_m20(mission_config: &M20CalData, replace: bool) -> Result<(), String> {
-    for f in [
+pub async fn update_mission_m20(
+    mission_config: &M20CalData,
+    replace: bool,
+    use_local_store: &Option<String>,
+) -> Result<(), String> {
+    let futures: Vec<_> = vec![
         &mission_config.cachecam,
         &mission_config.edl_rdcam,
         &mission_config.fhaz_left,
@@ -183,9 +218,12 @@ pub async fn update_mission_m20(mission_config: &M20CalData, replace: bool) -> R
         &mission_config.supercam_rmi,
         &mission_config.watson,
     ]
-    .into_iter()
-    {
-        fetch_and_save_files_for_instrument(f, replace).await?;
+    .par_iter()
+    .map(|i| fetch_and_save_files_for_instrument(i, replace, use_local_store))
+    .collect();
+
+    for task in futures {
+        task.await?;
     }
 
     for v in [0, 2448, 3834, 5196, 6720, 8652, 9600].into_iter() {
@@ -198,7 +236,7 @@ pub async fn update_mission_m20(mission_config: &M20CalData, replace: bool) -> R
         .into_iter()
         {
             let file_path = inst.flat.replace("-motorcount-", motor_stop_str.as_str());
-            fetch_and_save_file(&file_path, replace).await?;
+            fetch_and_save_file(&file_path, replace, use_local_store).await?;
         }
     }
 
@@ -220,7 +258,7 @@ pub async fn update_mission_m20(mission_config: &M20CalData, replace: bool) -> R
                     continue;
                 }
                 let file_path = f.replace("-scalefactor-", &sf_s);
-                fetch_and_save_file(&file_path, replace).await?;
+                fetch_and_save_file(&file_path, replace, use_local_store).await?;
             }
         }
     }
@@ -231,28 +269,37 @@ pub async fn update_mission_m20(mission_config: &M20CalData, replace: bool) -> R
 pub async fn update_mission_nsyt(
     mission_config: &NsytCalData,
     replace: bool,
+    use_local_store: &Option<String>,
 ) -> Result<(), String> {
-    for f in [&mission_config.icc, &mission_config.idc].into_iter() {
-        fetch_and_save_files_for_instrument(f, replace).await?;
+    let futures: Vec<_> = vec![&mission_config.icc, &mission_config.idc]
+        .par_iter()
+        .map(|i| fetch_and_save_files_for_instrument(i, replace, use_local_store))
+        .collect();
+
+    for task in futures {
+        task.await?;
     }
+
     Ok(())
 }
 
 /// Retrieves the remote calibration file manifest `caldata.toml` and downloads each
 /// referenced file. If `replace` is false, existing files will not be overwritten.
-pub async fn update_calibration_data(replace: bool) -> Result<(), &'static str> {
+pub async fn update_calibration_data(
+    replace: bool,
+    use_local_store: &Option<String>,
+) -> Result<(), String> {
     let manifest_config_res = fetch_remote_calibration_manifest().await;
 
     if let Ok(config) = manifest_config_res {
         // I really don't like the design of this....
-
-        assert!(fetch_and_save_file("caldata.toml", replace).await.is_ok());
-        assert!(update_mission_msl(&config.msl, replace).await.is_ok());
-        assert!(update_mission_m20(&config.m20, replace).await.is_ok());
-        assert!(update_mission_nsyt(&config.nsyt, replace).await.is_ok());
+        fetch_and_save_file("caldata.toml", replace, use_local_store).await?;
+        update_mission_msl(&config.msl, replace, use_local_store).await?;
+        update_mission_m20(&config.m20, replace, use_local_store).await?;
+        update_mission_nsyt(&config.nsyt, replace, use_local_store).await?;
 
         Ok(())
     } else {
-        Err("Failed to retrieve remote data manifest")
+        Err("Failed to retrieve remote data manifest".to_string())
     }
 }

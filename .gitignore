@@ -4,3 +4,4 @@ Cargo.lock
 test*.gif
 test*.png
 test*.jpg
+tests/testdata/caltesting

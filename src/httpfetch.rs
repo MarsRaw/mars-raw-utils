@@ -2,8 +2,9 @@
 // use reqwest::{blocking, StatusCode};
 
 use crate::vprintln;
-use crate::CLIENT;
+use reqwest::Client;
 use reqwest::Url;
+use std::time::Duration;
 
 // Convention is to seperate your stuff from stuff another viewer is likely to know, there's a new
 // style team in rust who'll eventaully decide on what is/isn't correct.
@@ -11,10 +12,10 @@ use anyhow::Result; // you'll find a lot, if not most these days of CLI apps or 
 use bytes::Bytes;
 use reqwest::Response;
 use std::string::String;
-use std::time::Duration;
 
 pub struct HttpFetcher {
     //uri: String, // Use reqwest::Url.
+    client: Client,
     uri: Url,
     timeout: std::time::Duration, //would normally just leave this in the ClientBuilder..
     numparams: u32,
@@ -29,6 +30,9 @@ impl HttpFetcher {
             uri: uri.parse::<Url>()?,
             timeout: Duration::from_secs(DEFAULT_TIMEOUT),
             numparams: 0,
+            client: Client::builder()
+                .timeout(Duration::from_secs(DEFAULT_TIMEOUT))
+                .build()?,
         })
     }
 
@@ -50,11 +54,7 @@ impl HttpFetcher {
     // The reqwest::Client is wrapped in an Arc, so you can clone it cheaply, it's designed for reuse --not so much to be instantiated for every single request you want to make.
     async fn fetch(&self) -> Result<Response, reqwest::Error> {
         vprintln!("Request URI: {}", self.uri);
-        vprintln!("Timeout set to {} seconds", self.timeout.as_secs());
-
-        // I'd advise against reinstantating the Client every time..
-        //let client = Client::builder().timeout(self.timeout).build()?;
-        CLIENT.get(self.uri.as_str()).send().await
+        self.client.get(self.uri.as_str()).send().await
     }
 
     pub async fn into_bytes(&self) -> Result<Bytes, reqwest::Error> {
