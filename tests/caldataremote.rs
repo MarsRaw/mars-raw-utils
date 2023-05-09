@@ -11,32 +11,27 @@ const CALIBRATION_FILE_REMOTE_ROOT: &str =
     "https://raw.githubusercontent.com/kmgill/mars-raw-utils-data/main/caldata/";
 
 #[test]
-fn test_get_calibration_file_remote_root_default_value() {
+fn test_get_calibration_remote_root_functions() {
+    // Default root
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
     assert_eq!(
         caldata::get_calibration_file_remote_root(),
         CALIBRATION_FILE_REMOTE_ROOT
     );
-}
 
-#[test]
-fn test_get_calibration_file_remote_root_env_value() {
+    // ENV value as root
     env::set_var("CALIBRATION_FILE_REMOTE_ROOT", "http://foo.com/bar");
     assert_eq!(
         caldata::get_calibration_file_remote_root(),
         "http://foo.com/bar"
     );
-}
 
-#[test]
-fn test_get_calibration_file_remote_url_default_value() {
+    // Default root
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
     let foo = format!("{}foo.toml", CALIBRATION_FILE_REMOTE_ROOT);
-    assert_eq!(caldata::get_calibration_file_remote_url("foo.toml"), foo)
-}
+    assert_eq!(caldata::get_calibration_file_remote_url("foo.toml"), foo);
 
-#[test]
-fn test_get_calibration_file_remote_url_env_value() {
+    // ENV value as root
     env::set_var("CALIBRATION_FILE_REMOTE_ROOT", "http://foo.com/bar/");
     assert_eq!(
         caldata::get_calibration_file_remote_url("foo.toml"),
@@ -44,7 +39,7 @@ fn test_get_calibration_file_remote_url_env_value() {
     )
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+#[tokio::test]
 async fn test_fetch_remote_calibration_manifest() {
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
     assert!(caldata::fetch_remote_calibration_manifest().await.is_ok())
@@ -52,7 +47,7 @@ async fn test_fetch_remote_calibration_manifest() {
 
 #[tokio::test]
 async fn test_fetch_remote_calibration_manifest_from() {
-    let foo = format!("{}/caldata.toml", CALIBRATION_FILE_REMOTE_ROOT);
+    let foo = format!("{}/caldata.manifest", CALIBRATION_FILE_REMOTE_ROOT);
     assert!(caldata::fetch_remote_calibration_manifest_from(&foo)
         .await
         .is_ok());
@@ -62,13 +57,13 @@ async fn test_fetch_remote_calibration_manifest_from() {
 async fn test_fetch_remote_calibration_resource() {
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
     if let Ok(c) = caldata::fetch_remote_calibration_manifest().await {
+        // The file list should not be zero length.
+        assert!(!c.is_empty());
+
         env::remove_var("CALIBRATION_FILE_REMOTE_ROOT"); // Another call in case tests are run concurrently and the env
                                                          // var gets set since the last remove_var was called.
-        let remote_url = caldata::get_calibration_file_remote_url(&c.msl.mastcam_left.flat);
-        let remote_url_expected = format!(
-            "{}{}",
-            CALIBRATION_FILE_REMOTE_ROOT, c.msl.mastcam_left.flat
-        );
+        let remote_url = caldata::get_calibration_file_remote_url(&c[0]);
+        let remote_url_expected = format!("{}{}", CALIBRATION_FILE_REMOTE_ROOT, c[0]);
 
         // Remote URL should be what we expect
         assert_eq!(remote_url, remote_url_expected, "Unexpected remote URL");
@@ -81,7 +76,7 @@ async fn test_fetch_remote_calibration_resource() {
         // Create a temporary file, write those bytes into it then try to open
         // the resulting image
         let temp_dir = tempdir().unwrap();
-        let file_path = temp_dir.path().join(&c.msl.mastcam_left.flat);
+        let file_path = temp_dir.path().join(&c[0]);
         let mut file = File::create(&file_path).unwrap();
         file.write_all(&cal_file_bytes[..]).unwrap();
 
@@ -148,6 +143,7 @@ async fn test_fetch_and_save_file() {
 async fn test_update_calibration_data() {
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
 
+    // Perform a full data download
     assert!(caldata::update_calibration_data(
         false,
         &Some("tests/testdata/caltesting".to_string())

@@ -1,6 +1,3 @@
-use crate::calibfile::{
-    parse_caldata_from_string, Config, InstrumentProperties, M20CalData, MslCalData, NsytCalData,
-};
 use crate::httpfetch;
 use crate::print;
 use crate::vprintln;
@@ -70,19 +67,27 @@ pub fn get_calibration_file_remote_url(remote_file_uri: &str) -> String {
     joined.to_string()
 }
 
-/// Fetches the remote calibration manifest from a specified url and returns the parsed `calibfile::Config` struct
-pub async fn fetch_remote_calibration_manifest_from(uri: &str) -> Result<Config, &'static str> {
+/// Splits the file list into a vector of Strings
+pub fn parse_manifest_file_list(data: &str) -> Vec<String> {
+    data.lines().map(|f| f.to_string()).collect()
+}
+
+/// Fetches the remote calibration manifest from a specified url and returns the parsed file list
+pub async fn fetch_remote_calibration_manifest_from(
+    uri: &str,
+) -> Result<Vec<String>, &'static str> {
     if let Ok(data) = httpfetch::simple_fetch_text(uri).await {
-        parse_caldata_from_string(&data)
+        Ok(parse_manifest_file_list(&data))
     } else {
         Err("Failed to retrieve remote resource")
     }
 }
 
-/// Fetches the remote calibration manifest and returns the parsed `calibfile::Config` struct.
+/// Fetches the remote calibration manifest and returns the parsed file list.
 /// This will use the system defined manifest url
-pub async fn fetch_remote_calibration_manifest() -> Result<Config, &'static str> {
-    fetch_remote_calibration_manifest_from(&get_calibration_file_remote_url("caldata.toml")).await
+pub async fn fetch_remote_calibration_manifest() -> Result<Vec<String>, &'static str> {
+    fetch_remote_calibration_manifest_from(&get_calibration_file_remote_url("caldata.manifest"))
+        .await
 }
 
 /// Success states for `fetch_and_save_file`
@@ -147,143 +152,7 @@ pub async fn fetch_and_save_file(
     }
 }
 
-pub async fn fetch_and_save_files_for_instrument(
-    inst_props: &InstrumentProperties,
-    replace: bool,
-    use_local_store: &Option<String>,
-) -> Result<(), String> {
-    for inst_prop in inst_props.clone().into_iter() {
-        if !inst_prop.file.is_empty()
-            && fetch_and_save_file(&inst_prop.file, replace, use_local_store)
-                .await
-                .is_err()
-        {
-            return Err(format!("Failed to download remote file {}", inst_prop.file));
-        }
-    }
-
-    Ok(())
-}
-
-pub async fn update_mission_msl(
-    mission_config: &MslCalData,
-    replace: bool,
-    use_local_store: &Option<String>,
-) -> Result<(), String> {
-    let futures: Vec<_> = vec![
-        &mission_config.chemcam,
-        &mission_config.fhaz_left,
-        &mission_config.fhaz_right,
-        &mission_config.mahli,
-        &mission_config.mardi,
-        &mission_config.mastcam_left,
-        &mission_config.mastcam_right,
-        &mission_config.nav_left,
-        &mission_config.nav_right,
-        &mission_config.rhaz_left,
-        &mission_config.rhaz_right,
-    ]
-    .par_iter()
-    .map(|i| fetch_and_save_files_for_instrument(i, replace, use_local_store))
-    .collect();
-
-    for task in futures {
-        task.await?;
-    }
-
-    Ok(())
-}
-
-pub async fn update_mission_m20(
-    mission_config: &M20CalData,
-    replace: bool,
-    use_local_store: &Option<String>,
-) -> Result<(), String> {
-    let futures: Vec<_> = vec![
-        &mission_config.cachecam,
-        &mission_config.edl_rdcam,
-        &mission_config.fhaz_left,
-        &mission_config.fhaz_right,
-        &mission_config.heli_nav,
-        &mission_config.heli_rte,
-        &mission_config.mastcamz_left,
-        &mission_config.mastcamz_right,
-        &mission_config.nav_left,
-        &mission_config.nav_right,
-        &mission_config.pixl_mcc,
-        &mission_config.rhaz_left,
-        &mission_config.rhaz_right,
-        &mission_config.sherloc_aci,
-        &mission_config.skycam,
-        &mission_config.supercam_rmi,
-        &mission_config.watson,
-    ]
-    .par_iter()
-    .map(|i| fetch_and_save_files_for_instrument(i, replace, use_local_store))
-    .collect();
-
-    for task in futures {
-        task.await?;
-    }
-
-    for v in [0, 2448, 3834, 5196, 6720, 8652, 9600].into_iter() {
-        let motor_stop_str = format!("{:04}", v);
-
-        for inst in [
-            &mission_config.mastcamz_left,
-            &mission_config.mastcamz_right,
-        ]
-        .into_iter()
-        {
-            let file_path = inst.flat.replace("-motorcount-", motor_stop_str.as_str());
-            fetch_and_save_file(&file_path, replace, use_local_store).await?;
-        }
-    }
-
-    for sf in [1, 2, 4].into_iter() {
-        for inst in [
-            &mission_config.nav_left,
-            &mission_config.nav_right,
-            &mission_config.fhaz_left,
-            &mission_config.fhaz_right,
-            &mission_config.rhaz_left,
-            &mission_config.rhaz_right,
-        ]
-        .into_iter()
-        {
-            // Iterate navcam and hazcam scale factors
-            let sf_s = format!("sf{}", sf);
-            for f in [&inst.mask, &inst.flat].into_iter() {
-                if f.is_empty() {
-                    continue;
-                }
-                let file_path = f.replace("-scalefactor-", &sf_s);
-                fetch_and_save_file(&file_path, replace, use_local_store).await?;
-            }
-        }
-    }
-
-    Ok(())
-}
-
-pub async fn update_mission_nsyt(
-    mission_config: &NsytCalData,
-    replace: bool,
-    use_local_store: &Option<String>,
-) -> Result<(), String> {
-    let futures: Vec<_> = vec![&mission_config.icc, &mission_config.idc]
-        .par_iter()
-        .map(|i| fetch_and_save_files_for_instrument(i, replace, use_local_store))
-        .collect();
-
-    for task in futures {
-        task.await?;
-    }
-
-    Ok(())
-}
-
-/// Retrieves the remote calibration file manifest `caldata.toml` and downloads each
+/// Retrieves the remote calibration file manifest `caldata.manifest` and downloads each
 /// referenced file. If `replace` is false, existing files will not be overwritten.
 pub async fn update_calibration_data(
     replace: bool,
@@ -291,12 +160,14 @@ pub async fn update_calibration_data(
 ) -> Result<(), String> {
     let manifest_config_res = fetch_remote_calibration_manifest().await;
 
-    if let Ok(config) = manifest_config_res {
-        // I really don't like the design of this....
-        fetch_and_save_file("caldata.toml", replace, use_local_store).await?;
-        update_mission_msl(&config.msl, replace, use_local_store).await?;
-        update_mission_m20(&config.m20, replace, use_local_store).await?;
-        update_mission_nsyt(&config.nsyt, replace, use_local_store).await?;
+    if let Ok(file_list) = manifest_config_res {
+        let tasks: Vec<_> = file_list
+            .par_iter()
+            .map(|f| fetch_and_save_file(f, replace, use_local_store))
+            .collect();
+        for task in tasks {
+            task.await?;
+        }
 
         Ok(())
     } else {
