@@ -1,8 +1,8 @@
 use crate::{constants, time};
 
-use sciimg::error;
+use anyhow::Result;
 
-pub fn get_lmst() -> error::Result<time::MissionTime> {
+pub fn get_lmst() -> Result<time::MissionTime> {
     time::get_time(
         constants::time::M2020_SOL_OFFSET,
         constants::time::M2020_LONGITUDE,

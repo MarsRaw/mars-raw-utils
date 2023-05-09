@@ -1,7 +1,6 @@
 use crate::constants;
 
-use sciimg::error;
-
+use anyhow::Result;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub enum TimeSystem {
@@ -54,7 +53,7 @@ pub fn get_seconds_since_epoch() -> f64 {
 }
 
 // NOTE: This isn't accurate.
-pub fn get_lmst_from_epoch_secs(epoch: f64, longitude: f64) -> error::Result<MissionTime> {
+pub fn get_lmst_from_epoch_secs(epoch: f64, longitude: f64) -> Result<MissionTime> {
     let jd_land = 2440587.5 + (epoch * 1000.0 / 8.64E7);
     let jd_tt_land = jd_land + (constants::time::TAI_OFFSET) / 86400.0;
     let j2000_land = jd_tt_land - 2451545.0 + 0.00014;
@@ -86,11 +85,7 @@ fn t_to_hms(t: f64) -> Hms {
 
 // Based on m2020-bitbar which in turn is based on James Tauber's Mars Clock
 // See http://marsclock.com/
-pub fn get_time(
-    sol_offset: f64,
-    longitude: f64,
-    time_system: TimeSystem,
-) -> error::Result<MissionTime> {
+pub fn get_time(sol_offset: f64, longitude: f64, time_system: TimeSystem) -> Result<MissionTime> {
     let seconds_since_epoch = get_seconds_since_epoch();
     let millis = seconds_since_epoch * 1000.0;
 

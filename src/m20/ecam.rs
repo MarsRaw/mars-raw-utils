@@ -3,7 +3,8 @@ use crate::{
     marsimage::MarsImage, memcache::load_image, util, vprintln,
 };
 
-use sciimg::{error, image::Image, path, prelude::ImageBuffer};
+use anyhow::Result;
+use sciimg::{image::Image, path, prelude::ImageBuffer};
 
 #[derive(Copy, Clone)]
 pub struct M20EECam {}
@@ -42,7 +43,7 @@ impl Calibration for M20EECam {
         input_file: &str,
         cal_context: &CalProfile,
         only_new: bool,
-    ) -> error::Result<CompleteContext> {
+    ) -> Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);

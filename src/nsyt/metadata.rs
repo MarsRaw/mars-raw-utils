@@ -5,6 +5,8 @@ use sciimg::prelude::*;
 use std::fs::File;
 use std::io::Read;
 
+use anyhow::anyhow;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -182,11 +184,11 @@ impl ImageMetadata for ImageRecord {
     }
 }
 
-pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
+pub fn load_metadata_file(file_path: String) -> Result<Metadata> {
     vprintln!("Loading metadata file from {}", file_path);
 
     if !path::file_exists(file_path.as_str()) {
-        return Err(constants::status::FILE_NOT_FOUND);
+        return Err(anyhow!(constants::status::FILE_NOT_FOUND));
     }
 
     let mut file = match File::open(&file_path) {

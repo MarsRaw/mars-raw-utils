@@ -3,8 +3,9 @@ use crate::{
     vprintln,
 };
 
-use sciimg::error;
 use sciimg::path;
+
+use anyhow::Result;
 
 #[derive(Copy, Clone)]
 pub struct M20HeliNav {}
@@ -19,7 +20,7 @@ impl Calibration for M20HeliNav {
         input_file: &str,
         cal_context: &CalProfile,
         only_new: bool,
-    ) -> error::Result<CompleteContext> {
+    ) -> Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);

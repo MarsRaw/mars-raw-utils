@@ -2,6 +2,8 @@ use crate::prelude::*;
 use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::Vector};
 use std::str::FromStr;
 
+use anyhow::Result;
+
 pub fn get_cahvor(img: &MarsImage) -> Option<CameraModel> {
     match &img.metadata {
         Some(md) => {
@@ -55,7 +57,7 @@ fn lookvector_to_cylindrical(
 
 static SPHERE_RADIUS: f64 = 100.0;
 
-fn get_lat_lon(c: &CameraModel, x: usize, y: usize, _quat: &Quaternion) -> error::Result<LatLon> {
+fn get_lat_lon(c: &CameraModel, x: usize, y: usize, _quat: &Quaternion) -> Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate {
         line: y as f64,
         sample: x as f64,

@@ -3,7 +3,7 @@ use crate::{
     vprintln,
 };
 
-use sciimg::error;
+use anyhow::Result;
 use sciimg::path;
 
 #[derive(Copy, Clone)]
@@ -19,7 +19,7 @@ impl Calibration for M20HeliRte {
         input_file: &str,
         cal_context: &CalProfile,
         only_new: bool,
-    ) -> error::Result<CompleteContext> {
+    ) -> Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);

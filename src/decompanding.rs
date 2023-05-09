@@ -4,9 +4,11 @@ use crate::memcache;
 use crate::veprintln;
 use crate::vprintln;
 use regex::Regex;
-use sciimg::error;
 use sciimg::path;
 use std::convert::TryInto;
+
+use anyhow::anyhow;
+use anyhow::Result;
 
 pub const ILT: [u32; 256] = [
     0, 2, 3, 3, 4, 5, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 18, 19, 20, 22, 24, 25, 27, 29, 31,
@@ -75,9 +77,9 @@ impl LookUpTable {
     pub fn new(lut: &[u32; 256]) -> LookUpTable {
         LookUpTable { lut: lut.to_vec() }
     }
-    pub fn new_from_vec(lut: &Vec<u32>) -> error::Result<LookUpTable> {
+    pub fn new_from_vec(lut: &Vec<u32>) -> Result<LookUpTable> {
         if lut.len() != 256 {
-            Err("Invalid LUT specification length")
+            Err(anyhow!("Invalid LUT specification length"))
         } else {
             Ok(LookUpTable { lut: lut.clone() })
         }
@@ -94,7 +96,7 @@ impl LookUpTable {
     }
 }
 
-pub fn get_ilt_for_instrument(instrument: enums::Instrument) -> error::Result<LookUpTable> {
+pub fn get_ilt_for_instrument(instrument: enums::Instrument) -> Result<LookUpTable> {
     let lut_file_path =
         calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::Lut)
             .unwrap_or("".to_string());
@@ -106,12 +108,12 @@ pub fn get_ilt_for_instrument(instrument: enums::Instrument) -> error::Result<Lo
     }
 }
 
-pub fn load_ilut_spec_file(file_path: &String) -> error::Result<LookUpTable> {
+pub fn load_ilut_spec_file(file_path: &String) -> Result<LookUpTable> {
     vprintln!("Loading LUT file: {}", file_path);
 
     if !path::file_exists(file_path) {
         veprintln!("ERROR: LUT file not found: {}", file_path);
-        return Err("Lookup table file not found");
+        return Err(anyhow!("Lookup table file not found"));
     }
 
     let mut lut_vec: Vec<u32> = vec![];

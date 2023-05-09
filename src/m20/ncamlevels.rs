@@ -1,8 +1,8 @@
 use crate::m20::assemble::NavcamTile;
 use crate::vprintln;
 
-use sciimg::{blur, error::Result, image::Image, prelude::ImageBuffer};
-
+use anyhow::Result;
+use sciimg::{blur, image::Image, prelude::ImageBuffer};
 /*
 Standardized Scale Factor 1 Tile Ids:
 1   5   9  13

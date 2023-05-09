@@ -1,8 +1,8 @@
 use crate::{calibfile, enums, marsimage::MarsImage, memcache::load_image, vprintln};
 
-use sciimg::error;
+use anyhow::Result;
 
-pub fn load_flat(instrument: enums::Instrument) -> error::Result<MarsImage> {
+pub fn load_flat(instrument: enums::Instrument) -> Result<MarsImage> {
     match calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::FlatField)
     {
         Ok(cal_file) => {

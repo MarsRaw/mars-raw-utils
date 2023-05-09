@@ -2,7 +2,7 @@ use rayon::prelude::*;
 
 use crate::{calprofile::*, enums::Instrument, print::*, vprintln};
 
-use sciimg::error;
+use anyhow::Result;
 use sciimg::path;
 
 pub enum CompleteStatus {
@@ -25,15 +25,15 @@ impl CompleteContext {
     }
 }
 
-pub fn cal_warn(cal_context: &CalProfile) -> error::Result<CompleteContext> {
+pub fn cal_warn(cal_context: &CalProfile) -> Result<CompleteContext> {
     Ok(CompleteContext::new(CompleteStatus::WARN, cal_context))
 }
 
-pub fn cal_ok(cal_context: &CalProfile) -> error::Result<CompleteContext> {
+pub fn cal_ok(cal_context: &CalProfile) -> Result<CompleteContext> {
     Ok(CompleteContext::new(CompleteStatus::OK, cal_context))
 }
 
-pub fn cal_fail(cal_context: &CalProfile) -> error::Result<CompleteContext> {
+pub fn cal_fail(cal_context: &CalProfile) -> Result<CompleteContext> {
     Ok(CompleteContext::new(CompleteStatus::FAIL, cal_context))
 }
 
@@ -45,7 +45,7 @@ pub trait Calibration: Sync {
         input_file: &str,
         only_new: bool,
         profile: &CalProfile,
-    ) -> error::Result<CompleteContext> {
+    ) -> Result<CompleteContext> {
         self.process_file(input_file, profile, only_new)
 
         // match load_calibration_profile(profile_name) {
@@ -62,14 +62,14 @@ pub trait Calibration: Sync {
         input_file: &str,
         cal_context: &CalProfile,
         only_new: bool,
-    ) -> error::Result<CompleteContext>;
+    ) -> Result<CompleteContext>;
 }
 
 pub struct CalContainer {
     pub calibrator: Box<dyn Calibration + 'static>,
 }
 
-pub fn process_with_profiles<F: Fn(error::Result<CompleteContext>)>(
+pub fn process_with_profiles<F: Fn(Result<CompleteContext>)>(
     calibrator: &CalContainer,
     input_file: &str,
     only_new: bool,
