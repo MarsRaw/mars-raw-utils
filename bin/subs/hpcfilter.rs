@@ -44,12 +44,6 @@ impl RunnableSubcommand for HpcFilter {
                 );
                 raw.hot_pixel_correction(window_size, threshold);
 
-                // DON'T ASSUME THIS!
-                let data_max = 255.0;
-
-                vprintln!("Normalizing...");
-                raw.normalize_to_16bit_with_max(data_max);
-
                 vprintln!("Writing to disk...");
 
                 let out_file = util::append_file_name(in_file.as_os_str().to_str().unwrap(), "hpc");
