@@ -5,19 +5,15 @@ use crate::subs::runnable::RunnableSubcommand;
 
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Compute the mean of a series of images", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Compute the mean of a series of images", long_about = None)]
 pub struct MeanStack {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short, parse(from_os_str), help = "Output image")]
+    #[arg(long, short, help = "Output image")]
     output: std::path::PathBuf,
 }
 

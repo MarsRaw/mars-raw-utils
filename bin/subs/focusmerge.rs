@@ -2,25 +2,21 @@ use mars_raw_utils::focusmerge;
 
 use crate::subs::runnable::RunnableSubcommand;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Focus merge a series of images of differing focal lengths", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Focus merge a series of images of differing focal lengths", long_about = None)]
 pub struct FocusMerge {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short, parse(from_os_str), help = "Output image")]
+    #[arg(long, short, help = "Output image")]
     output: std::path::PathBuf,
 
-    #[clap(long, short = 'w', help = "Quality determination window size (pixels)")]
+    #[arg(long, short = 'w', help = "Quality determination window size (pixels)")]
     window: Option<usize>,
 
-    #[clap(long, short = 'd', help = "Produce a depth map")]
+    #[arg(long, short = 'd', help = "Produce a depth map")]
     depth_map: bool,
 }
 

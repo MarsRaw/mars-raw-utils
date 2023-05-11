@@ -5,22 +5,18 @@ use sciimg::prelude::*;
 
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Perform hot pixel detection and correction", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Perform hot pixel detection and correction", long_about = None)]
 pub struct HpcFilter {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short = 't', help = "HPC threshold")]
+    #[arg(long, short = 't', help = "HPC threshold")]
     threshold: Option<f32>,
 
-    #[clap(long, short = 'w', help = "HPC window size")]
+    #[arg(long, short = 'w', help = "HPC window size")]
     window: Option<i32>,
 }
 

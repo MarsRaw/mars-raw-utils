@@ -2,17 +2,12 @@ use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Image information", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Image information", long_about = None)]
 pub struct Info {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true),
-        required(true)
-    )]
+    #[arg(long, short, help = "Input images", required(true), num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 }
 

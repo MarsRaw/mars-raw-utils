@@ -25,4 +25,6 @@ RUN ls -l target/generate-rpm/
 # RPM installation validation
 RUN rpm -ivh target/generate-rpm/mars_raw_utils-${MRU_VERSION}-1.x86_64.rpm
 
+RUN mru -v update-cal-data
+
 WORKDIR /data

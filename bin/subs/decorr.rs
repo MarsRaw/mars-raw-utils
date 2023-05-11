@@ -9,26 +9,22 @@ use sciimg::MinMax;
 use std::path::PathBuf;
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Decorrelation stretching", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Decorrelation stretching", long_about = None)]
 pub struct DecorrelationStretch {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(
+    #[arg(
         long,
         short,
         help = "Cross-File decorrelation (value ranges determined across all files rather than individually)"
     )]
     cross_file: bool,
 
-    #[clap(long, short = 'b', help = "Ignore black values")]
+    #[arg(long, short = 'b', help = "Ignore black values")]
     ignore_black: bool,
 }
 

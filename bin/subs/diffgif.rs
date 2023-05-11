@@ -4,40 +4,36 @@ use crate::subs::runnable::RunnableSubcommand;
 
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Create differential gif from a navcam movie", long_about = None, name="diffgif")]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Create differential gif from a navcam movie", long_about = None, name="diffgif")]
 pub struct DiffGif {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short, help = "Black level")]
+    #[arg(long, short, help = "Black level")]
     black: Option<f32>,
 
-    #[clap(long, short, help = "White level")]
+    #[arg(long, short, help = "White level")]
     white: Option<f32>,
 
-    #[clap(long, short, help = "Gamma level")]
+    #[arg(long, short, help = "Gamma level")]
     gamma: Option<f32>,
 
-    #[clap(long, short, help = "Interframe delay in increments of 10ms")]
+    #[arg(long, short, help = "Interframe delay in increments of 10ms")]
     delay: Option<u16>,
 
-    #[clap(long, short, help = "Lowpass window size")]
+    #[arg(long, short, help = "Lowpass window size")]
     lowpass: Option<u8>,
 
-    #[clap(long, short, parse(from_os_str), help = "Output image")]
+    #[arg(long, short, help = "Output image")]
     output: std::path::PathBuf,
 
-    #[clap(long, short, help = "Product type")]
+    #[arg(long, short, help = "Product type")]
     prodtype: Option<diffgif::ProductType>,
 
-    #[clap(long, short, help = "Convert RGB to mono")]
+    #[arg(long, short, help = "Convert RGB to mono")]
     mono: bool,
 }
 

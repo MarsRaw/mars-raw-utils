@@ -3,43 +3,45 @@ use mars_raw_utils::remotequery::RemoteQuery;
 use sciimg::path;
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Fetch raw MSL images", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Fetch raw MSL images", long_about = None)]
 pub struct MslFetch {
-    #[clap(long, short, help = "MSL Camera Instrument(s)", multiple_values(true))]
+    #[arg(long, short, help = "MSL Camera Instrument(s)", num_args = 1..)]
     camera: Vec<String>,
 
-    #[clap(long, short = 's', help = "Mission Sol")]
+    #[arg(long, short = 's', help = "Mission Sol")]
     sol: Option<u32>,
 
-    #[clap(long, short = 'm', help = "Starting Mission Sol")]
+    #[arg(long, short = 'm', help = "Starting Mission Sol")]
     minsol: Option<u32>,
 
-    #[clap(long, short = 'M', help = "Ending Mission Sol")]
+    #[arg(long, short = 'M', help = "Ending Mission Sol")]
     maxsol: Option<u32>,
 
-    #[clap(long, short = 'l', help = "Don't download, only list results")]
+    #[arg(long, short = 'l', help = "Don't download, only list results")]
     list: bool,
 
-    #[clap(long, short = 't', help = "Download thumbnails in the results")]
+    #[arg(long, short = 't', help = "Download thumbnails in the results")]
     thumbnails: bool,
 
-    #[clap(long, short = 'N', help = "Max number of results")]
+    #[arg(long, short = 'N', help = "Max number of results")]
     num: Option<u32>,
 
-    #[clap(long, short = 'p', help = "Results page (starts at 1)")]
+    #[arg(long, short = 'p', help = "Results page (starts at 1)")]
     page: Option<u8>,
 
-    #[clap(long, short = 'f', help = "Filter on image id", multiple_values(true))]
+    #[arg(long, short = 'f', help = "Filter on image id", num_args = 1..)]
     filter: Option<Vec<String>>,
 
-    #[clap(long, short = 'I', help = "List instruments")]
+    #[arg(long, short = 'I', help = "List instruments")]
     instruments: bool,
 
-    #[clap(long, short, parse(from_os_str), help = "Output directory")]
+    #[arg(long, short, help = "Output directory")]
     output: Option<std::path::PathBuf>,
 
-    #[clap(long, short = 'n', help = "Only new images. Skipped processed images.")]
+    #[arg(long, short = 'n', help = "Only new images. Skipped processed images.")]
     new: bool,
 }
 

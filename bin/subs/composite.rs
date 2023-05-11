@@ -3,27 +3,22 @@ use async_trait::async_trait;
 use mars_raw_utils::{composite, prelude::*};
 use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
 
+use clap::Parser;
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Create composite mosaic", long_about = None)]
+#[derive(Parser)]
+#[command(author, version, about = "Create composite mosaic", long_about = None)]
 pub struct Composite {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short, parse(from_os_str), help = "Output image")]
+    #[arg(long, short, help = "Output image")]
     output: std::path::PathBuf,
 
-    #[clap(long, short, help = "Anaglyph mode")]
+    #[arg(long, short, help = "Anaglyph mode")]
     anaglyph: bool,
 
-    #[clap(long, short = 'r', help = "Azimuth rotation")]
+    #[arg(long, short = 'r', help = "Azimuth rotation")]
     azimuth: Option<f64>,
 }
 #[async_trait]

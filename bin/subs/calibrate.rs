@@ -11,49 +11,45 @@ use std::panic;
 use std::process;
 use std::str::FromStr;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Batch raw image calibration", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
 pub struct Calibrate {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input raw images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input raw images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short = 'I', help = "Force instrument")]
+    #[arg(long, short = 'I', help = "Force instrument")]
     instrument: Option<String>,
 
-    #[clap(long, short = 'R', help = "Red weight")]
+    #[arg(long, short = 'R', help = "Red weight")]
     red_weight: Option<f32>,
 
-    #[clap(long, short = 'G', help = "Green weight")]
+    #[arg(long, short = 'G', help = "Green weight")]
     green_weight: Option<f32>,
 
-    #[clap(long, short = 'B', help = "Blue weight")]
+    #[arg(long, short = 'B', help = "Blue weight")]
     blue_weight: Option<f32>,
 
-    #[clap(long, short, help = "Raw color, skip ILT")]
+    #[arg(long, short, help = "Raw color, skip ILT")]
     raw: bool,
 
-    #[clap(long, short, help = "Color noise reduction amount")]
+    #[arg(long, short, help = "Color noise reduction amount")]
     color_noise_reduction_amount: Option<i32>,
 
-    #[clap(long, short = 't', help = "HPC threshold")]
+    #[arg(long, short = 't', help = "HPC threshold")]
     hpc_threshold: Option<f32>,
 
-    #[clap(long, short = 'w', help = "HPC window size")]
+    #[arg(long, short = 'w', help = "HPC window size")]
     hpc_window: Option<i32>,
 
-    #[clap(long, short = 'd', help = "Decorrelate color channels")]
+    #[arg(long, short = 'd', help = "Decorrelate color channels")]
     decorrelate: bool,
 
-    #[clap(long, short = 'P', help = "Calibration profile", multiple_values(true))]
+    #[arg(long, short = 'P', help = "Calibration profile", num_args = 1..)]
     profile: Option<Vec<String>>,
 
-    #[clap(long, short = 'D', help = "Debayer method (malvar, amaze)")]
+    #[arg(long, short = 'D', help = "Debayer method (malvar, amaze)")]
     debayer: Option<String>,
 }
 

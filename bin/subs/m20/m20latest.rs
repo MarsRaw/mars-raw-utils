@@ -4,10 +4,12 @@ use crate::subs::runnable::RunnableSubcommand;
 
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Report sols with new images", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Report sols with new images", long_about = None)]
 pub struct M20Latest {
-    #[clap(long, short, help = "List sols with new images only")]
+    #[arg(long, short, help = "List sols with new images only")]
     list: bool,
 }
 

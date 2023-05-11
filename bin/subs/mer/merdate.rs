@@ -2,8 +2,10 @@ use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Get current MER mission date information", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Get current MER mission date information", long_about = None)]
 pub struct MerDate {}
 
 #[async_trait::async_trait]

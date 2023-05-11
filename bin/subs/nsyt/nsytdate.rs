@@ -3,8 +3,10 @@ use mars_raw_utils::prelude::*;
 
 use async_trait::async_trait;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Get current InSight mission date information", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Get current InSight mission date information", long_about = None)]
 pub struct NsytDate {}
 
 #[async_trait]

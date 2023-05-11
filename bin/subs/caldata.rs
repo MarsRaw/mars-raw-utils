@@ -2,13 +2,15 @@ use mars_raw_utils::caldata;
 
 use crate::subs::runnable::RunnableSubcommand;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Updated calibration data from remote repository", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Updated calibration data from remote repository", long_about = None)]
 pub struct UpdateCalData {
-    #[clap(long, short, help = "Do not replace existing files")]
+    #[arg(long, short, help = "Do not replace existing files")]
     noreplace: bool,
 
-    #[clap(long, short, help = "Override default storage path")]
+    #[arg(long, short, help = "Override default storage path")]
     local_store: Option<String>,
 }
 

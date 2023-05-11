@@ -5,19 +5,15 @@ use sciimg::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Batch image debayering", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Batch image debayering", long_about = None)]
 pub struct Debayer {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short = 'D', help = "Debayer method (malvar, amaze)")]
+    #[arg(long, short = 'D', help = "Debayer method (malvar, amaze)")]
     debayer: Option<String>,
 }
 

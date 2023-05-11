@@ -6,19 +6,21 @@ use crate::subs::runnable::RunnableSubcommand;
 
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Generate anaglyph from stereo pair", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Generate anaglyph from stereo pair", long_about = None)]
 pub struct Anaglyph {
-    #[clap(long, short, parse(from_os_str), help = "Left image")]
+    #[arg(long, short, help = "Left image")]
     left: std::path::PathBuf,
 
-    #[clap(long, short, parse(from_os_str), help = "Right image")]
+    #[arg(long, short, help = "Right image")]
     right: std::path::PathBuf,
 
-    #[clap(long, short, parse(from_os_str), help = "Output image")]
+    #[arg(long, short, help = "Output image")]
     output: std::path::PathBuf,
 
-    #[clap(long, short, help = "Monochrome color (before converting to red/blue)")]
+    #[arg(long, short, help = "Monochrome color (before converting to red/blue)")]
     mono: bool,
 }
 #[async_trait]
