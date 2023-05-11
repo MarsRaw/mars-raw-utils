@@ -129,8 +129,11 @@ impl RunnableSubcommand for Calibrate {
                             }
 
                             if let Some(debayer) = &self.debayer {
-                                profile_mut.debayer_method = DebayerMethod::from_str(debayer)
-                                    .unwrap_or(DebayerMethod::Malvar);
+                                profile_mut.debayer_method = match DebayerMethod::from_str(debayer)
+                                {
+                                    Ok(m) => m,
+                                    Err(why) => panic!("Error: {}", why),
+                                };
                             }
                             profile_mut
                         }
@@ -156,11 +159,14 @@ impl RunnableSubcommand for Calibrate {
                 mission: None,
                 instrument: None,
                 description: None,
-                debayer_method: DebayerMethod::from_str(
-                    // This is ugly
-                    &self.debayer.clone().unwrap_or(String::from("malvar")),
-                )
-                .unwrap_or(DebayerMethod::Malvar),
+                debayer_method: if let Some(d) = &self.debayer {
+                    match DebayerMethod::from_str(d) {
+                        Ok(m) => m,
+                        Err(why) => panic!("Error: {}", why),
+                    }
+                } else {
+                    DebayerMethod::Malvar
+                },
             }],
         };
 
