@@ -18,16 +18,16 @@ pub struct CompleteContext {
 }
 
 impl CompleteContext {
-    pub fn new(status: CompleteStatus, cal_context: &CalProfile, source_filename: &String) -> Self {
+    pub fn new(status: CompleteStatus, cal_context: &CalProfile, source_filename: &str) -> Self {
         CompleteContext {
             status,
             cal_context: cal_context.clone(),
-            source_filename: source_filename.clone(),
+            source_filename: source_filename.to_owned(),
         }
     }
 }
 
-pub fn cal_warn(cal_context: &CalProfile, source_filename: &String) -> Result<CompleteContext> {
+pub fn cal_warn(cal_context: &CalProfile, source_filename: &str) -> Result<CompleteContext> {
     Ok(CompleteContext::new(
         CompleteStatus::WARN,
         cal_context,
@@ -35,7 +35,7 @@ pub fn cal_warn(cal_context: &CalProfile, source_filename: &String) -> Result<Co
     ))
 }
 
-pub fn cal_ok(cal_context: &CalProfile, source_filename: &String) -> Result<CompleteContext> {
+pub fn cal_ok(cal_context: &CalProfile, source_filename: &str) -> Result<CompleteContext> {
     Ok(CompleteContext::new(
         CompleteStatus::OK,
         cal_context,
@@ -43,7 +43,7 @@ pub fn cal_ok(cal_context: &CalProfile, source_filename: &String) -> Result<Comp
     ))
 }
 
-pub fn cal_fail(cal_context: &CalProfile, source_filename: &String) -> Result<CompleteContext> {
+pub fn cal_fail(cal_context: &CalProfile, source_filename: &str) -> Result<CompleteContext> {
     Ok(CompleteContext::new(
         CompleteStatus::FAIL,
         cal_context,

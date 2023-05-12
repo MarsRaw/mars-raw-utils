@@ -203,7 +203,7 @@ impl RunnableSubcommand for Calibrate {
 
             if let Some(cal) = Calibrate::get_calibrator_for_file(input_file, &self.instrument) {
                 profiles.par_iter().for_each(|p| {
-                    match cal.calibrator.process_with_profile(input_file, false, &p) {
+                    match cal.calibrator.process_with_profile(input_file, false, p) {
                         Ok(res) => {
                             pb.println(format_complete(
                                 &format!(
