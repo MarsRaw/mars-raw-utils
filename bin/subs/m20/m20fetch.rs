@@ -1,10 +1,10 @@
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use mars_raw_utils::remotequery::RemoteQuery;
-
 use sciimg::path;
 use std::process;
 
-use clap::Parser;
+pb_create!();
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about = "Fetch raw Mars2020 images", long_about = None)]
@@ -54,6 +54,8 @@ pub struct M20Fetch {
 
 impl M20Fetch {
     pub async fn run(&self) {
+        pb_set_print!();
+
         let im = m20::remote::make_instrument_map();
         if self.instruments {
             im.print_instruments();
@@ -143,8 +145,20 @@ impl M20Fetch {
             output_path: output,
         };
 
-        match m20::remote::remote_fetch(&query).await {
-            Ok(c) => println!("{} images found", c),
+        match m20::remote::remote_fetch(
+            &query,
+            |ttl| {
+                if !self.list {
+                    pb_set_length!(ttl);
+                }
+            },
+            |_| {
+                pb_inc!();
+            },
+        )
+        .await
+        {
+            Ok(_) => pb_done!(),
             Err(e) => eprintln!("Error: {}", e),
         };
     }

@@ -28,20 +28,24 @@ async fn test_msl_instrument_fetches() {
     ];
 
     for i in instruments {
-        remote_fetch(&RemoteQuery {
-            cameras: vec![i.into()],
-            num_per_page: 5,
-            page: Some(0),
-            minsol: 3119,
-            maxsol: 70,
-            thumbnails: false,
-            movie_only: false,
-            list_only: true,
-            search: vec![],
-            only_new: false,
-            product_types: vec![],
-            output_path: String::from(""),
-        })
+        remote_fetch(
+            &RemoteQuery {
+                cameras: vec![i.into()],
+                num_per_page: 5,
+                page: Some(0),
+                minsol: 3119,
+                maxsol: 70,
+                thumbnails: false,
+                movie_only: false,
+                list_only: true,
+                search: vec![],
+                only_new: false,
+                product_types: vec![],
+                output_path: String::from(""),
+            },
+            |_| {},
+            |_| {},
+        )
         .await
         .unwrap();
     }

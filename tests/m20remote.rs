@@ -34,20 +34,24 @@ async fn test_m20_instrument_fetches() {
 
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
-        remote::remote_fetch(&RemoteQuery {
-            cameras: vec![String::from(i)],
-            num_per_page: 5,
-            page: Some(0),
-            minsol: 70,
-            maxsol: 70,
-            thumbnails: false,
-            movie_only: false,
-            list_only: true,
-            search: vec![],
-            only_new: false,
-            product_types: vec![],
-            output_path: String::from(""),
-        })
+        remote::remote_fetch(
+            &RemoteQuery {
+                cameras: vec![String::from(i)],
+                num_per_page: 5,
+                page: Some(0),
+                minsol: 70,
+                maxsol: 70,
+                thumbnails: false,
+                movie_only: false,
+                list_only: true,
+                search: vec![],
+                only_new: false,
+                product_types: vec![],
+                output_path: String::from(""),
+            },
+            |_| {},
+            |_| {},
+        )
         .await
         .unwrap();
     }

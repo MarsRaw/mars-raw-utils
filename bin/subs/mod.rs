@@ -8,7 +8,7 @@ macro_rules! pb_create {
         use lazy_static::lazy_static;
 
         lazy_static! {
-            static ref PB: ProgressBar = ProgressBar::new(0);
+            static ref PB: ProgressBar = ProgressBar::new(1);
         }
     };
 }
@@ -106,7 +106,7 @@ macro_rules! pb_println {
 #[macro_export]
 macro_rules! pb_done {
     () => {
-        PB.finish_with_message("Done");
+        PB.finish_with_message("Done")
     };
 }
 
