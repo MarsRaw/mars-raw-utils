@@ -47,9 +47,6 @@ assets = [
     { source = "mars-raw-utils-data/caldata/nsyt/ilut/NSYT_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/nsyt/ilut/NSYT_LUT0.txt", mode ="644"}
 ]
 
-
-
-
 [lib]
 name = "mars_raw_utils"
 
@@ -58,11 +55,11 @@ name = "mru"
 path = "bin/mru.rs"
 
 [profile.release]
-#strip = true  # Automatically strip symbols from the binary.
-debug = 1
+strip = true  # Automatically strip symbols from the binary.
+#debug = 1
 
-[rust]
-debuginfo-level = 1
+#[rust]
+#debuginfo-level = 1
 
 [features]
 

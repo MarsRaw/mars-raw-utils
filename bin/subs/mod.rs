@@ -25,18 +25,23 @@ macro_rules! pb_create_spinner {
             static ref PB: ProgressBar = {
                 // This is directly ripped from the indicatif examples.
                 let pb = ProgressBar::new_spinner();
-                pb.enable_steady_tick(Duration::from_millis(120));
+                pb.enable_steady_tick(Duration::from_millis(80));
                 pb.set_style(
                     ProgressStyle::with_template("{spinner:.blue} {msg}")
                         .unwrap()
                         .tick_strings(&[
-                            "▹▹▹▹▹",
-                            "▸▹▹▹▹",
-                            "▹▸▹▹▹",
-                            "▹▹▸▹▹",
-                            "▹▹▹▸▹",
-                            "▹▹▹▹▸",
-                            "▪▪▪▪▪",
+                            "▹▹▹▹▹▹▹▹▹▹",
+                            "▸▹▹▹▹▹▹▹▹▹",
+                            "▹▸▹▹▹▹▹▹▹▹",
+                            "▹▹▸▹▹▹▹▹▹▹",
+                            "▹▹▹▸▹▹▹▹▹▹",
+                            "▹▹▹▹▸▹▹▹▹▹",
+                            "▹▹▹▹▹▸▹▹▹▹",
+                            "▹▹▹▹▹▹▸▹▹▹",
+                            "▹▹▹▹▹▹▹▸▹▹",
+                            "▹▹▹▹▹▹▹▹▸▹",
+                            "▹▹▹▹▹▹▹▹▹▸",
+                            "▪▪▪▪▪▪▪▪▪▪",
                         ]),
                 );
                 pb.set_message("Processing...");
