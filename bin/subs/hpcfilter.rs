@@ -1,11 +1,11 @@
 use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use rayon::prelude::*;
 use sciimg::prelude::*;
-
 use std::process;
 
-use clap::Parser;
+pb_create!();
 
 #[derive(Parser)]
 #[command(author, version, about = "Perform hot pixel detection and correction", long_about = None)]
@@ -23,6 +23,8 @@ pub struct HpcFilter {
 #[async_trait::async_trait]
 impl RunnableSubcommand for HpcFilter {
     async fn run(&self) {
+        pb_set_print_and_length!(self.input_files.len());
+
         let window_size = self.window.unwrap_or(3);
 
         let threshold = self.threshold.unwrap_or(0.0);
@@ -51,6 +53,7 @@ impl RunnableSubcommand for HpcFilter {
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }
+            pb_inc!();
         });
     }
 }

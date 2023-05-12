@@ -146,7 +146,9 @@ async fn test_update_calibration_data() {
     // Perform a full data download
     assert!(caldata::update_calibration_data(
         false,
-        &Some("tests/testdata/caltesting".to_string())
+        &Some("tests/testdata/caltesting".to_string()),
+        |_| {},
+        || {}
     )
     .await
     .is_ok());

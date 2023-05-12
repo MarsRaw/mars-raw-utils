@@ -1,11 +1,10 @@
+use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
-
-use crate::subs::runnable::RunnableSubcommand;
-
 use std::process;
 
-use clap::Parser;
+pb_create!();
 
 #[derive(Parser)]
 #[command(author, version, about = "Adjust image levels", long_about = None)]
@@ -26,6 +25,8 @@ pub struct Levels {
 #[async_trait::async_trait]
 impl RunnableSubcommand for Levels {
     async fn run(&self) {
+        pb_set_print_and_length!(self.input_files.len());
+
         let white_level = self.white.unwrap_or(1.0);
 
         let black_level = self.black.unwrap_or(0.0);
@@ -75,6 +76,7 @@ impl RunnableSubcommand for Levels {
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }
+            pb_inc!();
         }
     }
 }

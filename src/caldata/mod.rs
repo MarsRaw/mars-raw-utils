@@ -154,19 +154,24 @@ pub async fn fetch_and_save_file(
 
 /// Retrieves the remote calibration file manifest `caldata.manifest` and downloads each
 /// referenced file. If `replace` is false, existing files will not be overwritten.
-pub async fn update_calibration_data(
+pub async fn update_calibration_data<A: FnOnce(usize), B: Fn()>(
     replace: bool,
     use_local_store: &Option<String>,
+    on_total_known: A,
+    on_file_downloaded: B,
 ) -> Result<(), String> {
     let manifest_config_res = fetch_remote_calibration_manifest().await;
 
     if let Ok(file_list) = manifest_config_res {
+        on_total_known(file_list.len());
+
         let tasks: Vec<_> = file_list
             .par_iter()
             .map(|f| fetch_and_save_file(f, replace, use_local_store))
             .collect();
         for task in tasks {
             task.await?;
+            on_file_downloaded();
         }
 
         Ok(())

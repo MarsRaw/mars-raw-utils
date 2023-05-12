@@ -10,6 +10,8 @@ use std::process;
 
 use clap::Parser;
 
+pb_create_spinner!();
+
 #[derive(Parser)]
 #[command(author, version, about = "Reassemble M20 ECAM subframes", long_about = None)]
 pub struct M20EcamAssemble {
@@ -23,6 +25,8 @@ pub struct M20EcamAssemble {
 #[async_trait::async_trait]
 impl RunnableSubcommand for M20EcamAssemble {
     async fn run(&self) {
+        pb_set_print!();
+
         let in_files: Vec<String> = self
             .input_files
             .iter()
@@ -34,6 +38,7 @@ impl RunnableSubcommand for M20EcamAssemble {
         for in_file in in_files.iter() {
             if !path::file_exists(in_file) {
                 eprintln!("File not found: {}", in_file);
+                pb_done_with_error!();
                 process::exit(1);
             }
             let image =
@@ -61,6 +66,7 @@ impl RunnableSubcommand for M20EcamAssemble {
         // the full frame, even if most of that full frame is black.
         if tiles.is_empty() {
             eprintln!("{}: No images to assemble, exiting...", "ERROR".red());
+            pb_done_with_error!();
             process::exit(1);
         }
 
@@ -84,5 +90,7 @@ impl RunnableSubcommand for M20EcamAssemble {
             md.subframe_rect = Some(vec![1.0, 1.0, 5120.0, 3840.0]);
             util::save_image_json(output, &md, false, None).unwrap();
         }
+
+        pb_done!();
     }
 }

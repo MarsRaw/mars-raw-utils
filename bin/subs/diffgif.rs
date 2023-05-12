@@ -1,10 +1,9 @@
-use mars_raw_utils::diffgif;
-
 use crate::subs::runnable::RunnableSubcommand;
-
+use clap::Parser;
+use mars_raw_utils::diffgif;
 use std::process;
 
-use clap::Parser;
+pb_create_spinner!();
 
 #[derive(Parser)]
 #[command(author, version, about = "Create differential gif from a navcam movie", long_about = None, name="diffgif")]
@@ -40,6 +39,8 @@ pub struct DiffGif {
 #[async_trait::async_trait]
 impl RunnableSubcommand for DiffGif {
     async fn run(&self) {
+        pb_set_print!();
+
         let white_level = self.white.unwrap_or(1.0);
 
         let black_level = self.black.unwrap_or(0.0);
@@ -63,16 +64,19 @@ impl RunnableSubcommand for DiffGif {
 
         if white_level < 0.0 || black_level < 0.0 {
             eprintln!("Levels cannot be negative");
+            pb_done_with_error!();
             process::exit(1);
         }
 
         if white_level < black_level {
             eprintln!("White level cannot be less than black level");
+            pb_done_with_error!();
             process::exit(1);
         }
 
         if gamma <= 0.0 {
             eprintln!("Gamma cannot be zero or negative");
+            pb_done_with_error!();
             process::exit(1);
         }
 
@@ -93,5 +97,6 @@ impl RunnableSubcommand for DiffGif {
             lowpass_window_size,
             convert_to_mono: self.mono,
         });
+        pb_done!();
     }
 }

@@ -1,11 +1,10 @@
-use std::str::FromStr;
-
+use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
+use std::str::FromStr;
 
-use crate::subs::runnable::RunnableSubcommand;
-
-use clap::Parser;
+pb_create!();
 
 #[derive(Parser)]
 #[command(author, version, about = "Batch image debayering", long_about = None)]
@@ -20,6 +19,8 @@ pub struct Debayer {
 #[async_trait::async_trait]
 impl RunnableSubcommand for Debayer {
     async fn run(&self) {
+        pb_set_print_and_length!(self.input_files.len());
+
         for in_file in self.input_files.iter() {
             if in_file.exists() {
                 vprintln!("Processing File: {:?}", in_file);
@@ -51,6 +52,7 @@ impl RunnableSubcommand for Debayer {
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }
+            pb_inc!();
         }
     }
 }

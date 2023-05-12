@@ -1,8 +1,8 @@
+use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::focusmerge;
 
-use crate::subs::runnable::RunnableSubcommand;
-
-use clap::Parser;
+pb_create_spinner!();
 
 #[derive(Parser)]
 #[command(author, version, about = "Focus merge a series of images of differing focal lengths", long_about = None)]
@@ -23,6 +23,8 @@ pub struct FocusMerge {
 #[async_trait::async_trait]
 impl RunnableSubcommand for FocusMerge {
     async fn run(&self) {
+        pb_set_print!();
+
         let quality_window_size = self.window.unwrap_or(15);
 
         let output = self.output.as_os_str().to_str().unwrap();
@@ -32,5 +34,7 @@ impl RunnableSubcommand for FocusMerge {
             .map(|s| String::from(s.as_os_str().to_str().unwrap()))
             .collect();
         focusmerge::focusmerge(&in_files, quality_window_size, self.depth_map, output);
+
+        pb_done!();
     }
 }

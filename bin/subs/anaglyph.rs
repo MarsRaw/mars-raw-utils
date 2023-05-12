@@ -1,12 +1,11 @@
+use crate::subs::runnable::RunnableSubcommand;
 use async_trait::async_trait;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::{drawable::*, prelude::*, vector::Vector};
-
-use crate::subs::runnable::RunnableSubcommand;
-
 use std::process;
 
-use clap::Parser;
+pb_create_spinner!();
 
 #[derive(Parser)]
 #[command(author, version, about = "Generate anaglyph from stereo pair", long_about = None)]
@@ -26,6 +25,7 @@ pub struct Anaglyph {
 #[async_trait]
 impl RunnableSubcommand for Anaglyph {
     async fn run(&self) {
+        pb_set_print!();
         print::print_experimental();
 
         let left_image_path = String::from(self.left.as_os_str().to_str().unwrap());
@@ -34,11 +34,13 @@ impl RunnableSubcommand for Anaglyph {
 
         if !path::file_exists(&left_image_path) {
             eprintln!("Error: File not found (left eye): {}", left_image_path);
+            pb_done_with_error!();
             process::exit(1);
         }
 
         if !path::file_exists(&right_image_path) {
             eprintln!("Error: File not found (right eye): {}", right_image_path);
+            pb_done_with_error!();
             process::exit(1);
         }
 
@@ -47,6 +49,7 @@ impl RunnableSubcommand for Anaglyph {
                 "Error: Output file directory not found or is not writable: {}",
                 out_file_path
             );
+            pb_done_with_error!();
             process::exit(1);
         }
 
@@ -63,9 +66,11 @@ impl RunnableSubcommand for Anaglyph {
             if left_md.camera_model_component_list.is_valid() {
                 left_md.camera_model_component_list.clone()
             } else {
+                pb_done_with_error!();
                 process::exit(2);
             }
         } else {
+            pb_done_with_error!();
             process::exit(1);
         };
 
@@ -73,9 +78,11 @@ impl RunnableSubcommand for Anaglyph {
             if right_md.camera_model_component_list.is_valid() {
                 right_md.camera_model_component_list.clone()
             } else {
+                pb_done_with_error!();
                 process::exit(2);
             }
         } else {
+            pb_done_with_error!();
             process::exit(1);
         };
 
@@ -108,7 +115,7 @@ impl RunnableSubcommand for Anaglyph {
             Eye::Left,
         );
 
-        map.normalize_to_16bit_with_max(255.0);
         map.save(out_file_path);
+        pb_done!();
     }
 }

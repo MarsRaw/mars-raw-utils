@@ -1,8 +1,8 @@
+use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::caldata;
 
-use crate::subs::runnable::RunnableSubcommand;
-
-use clap::Parser;
+pb_create!();
 
 #[derive(Parser)]
 #[command(author, version, about = "Updated calibration data from remote repository", long_about = None)]
@@ -17,7 +17,17 @@ pub struct UpdateCalData {
 #[async_trait::async_trait]
 impl RunnableSubcommand for UpdateCalData {
     async fn run(&self) {
-        match caldata::update_calibration_data(!self.noreplace, &self.local_store).await {
+        pb_set_print!();
+        match caldata::update_calibration_data(
+            !self.noreplace,
+            &self.local_store,
+            |t| {
+                pb_set_length!(t);
+            },
+            || pb_inc!(),
+        )
+        .await
+        {
             Ok(_) => println!("Done."),
             Err(why) => println!("Error: {}", why),
         };

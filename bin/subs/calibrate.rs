@@ -12,7 +12,8 @@ use std::process;
 use std::str::FromStr;
 
 use clap::Parser;
-use indicatif::ProgressBar;
+
+pb_create!();
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -177,7 +178,7 @@ impl RunnableSubcommand for Calibrate {
             .map(|s| String::from(s.as_os_str().to_str().unwrap()))
             .collect();
 
-        let pb = ProgressBar::new(in_files.len() as u64 * profiles.len() as u64);
+        pb_set_print_and_length!(in_files.len() * profiles.len());
 
         panic::set_hook(Box::new(|_info| {
             if print::is_verbose() {
@@ -205,7 +206,7 @@ impl RunnableSubcommand for Calibrate {
                 profiles.par_iter().for_each(|p| {
                     match cal.calibrator.process_with_profile(input_file, false, p) {
                         Ok(res) => {
-                            pb.println(format_complete(
+                            pb_println!(format_complete(
                                 &format!(
                                     "{} ({})",
                                     path::basename(input_file),
@@ -215,11 +216,11 @@ impl RunnableSubcommand for Calibrate {
                             ));
                         }
                         Err(res) => {
-                            pb.println(format!("Error: {:?}", res));
-                            pb.println(format_fail(input_file));
+                            pb_println!(format!("Error: {:?}", res));
+                            pb_println!(format_fail(input_file));
                         }
                     };
-                    pb.inc(1);
+                    pb_inc!();
                 });
             } else {
                 print_fail(&format!(
