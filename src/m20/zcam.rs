@@ -69,7 +69,7 @@ impl Calibration for M20MastcamZ {
         let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
-            return cal_warn(cal_context);
+            return cal_warn(cal_context, &out_file);
         }
 
         let mut warn = false;
@@ -211,8 +211,8 @@ impl Calibration for M20MastcamZ {
         raw.save(&out_file);
 
         match warn {
-            true => cal_warn(cal_context),
-            false => cal_ok(cal_context),
+            true => cal_warn(cal_context, &out_file),
+            false => cal_ok(cal_context, &out_file),
         }
     }
 }

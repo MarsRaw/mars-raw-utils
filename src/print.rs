@@ -53,18 +53,34 @@ macro_rules! veprintln {
 }
 
 pub fn print_done(file_base_name: &String) {
-    print_complete(file_base_name, CompleteStatus::OK);
+    println!("{}", format_complete(file_base_name, CompleteStatus::OK));
+}
+
+pub fn format_done(file_base_name: &String) -> String {
+    format_complete(file_base_name, CompleteStatus::OK)
 }
 
 pub fn print_warn(file_base_name: &String) {
-    print_complete(file_base_name, CompleteStatus::WARN);
+    println!("{}", format_complete(file_base_name, CompleteStatus::WARN));
+}
+
+pub fn format_warn(file_base_name: &String) -> String {
+    format_complete(file_base_name, CompleteStatus::WARN)
 }
 
 pub fn print_fail(file_base_name: &String) {
-    print_complete(file_base_name, CompleteStatus::FAIL);
+    println!("{}", format_complete(file_base_name, CompleteStatus::FAIL));
+}
+
+pub fn format_fail(file_base_name: &String) -> String {
+    format_complete(file_base_name, CompleteStatus::FAIL)
 }
 
 pub fn print_complete(file_base_name: &String, status: CompleteStatus) {
+    println!("{}", format_complete(file_base_name, status));
+}
+
+pub fn format_complete(file_base_name: &String, status: CompleteStatus) -> String {
     let mut width = 88;
 
     if let Some(size) = termsize::get() {
@@ -78,7 +94,7 @@ pub fn print_complete(file_base_name: &String, status: CompleteStatus) {
         formatted = String::from(&formatted[0..(width as usize - 8)]);
     }
 
-    println!(
+    format!(
         "{}[ {} ]",
         formatted,
         match status {
@@ -86,7 +102,7 @@ pub fn print_complete(file_base_name: &String, status: CompleteStatus) {
             CompleteStatus::WARN => "WARN".yellow(),
             CompleteStatus::FAIL => "FAIL".red(),
         }
-    );
+    )
 }
 
 pub fn print_experimental() {

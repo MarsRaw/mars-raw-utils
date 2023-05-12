@@ -12,6 +12,7 @@ use std::process;
 use std::str::FromStr;
 
 use clap::Parser;
+use indicatif::ProgressBar;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -170,6 +171,14 @@ impl RunnableSubcommand for Calibrate {
             }],
         };
 
+        let in_files: Vec<String> = self
+            .input_files
+            .iter()
+            .map(|s| String::from(s.as_os_str().to_str().unwrap()))
+            .collect();
+
+        let pb = ProgressBar::new(in_files.len() as u64 * profiles.len() as u64);
+
         panic::set_hook(Box::new(|_info| {
             if print::is_verbose() {
                 println!("{:?}", Backtrace::new());
@@ -186,47 +195,37 @@ impl RunnableSubcommand for Calibrate {
             };
         }));
 
-        let in_files: Vec<String> = self
-            .input_files
-            .iter()
-            .map(|s| String::from(s.as_os_str().to_str().unwrap()))
-            .collect();
-
         in_files.par_iter().for_each(|input_file| {
             if !path::file_exists(input_file) {
                 print_fail(&format!("Error: File not found: {}", input_file));
                 process::exit(1);
             }
-            let calibrator = Calibrate::get_calibrator_for_file(input_file, &self.instrument);
-            match calibrator {
-                Some(cal) => {
-                    process_with_profiles(
-                        cal,
-                        input_file,
-                        false,
-                        &profiles,
-                        |result| match result {
-                            Ok(cc) => print_complete(
+
+            if let Some(cal) = Calibrate::get_calibrator_for_file(input_file, &self.instrument) {
+                profiles.par_iter().for_each(|p| {
+                    match cal.calibrator.process_with_profile(input_file, false, &p) {
+                        Ok(res) => {
+                            pb.println(format_complete(
                                 &format!(
                                     "{} ({})",
                                     path::basename(input_file),
-                                    cc.cal_context.filename_suffix
+                                    res.cal_context.filename_suffix
                                 ),
-                                cc.status,
-                            ),
-                            Err(why) => {
-                                eprintln!("Error: {}", why);
-                                print_fail(input_file);
-                            }
-                        },
-                    );
-                }
-                None => {
-                    print_fail(&format!(
-                        "{} - Error: Instrument Unknown!",
-                        path::basename(input_file)
-                    ));
-                }
+                                res.status,
+                            ));
+                        }
+                        Err(res) => {
+                            pb.println(format!("Error: {:?}", res));
+                            pb.println(format_fail(input_file));
+                        }
+                    };
+                    pb.inc(1);
+                });
+            } else {
+                print_fail(&format!(
+                    "{} - Error: Instrument Unknown!",
+                    path::basename(input_file)
+                ));
             }
         });
     }

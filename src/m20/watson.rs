@@ -24,7 +24,7 @@ impl Calibration for M20Watson {
         let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
-            return cal_warn(cal_context);
+            return cal_warn(cal_context, &out_file);
         }
 
         let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20Watson);
@@ -80,6 +80,6 @@ impl Calibration for M20Watson {
         vprintln!("Writing to disk...");
         raw.save(&out_file);
 
-        cal_ok(cal_context)
+        cal_ok(cal_context, &out_file)
     }
 }

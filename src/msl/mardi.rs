@@ -24,7 +24,7 @@ impl Calibration for MslMardi {
         let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
-            return cal_warn(cal_context);
+            return cal_warn(cal_context, &out_file);
         }
 
         let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslMARDI);
@@ -57,6 +57,6 @@ impl Calibration for MslMardi {
         vprintln!("Writing to disk...");
         raw.save(&out_file);
 
-        cal_ok(cal_context)
+        cal_ok(cal_context, &out_file)
     }
 }
