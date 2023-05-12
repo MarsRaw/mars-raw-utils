@@ -173,7 +173,7 @@ async fn submit_query(query: &RemoteQuery) -> Result<String> {
         req.param(p[0].as_str(), p[1].as_str());
     }
 
-    Ok(req.fetch_str().await?)
+    req.fetch_str().await
 }
 
 pub async fn fetch_page(query: &RemoteQuery) -> Result<usize> {

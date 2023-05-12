@@ -69,7 +69,7 @@ pub fn make_instrument_map() -> InstrumentMap {
     }
 }
 
-async fn submit_query(query: &RemoteQuery) -> Result<String, reqwest::Error> {
+async fn submit_query(query: &RemoteQuery) -> Result<String> {
     let mut params = vec![
         stringvec("condition_1", "insight:mission"),
         stringvec_b("per_page", format!("{}", query.num_per_page)),

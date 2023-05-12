@@ -130,7 +130,7 @@ async fn submit_query(query: &RemoteQuery) -> Result<String> {
         for p in params {
             req.param(p[0].as_str(), p[1].as_str());
         }
-        return Ok(req.fetch_str().await?);
+        return req.fetch_str().await;
     }
 
     Err(anyhow!("Unable to submit query."))

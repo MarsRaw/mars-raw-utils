@@ -25,11 +25,11 @@ impl JsonFetcher {
 
     pub async fn fetch(&self) -> Result<Value> {
         let json_text = self.fetcher.into_string().await?; //as_string() is also a common name for this.
-        Ok(serde_json::from_str(&json_text)?)
+        Ok(serde_json::from_str(&json_text.text)?)
     }
 
-    pub async fn fetch_str(&self) -> Result<String, reqwest::Error> {
-        self.fetcher.into_string().await
+    pub async fn fetch_str(&self) -> Result<String> {
+        Ok(self.fetcher.into_string().await?.text)
     }
 }
 
