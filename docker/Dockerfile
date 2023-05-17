@@ -1,9 +1,14 @@
-FROM rust:latest
+FROM fedora:38
 
-WORKDIR /mars
+WORKDIR /build
 
 # libssl needed for build. ImageMagick needed for image processing
-RUN apt install libssl-dev imagemagick
+RUN dnf group install -y "Development Tools"
+RUN dnf install -y rpm-build strace ImageMagick perl perl-FindBin openssl-devel pkg-config libudev-devel
+
+RUN bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Copy project resources
 COPY . .
