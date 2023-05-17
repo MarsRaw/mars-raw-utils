@@ -1,9 +1,18 @@
 # Mars Raw Image Utilities
 [![Rust](https://github.com/kmgill/mars-raw-utils/actions/workflows/rust.yml/badge.svg)](https://github.com/kmgill/mars-raw-utils/actions/workflows/rust.yml)
 
-A set of utilities for processing and calibration of imagery from either the Curiosity or Perseverance rovers. Meant to be used on publicly available images. 
+Mars Raw Utils (MRU) is a set of utilities for the retrieval, calibration, and manipulation of publically available raw Mars surface mission imagery. It is not meant or intended to work with or produce full comprehensive science products (that is left to the NASA Planetary Data System and traditional image processing toolsets), instead provide tools for the enthusiast and "Citizen Scientist" communities to streamline, standardize, and teach the operations generally used for flight mission image processing. 
 
-Implemented calibration steps include (varying per instrument):
+MRU supports three flight missions currently or recently in operation on the ground on Mars. Data is sourced from the NASA Raw Image browse web services that are otherwise available in the web browser. 
+
+Supported Missions and Data Sources:
+* Mars Perseverance Rover (Mars2020): https://mars.nasa.gov/mars2020/multimedia/raw-images/
+* Mars Curiosity Rover (Mars Science Laboratory): https://mars.nasa.gov/msl/multimedia/raw-images/
+* Mars InSight Lander (legacy): https://mars.nasa.gov/insight/multimedia/raw-images/
+
+Though not comprehensive, MRU aims to provide image calibration with the goal of achieving an output as close as possible to the full science data. The primary limitation being that prior to becoming available online, most images are converted to web-friendly formats that involve downscaling, lossy compression, and other changes that result in a loss of data precision. 
+
+Currently supported camera instruments and primary calibration functions:
 
 | Mission    |     Camera  | Decompand | Debayer | Inpaint      | Flats  | HPC*   |
 | ---------- |:-----------:|:---------:|:-------:|:------------:|:------:|:------:|
@@ -45,13 +54,13 @@ Feedback, issues, and contributions are always welcomed. Should enough interest 
 Citing MRU is not required, but if the software has significantly contributed to your research or if you'd like to acknowledge the project in your works, I would be grateful if you did so.  
 
 ## Building from source
-A working Rust (https://www.rust-lang.org/) installation is required for building.
+A working Rust (https://www.rust-lang.org/) installation is required for building. MRU targets the 2021 edition, stable branch. 
 
-So far I've only tested building on Ubuntu 21.10, natively and within the Windows Subsystem for Linux on Windows 10, and on MacOSX Catalina. Within the project folder, the software can be built for testing via `cargo build` and individual binaries can be run in debug mode via, for example, `cargo run --bin m20_fetch_raw -- -i`
+MRU is build and tested on Linux (Fedora, Ubuntu, Kubuntu), MacOS, and Windows (natively and WSL2.0)
 
 To build successfully on Linux, you'll likely need the following packages installed via apt:
-* libssl-dev (Ubuntu)
-* openssl-devel (RHEL, CentOS, Fedora)
+* `libssl-dev` (Ubuntu)
+* `openssl-devel` (RHEL, CentOS, Fedora)
 
 ### Clone from git
 ```
@@ -62,29 +71,27 @@ git submodule update
 ```
 
 ### Install via cargo
-This is the easiest installation method for *nix-based systems. It has not been tested in Windows.
+This is the easiest installation method for *nix-based systems. While the software does build and run natively on Windows, it is recommended to be used within a Ubuntu container on the Windows Subsystem for Linux.
 
 ```
 cargo install --path .
 mkdir ~/.marsdata
 cp mars-raw-utils-data/caldata/* ~/.marsdata
 ```
-NOTE: You can set $MARS_RAW_DATA in ~/.bash_profile if a custom data directory is required.
+NOTE: You can set `$MARS_RAW_DATA` in `~/.bash_profile` if a custom data directory is required.
 
 ### Install via apt (Debian, Ubuntu, ...)
+Download the pre-built deb file from the project page.
+
 ```
-cargo install cargo-deb
-cargo deb
-sudo apt install ./target/debian/mars_raw_utils_0.1.3_amd64.deb
+sudo apt install ./mars_raw_utils_0.7.0_amd64.deb
 ```
 NOTE: Adjust the output debian package filename to what is output by the build.
 
 ### Install via rpm (RHEL, CentOS, Fedora, ...)
+Download the pre-built rpm file from the project page.
 ```
-cargo install cargo-rpm
-cp -v mars-raw-utils-data/caldata/* .rpm/
-cargo rpm build -v
-rpm -ivh target/release/rpmbuild/RPMS/x86_64/mars_raw_utils-0.1.3-1.el8.x86_64.rpm
+rpm -ivh mars_raw_utils-0.7.0-1.x86_64.rpm
 ```
 NOTE: Adjust the output rpm package filename to what is created by build.
 
@@ -95,19 +102,30 @@ brew install marsrawutils
 ```
 
 ### Docker
-The dockerfile demonstrates a method for building an installable debian package, or you can use the container itself:
-
+A prebuilt docker image is available for use:
 ```
-docker build -t mars_raw_utils .
-docker run --name mars_raw_utils -dit mars_raw_utils
-docker exec -it mars_raw_utils bash
+docker pull kevinmgill/mars_raw_utils:latest
 ```
 
-### Building RPMs using Docker
-Fedora targetted RPMs can be built using `dockerbuild.sh` which will result in the build artifacts being placed into the `target` directory.
+However, the container can also be built locally:
+```
+sh dockerbuild.sh
+```
+
+
+### Building Install Packages using Docker
+Install packages for MRU are currently built within Docker containers and are kicked off thusly:
+```
+# Fedora / Red Hat:
+sh dockerbuild-fedora.sh
+
+# Debian / Ubuntu:
+sh dockerbuild-debian.sh
+```
+Build outputs will be placed into the `target` directory.
 
 ## Specifying Calibration Data Location
-By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can use the default `~/.marsdata` or set the calibration file directory by using the `MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
+By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can use the default `~/.marsdata` or set the calibration file directory by using the `$MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
 
 ## Calibration Profiles
 Calibration files are used to specify commonly used parameters for the various instruments and output product types. The files are in toml format and if not specified by their absolute path, need to be discoverable in a known calibration folder.
