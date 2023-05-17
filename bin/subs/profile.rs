@@ -5,13 +5,15 @@ use glob::glob;
 use std::env;
 use std::path::Path;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Calibration profile information", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Calibration profile information", long_about = None)]
 pub struct Profile {
-    #[clap(long, short = 'p', help = "Calibration profile")]
+    #[arg(long, short = 'p', help = "Calibration profile")]
     profile: Option<String>,
 
-    #[clap(long, short, help = "List available profiles")]
+    #[arg(long, short, help = "List available profiles")]
     list: bool,
 }
 

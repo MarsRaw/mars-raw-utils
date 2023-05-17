@@ -1,14 +1,17 @@
 use std::env;
 
+use crate::enums::CalFileType;
 use crate::{constants, enums, vprintln};
 
-use sciimg::error;
 use sciimg::path;
 
 extern crate dirs;
 
 use std::fs::File;
 use std::io::Read;
+
+use anyhow::anyhow;
+use anyhow::Result;
 
 //use serde_derive::Deserialize;
 use serde::Deserialize;
@@ -26,7 +29,7 @@ fn default_instrument_properties() -> InstrumentProperties {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Config {
     pub msl: MslCalData,
@@ -36,7 +39,7 @@ pub struct Config {
 
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct InstrumentProperties {
     #[serde(default = "default_blank")]
     pub flat: String,
@@ -51,9 +54,42 @@ pub struct InstrumentProperties {
     pub lut: String,
 }
 
+#[derive(Clone)]
+pub struct CalFilePathAndType {
+    pub file: String,
+    pub file_type: CalFileType,
+}
+
+impl IntoIterator for InstrumentProperties {
+    type Item = CalFilePathAndType;
+    type IntoIter = std::array::IntoIter<CalFilePathAndType, 4>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        [
+            CalFilePathAndType {
+                file: self.flat,
+                file_type: enums::CalFileType::FlatField,
+            },
+            CalFilePathAndType {
+                file: self.inpaint_mask,
+                file_type: enums::CalFileType::InpaintMask,
+            },
+            CalFilePathAndType {
+                file: self.lut,
+                file_type: enums::CalFileType::Lut,
+            },
+            CalFilePathAndType {
+                file: self.mask,
+                file_type: enums::CalFileType::Mask,
+            },
+        ]
+        .into_iter()
+    }
+}
+
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct MslCalData {
     #[serde(default = "default_instrument_properties")]
     pub mahli: InstrumentProperties,
@@ -91,7 +127,7 @@ pub struct MslCalData {
 
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct M20CalData {
     #[serde(default = "default_instrument_properties")]
     pub mastcamz_right: InstrumentProperties,
@@ -147,7 +183,7 @@ pub struct M20CalData {
 
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct NsytCalData {
     #[serde(default = "default_instrument_properties")]
     pub idc: InstrumentProperties,
@@ -156,14 +192,14 @@ pub struct NsytCalData {
     pub icc: InstrumentProperties,
 }
 
-pub fn parse_caldata_from_string(caldata_toml_str: &str) -> error::Result<Config> {
+pub fn parse_caldata_from_string(caldata_toml_str: &str) -> Result<Config> {
     match toml::from_str(caldata_toml_str) {
         Ok(c) => Ok(c),
-        Err(_) => Err("Failed to parse calibration manifest"),
+        Err(_) => Err(anyhow!("Failed to parse calibration manifest")),
     }
 }
 
-pub fn load_caldata_mapping_file() -> error::Result<Config> {
+pub fn load_caldata_mapping_file() -> Result<Config> {
     if let Ok(caldata_toml) = locate_calibration_file(&String::from("caldata.toml")) {
         vprintln!("Loading calibration spec from {}", caldata_toml);
 
@@ -187,7 +223,7 @@ pub fn load_caldata_mapping_file() -> error::Result<Config> {
 pub fn locate_calibration_file_no_extention(
     file_path: &String,
     extension: &String,
-) -> error::Result<String> {
+) -> Result<String> {
     match locate_calibration_file(file_path) {
         Ok(fp) => Ok(fp),
         Err(_) => {
@@ -197,10 +233,10 @@ pub fn locate_calibration_file_no_extention(
     }
 }
 
-pub fn locate_calibration_file(file_path: &String) -> error::Result<String> {
+pub fn locate_calibration_file(file_path: &str) -> Result<String> {
     // If the file exists as-is, return it
     if path::file_exists(file_path) {
-        return Ok(file_path.clone());
+        return Ok(file_path.into());
     }
 
     // Some default locations
@@ -257,7 +293,7 @@ pub fn locate_calibration_file(file_path: &String) -> error::Result<String> {
     }
 
     // Oh nos!
-    Err(constants::status::FILE_NOT_FOUND)
+    Err(anyhow!(constants::status::FILE_NOT_FOUND))
 }
 
 pub fn get_calibration_file_for_type(
@@ -275,7 +311,7 @@ pub fn get_calibration_file_for_type(
 pub fn get_calibration_base_file_for_instrument(
     instrument: enums::Instrument,
     cal_file_type: enums::CalFileType,
-) -> error::Result<String> {
+) -> Result<String> {
     let config = load_caldata_mapping_file().unwrap();
 
     match instrument {
@@ -399,17 +435,17 @@ pub fn get_calibration_base_file_for_instrument(
             &config.nsyt.idc,
             cal_file_type,
         )),
-        enums::Instrument::None => Err(constants::status::UNSUPPORTED_INSTRUMENT),
+        enums::Instrument::None => Err(anyhow!(constants::status::UNSUPPORTED_INSTRUMENT)),
     }
 }
 
 pub fn get_calibration_file_for_instrument(
     instrument: enums::Instrument,
     cal_file_type: enums::CalFileType,
-) -> error::Result<String> {
+) -> Result<String> {
     match get_calibration_base_file_for_instrument(instrument, cal_file_type) {
         Ok(file_name) => match file_name.len() {
-            0 => Err(constants::status::UNSUPPORTED_INSTRUMENT),
+            0 => Err(anyhow!(constants::status::UNSUPPORTED_INSTRUMENT)),
             _ => locate_calibration_file(&file_name),
         },
         Err(e) => Err(e),

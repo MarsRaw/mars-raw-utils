@@ -1,29 +1,26 @@
-use std::str::FromStr;
-
+use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
+use std::str::FromStr;
 
-use crate::subs::runnable::RunnableSubcommand;
+pb_create!();
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Batch image debayering", long_about = None)]
+#[derive(Parser)]
+#[command(author, version, about = "Batch image debayering", long_about = None)]
 pub struct Debayer {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short = 'D', help = "Debayer method (malvar, amaze)")]
+    #[arg(long, short = 'D', help = "Debayer method (malvar, amaze)")]
     debayer: Option<String>,
 }
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for Debayer {
     async fn run(&self) {
+        pb_set_print_and_length!(self.input_files.len());
+
         for in_file in self.input_files.iter() {
             if in_file.exists() {
                 vprintln!("Processing File: {:?}", in_file);
@@ -55,6 +52,7 @@ impl RunnableSubcommand for Debayer {
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }
+            pb_inc!();
         }
     }
 }

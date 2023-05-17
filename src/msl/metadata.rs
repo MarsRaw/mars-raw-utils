@@ -7,6 +7,9 @@ use std::io::Read;
 
 use serde::{Deserialize, Serialize};
 
+use anyhow::anyhow;
+use anyhow::Result;
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Extended {
     pub lmst: Option<String>,
@@ -191,11 +194,11 @@ impl ImageMetadata for ImageRecord {
     }
 }
 
-pub fn load_metadata_file(file_path: String) -> error::Result<Metadata> {
+pub fn load_metadata_file(file_path: String) -> Result<Metadata> {
     vprintln!("Loading metadata file from {}", file_path);
 
     if !path::file_exists(file_path.as_str()) {
-        return Err(constants::status::FILE_NOT_FOUND);
+        return Err(anyhow!(constants::status::FILE_NOT_FOUND));
     }
 
     let mut file = match File::open(&file_path) {

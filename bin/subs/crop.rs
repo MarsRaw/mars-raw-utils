@@ -1,28 +1,26 @@
+use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
-
-use crate::subs::runnable::RunnableSubcommand;
-
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Batch image crop", long_about = None)]
+pb_create!();
+
+#[derive(Parser)]
+#[command(author, version, about = "Batch image crop", long_about = None)]
 pub struct Crop {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short, help = "Crop as x,y,width,height")]
+    #[arg(long, short, help = "Crop as x,y,width,height")]
     crop: String,
 }
+
 #[async_trait::async_trait]
 impl RunnableSubcommand for Crop {
     async fn run(&self) {
+        pb_set_print_and_length!(self.input_files.len());
+
         //https://stackoverflow.com/questions/26536871/how-can-i-convert-a-string-of-numbers-to-an-array-or-vector-of-integers-in-rust
         let crop_numbers: Vec<usize> = self
             .crop
@@ -93,6 +91,7 @@ impl RunnableSubcommand for Crop {
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }
+            pb_inc!();
         }
     }
 }

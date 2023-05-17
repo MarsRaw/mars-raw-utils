@@ -1,6 +1,7 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use rayon::prelude::*;
 use sciimg::lowpass;
@@ -9,26 +10,22 @@ use sciimg::MinMax;
 use std::path::PathBuf;
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Decorrelation stretching", long_about = None)]
+pb_create!();
+
+#[derive(Parser)]
+#[command(author, version, about = "Decorrelation stretching", long_about = None)]
 pub struct DecorrelationStretch {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(
+    #[arg(
         long,
         short,
         help = "Cross-File decorrelation (value ranges determined across all files rather than individually)"
     )]
     cross_file: bool,
 
-    #[clap(long, short = 'b', help = "Ignore black values")]
+    #[arg(long, short = 'b', help = "Ignore black values")]
     ignore_black: bool,
 }
 
@@ -143,6 +140,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
             }
         } else {
             eprintln!("File not found: {:?}", in_file);
+            pb_done_with_error!();
             process::exit(1);
         }
     });
@@ -167,7 +165,10 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
             ));
         } else {
             eprintln!("File not found: {:?}", in_file);
+            pb_done_with_error!();
+            process::exit(1);
         }
+        pb_inc!();
     });
 }
 
@@ -198,12 +199,14 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
         } else {
             eprintln!("File not found: {:?}", in_file);
         }
+        pb_inc!();
     });
 }
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for DecorrelationStretch {
     async fn run(&self) {
+        pb_set_print_and_length!(self.input_files.len());
         match self.cross_file {
             true => cross_file_decorrelation(&self.input_files, self.ignore_black),
             false => individual_file_decorrelation(&self.input_files, self.ignore_black),

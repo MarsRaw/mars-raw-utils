@@ -3,7 +3,9 @@ use crate::{
     marsimage::MarsImage, util, vprintln,
 };
 
-use sciimg::{error, imagebuffer, path};
+use sciimg::{imagebuffer, path};
+
+use anyhow::Result;
 
 #[derive(Copy, Clone)]
 pub struct MslChemCam {}
@@ -18,11 +20,11 @@ impl Calibration for MslChemCam {
         input_file: &str,
         cal_context: &CalProfile,
         only_new: bool,
-    ) -> error::Result<CompleteContext> {
+    ) -> Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
-            return cal_warn(cal_context);
+            return cal_warn(cal_context, &out_file);
         }
 
         let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslChemCam);
@@ -59,6 +61,6 @@ impl Calibration for MslChemCam {
         raw.image.set_using_alpha(true);
         raw.save(&out_file);
 
-        cal_ok(cal_context)
+        cal_ok(cal_context, &out_file)
     }
 }

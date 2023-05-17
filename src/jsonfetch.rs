@@ -1,10 +1,9 @@
 use crate::{constants, httpfetch::HttpFetcher, util::string_is_valid_f64};
-
-use sciimg::prelude::*;
-
 use anyhow::Result;
 use serde_json::Value;
 use string_builder::Builder;
+
+use anyhow::anyhow;
 
 pub struct JsonFetcher {
     fetcher: HttpFetcher,
@@ -26,11 +25,11 @@ impl JsonFetcher {
 
     pub async fn fetch(&self) -> Result<Value> {
         let json_text = self.fetcher.into_string().await?; //as_string() is also a common name for this.
-        Ok(serde_json::from_str(&json_text)?)
+        Ok(serde_json::from_str(&json_text.text)?)
     }
 
-    pub async fn fetch_str(&self) -> Result<String, reqwest::Error> {
-        self.fetcher.into_string().await
+    pub async fn fetch_str(&self) -> Result<String> {
+        Ok(self.fetcher.into_string().await?.text)
     }
 }
 
@@ -49,7 +48,7 @@ fn vec_to_str(v: &[f64]) -> String {
     format!("({})", s)
 }
 
-fn str_to_vec(s: &str) -> error::Result<Vec<f64>> {
+fn str_to_vec(s: &str) -> Result<Vec<f64>> {
     let mut tuple_vec: Vec<f64> = Vec::new();
     let mut s0 = String::from(s);
     s0.remove(0);
@@ -61,7 +60,7 @@ fn str_to_vec(s: &str) -> error::Result<Vec<f64>> {
             tuple_vec.push(n_t.parse::<f64>().unwrap());
         } else {
             eprintln!("Encoutered invalid float value string: {}", n_t);
-            return Err(constants::status::INVALID_FLOAT_VALUE);
+            return Err(anyhow!(constants::status::INVALID_FLOAT_VALUE));
         }
     }
     Ok(tuple_vec)

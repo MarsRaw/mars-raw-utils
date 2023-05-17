@@ -47,9 +47,6 @@ assets = [
     { source = "mars-raw-utils-data/caldata/nsyt/ilut/NSYT_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/nsyt/ilut/NSYT_LUT0.txt", mode ="644"}
 ]
 
-
-
-
 [lib]
 name = "mars_raw_utils"
 
@@ -58,21 +55,21 @@ name = "mru"
 path = "bin/mru.rs"
 
 [profile.release]
-strip = true  # Automatically strip symbols from the binary.
-#debug = 1
+#strip = true  # Automatically strip symbols from the binary.
+debug = 1
 
-#[rust]
-#debuginfo-level = 1
+[rust]
+debuginfo-level = 1
 
 [features]
 
 [dependencies]
 proc-macro2 = "1.0.28"
 image = "0.24.1"
-clap = { version = "3.1.18", features = ["derive"] }
+clap = { version = "4.2.7", features = ["derive"] }
 serde_json = "1.0.64"
 const_format = "0.2.14"
-reqwest = { version = "0.11.2", features = ["blocking"] }
+reqwest = { version = "0.11.2", features = ["stream"] }
 platforms = "3.0.0"
 lab = "0.11.0"
 toml = "0.7.1"
@@ -99,3 +96,5 @@ glob = "0.3.0"
 regex = "1.7.0"
 url = "2.3.1"
 tempfile = "3.5.0"
+futures-util = "0.3.28"
+indicatif = "0.17.3"

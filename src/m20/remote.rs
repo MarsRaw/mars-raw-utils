@@ -1,13 +1,13 @@
 use crate::{
     constants, jsonfetch, m20::latest, m20::metadata::*, metadata::convert_to_std_metadata,
-    remotequery::RemoteQuery, util::*,
+    print::do_println, remotequery::RemoteQuery, util::*,
 };
 use sciimg::path;
 
 use anyhow::{anyhow, Result};
 
 pub fn print_header() {
-    println!(
+    do_println(&format!(
         "{:54} {:25} {:6} {:27} {:27} {:6} {:6} {:7} {:10}",
         "ID",
         "Instrument",
@@ -18,7 +18,7 @@ pub fn print_header() {
         "Drive",
         "Thumb",
         "Present"
-    );
+    ));
 }
 
 fn print_image(output_path: &str, image: &ImageRecord) {
@@ -28,7 +28,7 @@ fn print_image(output_path: &str, image: &ImageRecord) {
         path::basename(&image.image_files.full_res)
     );
 
-    println!(
+    do_println(&format!(
         "{:54} {:25} {:>6} {:27} {:27} {:>6} {:>6} {:7} {:10}",
         image.imageid,
         image.camera.instrument,
@@ -47,10 +47,14 @@ fn print_image(output_path: &str, image: &ImageRecord) {
         } else {
             constants::status::NO
         }
-    );
+    ));
 }
 
-async fn process_results(results: &M20ApiResults, query: &RemoteQuery) -> usize {
+async fn process_results<B: Fn(&ImageRecord)>(
+    results: &M20ApiResults,
+    query: &RemoteQuery,
+    on_image_downloaded: B,
+) -> usize {
     let mut valid_img_count = 0;
     let images = results.images.iter().filter(|image| {
         !(image.sample_type == "Thumbnail" && !query.thumbnails
@@ -59,6 +63,7 @@ async fn process_results(results: &M20ApiResults, query: &RemoteQuery) -> usize 
     for (idx, image) in images.enumerate() {
         valid_img_count = idx;
         print_image(query.output_path.as_ref(), image);
+        on_image_downloaded(image);
         if !query.list_only {
             _ = fetch_image(
                 &image.image_files.full_res,
@@ -173,14 +178,19 @@ async fn submit_query(query: &RemoteQuery) -> Result<String> {
         req.param(p[0].as_str(), p[1].as_str());
     }
 
-    Ok(req.fetch_str().await?)
+    req.fetch_str().await
 }
 
-pub async fn fetch_page(query: &RemoteQuery) -> Result<usize> {
+pub async fn fetch_page<A: Fn(usize), B: Fn(&ImageRecord)>(
+    query: &RemoteQuery,
+    on_total_known: A,
+    on_image_downloaded: B,
+) -> Result<usize> {
     match submit_query(query).await {
         Ok(v) => {
             let res: M20ApiResults = serde_json::from_str(v.as_str())?;
-            Ok(process_results(&res, query).await)
+            on_total_known(res.total_results as usize);
+            Ok(process_results(&res, query, on_image_downloaded).await)
         }
         Err(e) => Err(e),
     }
@@ -209,19 +219,24 @@ pub async fn fetch_stats(query: &RemoteQuery) -> Result<M20RemoteStats> {
     }
 }
 
-pub async fn fetch_all(query: &RemoteQuery) -> Result<usize> {
+pub async fn fetch_all<A: Fn(usize), B: Fn(&ImageRecord) + Copy>(
+    query: &RemoteQuery,
+    on_total_known: A,
+    on_image_downloaded: B,
+) -> Result<usize> {
     let stats = match fetch_stats(query).await {
         Ok(s) => s,
         Err(e) => return Err(e),
     };
 
+    on_total_known(stats.total_results as usize);
     let pages = (stats.total_results as f32 / query.num_per_page as f32).ceil() as i32;
 
     let mut count = 0;
     for page in 0..pages {
         let mut q: RemoteQuery = query.clone();
         q.page = Some(page);
-        match fetch_page(&q).await {
+        match fetch_page(&q, |_| {}, on_image_downloaded).await {
             Ok(c) => {
                 count += c;
             }
@@ -235,11 +250,15 @@ pub async fn fetch_all(query: &RemoteQuery) -> Result<usize> {
     Ok(count)
 }
 
-pub async fn remote_fetch(query: &RemoteQuery) -> Result<usize> {
+pub async fn remote_fetch<A: Fn(usize), B: Fn(&ImageRecord) + Copy>(
+    query: &RemoteQuery,
+    on_total_known: A,
+    on_image_downloaded: B,
+) -> Result<usize> {
     if query.page.is_some() {
-        fetch_page(query).await
+        fetch_page(query, on_total_known, on_image_downloaded).await
     } else {
-        fetch_all(query).await
+        fetch_all(query, on_total_known, on_image_downloaded).await
     }
 }
 

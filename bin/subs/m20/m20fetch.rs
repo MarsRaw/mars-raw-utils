@@ -1,67 +1,61 @@
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use mars_raw_utils::remotequery::RemoteQuery;
-
 use sciimg::path;
 use std::process;
 
-#[derive(Debug, Clone, clap::Args)]
-#[clap(author, version, about = "Fetch raw Mars2020 images", long_about = None)]
+pb_create!();
+
+#[derive(Parser, Debug, Clone)]
+#[command(author, version, about = "Fetch raw Mars2020 images", long_about = None)]
 pub struct M20Fetch {
-    #[clap(
-        long,
-        short,
-        help = "Mars2020 Camera Instrument(s)",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Mars2020 Camera Instrument(s)", num_args = 1..)]
     camera: Vec<String>,
 
-    #[clap(long, short = 's', help = "Mission Sol")]
+    #[arg(long, short = 's', help = "Mission Sol")]
     sol: Option<u32>,
 
-    #[clap(long, short = 'm', help = "Starting Mission Sol")]
+    #[arg(long, short = 'm', help = "Starting Mission Sol")]
     minsol: Option<u32>,
 
-    #[clap(long, short = 'M', help = "Ending Mission Sol")]
+    #[arg(long, short = 'M', help = "Ending Mission Sol")]
     maxsol: Option<u32>,
 
-    #[clap(long, short = 'l', help = "Don't download, only list results")]
+    #[arg(long, short = 'l', help = "Don't download, only list results")]
     list: bool,
 
-    #[clap(long, short = 't', help = "Download thumbnails in the results")]
+    #[arg(long, short = 't', help = "Download thumbnails in the results")]
     thumbnails: bool,
 
-    #[clap(long, short = 'N', help = "Max number of results")]
+    #[arg(long, short = 'N', help = "Max number of results")]
     num: Option<u32>,
 
-    #[clap(long, short = 'p', help = "Results page (starts at 1)")]
+    #[arg(long, short = 'p', help = "Results page (starts at 1)")]
     page: Option<u8>,
 
-    #[clap(long, short = 'f', help = "filter on image id", multiple_values(true))]
+    #[arg(long, short = 'f', help = "filter on image id", num_args = 1..)]
     filter: Option<Vec<String>>,
 
-    #[clap(long, short = 'I', help = "List instruments")]
+    #[arg(long, short = 'I', help = "List instruments")]
     instruments: bool,
 
-    #[clap(long, short = 'e', help = "Only movie frames")]
+    #[arg(long, short = 'e', help = "Only movie frames")]
     movie: bool,
 
-    #[clap(long, short, parse(from_os_str), help = "Output directory")]
+    #[arg(long, short, help = "Output directory")]
     output: Option<std::path::PathBuf>,
 
-    #[clap(long, short = 'n', help = "Only new images. Skipped processed images.")]
+    #[arg(long, short = 'n', help = "Only new images. Skipped processed images.")]
     new: bool,
 
-    #[clap(
-        long,
-        short = 'P',
-        help = "Product type codes (ECM, EBY, etc)",
-        multiple_values(true)
-    )]
+    #[arg(long, short = 'P', help = "Product type codes (ECM, EBY, etc)", num_args = 1..)]
     product_types: Option<Vec<String>>,
 }
 
 impl M20Fetch {
     pub async fn run(&self) {
+        pb_set_print!();
+
         let im = m20::remote::make_instrument_map();
         if self.instruments {
             im.print_instruments();
@@ -151,8 +145,20 @@ impl M20Fetch {
             output_path: output,
         };
 
-        match m20::remote::remote_fetch(&query).await {
-            Ok(c) => println!("{} images found", c),
+        match m20::remote::remote_fetch(
+            &query,
+            |ttl| {
+                if !self.list {
+                    pb_set_length!(ttl);
+                }
+            },
+            |_| {
+                pb_inc!();
+            },
+        )
+        .await
+        {
+            Ok(_) => pb_done!(),
             Err(e) => eprintln!("Error: {}", e),
         };
     }

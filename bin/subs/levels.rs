@@ -1,35 +1,32 @@
+use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
-
-use crate::subs::runnable::RunnableSubcommand;
-
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Adjust image levels", long_about = None)]
+pb_create!();
+
+#[derive(Parser)]
+#[command(author, version, about = "Adjust image levels", long_about = None)]
 pub struct Levels {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short, help = "Black level")]
+    #[arg(long, short, help = "Black level")]
     black: Option<f32>,
 
-    #[clap(long, short, help = "White level")]
+    #[arg(long, short, help = "White level")]
     white: Option<f32>,
 
-    #[clap(long, short, help = "Gamma level")]
+    #[arg(long, short, help = "Gamma level")]
     gamma: Option<f32>,
 }
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for Levels {
     async fn run(&self) {
+        pb_set_print_and_length!(self.input_files.len());
+
         let white_level = self.white.unwrap_or(1.0);
 
         let black_level = self.black.unwrap_or(0.0);
@@ -79,6 +76,7 @@ impl RunnableSubcommand for Levels {
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }
+            pb_inc!();
         }
     }
 }

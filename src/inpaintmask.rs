@@ -2,9 +2,12 @@
 
 use crate::{calibfile, constants, enums, memcache, vprintln};
 
-use sciimg::{error, imagebuffer::ImageBuffer, path};
+use sciimg::{imagebuffer::ImageBuffer, path};
 
-fn determine_mask_file(instrument: enums::Instrument) -> error::Result<String> {
+use anyhow::anyhow;
+use anyhow::Result;
+
+fn determine_mask_file(instrument: enums::Instrument) -> Result<String> {
     calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::InpaintMask)
 }
 
@@ -13,11 +16,11 @@ pub fn inpaint_supported_for_instrument(instrument: enums::Instrument) -> bool {
     r.is_ok()
 }
 
-fn load_mask_file(filename: &str, instrument: enums::Instrument) -> error::Result<ImageBuffer> {
+fn load_mask_file(filename: &str, instrument: enums::Instrument) -> Result<ImageBuffer> {
     vprintln!("Loading inpaint mask file {}", filename);
 
     if !path::file_exists(filename) {
-        return Err(constants::status::FILE_NOT_FOUND);
+        return Err(anyhow!(constants::status::FILE_NOT_FOUND));
     }
 
     let mask = match memcache::load_imagebuffer(filename) {
@@ -31,7 +34,7 @@ fn load_mask_file(filename: &str, instrument: enums::Instrument) -> error::Resul
     }
 }
 
-pub fn load_mask(instrument: enums::Instrument) -> error::Result<ImageBuffer> {
+pub fn load_mask(instrument: enums::Instrument) -> Result<ImageBuffer> {
     let mask_file = match determine_mask_file(instrument) {
         Ok(m) => m,
         Err(e) => return Err(e),

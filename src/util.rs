@@ -1,6 +1,5 @@
 use crate::{constants, httpfetch, vprintln};
 
-use sciimg::error;
 use sciimg::path;
 use sciimg::util as sciutil;
 
@@ -80,7 +79,7 @@ impl InstrumentMap {
         false
     }
 
-    pub fn find_remote_instrument_names(&self, instrument: &str) -> error::Result<Vec<String>> {
+    pub fn find_remote_instrument_names(&self, instrument: &str) -> Result<Vec<String>> {
         let mut inst_list: Vec<String> = Vec::new();
         if self.is_name_a_remote_instrument(instrument) {
             inst_list.push(String::from(instrument));
@@ -95,20 +94,20 @@ impl InstrumentMap {
         if !inst_list.is_empty() {
             Ok(inst_list)
         } else {
-            Err(constants::status::UNSUPPORTED_INSTRUMENT)
+            Err(anyhow!(constants::status::UNSUPPORTED_INSTRUMENT))
         }
     }
 
     pub fn find_remote_instrument_names_fromlist(
         &self,
         instrument_inputs: &[String],
-    ) -> error::Result<Vec<String>> {
+    ) -> Result<Vec<String>> {
         let mut inst_list: Vec<String> = Vec::new();
 
         for c in instrument_inputs.iter() {
             let found_list_res = self.find_remote_instrument_names(c);
             let res = match found_list_res {
-                Err(_e) => return Err(constants::status::UNSUPPORTED_INSTRUMENT),
+                Err(_e) => return Err(anyhow!(constants::status::UNSUPPORTED_INSTRUMENT)),
                 Ok(v) => v,
             };
             inst_list.extend(res);
@@ -117,7 +116,7 @@ impl InstrumentMap {
         if !inst_list.is_empty() {
             Ok(inst_list)
         } else {
-            Err(constants::status::UNSUPPORTED_INSTRUMENT)
+            Err(anyhow!(constants::status::UNSUPPORTED_INSTRUMENT))
         }
     }
 

@@ -1,32 +1,30 @@
 use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use rayon::prelude::*;
 use sciimg::prelude::*;
-
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Perform hot pixel detection and correction", long_about = None)]
+pb_create!();
+
+#[derive(Parser)]
+#[command(author, version, about = "Perform hot pixel detection and correction", long_about = None)]
 pub struct HpcFilter {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short = 't', help = "HPC threshold")]
+    #[arg(long, short = 't', help = "HPC threshold")]
     threshold: Option<f32>,
 
-    #[clap(long, short = 'w', help = "HPC window size")]
+    #[arg(long, short = 'w', help = "HPC window size")]
     window: Option<i32>,
 }
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for HpcFilter {
     async fn run(&self) {
+        pb_set_print_and_length!(self.input_files.len());
+
         let window_size = self.window.unwrap_or(3);
 
         let threshold = self.threshold.unwrap_or(0.0);
@@ -48,12 +46,6 @@ impl RunnableSubcommand for HpcFilter {
                 );
                 raw.hot_pixel_correction(window_size, threshold);
 
-                // DON'T ASSUME THIS!
-                let data_max = 255.0;
-
-                vprintln!("Normalizing...");
-                raw.normalize_to_16bit_with_max(data_max);
-
                 vprintln!("Writing to disk...");
 
                 let out_file = util::append_file_name(in_file.as_os_str().to_str().unwrap(), "hpc");
@@ -61,6 +53,7 @@ impl RunnableSubcommand for HpcFilter {
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }
+            pb_inc!();
         });
     }
 }

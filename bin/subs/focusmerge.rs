@@ -1,32 +1,30 @@
+use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::focusmerge;
 
-use crate::subs::runnable::RunnableSubcommand;
+pb_create_spinner!();
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Focus merge a series of images of differing focal lengths", long_about = None)]
+#[derive(Parser)]
+#[command(author, version, about = "Focus merge a series of images of differing focal lengths", long_about = None)]
 pub struct FocusMerge {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short, parse(from_os_str), help = "Output image")]
+    #[arg(long, short, help = "Output image")]
     output: std::path::PathBuf,
 
-    #[clap(long, short = 'w', help = "Quality determination window size (pixels)")]
+    #[arg(long, short = 'w', help = "Quality determination window size (pixels)")]
     window: Option<usize>,
 
-    #[clap(long, short = 'd', help = "Produce a depth map")]
+    #[arg(long, short = 'd', help = "Produce a depth map")]
     depth_map: bool,
 }
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for FocusMerge {
     async fn run(&self) {
+        pb_set_print!();
+
         let quality_window_size = self.window.unwrap_or(15);
 
         let output = self.output.as_os_str().to_str().unwrap();
@@ -36,5 +34,7 @@ impl RunnableSubcommand for FocusMerge {
             .map(|s| String::from(s.as_os_str().to_str().unwrap()))
             .collect();
         focusmerge::focusmerge(&in_files, quality_window_size, self.depth_map, output);
+
+        pb_done!();
     }
 }

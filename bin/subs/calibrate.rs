@@ -11,49 +11,47 @@ use std::panic;
 use std::process;
 use std::str::FromStr;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Batch raw image calibration", long_about = None)]
+use clap::Parser;
+
+pb_create!();
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
 pub struct Calibrate {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input raw images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input raw images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short = 'I', help = "Force instrument")]
+    #[arg(long, short = 'I', help = "Force instrument")]
     instrument: Option<String>,
 
-    #[clap(long, short = 'R', help = "Red weight")]
+    #[arg(long, short = 'R', help = "Red weight")]
     red_weight: Option<f32>,
 
-    #[clap(long, short = 'G', help = "Green weight")]
+    #[arg(long, short = 'G', help = "Green weight")]
     green_weight: Option<f32>,
 
-    #[clap(long, short = 'B', help = "Blue weight")]
+    #[arg(long, short = 'B', help = "Blue weight")]
     blue_weight: Option<f32>,
 
-    #[clap(long, short, help = "Raw color, skip ILT")]
+    #[arg(long, short, help = "Raw color, skip ILT")]
     raw: bool,
 
-    #[clap(long, short, help = "Color noise reduction amount")]
+    #[arg(long, short, help = "Color noise reduction amount")]
     color_noise_reduction_amount: Option<i32>,
 
-    #[clap(long, short = 't', help = "HPC threshold")]
+    #[arg(long, short = 't', help = "HPC threshold")]
     hpc_threshold: Option<f32>,
 
-    #[clap(long, short = 'w', help = "HPC window size")]
+    #[arg(long, short = 'w', help = "HPC window size")]
     hpc_window: Option<i32>,
 
-    #[clap(long, short = 'd', help = "Decorrelate color channels")]
+    #[arg(long, short = 'd', help = "Decorrelate color channels")]
     decorrelate: bool,
 
-    #[clap(long, short = 'P', help = "Calibration profile", multiple_values(true))]
+    #[arg(long, short = 'P', help = "Calibration profile", num_args = 1..)]
     profile: Option<Vec<String>>,
 
-    #[clap(long, short = 'D', help = "Debayer method (malvar, amaze)")]
+    #[arg(long, short = 'D', help = "Debayer method (malvar, amaze)")]
     debayer: Option<String>,
 }
 
@@ -133,8 +131,11 @@ impl RunnableSubcommand for Calibrate {
                             }
 
                             if let Some(debayer) = &self.debayer {
-                                profile_mut.debayer_method = DebayerMethod::from_str(debayer)
-                                    .unwrap_or(DebayerMethod::Malvar);
+                                profile_mut.debayer_method = match DebayerMethod::from_str(debayer)
+                                {
+                                    Ok(m) => m,
+                                    Err(why) => panic!("Error: {}", why),
+                                };
                             }
                             profile_mut
                         }
@@ -160,13 +161,24 @@ impl RunnableSubcommand for Calibrate {
                 mission: None,
                 instrument: None,
                 description: None,
-                debayer_method: DebayerMethod::from_str(
-                    // This is ugly
-                    &self.debayer.clone().unwrap_or(String::from("malvar")),
-                )
-                .unwrap_or(DebayerMethod::Malvar),
+                debayer_method: if let Some(d) = &self.debayer {
+                    match DebayerMethod::from_str(d) {
+                        Ok(m) => m,
+                        Err(why) => panic!("Error: {}", why),
+                    }
+                } else {
+                    DebayerMethod::Malvar
+                },
             }],
         };
+
+        let in_files: Vec<String> = self
+            .input_files
+            .iter()
+            .map(|s| String::from(s.as_os_str().to_str().unwrap()))
+            .collect();
+
+        pb_set_print_and_length!(in_files.len() * profiles.len());
 
         panic::set_hook(Box::new(|_info| {
             if print::is_verbose() {
@@ -184,47 +196,37 @@ impl RunnableSubcommand for Calibrate {
             };
         }));
 
-        let in_files: Vec<String> = self
-            .input_files
-            .iter()
-            .map(|s| String::from(s.as_os_str().to_str().unwrap()))
-            .collect();
-
         in_files.par_iter().for_each(|input_file| {
             if !path::file_exists(input_file) {
                 print_fail(&format!("Error: File not found: {}", input_file));
                 process::exit(1);
             }
-            let calibrator = Calibrate::get_calibrator_for_file(input_file, &self.instrument);
-            match calibrator {
-                Some(cal) => {
-                    process_with_profiles(
-                        cal,
-                        input_file,
-                        false,
-                        &profiles,
-                        |result| match result {
-                            Ok(cc) => print_complete(
+
+            if let Some(cal) = Calibrate::get_calibrator_for_file(input_file, &self.instrument) {
+                profiles.par_iter().for_each(|p| {
+                    match cal.calibrator.process_with_profile(input_file, false, p) {
+                        Ok(res) => {
+                            pb_println!(format_complete(
                                 &format!(
                                     "{} ({})",
                                     path::basename(input_file),
-                                    cc.cal_context.filename_suffix
+                                    res.cal_context.filename_suffix
                                 ),
-                                cc.status,
-                            ),
-                            Err(why) => {
-                                eprintln!("Error: {}", why);
-                                print_fail(input_file);
-                            }
-                        },
-                    );
-                }
-                None => {
-                    print_fail(&format!(
-                        "{} - Error: Instrument Unknown!",
-                        path::basename(input_file)
-                    ));
-                }
+                                res.status,
+                            ));
+                        }
+                        Err(res) => {
+                            pb_println!(format!("Error: {:?}", res));
+                            pb_println!(format_fail(input_file));
+                        }
+                    };
+                    pb_inc!();
+                });
+            } else {
+                print_fail(&format!(
+                    "{} - Error: Instrument Unknown!",
+                    path::basename(input_file)
+                ));
             }
         });
     }

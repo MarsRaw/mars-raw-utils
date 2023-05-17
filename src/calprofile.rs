@@ -7,6 +7,9 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 
+use anyhow::anyhow;
+use anyhow::Result;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CalProfile {
     pub calfiletype: String,
@@ -105,7 +108,7 @@ fn default_hpc_threshold() -> f32 {
     0.0
 }
 
-pub fn load_calibration_profile(file_path: &String) -> error::Result<CalProfile> {
+pub fn load_calibration_profile(file_path: &String) -> Result<CalProfile> {
     match calibfile::locate_calibration_file_no_extention(file_path, &".toml".to_string()) {
         Ok(located_file) => {
             let mut file = match File::open(&located_file) {
@@ -125,10 +128,10 @@ pub fn load_calibration_profile(file_path: &String) -> error::Result<CalProfile>
                 }
                 Err(why) => {
                     veprintln!("Error parsing calibration profile: {:?}", why);
-                    Err("Error parsing calibration profile file")
+                    Err(anyhow!("Error parsing calibration profile file"))
                 }
             }
         }
-        Err(why) => Err(why),
+        Err(why) => Err(anyhow!(why)),
     }
 }

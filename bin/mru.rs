@@ -51,6 +51,7 @@ enum Mru {
     Xeye(xeye::CrossEye),
     Profile(profile::Profile),
     Decorr(decorr::DecorrelationStretch),
+    UpdateCalData(caldata::UpdateCalData),
 }
 
 #[tokio::main]
@@ -139,6 +140,9 @@ async fn main() {
             args.run().await;
         }
         Mru::Decorr(args) => {
+            args.run().await;
+        }
+        Mru::UpdateCalData(args) => {
             args.run().await;
         }
     };

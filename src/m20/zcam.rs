@@ -5,15 +5,18 @@ use crate::{
 
 use sciimg::prelude::*;
 
+use anyhow::anyhow;
+use anyhow::Result;
+
 pub const MASTCAMZ_PIXEL_SIZE_MM: f32 = 0.0074;
 pub const FOCAL_STOPS: [f32; 7] = [26.0, 34.0, 48.0, 63.0, 79.0, 100.0, 110.0];
 pub const MOTOR_COUNT_STOPS: [u16; 7] = [0, 2448, 3834, 5196, 6720, 8652, 9600];
 
-pub fn focal_length_from_file_name(filename: &str) -> error::Result<f32> {
+pub fn focal_length_from_file_name(filename: &str) -> Result<f32> {
     let bn = path::basename(filename);
 
     if bn.len() < 48 {
-        return Err("Filename is invalid M20/MCZ format");
+        return Err(anyhow!("Filename is invalid M20/MCZ format"));
     }
 
     let subs = &bn[45..48];
@@ -21,15 +24,15 @@ pub fn focal_length_from_file_name(filename: &str) -> error::Result<f32> {
         Ok(subs.parse::<f32>().unwrap())
     } else {
         eprintln!("Found invalid focal length value: {}", subs);
-        Err("Invalid value")
+        Err(anyhow!("Invalid value"))
     }
 }
 
-fn focal_length_from_cahvor(cahvor: &CameraModel) -> error::Result<f32> {
+fn focal_length_from_cahvor(cahvor: &CameraModel) -> Result<f32> {
     if cahvor.is_valid() {
         Ok(cahvor.f() as f32) // Reconcile the type difference.
     } else {
-        Err("No CAHVOR data")
+        Err(anyhow!("No CAHVOR data"))
     }
 }
 
@@ -62,11 +65,11 @@ impl Calibration for M20MastcamZ {
         input_file: &str,
         cal_context: &CalProfile,
         only_new: bool,
-    ) -> error::Result<CompleteContext> {
+    ) -> Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
-            return cal_warn(cal_context);
+            return cal_warn(cal_context, &out_file);
         }
 
         let mut warn = false;
@@ -101,7 +104,7 @@ impl Calibration for M20MastcamZ {
         }
 
         // I'm not wild about this
-        let focal_length: error::Result<f32> = match focal_length_from_file_name(input_file) {
+        let focal_length: Result<f32> = match focal_length_from_file_name(input_file) {
             Ok(fl) => Ok(fl),
             Err(_) => {
                 match &raw.metadata {
@@ -208,8 +211,8 @@ impl Calibration for M20MastcamZ {
         raw.save(&out_file);
 
         match warn {
-            true => cal_warn(cal_context),
-            false => cal_ok(cal_context),
+            true => cal_warn(cal_context, &out_file),
+            false => cal_ok(cal_context, &out_file),
         }
     }
 }

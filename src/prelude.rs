@@ -17,7 +17,10 @@ pub use crate::util;
 pub use crate::vprintln;
 use std::str::FromStr;
 
-pub use crate::print::{print_complete, print_done, print_fail, print_warn};
+pub use crate::print::{
+    format_complete, format_done, format_fail, format_warn, print_complete, print_done, print_fail,
+    print_warn,
+};
 
 use lazy_static;
 

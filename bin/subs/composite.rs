@@ -1,34 +1,32 @@
 use crate::subs::runnable::RunnableSubcommand;
 use async_trait::async_trait;
+use clap::Parser;
 use mars_raw_utils::{composite, prelude::*};
 use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
-
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Create composite mosaic", long_about = None)]
+pb_create_spinner!();
+
+#[derive(Parser)]
+#[command(author, version, about = "Create composite mosaic", long_about = None)]
 pub struct Composite {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short, parse(from_os_str), help = "Output image")]
+    #[arg(long, short, help = "Output image")]
     output: std::path::PathBuf,
 
-    #[clap(long, short, help = "Anaglyph mode")]
+    #[arg(long, short, help = "Anaglyph mode")]
     anaglyph: bool,
 
-    #[clap(long, short = 'r', help = "Azimuth rotation")]
+    #[arg(long, short = 'r', help = "Azimuth rotation")]
     azimuth: Option<f64>,
 }
 #[async_trait]
 impl RunnableSubcommand for Composite {
     async fn run(&self) {
+        pb_set_print!();
+
         print::print_experimental();
 
         let in_files: Vec<String> = self
@@ -56,9 +54,11 @@ impl RunnableSubcommand for Composite {
 
         if map_context.width == 0 {
             eprintln!("Output expected to have zero width. Cannot continue with that. Exiting...");
+            pb_done_with_error!();
             process::exit(1);
         } else if map_context.height == 0 {
             eprintln!("Output expected to have zero height. Cannot continue with that. Exiting...");
+            pb_done_with_error!();
             process::exit(1);
         }
 
@@ -69,6 +69,7 @@ impl RunnableSubcommand for Composite {
             model.c()
         } else {
             eprintln!("Cannot determine initial camera origin");
+            pb_done_with_error!();
             process::exit(2);
         };
 
@@ -85,10 +86,13 @@ impl RunnableSubcommand for Composite {
                 );
             } else {
                 eprintln!("File not found: {}", in_file);
+                pb_done_with_error!();
                 process::exit(1);
             }
         }
 
         map.save(output);
+
+        pb_done!();
     }
 }

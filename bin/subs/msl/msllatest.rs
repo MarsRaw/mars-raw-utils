@@ -4,10 +4,12 @@ use mars_raw_utils::prelude::*;
 
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Report sols with new images", long_about = None)]
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about = "Report sols with new images", long_about = None)]
 pub struct MslLatest {
-    #[clap(long, short, help = "List sols with new images only")]
+    #[arg(long, short, help = "List sols with new images only")]
     list: bool,
 }
 

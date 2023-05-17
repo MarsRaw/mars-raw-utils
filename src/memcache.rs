@@ -5,6 +5,9 @@ use std::fs;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+use anyhow::anyhow;
+use anyhow::Result;
+
 lazy_static! {
     static ref IMAGE_CACHE: Arc<Mutex<ImageCache<Image>>> =
         Arc::new(Mutex::new(ImageCache::default()));
@@ -31,18 +34,18 @@ impl<T: Clone> ImageCache<T> {
         self.cache.contains_key(file_path)
     }
 
-    pub fn load_file<F: Fn(&str) -> error::Result<T>>(
+    pub fn load_file<F: Fn(&str) -> Result<T>>(
         &mut self,
         file_path: &str,
         load_file: F,
-    ) -> error::Result<T> {
+    ) -> Result<T> {
         if self.cache_has_file(file_path) {
             match self.cache.get(file_path) {
                 Some(img) => {
                     vprintln!("File found in cache: {}", file_path);
                     Ok(img.clone())
                 }
-                None => Err("file not in cache"),
+                None => Err(anyhow!("file not in cache")),
             }
         } else {
             let img_res = load_file(file_path);
@@ -58,21 +61,21 @@ impl<T: Clone> ImageCache<T> {
     }
 }
 
-pub fn load_image(file_path: &str) -> error::Result<Image> {
+pub fn load_image(file_path: &str) -> Result<Image> {
     IMAGE_CACHE
         .lock()
         .unwrap()
-        .load_file(file_path, |fp| Image::open_str(fp))
+        .load_file(file_path, Image::open_str)
 }
 
-pub fn load_imagebuffer(file_path: &str) -> error::Result<ImageBuffer> {
+pub fn load_imagebuffer(file_path: &str) -> Result<ImageBuffer> {
     IMAGEBUFFER_CACHE
         .lock()
         .unwrap()
-        .load_file(file_path, |fp| ImageBuffer::from_file(fp))
+        .load_file(file_path, ImageBuffer::from_file)
 }
 
-pub fn load_text_file(file_path: &str) -> error::Result<String> {
+pub fn load_text_file(file_path: &str) -> Result<String> {
     TEXT_CACHE
         .lock()
         .unwrap()

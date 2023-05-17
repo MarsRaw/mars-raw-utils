@@ -3,8 +3,9 @@ use crate::{
     marsimage::MarsImage, util, vprintln,
 };
 
-use sciimg::error;
 use sciimg::path;
+
+use anyhow::Result;
 
 // Doesn't support subframed images yet since we won't know what part of the sensor was
 // used from the raws alone. If it's in the JSON response from the raw image site, then
@@ -36,11 +37,11 @@ impl Calibration for MslEcam {
         input_file: &str,
         cal_context: &CalProfile,
         only_new: bool,
-    ) -> error::Result<CompleteContext> {
+    ) -> Result<CompleteContext> {
         let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
         if path::file_exists(&out_file) && only_new {
             vprintln!("Output file exists, skipping. ({})", out_file);
-            return cal_warn(cal_context);
+            return cal_warn(cal_context, &out_file);
         }
 
         let instrument;
@@ -174,6 +175,6 @@ impl Calibration for MslEcam {
         vprintln!("Writing to disk...");
         raw.save(&out_file);
 
-        cal_ok(cal_context)
+        cal_ok(cal_context, &out_file)
     }
 }

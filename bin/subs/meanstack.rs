@@ -1,29 +1,26 @@
+use crate::subs::runnable::RunnableSubcommand;
+use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
-
-use crate::subs::runnable::RunnableSubcommand;
-
 use std::process;
 
-#[derive(clap::Args)]
-#[clap(author, version, about = "Compute the mean of a series of images", long_about = None)]
+pb_create!();
+
+#[derive(Parser)]
+#[command(author, version, about = "Compute the mean of a series of images", long_about = None)]
 pub struct MeanStack {
-    #[clap(
-        long,
-        short,
-        parse(from_os_str),
-        help = "Input images",
-        multiple_values(true)
-    )]
+    #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[clap(long, short, parse(from_os_str), help = "Output image")]
+    #[arg(long, short, help = "Output image")]
     output: std::path::PathBuf,
 }
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for MeanStack {
     async fn run(&self) {
+        pb_set_print_and_length!(self.input_files.len() + 1); // The +1 accounts for the final division by # of images
+
         let output = self.output.as_os_str().to_str().unwrap();
 
         let mut mean: Image = Image::new_empty().unwrap();
@@ -54,6 +51,7 @@ impl RunnableSubcommand for MeanStack {
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }
+            pb_inc!();
         }
 
         if !mean.is_empty() {
@@ -68,5 +66,6 @@ impl RunnableSubcommand for MeanStack {
         } else {
             println!("No images processed, cannot create output");
         }
+        pb_inc!();
     }
 }
