@@ -56,7 +56,7 @@ impl M20Fetch {
     pub async fn run(&self) {
         pb_set_print!();
 
-        let im = m20::remote::make_instrument_map();
+        let im = remotequery::get_instrument_map(Mission::MARS2020).unwrap();
         if self.instruments {
             im.print_instruments();
             process::exit(0);
@@ -128,29 +128,25 @@ impl M20Fetch {
         };
 
         let product_types = self.product_types.clone().unwrap_or(vec![]);
-        m20::remote::print_header();
 
-        let query = RemoteQuery {
-            cameras,
-            num_per_page,
-            page,
-            minsol,
-            maxsol,
-            thumbnails: self.thumbnails,
-            movie_only: self.movie,
-            list_only: self.list,
-            search,
-            only_new: self.new,
-            product_types,
-            output_path: output,
-        };
-
-        match m20::remote::remote_fetch(
-            &query,
-            |ttl| {
-                if !self.list {
-                    pb_set_length!(ttl);
-                }
+        match remotequery::perform_fetch(
+            Mission::MARS2020,
+            &RemoteQuery {
+                cameras,
+                num_per_page,
+                page,
+                minsol,
+                maxsol,
+                thumbnails: self.thumbnails,
+                movie_only: self.movie,
+                list_only: self.list,
+                search,
+                only_new: self.new,
+                product_types,
+                output_path: output,
+            },
+            |total| {
+                pb_set_length!(total);
             },
             |_| {
                 pb_inc!();
@@ -158,8 +154,8 @@ impl M20Fetch {
         )
         .await
         {
-            Ok(_) => pb_done!(),
-            Err(e) => eprintln!("Error: {}", e),
+            Ok(_) => vprintln!("Done"),
+            Err(why) => vprintln!("Error: {}", why),
         };
     }
 }

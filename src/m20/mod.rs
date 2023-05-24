@@ -16,9 +16,6 @@ pub mod helinav;
 /// Calibration routines for Ingenuity Color Camera
 pub mod helirte;
 
-/// Support for retrieving latest data information
-pub mod latest;
-
 /// Support for parsing the M20 public API metadata
 pub mod metadata;
 
@@ -32,7 +29,7 @@ pub mod ncamlevels;
 pub mod pixlmcc;
 
 /// Support for retrieving images from the public raw image API
-pub mod remote;
+pub mod fetch;
 
 /// Calibration routines for M20 SuperCam
 pub mod scam;

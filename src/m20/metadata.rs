@@ -202,6 +202,14 @@ impl ImageMetadata for ImageRecord {
             Err(_) => None,
         }
     }
+
+    fn is_thumbnail(&self) -> bool {
+        self.sample_type == "Thumbnail"
+    }
+
+    fn get_remote_image_url(&self) -> String {
+        self.image_files.full_res.clone()
+    }
 }
 
 pub fn load_metadata_file(file_path: String) -> Result<Metadata> {

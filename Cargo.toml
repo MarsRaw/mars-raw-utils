@@ -55,11 +55,8 @@ name = "mru"
 path = "bin/mru.rs"
 
 [profile.release]
-#strip = true  # Automatically strip symbols from the binary.
-debug = 1
-
-[rust]
-debuginfo-level = 1
+strip = true  # Automatically strip symbols from the binary.
+#debug = 1
 
 [features]
 
@@ -75,7 +72,6 @@ lab = "0.11.0"
 toml = "0.7.1"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
-#sciimg = "0.4.2"
 sciimg = {path = "sciimg", features = ["rayon"]}
 weezl = "0.1.5"
 gif = "0.12.0"
@@ -98,3 +94,6 @@ url = "2.3.1"
 tempfile = "3.5.0"
 futures-util = "0.3.28"
 indicatif = "0.17.3"
+cli-table = "0.4.7"
+itertools = "0.10.5"
+futures = "0.3.28"
