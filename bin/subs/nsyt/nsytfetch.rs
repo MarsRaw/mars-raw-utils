@@ -50,7 +50,7 @@ impl NsytFetch {
     pub async fn run(&self) {
         pb_set_print!();
 
-        let instruments = nsyt::remote::make_instrument_map();
+        let instruments = remotequery::get_instrument_map(Mission::INSIGHT).unwrap();
         if self.instruments {
             instruments.print_instruments();
             process::exit(0);
@@ -121,27 +121,24 @@ impl NsytFetch {
             Ok(v) => v,
         };
 
-        nsyt::remote::print_header();
-
-        match nsyt::remote::remote_fetch(
+        match remotequery::perform_fetch(
+            Mission::INSIGHT,
             &RemoteQuery {
                 cameras,
                 num_per_page,
                 page,
                 minsol,
                 maxsol,
-                thumbnails: self.thumbnails,
                 movie_only: false,
+                thumbnails: self.thumbnails,
                 list_only: self.list,
                 search,
                 only_new: self.new,
                 product_types: vec![],
                 output_path: output,
             },
-            |ttl| {
-                if !self.list {
-                    pb_set_length!(ttl);
-                }
+            |total| {
+                pb_set_length!(total);
             },
             |_| {
                 pb_inc!();
@@ -149,8 +146,39 @@ impl NsytFetch {
         )
         .await
         {
-            Ok(_) => pb_done!(),
-            Err(e) => eprintln!("Error: {}", e),
-        }
+            Ok(_) => vprintln!("Done"),
+            Err(why) => vprintln!("Error: {}", why),
+        };
+        // nsyt::remote::print_header();
+
+        // match nsyt::remote::remote_fetch(
+        //     &RemoteQuery {
+        //         cameras,
+        //         num_per_page,
+        //         page,
+        //         minsol,
+        //         maxsol,
+        //         thumbnails: self.thumbnails,
+        //         movie_only: false,
+        //         list_only: self.list,
+        //         search,
+        //         only_new: self.new,
+        //         product_types: vec![],
+        //         output_path: output,
+        //     },
+        //     |ttl| {
+        //         if !self.list {
+        //             pb_set_length!(ttl);
+        //         }
+        //     },
+        //     |_| {
+        //         pb_inc!();
+        //     },
+        // )
+        // .await
+        // {
+        //     Ok(_) => pb_done!(),
+        //     Err(e) => eprintln!("Error: {}", e),
+        // }
     }
 }

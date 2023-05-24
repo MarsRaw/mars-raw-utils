@@ -4,9 +4,6 @@ pub mod icc;
 /// Calibration routines for the Instrument Deployment Camera (IDC)
 pub mod idc;
 
-/// Support for retrieving latest data information
-pub mod latest;
-
 /// Support for parsing the M20 public API metadata
 pub mod metadata;
 
@@ -14,4 +11,4 @@ pub mod metadata;
 pub mod missiontime;
 
 /// Support for retrieving images from the public raw image API
-pub mod remote;
+pub mod fetch;

@@ -50,7 +50,7 @@ impl MslFetch {
     pub async fn run(&self) {
         pb_set_print!();
 
-        let instruments = msl::remote::make_instrument_map();
+        let instruments = remotequery::get_instrument_map(Mission::MSL).unwrap();
         if self.instruments {
             instruments.print_instruments();
             process::exit(0);
@@ -121,9 +121,8 @@ impl MslFetch {
             Ok(v) => v,
         };
 
-        msl::remote::print_header();
-
-        match msl::remote::remote_fetch(
+        match remotequery::perform_fetch(
+            Mission::MSL,
             &RemoteQuery {
                 cameras,
                 num_per_page,
@@ -138,10 +137,8 @@ impl MslFetch {
                 product_types: vec![],
                 output_path: output,
             },
-            |ttl| {
-                if !self.list {
-                    pb_set_length!(ttl);
-                }
+            |total| {
+                pb_set_length!(total);
             },
             |_| {
                 pb_inc!();
@@ -149,8 +146,8 @@ impl MslFetch {
         )
         .await
         {
-            Ok(_) => pb_done!(),
-            Err(e) => eprintln!("Error: {}", e),
-        }
+            Ok(_) => vprintln!("Done"),
+            Err(why) => vprintln!("Error: {}", why),
+        };
     }
 }

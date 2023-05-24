@@ -1,7 +1,7 @@
 use crate::constants;
 use crate::jsonfetch;
-use crate::m20::metadata::*;
 use crate::metadata::{convert_to_std_metadata, Metadata};
+use crate::nsyt::metadata::*;
 use crate::remotequery;
 use crate::util::{stringvec, stringvec_b, InstrumentMap};
 use anyhow::anyhow;
@@ -11,67 +11,68 @@ use futures::future;
 use serde::{Deserialize, Serialize};
 use tokio;
 
-/// Struct representation of the NASA API results from the 'latest' json endpoint
+#[derive(Debug, Clone)]
+pub struct NsytRemoteStats {
+    pub more: bool,
+    pub total: i32,
+    pub page: i32,
+    pub per_page: i32,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct M20LatestData {
+pub struct NsytLatestData {
     pub latest: String,
     pub latest_sol: u16,
     pub latest_sols: Vec<u16>,
     pub new_count: u16,
     pub sol_count: u16,
     pub total: u32,
-
-    #[serde(alias = "type")]
-    pub result_type: String,
 }
 
-/// Implements the `LatestData` trait for M20LatestData which allows for the M20 API results to be translated to
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct NsytLatest {
+    pub success: bool,
+    pub latest_data: NsytLatestData,
+}
+
+/// Implements the `LatestData` trait for NsytLatest which allows for the M20 API results to be translated to
 /// the generic terms
-impl remotequery::LatestData for M20LatestData {
+impl remotequery::LatestData for NsytLatest {
     fn latest(&self) -> String {
-        self.latest.clone()
+        self.latest_data.latest.clone()
     }
 
     fn latest_sol(&self) -> u16 {
-        self.latest_sol
+        self.latest_data.latest_sol
     }
 
     fn latest_sols(&self) -> Vec<u16> {
-        self.latest_sols.clone()
+        self.latest_data.latest_sols.clone()
     }
 
     fn new_count(&self) -> u16 {
-        self.new_count
+        self.latest_data.new_count
     }
 
     fn sol_count(&self) -> u16 {
-        self.sol_count
+        self.latest_data.sol_count
     }
 
     fn total(&self) -> u32 {
-        self.total
+        self.latest_data.total
     }
 }
 
 /// Submits a query to the M20 api endpoint
 async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
-    let joined_cameras = query.cameras.join("|");
-
-    let mut category = "mars2020";
-    if query.cameras.contains(&String::from("HELI_NAV"))
-        || query.cameras.contains(&String::from("HELI_RTE"))
-    {
-        category = "mars2020,ingenuity";
-    }
-
     let mut params = vec![
-        stringvec("feed", "raw_images"),
-        stringvec("category", category),
-        stringvec("feedtype", "json"),
-        stringvec("ver", "1.2"),
-        stringvec_b("num", format!("{}", query.num_per_page)),
-        stringvec("order", "sol desc"),
-        stringvec_b("search", joined_cameras),
+        stringvec("condition_1", "insight:mission"),
+        stringvec_b("per_page", format!("{}", query.num_per_page)),
+        stringvec(
+            "order",
+            "sol desc,instrument_sort asc,sample_type_sort asc, date_taken desc",
+        ),
+        stringvec_b("search", query.cameras.join("|")),
         stringvec_b("condition_2", format!("{}:sol:gte", query.minsol)),
         stringvec_b("condition_3", format!("{}:sol:lte", query.maxsol)),
     ];
@@ -80,42 +81,23 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
         params.push(stringvec_b("page", format!("{}", p)));
     }
 
-    let mut extended: Vec<String> = vec![];
-    if query.thumbnails {
-        extended.push("sample_type::thumbnail".into());
-    } else {
-        extended.push("sample_type::full".into());
+    let uri = constants::url::NSYT_RAW_WEBSERVICE_URL;
+
+    if let Ok(mut req) = jsonfetch::JsonFetcher::new(uri) {
+        for p in params {
+            req.param(p[0].as_str(), p[1].as_str());
+        }
+        return req.fetch_str().await;
     }
 
-    if query.movie_only {
-        extended.push("product_id::ecv".into());
-    }
-
-    query
-        .product_types
-        .iter()
-        .for_each(|p| extended.push(format!("product_id::{}", p)));
-
-    if !extended.is_empty() {
-        params.push(stringvec_b("extended", extended.join(",")));
-    }
-
-    let uri = constants::url::M20_RAW_WEBSERVICE_URL;
-
-    let mut req = jsonfetch::JsonFetcher::new(uri)?;
-
-    for p in params {
-        req.param(p[0].as_str(), p[1].as_str());
-    }
-
-    req.fetch_str().await
+    Err(anyhow!("Unable to submit query."))
 }
 
 /// Submits the query via `submit_query` then deserializes it through serde to a `M20ApiResults` object
-async fn fetch_page(query: &remotequery::RemoteQuery) -> Result<M20ApiResults> {
+async fn fetch_page(query: &remotequery::RemoteQuery) -> Result<NsytApiResults> {
     match submit_query(query).await {
         Ok(v) => {
-            let res: M20ApiResults = serde_json::from_str(v.as_str())?;
+            let res: NsytApiResults = serde_json::from_str(v.as_str())?;
 
             Ok(res)
         }
@@ -125,11 +107,11 @@ async fn fetch_page(query: &remotequery::RemoteQuery) -> Result<M20ApiResults> {
 
 /// Converts the M20-specific api results to a generic list of image metadata records
 fn api_results_to_image_vec(
-    results: &M20ApiResults,
+    results: &NsytApiResults,
     query: &remotequery::RemoteQuery,
 ) -> Vec<Metadata> {
-    let image_records = results.images.iter().filter(|image| {
-        !(image.sample_type == "Thumbnail" && !query.thumbnails
+    let image_records = results.items.iter().filter(|image| {
+        !(image.is_thumbnail && !query.thumbnails
             || !query.search.is_empty() && !query.search.iter().any(|i| image.imageid.contains(i)))
     });
 
@@ -143,20 +125,20 @@ async fn fetch_page_as_metadata_vec(query: &remotequery::RemoteQuery) -> Result<
 
 /// Container struct for the M20 remote fetch API implementation
 #[derive(Clone, Default)]
-pub struct M20Fetch {}
+pub struct NsytFetch {}
 
-impl M20Fetch {
-    pub fn new() -> M20Fetch {
-        M20Fetch {}
+impl NsytFetch {
+    pub fn new() -> NsytFetch {
+        NsytFetch {}
     }
 
     pub fn new_boxed() -> remotequery::FetchType {
-        Box::new(M20Fetch::new())
+        Box::new(NsytFetch::new())
     }
 }
 
 #[async_trait]
-impl remotequery::Fetch for M20Fetch {
+impl remotequery::Fetch for NsytFetch {
     async fn query_remote_images(&self, query: &remotequery::RemoteQuery) -> Result<Vec<Metadata>> {
         let stats = self.fetch_stats(query).await?;
 
@@ -183,12 +165,12 @@ impl remotequery::Fetch for M20Fetch {
     }
 
     async fn fetch_latest(&self) -> Result<Box<dyn remotequery::LatestData>> {
-        let uri = constants::url::M20_LATEST_WEBSERVICE_URL;
+        let uri = constants::url::NSYT_LATEST_WEBSERVICE_URL;
 
         let req = jsonfetch::JsonFetcher::new(uri)?;
         match req.fetch_str().await {
             Ok(v) => {
-                let res: M20LatestData = serde_json::from_str(v.as_str()).unwrap();
+                let res: NsytLatest = serde_json::from_str(v.as_str()).unwrap();
                 Ok(Box::new(res))
             }
             Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
@@ -201,14 +183,14 @@ impl remotequery::Fetch for M20Fetch {
     ) -> Result<remotequery::RemoteStats> {
         match submit_query(query).await {
             Ok(v) => {
-                let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
-                let pages = (res.total_results as f32 / query.num_per_page as f32).ceil() as i32;
+                let res: NsytApiResults = serde_json::from_str(v.as_str()).unwrap();
+                let pages = (res.total as f32 / query.num_per_page as f32).ceil() as i32;
                 Ok(remotequery::RemoteStats {
                     more: (res.page as i32) < pages - 1, // Assuming a zero-indexed page number
                     error_message: String::from(""),
-                    total_results: res.total_results as i32,
+                    total_results: res.total as i32,
                     page: res.page as i32,
-                    total_images: res.total_images as i32,
+                    total_images: res.total as i32,
                 })
             }
             Err(e) => Err(e),
@@ -217,42 +199,10 @@ impl remotequery::Fetch for M20Fetch {
 
     fn make_instrument_map(&self) -> InstrumentMap {
         InstrumentMap {
-            map: [
-                (
-                    "HAZ_FRONT",
-                    vec![
-                        "FRONT_HAZCAM_LEFT_A",
-                        "FRONT_HAZCAM_LEFT_B",
-                        "FRONT_HAZCAM_RIGHT_A",
-                        "FRONT_HAZCAM_RIGHT_B",
-                    ],
-                ),
-                ("SUPERCAM", vec!["SUPERCAM_RMI"]),
-                ("HAZ_REAR", vec!["REAR_HAZCAM_LEFT", "REAR_HAZCAM_RIGHT"]),
-                ("NAVCAM", vec!["NAVCAM_LEFT", "NAVCAM_RIGHT"]),
-                ("MASTCAM", vec!["MCZ_LEFT", "MCZ_RIGHT"]),
-                (
-                    "EDLCAM",
-                    vec![
-                        "EDL_DDCAM",
-                        "EDL_PUCAM1",
-                        "EDL_PUCAM2",
-                        "EDL_RUCAM",
-                        "EDL_RDCAM",
-                        "LCAM",
-                    ],
-                ),
-                ("WATSON", vec!["SHERLOC_WATSON"]),
-                ("HELI_NAV", vec!["HELI_NAV"]),
-                ("HELI_RTE", vec!["HELI_RTE"]),
-                ("CACHECAM", vec!["CACHECAM"]),
-                ("PIXL", vec!["PIXL_MCC"]),
-                ("SKYCAM", vec!["SKYCAM"]),
-                ("SHERLOC", vec!["SHERLOC_ACI"]),
-            ]
-            .iter()
-            .cloned()
-            .collect(),
+            map: [("IDC", vec!["idc"]), ("ICC", vec!["icc"])]
+                .iter()
+                .cloned()
+                .collect(),
         }
     }
 }

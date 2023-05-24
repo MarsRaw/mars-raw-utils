@@ -182,6 +182,14 @@ impl ImageMetadata for ImageRecord {
     fn get_sclk(&self) -> Option<f64> {
         Some(self.spacecraft_clock)
     }
+
+    fn is_thumbnail(&self) -> bool {
+        self.is_thumbnail
+    }
+
+    fn get_remote_image_url(&self) -> String {
+        self.url.clone()
+    }
 }
 
 pub fn load_metadata_file(file_path: String) -> Result<Metadata> {

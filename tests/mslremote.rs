@@ -1,8 +1,10 @@
-use mars_raw_utils::msl::{remote::fetch_latest, remote::remote_fetch};
+use mars_raw_utils::prelude::*;
 use mars_raw_utils::remotequery::RemoteQuery;
 #[tokio::test]
 async fn test_msl_latest() {
-    fetch_latest().await.expect("Failed to fetch latest data");
+    remotequery::get_latest(Mission::MSL)
+        .await
+        .expect("Failed to fetch latest data");
 }
 
 #[tokio::test]
@@ -28,7 +30,8 @@ async fn test_msl_instrument_fetches() {
     ];
 
     for i in instruments {
-        remote_fetch(
+        _ = remotequery::perform_fetch(
+            Mission::MSL,
             &RemoteQuery {
                 cameras: vec![i.into()],
                 num_per_page: 5,
@@ -46,7 +49,6 @@ async fn test_msl_instrument_fetches() {
             |_| {},
             |_| {},
         )
-        .await
-        .unwrap();
+        .await;
     }
 }
