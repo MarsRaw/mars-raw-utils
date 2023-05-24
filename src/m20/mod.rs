@@ -31,6 +31,7 @@ pub mod ncamlevels;
 /// Calibration routines for M20 PIXL images
 pub mod pixlmcc;
 
+pub mod fetch;
 /// Support for retrieving images from the public raw image API
 pub mod remote;
 
