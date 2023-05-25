@@ -16,7 +16,7 @@ pub struct M20Latest {
 #[async_trait::async_trait]
 impl RunnableSubcommand for M20Latest {
     async fn run(&self) {
-        if let Ok(latest) = remotequery::get_latest(Mission::MARS2020).await {
+        if let Ok(latest) = remotequery::get_latest(Mission::Mars2020).await {
             if self.list {
                 latest.latest_sols().iter().for_each(|s| {
                     println!("{}", s);

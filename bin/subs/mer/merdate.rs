@@ -11,7 +11,7 @@ pub struct MerDate {}
 #[async_trait::async_trait]
 impl RunnableSubcommand for MerDate {
     async fn run(&self) {
-        match mer::missiontime::get_lmst_mer_a() {
+        match time::get_lmst(Mission::MerA) {
             Ok(mtime) => {
                 println!("MER-A / Spirit:");
                 println!("Mars Sol Date:          {}", mtime.msd);
@@ -26,7 +26,7 @@ impl RunnableSubcommand for MerDate {
             }
         };
         println!("-----------------------------------------------");
-        match mer::missiontime::get_lmst_mer_b() {
+        match time::get_lmst(Mission::MerB) {
             Ok(mtime) => {
                 println!("MER-B / Opportunity:");
                 println!("Mars Sol Date:          {}", mtime.msd);

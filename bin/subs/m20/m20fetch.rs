@@ -1,6 +1,5 @@
 use clap::Parser;
 use mars_raw_utils::prelude::*;
-use mars_raw_utils::remotequery::RemoteQuery;
 use sciimg::path;
 use std::process;
 
@@ -56,7 +55,7 @@ impl M20Fetch {
     pub async fn run(&self) {
         pb_set_print!();
 
-        let im = remotequery::get_instrument_map(Mission::MARS2020).unwrap();
+        let im = remotequery::get_instrument_map(Mission::Mars2020).unwrap();
         if self.instruments {
             im.print_instruments();
             process::exit(0);
@@ -130,8 +129,8 @@ impl M20Fetch {
         let product_types = self.product_types.clone().unwrap_or(vec![]);
 
         match remotequery::perform_fetch(
-            Mission::MARS2020,
-            &RemoteQuery {
+            Mission::Mars2020,
+            &remotequery::RemoteQuery {
                 cameras,
                 num_per_page,
                 page,

@@ -17,7 +17,7 @@ use async_trait::async_trait;
 #[async_trait]
 impl RunnableSubcommand for NsytLatest {
     async fn run(&self) {
-        if let Ok(latest) = remotequery::get_latest(Mission::INSIGHT).await {
+        if let Ok(latest) = remotequery::get_latest(Mission::InSight).await {
             if self.list {
                 latest.latest_sols().iter().for_each(|s| {
                     println!("{}", s);

@@ -1,6 +1,5 @@
 use clap::Parser;
 use mars_raw_utils::prelude::*;
-use mars_raw_utils::remotequery::RemoteQuery;
 use sciimg::path;
 use std::process;
 
@@ -123,7 +122,7 @@ impl MslFetch {
 
         match remotequery::perform_fetch(
             Mission::MSL,
-            &RemoteQuery {
+            &remotequery::RemoteQuery {
                 cameras,
                 num_per_page,
                 page,

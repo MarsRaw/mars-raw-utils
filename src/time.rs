@@ -1,5 +1,9 @@
 use crate::constants;
-
+use crate::enums::Mission;
+use crate::m20::missiontime as m20time;
+use crate::mer::missiontime as mertime;
+use crate::msl::missiontime as msltime;
+use crate::nsyt::missiontime as nsyttime;
 use anyhow::Result;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -41,6 +45,17 @@ pub struct MissionTime {
     pub nu: f64,
     pub e: f64,
     pub time_system: TimeSystem,
+}
+
+/// Perform a time calculation for the provided mission
+pub fn get_lmst(mission: Mission) -> Result<MissionTime> {
+    match mission {
+        Mission::Mars2020 => m20time::get_lmst(),
+        Mission::MSL => msltime::get_lmst(),
+        Mission::InSight => nsyttime::get_lmst(),
+        Mission::MerA => mertime::get_lmst_mer_a(),
+        Mission::MerB => mertime::get_lmst_mer_b(),
+    }
 }
 
 pub fn get_seconds_since_epoch() -> f64 {
