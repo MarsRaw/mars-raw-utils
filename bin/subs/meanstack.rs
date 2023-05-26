@@ -36,8 +36,15 @@ impl RunnableSubcommand for MeanStack {
 
                 if mean.is_empty() {
                     mean = raw;
-                    count = ImageBuffer::new(mean.width, mean.height).unwrap();
-                    ones = ImageBuffer::new_with_fill(mean.width, mean.height, 1.0).unwrap();
+                    count =
+                        ImageBuffer::new_as_mode(mean.width, mean.height, mean.get_mode()).unwrap();
+                    ones = ImageBuffer::new_with_fill_as_mode(
+                        mean.width,
+                        mean.height,
+                        1.0,
+                        mean.get_mode(),
+                    )
+                    .unwrap();
                 } else {
                     if raw.width != mean.width || raw.height != mean.height {
                         eprintln!("Input image has differing dimensions, cannot continue");
