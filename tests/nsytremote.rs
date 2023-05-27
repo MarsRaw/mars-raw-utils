@@ -3,7 +3,7 @@ use mars_raw_utils::remotequery::RemoteQuery;
 
 #[tokio::test]
 async fn test_nsyt_latest() {
-    remotequery::get_latest(Mission::INSIGHT)
+    remotequery::get_latest(Mission::InSight)
         .await
         .expect("Failed to fetch latest data");
 }
@@ -14,7 +14,7 @@ async fn test_nsyt_instrument_fetches() {
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
         _ = remotequery::perform_fetch(
-            Mission::INSIGHT,
+            Mission::InSight,
             &RemoteQuery {
                 cameras: vec![i.into()],
                 num_per_page: 5,

@@ -11,7 +11,7 @@ pub struct MslDate {}
 #[async_trait::async_trait]
 impl RunnableSubcommand for MslDate {
     async fn run(&self) {
-        match msl::missiontime::get_lmst() {
+        match time::get_lmst(Mission::MSL) {
             Ok(mtime) => {
                 println!("Mars Sol Date:          {}", mtime.msd);
                 println!("Coordinated Mars Time:  {}", mtime.mtc_display);

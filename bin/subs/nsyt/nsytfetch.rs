@@ -1,6 +1,5 @@
 use clap::Parser;
 use mars_raw_utils::prelude::*;
-use mars_raw_utils::remotequery::RemoteQuery;
 use sciimg::path;
 use std::process;
 
@@ -50,7 +49,7 @@ impl NsytFetch {
     pub async fn run(&self) {
         pb_set_print!();
 
-        let instruments = remotequery::get_instrument_map(Mission::INSIGHT).unwrap();
+        let instruments = remotequery::get_instrument_map(Mission::InSight).unwrap();
         if self.instruments {
             instruments.print_instruments();
             process::exit(0);
@@ -122,8 +121,8 @@ impl NsytFetch {
         };
 
         match remotequery::perform_fetch(
-            Mission::INSIGHT,
-            &RemoteQuery {
+            Mission::InSight,
+            &remotequery::RemoteQuery {
                 cameras,
                 num_per_page,
                 page,

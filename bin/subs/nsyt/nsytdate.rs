@@ -12,7 +12,7 @@ pub struct NsytDate {}
 #[async_trait]
 impl RunnableSubcommand for NsytDate {
     async fn run(&self) {
-        match nsyt::missiontime::get_lmst() {
+        match time::get_lmst(Mission::InSight) {
             Ok(mtime) => {
                 println!("Mars Sol Date:          {}", mtime.msd);
                 println!("Coordinated Mars Time:  {}", mtime.mtc_display);

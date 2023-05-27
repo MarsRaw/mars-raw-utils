@@ -10,7 +10,7 @@ pub struct M20Date {}
 #[async_trait::async_trait]
 impl RunnableSubcommand for M20Date {
     async fn run(&self) {
-        match m20::missiontime::get_lmst() {
+        match time::get_lmst(Mission::Mars2020) {
             Ok(mtime) => {
                 println!("Mars Sol Date:          {}", mtime.msd);
                 println!("Coordinated Mars Time:  {}", mtime.mtc_display);

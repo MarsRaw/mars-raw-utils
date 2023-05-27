@@ -15,6 +15,7 @@ pub use crate::msl;
 pub use crate::nsyt;
 pub use crate::print;
 pub use crate::remotequery;
+pub use crate::time;
 pub use crate::util;
 pub use crate::vprintln;
 use std::str::FromStr;

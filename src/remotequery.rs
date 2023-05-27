@@ -83,9 +83,10 @@ pub trait Fetch {
 /// is done from each mission code.
 pub fn get_fetcher_for_mission(mission: Mission) -> Result<FetchType> {
     match mission {
-        Mission::MARS2020 => Ok(M20Fetch::new_boxed()),
+        Mission::Mars2020 => Ok(M20Fetch::new_boxed()),
         Mission::MSL => Ok(MslFetch::new_boxed()),
-        Mission::INSIGHT => Ok(NsytFetch::new_boxed()),
+        Mission::InSight => Ok(NsytFetch::new_boxed()),
+        _ => Err(anyhow!("Specified mission not supported: {:?}", mission)),
     }
 }
 
