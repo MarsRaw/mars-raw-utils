@@ -91,7 +91,7 @@ impl RunnableSubcommand for Composite {
             }
         }
 
-        map.save(output);
+        map.save(output).expect("Failed to save image");
 
         pb_done!();
     }

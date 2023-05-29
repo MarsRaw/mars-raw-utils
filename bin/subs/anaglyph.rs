@@ -115,7 +115,7 @@ impl RunnableSubcommand for Anaglyph {
             Eye::Left,
         );
 
-        map.save(out_file_path);
+        map.save(out_file_path).expect("Failed to save image");
         pb_done!();
     }
 }

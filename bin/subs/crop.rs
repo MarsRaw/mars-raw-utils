@@ -87,7 +87,7 @@ impl RunnableSubcommand for Crop {
 
                 vprintln!("Saving output to {}", out_file);
 
-                raw.save(&out_file);
+                raw.save(&out_file).expect("Failed to save image");
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }

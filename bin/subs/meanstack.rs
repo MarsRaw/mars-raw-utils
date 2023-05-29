@@ -66,7 +66,7 @@ impl RunnableSubcommand for MeanStack {
 
             if path::parent_exists_and_writable(output) {
                 vprintln!("Writing image to {}", output);
-                mean.save(output);
+                mean.save(output).expect("Failed to save image");
             } else {
                 eprintln!("Unable to write output image, parent doesn't exist or is not writable");
             }
