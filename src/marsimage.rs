@@ -2,6 +2,7 @@ use crate::{
     decompanding::LookUpTable, enums, flatfield, inpaintmask, metadata::*, util, vprintln,
 };
 
+use anyhow::Result;
 use sciimg::{
     debayer::DebayerMethod, drawable::Drawable, enums::ImageMode, image::Image,
     imagebuffer::ImageBuffer, inpaint, path, DnVec, VecMath,
@@ -82,24 +83,8 @@ impl MarsImage {
         }
     }
 
-    pub fn save(&self, to_file: &str) {
-        self.image.save(to_file);
-
-        vprintln!("Writing image buffer to file at {}", to_file);
-        if path::parent_exists_and_writable(to_file) {
-            match &self.metadata {
-                Some(md) => {
-                    util::save_image_json(to_file, &md, false, None).unwrap();
-                }
-                None => {}
-            };
-            vprintln!("File saved.");
-        } else {
-            panic!(
-                "Parent does not exist or cannot be written: {}",
-                path::get_parent(to_file)
-            );
-        }
+    pub fn save(&self, to_file: &str) -> Result<()> {
+        self.image.save(to_file)
     }
 
     pub fn apply_weight(&mut self, r_scalar: f32, g_scalar: f32, b_scalar: f32) {

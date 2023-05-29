@@ -303,7 +303,7 @@ impl RunnableSubcommand for CrossEye {
         }
 
         vprintln!("Output to {}", out_file_path);
-        map.save(out_file_path);
+        map.save(out_file_path).expect("Failed to save image");
 
         pb_done!();
     }

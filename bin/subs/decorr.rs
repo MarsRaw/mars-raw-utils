@@ -159,10 +159,12 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
             image.set_mode(ImageMode::U16BIT);
 
             vprintln!("Writing to disk...");
-            image.save(&util::append_file_name(
-                in_file.as_os_str().to_str().unwrap(),
-                "decorr",
-            ));
+            image
+                .save(&util::append_file_name(
+                    in_file.as_os_str().to_str().unwrap(),
+                    "decorr",
+                ))
+                .expect("Failed to save image");
         } else {
             eprintln!("File not found: {:?}", in_file);
             pb_done_with_error!();
@@ -192,10 +194,12 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
             image.set_mode(ImageMode::U16BIT);
 
             vprintln!("Writing to disk...");
-            image.save(&util::append_file_name(
-                in_file.as_os_str().to_str().unwrap(),
-                "decorr",
-            ));
+            image
+                .save(&util::append_file_name(
+                    in_file.as_os_str().to_str().unwrap(),
+                    "decorr",
+                ))
+                .expect("Failed to save image");
         } else {
             eprintln!("File not found: {:?}", in_file);
         }

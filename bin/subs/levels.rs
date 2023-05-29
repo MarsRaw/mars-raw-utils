@@ -72,7 +72,7 @@ impl RunnableSubcommand for Levels {
 
                 let out_file =
                     util::append_file_name(in_file.as_os_str().to_str().unwrap(), "lvls");
-                raw.save(&out_file);
+                raw.save(&out_file).expect("Failed to save image");
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }

@@ -208,7 +208,7 @@ impl Calibration for M20MastcamZ {
 
         vprintln!("Writing to disk...");
 
-        raw.save(&out_file);
+        raw.save(&out_file).expect("Failed to save image");
 
         match warn {
             true => cal_warn(cal_context, &out_file),

@@ -212,14 +212,6 @@ pub fn save_image_json_from_string(image_path: &str, item: &String, only_new: bo
 pub fn append_file_name(input_file: &str, append: &str) -> String {
     let append_with_ext = format!("-{}.png", append);
     replace_image_extension(input_file, append_with_ext.as_str())
-    // let append_with_ext = format!("-{}.png", append);
-    // let out_file = input_file.replace(".png", append_with_ext.as_str())
-    //                          .replace(".PNG", append_with_ext.as_str())
-    //                          .replace(".jpg", append_with_ext.as_str())
-    //                          .replace(".JPG", append_with_ext.as_str())
-    //                          .replace(".tif", append_with_ext.as_str())
-    //                          .replace(".TIF", append_with_ext.as_str());
-    // String::from(out_file)
 }
 
 pub fn replace_image_extension(input_file: &str, append: &str) -> String {
@@ -230,4 +222,6 @@ pub fn replace_image_extension(input_file: &str, append: &str) -> String {
         .replace(".JPG", append)
         .replace(".tif", append)
         .replace(".TIF", append)
+        .replace(".dng", append)
+        .replace(".DNG", append)
 }

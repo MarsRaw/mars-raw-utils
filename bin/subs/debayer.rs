@@ -48,7 +48,7 @@ impl RunnableSubcommand for Debayer {
                 raw.debayer_with_method(debayer_method);
 
                 vprintln!("Writing to disk...");
-                raw.save(&out_file);
+                raw.save(&out_file).expect("Failed to save image");
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }

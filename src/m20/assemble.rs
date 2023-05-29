@@ -263,6 +263,8 @@ impl Composite {
     /// Normalize the canvas to 16 bit value range and save to disk.
     pub fn finalize_and_save(&mut self, output_path: &str) {
         self.composite_image.normalize_to_8bit();
-        self.composite_image.save(output_path);
+        self.composite_image
+            .save(output_path)
+            .expect("Failed to save image");
     }
 }

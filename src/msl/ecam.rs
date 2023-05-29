@@ -173,7 +173,7 @@ impl Calibration for MslEcam {
         raw.image.crop(1, 1, crop_to_width, crop_to_height);
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
+        raw.save(&out_file).expect("Failed to save image");
 
         cal_ok(cal_context, &out_file)
     }

@@ -43,7 +43,7 @@ impl RunnableSubcommand for Inpaint {
 
                 vprintln!("Saving output to {}", out_file);
 
-                filled.save(&out_file);
+                filled.save(&out_file).expect("Failed to save image");
             } else {
                 eprintln!("File not found: {:?}", in_file);
             }

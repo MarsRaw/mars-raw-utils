@@ -2,7 +2,7 @@ use std::process;
 
 use crate::{util, vprintln};
 
-use sciimg::{image, imagebuffer, lowpass, path, quality, stats};
+use sciimg::{image, imagebuffer, lowpass, path, prelude::ImageMode, quality, stats};
 
 use colored::*;
 
@@ -155,11 +155,15 @@ pub fn focusmerge(
     )
     .unwrap();
 
-    merge_buffer.save(output_file);
+    merge_buffer
+        .save(output_file)
+        .expect("Failed to save image");
 
     if depth_map {
         depth_map_buffer = depth_map_buffer.normalize(0.0, 65535.0).unwrap();
         let depth_map_out_file = util::append_file_name(output_file, "depth");
-        depth_map_buffer.save_16bit(&depth_map_out_file);
+        depth_map_buffer
+            .save_use_mode(&depth_map_out_file, ImageMode::U16BIT)
+            .expect("Failed to save image");
     }
 }

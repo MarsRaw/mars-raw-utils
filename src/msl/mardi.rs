@@ -55,7 +55,7 @@ impl Calibration for MslMardi {
         raw.image.normalize_to_16bit_with_max(data_max);
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
+        raw.save(&out_file).expect("Failed to save image");
 
         cal_ok(cal_context, &out_file)
     }
