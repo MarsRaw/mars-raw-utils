@@ -1,3 +1,4 @@
+use crate::veprintln;
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
     inpaintmask, marsimage::MarsImage, util, vprintln,
@@ -208,11 +209,15 @@ impl Calibration for M20MastcamZ {
 
         vprintln!("Writing to disk...");
 
-        raw.save(&out_file).expect("Failed to save image");
-
-        match warn {
-            true => cal_warn(cal_context, &out_file),
-            false => cal_ok(cal_context, &out_file),
+        match raw.save(&out_file) {
+            Ok(_) => match warn {
+                true => cal_warn(cal_context, &out_file),
+                false => cal_ok(cal_context, &out_file),
+            },
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
         }
     }
 }

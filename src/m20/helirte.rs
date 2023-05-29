@@ -1,6 +1,6 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, enums, enums::Instrument, marsimage::MarsImage, util,
-    vprintln,
+    veprintln, vprintln,
 };
 
 use anyhow::Result;
@@ -54,8 +54,12 @@ impl Calibration for M20HeliRte {
         }
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file).expect("Failed to save image");
-
-        cal_ok(cal_context, &out_file)
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

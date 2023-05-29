@@ -1,6 +1,6 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument,
-    marsimage::MarsImage, util, vprintln,
+    marsimage::MarsImage, util, veprintln, vprintln,
 };
 
 use sciimg::{imagebuffer, path};
@@ -59,8 +59,12 @@ impl Calibration for MslChemCam {
 
         vprintln!("Writing to disk...");
         raw.image.set_using_alpha(true);
-        raw.save(&out_file).expect("Failed to save image");
-
-        cal_ok(cal_context, &out_file)
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }
