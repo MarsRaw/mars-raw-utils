@@ -201,12 +201,8 @@ impl Calibration for M20MastcamZ {
         );
 
         vprintln!("Cropping...");
-        raw.image.crop(
-            29,
-            9,
-            widraw.image.width - left - 29th,
-            raw.image.height - top - 9,
-        );
+        raw.image
+            .crop(29, 9, raw.image.width - 29 - 29, raw.image.height - 9 - 9);
 
         vprintln!(
             "Current image width: {}, height: {}",
