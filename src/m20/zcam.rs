@@ -199,6 +199,12 @@ impl Calibration for M20MastcamZ {
             raw.image.crop(29, 9, 1590, 1182);
         }
 
+        if cal_context.srgb_color_correction {
+            vprintln!("Applying sRGB color conversion");
+            raw.image
+                .convert_colorspace(color::ColorSpaceType::RGB, color::ColorSpaceType::sRGB)?;
+        }
+
         if cal_context.decorrelate_color {
             vprintln!("Normalizing with decorrelated colors...");
             raw.image.normalize_to_16bit_decorrelated();

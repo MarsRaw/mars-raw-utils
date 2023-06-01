@@ -52,6 +52,9 @@ pub struct CalProfile {
 
     #[serde(default = "default_debayer_method")]
     pub debayer_method: DebayerMethod,
+
+    #[serde(default = "default_false")]
+    pub srgb_color_correction: bool,
 }
 
 impl Default for CalProfile {
@@ -72,6 +75,7 @@ impl Default for CalProfile {
             instrument: None,
             description: None,
             debayer_method: default_debayer_method(),
+            srgb_color_correction: default_false(),
         }
     }
 }

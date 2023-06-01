@@ -53,6 +53,9 @@ pub struct Calibrate {
 
     #[arg(long, short = 'D', help = "Debayer method (malvar, amaze)")]
     debayer: Option<String>,
+
+    #[arg(long, short = 'c', help = "Apply sRGB color correction")]
+    srgb_color_correction: bool,
 }
 
 impl Calibrate {
@@ -169,6 +172,7 @@ impl RunnableSubcommand for Calibrate {
                 } else {
                     DebayerMethod::Malvar
                 },
+                srgb_color_correction: self.srgb_color_correction,
             }],
         };
 

@@ -996,7 +996,23 @@
                                 KeyPath='yes'/>
                         </Component>
 
-
+                        
+                        <Component Id='caldata104' Guid='*'>
+                            <File
+                                Id='data104'
+                                Name='m20_zcam_drcx.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\m20_zcam_drcx.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata105' Guid='*'>
+                            <File
+                                Id='data105'
+                                Name='msl_mcam_drcx.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mcam_drcx.toml'
+                                KeyPath='yes'/>
+                        </Component>
 
 
 
@@ -1229,6 +1245,8 @@
             <ComponentRef Id='caldata101'/>
             <ComponentRef Id='caldata102'/>
             <ComponentRef Id='caldata103'/>
+            <ComponentRef Id='caldata104'/>
+            <ComponentRef Id='caldata105'/>
 
             <Feature
                 Id='Environment'
