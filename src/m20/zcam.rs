@@ -202,6 +202,9 @@ impl Calibration for M20MastcamZ {
         if raw.image.width == 1648 && raw.image.height == 1200 {
             vprintln!("Cropping...");
             raw.image.crop(29, 9, 1590, 1182);
+        } else if raw.image.width == 1648 && raw.image.height == 688 {
+            vprintln!("Cropping...");
+            raw.image.crop(29, 2, 1590, 681);
         } else if raw.image.width == 1648 && raw.image.height == 576 {
             vprintln!("Cropping...");
             raw.image.crop(29, 2, 1590, 567);
