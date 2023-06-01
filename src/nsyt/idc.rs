@@ -4,7 +4,7 @@ use crate::{
 };
 
 use anyhow::Result;
-use sciimg::path;
+use sciimg::prelude::*;
 
 #[derive(Copy, Clone)]
 pub struct NsytIdc {}
@@ -30,7 +30,8 @@ impl Calibration for NsytIdc {
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
-            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::NsytIDC).unwrap();
+            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::NsytIDC)
+                .expect("Failed to load LUT for InSight IDC");
             raw.decompand(&lut);
             lut.max() as f32
         } else {
@@ -49,6 +50,12 @@ impl Calibration for NsytIdc {
 
         vprintln!("Cropping...");
         raw.image.crop(0, 3, 1024, 1018);
+
+        if cal_context.srgb_color_correction {
+            vprintln!("Applying sRGB color conversion");
+            raw.image
+                .convert_colorspace(color::ColorSpaceType::RGB, color::ColorSpaceType::sRGB)?;
+        }
 
         if cal_context.decorrelate_color {
             vprintln!("Normalizing with decorrelated colors...");

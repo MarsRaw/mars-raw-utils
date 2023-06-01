@@ -54,7 +54,7 @@ pub struct Calibrate {
     #[arg(long, short = 'D', help = "Debayer method (malvar, amaze)")]
     debayer: Option<String>,
 
-    #[arg(long, short = 'c', help = "Apply sRGB color correction")]
+    #[arg(long, short = 'C', help = "Apply sRGB color correction")]
     srgb_color_correction: bool,
 }
 
