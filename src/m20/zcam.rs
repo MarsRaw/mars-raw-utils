@@ -194,11 +194,26 @@ impl Calibration for M20MastcamZ {
             cal_context.blue_scalar,
         );
 
+        vprintln!(
+            "Current image width: {}, height: {}",
+            raw.image.width,
+            raw.image.height
+        );
         if raw.image.width == 1648 && raw.image.height == 1200 {
             vprintln!("Cropping...");
             raw.image.crop(29, 9, 1590, 1182);
+        } else if raw.image.width == 1648 && raw.image.height == 576 {
+            vprintln!("Cropping...");
+            raw.image.crop(29, 2, 1590, 567);
+        } else if raw.image.width == 1040 && raw.image.height == 464 {
+            vprintln!("Cropping...");
+            raw.image.crop(29, 2, 1011, 460);
         }
-
+        vprintln!(
+            "Current image width: {}, height: {}",
+            raw.image.width,
+            raw.image.height
+        );
         if cal_context.srgb_color_correction {
             vprintln!("Applying sRGB color conversion");
             raw.image
@@ -213,7 +228,7 @@ impl Calibration for M20MastcamZ {
             raw.image.normalize_to_16bit_with_max(data_max);
         }
 
-        vprintln!("Writing to disk...");
+        vprintln!("Writing to {}", out_file);
 
         match raw.save(&out_file) {
             Ok(_) => match warn {
