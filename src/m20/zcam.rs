@@ -199,24 +199,21 @@ impl Calibration for M20MastcamZ {
             raw.image.width,
             raw.image.height
         );
-        if raw.image.width == 1648 && raw.image.height == 1200 {
-            vprintln!("Cropping...");
-            raw.image.crop(29, 9, 1590, 1182);
-        } else if raw.image.width == 1648 && raw.image.height == 688 {
-            vprintln!("Cropping...");
-            raw.image.crop(29, 2, 1590, 681);
-        } else if raw.image.width == 1648 && raw.image.height == 576 {
-            vprintln!("Cropping...");
-            raw.image.crop(29, 2, 1590, 567);
-        } else if raw.image.width == 1040 && raw.image.height == 464 {
-            vprintln!("Cropping...");
-            raw.image.crop(29, 2, 982, 460);
-        }
+
+        vprintln!("Cropping...");
+        raw.image.crop(
+            29,
+            9,
+            widraw.image.width - left - 29th,
+            raw.image.height - top - 9,
+        );
+
         vprintln!(
             "Current image width: {}, height: {}",
             raw.image.width,
             raw.image.height
         );
+
         if cal_context.srgb_color_correction {
             vprintln!("Applying sRGB color conversion");
             raw.image
