@@ -3,7 +3,7 @@ use crate::{
     marsimage::MarsImage, util, veprintln, vprintln,
 };
 
-use sciimg::path;
+use sciimg::prelude::*;
 
 use anyhow::Result;
 
@@ -97,6 +97,12 @@ impl Calibration for MslMahli {
             cal_context.green_scalar,
             cal_context.blue_scalar,
         );
+
+        if cal_context.srgb_color_correction {
+            vprintln!("Applying sRGB color conversion");
+            raw.image
+                .convert_colorspace(color::ColorSpaceType::RGB, color::ColorSpaceType::sRGB)?;
+        }
 
         if cal_context.decorrelate_color {
             vprintln!("Normalizing with decorrelated colors...");

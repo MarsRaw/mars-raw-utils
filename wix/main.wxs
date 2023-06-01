@@ -1014,6 +1014,31 @@
                                 KeyPath='yes'/>
                         </Component>
 
+                        <Component Id='caldata106' Guid='*'>
+                            <File
+                                Id='data106'
+                                Name='msl_mahli_drcx.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mahli_drcx.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata107' Guid='*'>
+                            <File
+                                Id='data107'
+                                Name='msl_mahli_drxx.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mahli_drxx.toml'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='caldata108' Guid='*'>
+                            <File
+                                Id='data108'
+                                Name='msl_mcam_drxx.toml'
+                                DiskId='1'
+                                Source='mars-raw-utils-data\caldata\msl_mcam_drxx.toml'
+                                KeyPath='yes'/>
+                        </Component>
+
 
 
 
@@ -1247,6 +1272,9 @@
             <ComponentRef Id='caldata103'/>
             <ComponentRef Id='caldata104'/>
             <ComponentRef Id='caldata105'/>
+            <ComponentRef Id='caldata106'/>
+            <ComponentRef Id='caldata107'/>
+            <ComponentRef Id='caldata108'/>
 
             <Feature
                 Id='Environment'
