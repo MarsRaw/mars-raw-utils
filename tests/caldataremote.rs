@@ -28,8 +28,8 @@ fn test_get_calibration_remote_root_functions() {
 
     // Default root
     env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
-    let foo = format!("{}foo.toml", CALIBRATION_FILE_REMOTE_ROOT);
-    assert_eq!(caldata::get_calibration_file_remote_url("foo.toml"), foo);
+    let toml = format!("{}foo.toml", CALIBRATION_FILE_REMOTE_ROOT);
+    assert_eq!(caldata::get_calibration_file_remote_url("foo.toml"), toml);
 
     // ENV value as root
     env::set_var("CALIBRATION_FILE_REMOTE_ROOT", "http://foo.com/bar/");
@@ -47,8 +47,8 @@ async fn test_fetch_remote_calibration_manifest() {
 
 #[tokio::test]
 async fn test_fetch_remote_calibration_manifest_from() {
-    let foo = format!("{}/caldata.manifest", CALIBRATION_FILE_REMOTE_ROOT);
-    assert!(caldata::fetch_remote_calibration_manifest_from(&foo)
+    let toml = format!("{}/caldata.manifest", CALIBRATION_FILE_REMOTE_ROOT);
+    assert!(caldata::fetch_remote_calibration_manifest_from(&toml)
         .await
         .is_ok());
 }
@@ -80,7 +80,7 @@ async fn test_fetch_remote_calibration_resource() {
         let mut file = File::create(&file_path).unwrap();
         file.write_all(&cal_file_bytes[..]).unwrap();
 
-        Image::open(&file_path.as_os_str().to_str().unwrap())
+        Image::open(file_path.as_os_str().to_str().unwrap())
             .expect("Failed to properly read calibration file as image");
 
         // Clean up the temp file
@@ -98,7 +98,7 @@ async fn test_fetch_and_save_file() {
     // Delete this file
     let local_file = "tests/testdata/caltesting/m20/ilut/M20_LUT2_v2a.txt";
     println!("Local file: {}", local_file);
-    if path::file_exists(&local_file) {
+    if path::file_exists(local_file) {
         assert!(fs::remove_file(local_file).is_ok());
     }
 
