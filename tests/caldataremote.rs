@@ -60,10 +60,21 @@ async fn test_fetch_remote_calibration_resource() {
         // The file list should not be zero length.
         assert!(!c.is_empty());
 
+        // Find and return a single png to fetch
+        let test_image = c
+            .iter()
+            .filter(|p| p.ends_with(".png"))
+            .last()
+            .expect("Failed to extract a png to test with");
+
+        // Did that filter do it's job?
+        assert!(test_image.ends_with(".png"));
+        println!("File: {}", test_image);
+
         env::remove_var("CALIBRATION_FILE_REMOTE_ROOT"); // Another call in case tests are run concurrently and the env
                                                          // var gets set since the last remove_var was called.
-        let remote_url = caldata::get_calibration_file_remote_url(&c[0]);
-        let remote_url_expected = format!("{}{}", CALIBRATION_FILE_REMOTE_ROOT, c[0]);
+        let remote_url = caldata::get_calibration_file_remote_url(&test_image);
+        let remote_url_expected = format!("{}{}", CALIBRATION_FILE_REMOTE_ROOT, test_image);
 
         // Remote URL should be what we expect
         assert_eq!(remote_url, remote_url_expected, "Unexpected remote URL");
@@ -71,21 +82,26 @@ async fn test_fetch_remote_calibration_resource() {
         // Fetch the resource into an array of u8 (bytes)
         let cal_file_bytes_result = httpfetch::simple_fetch_bin(&remote_url).await;
         assert!(cal_file_bytes_result.is_ok());
-        let cal_file_bytes = cal_file_bytes_result.unwrap();
+        let cal_file_bytes = cal_file_bytes_result.expect("Failed to extract bytes");
 
         // Create a temporary file, write those bytes into it then try to open
         // the resulting image
-        let temp_dir = tempdir().unwrap();
-        let file_path = temp_dir.path().join(&c[0]);
-        let mut file = File::create(&file_path).unwrap();
-        file.write_all(&cal_file_bytes[..]).unwrap();
+        let temp_dir = tempdir().expect("Failed to assign a temp directory");
+        let file_path = temp_dir.path().join(&test_image);
+        let mut file = File::create(&file_path).expect("Failed to create a temporary file");
+        file.write_all(&cal_file_bytes[..])
+            .expect("Failed to write bytes to file");
 
-        Image::open(file_path.as_os_str().to_str().unwrap())
-            .expect("Failed to properly read calibration file as image");
+        //  Verify that the file opens as a valid image
+        println!("Testing image load");
+        assert!(
+            Image::open(file_path.as_os_str().to_str().unwrap()).is_ok(),
+            "Failed to properly read calibration file as image"
+        );
 
         // Clean up the temp file
         drop(file);
-        temp_dir.close().unwrap();
+        temp_dir.close().expect("Failed to close temp directory");
     } else {
         panic!("Could not retrieve remote manifest");
     }
