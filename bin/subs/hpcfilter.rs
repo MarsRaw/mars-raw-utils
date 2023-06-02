@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use rayon::prelude::*;
@@ -22,7 +23,7 @@ pub struct HpcFilter {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for HpcFilter {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());
 
         let window_size = self.window.unwrap_or(3);
@@ -55,5 +56,7 @@ impl RunnableSubcommand for HpcFilter {
             }
             pb_inc!();
         });
+
+        Ok(())
     }
 }

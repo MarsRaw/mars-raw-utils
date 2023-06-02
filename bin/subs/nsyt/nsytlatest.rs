@@ -1,7 +1,7 @@
 use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
-
+use anyhow::Result;
 use std::process;
 
 use clap::Parser;
@@ -16,7 +16,7 @@ pub struct NsytLatest {
 use async_trait::async_trait;
 #[async_trait]
 impl RunnableSubcommand for NsytLatest {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         if let Ok(latest) = remotequery::get_latest(Mission::InSight).await {
             if self.list {
                 latest.latest_sols().iter().for_each(|s| {
@@ -34,5 +34,6 @@ impl RunnableSubcommand for NsytLatest {
             eprintln!("Error fetching latest data from InSight remote server");
             process::exit(1);
         }
+        Ok(())
     }
 }

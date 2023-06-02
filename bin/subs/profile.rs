@@ -1,6 +1,7 @@
 use mars_raw_utils::calprofile::*;
 
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use glob::glob;
 use std::env;
 use std::path::Path;
@@ -48,7 +49,7 @@ fn list_profiles_in_directory(path: &str) {
 use async_trait::async_trait;
 #[async_trait]
 impl RunnableSubcommand for Profile {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         if self.list && self.profile.is_some() {
             eprintln!("Error: Two actions specified, please only select one at a time");
         } else if self.list {
@@ -117,5 +118,6 @@ impl RunnableSubcommand for Profile {
         } else {
             eprintln!("Error: No action specified");
         }
+        Ok(())
     }
 }

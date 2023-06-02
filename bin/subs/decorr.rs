@@ -1,6 +1,7 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use rayon::prelude::*;
@@ -209,11 +210,12 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for DecorrelationStretch {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());
         match self.cross_file {
             true => cross_file_decorrelation(&self.input_files, self.ignore_black),
             false => individual_file_decorrelation(&self.input_files, self.ignore_black),
         };
+        Ok(())
     }
 }

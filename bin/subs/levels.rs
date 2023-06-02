@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
@@ -24,7 +25,7 @@ pub struct Levels {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for Levels {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());
 
         let white_level = self.white.unwrap_or(1.0);
@@ -78,5 +79,7 @@ impl RunnableSubcommand for Levels {
             }
             pb_inc!();
         }
+
+        Ok(())
     }
 }

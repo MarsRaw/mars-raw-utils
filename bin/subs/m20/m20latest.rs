@@ -1,10 +1,8 @@
-use mars_raw_utils::prelude::*;
-
 use crate::subs::runnable::RunnableSubcommand;
-
-use std::process;
-
+use anyhow::Result;
 use clap::Parser;
+use mars_raw_utils::prelude::*;
+use std::process;
 
 #[derive(Parser)]
 #[command(author, version, about = "Report sols with new images", long_about = None)]
@@ -15,7 +13,7 @@ pub struct M20Latest {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for M20Latest {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         if let Ok(latest) = remotequery::get_latest(Mission::Mars2020).await {
             if self.list {
                 latest.latest_sols().iter().for_each(|s| {
@@ -33,5 +31,6 @@ impl RunnableSubcommand for M20Latest {
             eprintln!("Error fetching latest data from InSight remote server");
             process::exit(1);
         }
+        Ok(())
     }
 }

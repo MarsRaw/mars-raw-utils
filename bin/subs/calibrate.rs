@@ -11,6 +11,7 @@ use std::panic;
 use std::process;
 use std::str::FromStr;
 
+use anyhow::{anyhow, Error, Result};
 use clap::Parser;
 
 pb_create!();
@@ -91,62 +92,71 @@ impl Calibrate {
 use async_trait::async_trait;
 #[async_trait]
 impl RunnableSubcommand for Calibrate {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         let profiles: Vec<CalProfile> = match &self.profile {
             Some(profile_list) => {
                 let mut v: Vec<CalProfile> = Vec::new();
-                profile_list.iter().for_each(|profile_name| {
-                    v.push(match load_calibration_profile(profile_name) {
-                        Ok(profile) => {
-                            let mut profile_mut = profile;
+                let profile_results: Vec<Result<CalProfile, Error>> = profile_list
+                    .iter()
+                    .map(|profile_name| {
+                        match load_calibration_profile(profile_name) {
+                            Ok(profile) => {
+                                let mut profile_mut = profile;
 
-                            // Overrides
-                            if self.raw {
-                                profile_mut.apply_ilt = true;
-                            }
+                                // Overrides
+                                if self.raw {
+                                    profile_mut.apply_ilt = true;
+                                }
 
-                            if let Some(red_scalar) = self.red_weight {
-                                profile_mut.red_scalar = red_scalar;
-                            }
+                                if let Some(red_scalar) = self.red_weight {
+                                    profile_mut.red_scalar = red_scalar;
+                                }
 
-                            if let Some(green_scalar) = self.green_weight {
-                                profile_mut.green_scalar = green_scalar;
-                            }
+                                if let Some(green_scalar) = self.green_weight {
+                                    profile_mut.green_scalar = green_scalar;
+                                }
 
-                            if let Some(color_noise_reduction_amount) =
-                                self.color_noise_reduction_amount
-                            {
-                                profile_mut.color_noise_reduction = true;
-                                profile_mut.color_noise_reduction_amount =
-                                    color_noise_reduction_amount;
-                            }
-
-                            if let Some(hpc_threshold) = self.hpc_threshold {
-                                profile_mut.hot_pixel_detection_threshold = hpc_threshold;
-                            }
-
-                            if let Some(hpc_window) = self.hpc_window {
-                                profile_mut.hot_pixel_window_size = hpc_window;
-                            }
-
-                            if self.decorrelate {
-                                profile_mut.decorrelate_color = true;
-                            }
-
-                            if let Some(debayer) = &self.debayer {
-                                profile_mut.debayer_method = match DebayerMethod::from_str(debayer)
+                                if let Some(color_noise_reduction_amount) =
+                                    self.color_noise_reduction_amount
                                 {
-                                    Ok(m) => m,
-                                    Err(why) => panic!("Error: {}", why),
-                                };
+                                    profile_mut.color_noise_reduction = true;
+                                    profile_mut.color_noise_reduction_amount =
+                                        color_noise_reduction_amount;
+                                }
+
+                                if let Some(hpc_threshold) = self.hpc_threshold {
+                                    profile_mut.hot_pixel_detection_threshold = hpc_threshold;
+                                }
+
+                                if let Some(hpc_window) = self.hpc_window {
+                                    profile_mut.hot_pixel_window_size = hpc_window;
+                                }
+
+                                if self.decorrelate {
+                                    profile_mut.decorrelate_color = true;
+                                }
+
+                                if let Some(debayer) = &self.debayer {
+                                    profile_mut.debayer_method =
+                                        match DebayerMethod::from_str(debayer) {
+                                            Ok(m) => m,
+                                            Err(why) => panic!("Error: {}", why),
+                                        };
+                                }
+                                Ok(profile_mut)
                             }
-                            profile_mut
+                            Err(why) => Err(anyhow!("Error loading calibration profile: {}", why)),
                         }
-                        Err(why) => {
-                            panic!("Error loading calibration profile: {}", why);
-                        }
-                    });
-                });
+
+                        //v.push(
+                    })
+                    .collect();
+                for f in profile_results {
+                    match f {
+                        Ok(cp) => v.push(cp.clone()),
+                        Err(why) => return Err(anyhow!(why)),
+                    };
+                }
                 v
             }
             None => vec![CalProfile {
@@ -233,5 +243,7 @@ impl RunnableSubcommand for Calibrate {
                 ));
             }
         });
+
+        Ok(())
     }
 }

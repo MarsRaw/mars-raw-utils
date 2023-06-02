@@ -1,8 +1,7 @@
-use mars_raw_utils::prelude::*;
-
 use crate::subs::runnable::RunnableSubcommand;
-
+use anyhow::Result;
 use clap::Parser;
+use mars_raw_utils::prelude::*;
 
 #[derive(Parser)]
 #[command(author, version, about = "Image information", long_about = None)]
@@ -27,7 +26,7 @@ impl YesNo for bool {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for Info {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         for in_file in self.input_files.iter() {
             if in_file.exists() {
                 println!("Image: {:?}", in_file);
@@ -107,5 +106,6 @@ impl RunnableSubcommand for Info {
                 eprintln!("File not found: {:?}", in_file);
             }
         }
+        Ok(())
     }
 }

@@ -1,3 +1,5 @@
+use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::path;
@@ -51,8 +53,9 @@ pub struct M20Fetch {
     product_types: Option<Vec<String>>,
 }
 
-impl M20Fetch {
-    pub async fn run(&self) {
+#[async_trait::async_trait]
+impl RunnableSubcommand for M20Fetch {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
         let im = remotequery::get_instrument_map(Mission::Mars2020).unwrap();
@@ -156,5 +159,7 @@ impl M20Fetch {
             Ok(_) => vprintln!("Done"),
             Err(why) => vprintln!("Error: {}", why),
         };
+
+        Ok(())
     }
 }

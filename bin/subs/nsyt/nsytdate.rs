@@ -1,7 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
-use mars_raw_utils::prelude::*;
-
+use anyhow::Result;
 use async_trait::async_trait;
+use mars_raw_utils::prelude::*;
 
 use clap::Parser;
 
@@ -11,7 +11,7 @@ pub struct NsytDate {}
 
 #[async_trait]
 impl RunnableSubcommand for NsytDate {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         match time::get_lmst(Mission::InSight) {
             Ok(mtime) => {
                 println!("Mars Sol Date:          {}", mtime.msd);
@@ -25,5 +25,6 @@ impl RunnableSubcommand for NsytDate {
                 eprintln!("Error calculating mission time");
             }
         }
+        Ok(())
     }
 }

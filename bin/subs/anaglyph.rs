@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
@@ -24,7 +25,7 @@ pub struct Anaglyph {
 }
 #[async_trait]
 impl RunnableSubcommand for Anaglyph {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
         print::print_experimental();
 
@@ -117,5 +118,6 @@ impl RunnableSubcommand for Anaglyph {
 
         map.save(out_file_path).expect("Failed to save image");
         pb_done!();
+        Ok(())
     }
 }

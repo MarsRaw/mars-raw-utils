@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
@@ -18,7 +19,7 @@ pub struct MeanStack {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for MeanStack {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len() + 1); // The +1 accounts for the final division by # of images
 
         let output = self.output.as_os_str().to_str().unwrap();
@@ -74,5 +75,6 @@ impl RunnableSubcommand for MeanStack {
             println!("No images processed, cannot create output");
         }
         pb_inc!();
+        Ok(())
     }
 }

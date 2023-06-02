@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use image::load_from_memory;
 use mars_raw_utils::prelude::*;
@@ -229,7 +230,7 @@ fn linearize_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut Image
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for CrossEye {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
         print::print_experimental();
@@ -306,5 +307,6 @@ impl RunnableSubcommand for CrossEye {
         map.save(out_file_path).expect("Failed to save image");
 
         pb_done!();
+        Ok(())
     }
 }

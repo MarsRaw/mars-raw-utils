@@ -1,3 +1,5 @@
+use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::path;
@@ -45,8 +47,9 @@ pub struct MslFetch {
     new: bool,
 }
 
-impl MslFetch {
-    pub async fn run(&self) {
+#[async_trait::async_trait]
+impl RunnableSubcommand for MslFetch {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
         let instruments = remotequery::get_instrument_map(Mission::MSL).unwrap();
@@ -148,5 +151,7 @@ impl MslFetch {
             Ok(_) => vprintln!("Done"),
             Err(why) => vprintln!("Error: {}", why),
         };
+
+        Ok(())
     }
 }

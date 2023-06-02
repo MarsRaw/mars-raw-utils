@@ -1,9 +1,9 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
 use std::process;
-
 pb_create!();
 
 #[derive(Parser)]
@@ -18,7 +18,7 @@ pub struct Crop {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for Crop {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());
 
         //https://stackoverflow.com/questions/26536871/how-can-i-convert-a-string-of-numbers-to-an-array-or-vector-of-integers-in-rust
@@ -93,5 +93,6 @@ impl RunnableSubcommand for Crop {
             }
             pb_inc!();
         }
+        Ok(())
     }
 }

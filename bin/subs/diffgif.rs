@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::diffgif;
 use std::process;
@@ -38,7 +39,7 @@ pub struct DiffGif {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for DiffGif {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
         let white_level = self.white.unwrap_or(1.0);
@@ -98,5 +99,6 @@ impl RunnableSubcommand for DiffGif {
             convert_to_mono: self.mono,
         });
         pb_done!();
+        Ok(())
     }
 }

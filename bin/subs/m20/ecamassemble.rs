@@ -1,14 +1,14 @@
 use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
+use clap::Parser;
 use colored::{self, Colorize};
 use mars_raw_utils::m20::assemble::{Composite, NavcamTile};
 use mars_raw_utils::m20::ncamlevels;
 use mars_raw_utils::util;
 use sciimg::path;
 use std::process;
-
-use clap::Parser;
 
 pb_create_spinner!();
 
@@ -24,7 +24,7 @@ pub struct M20EcamAssemble {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for M20EcamAssemble {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
         let in_files: Vec<String> = self
@@ -92,5 +92,6 @@ impl RunnableSubcommand for M20EcamAssemble {
         }
 
         pb_done!();
+        Ok(())
     }
 }

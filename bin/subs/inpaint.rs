@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::{inpaint, prelude::*};
@@ -15,7 +16,7 @@ pub struct Inpaint {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for Inpaint {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());
 
         for in_file in self.input_files.iter() {
@@ -49,5 +50,6 @@ impl RunnableSubcommand for Inpaint {
             }
             pb_inc!();
         }
+        Ok(())
     }
 }

@@ -214,7 +214,7 @@ pub fn load_caldata_mapping_file() -> Result<Config> {
 
         parse_caldata_from_string(&toml)
     } else {
-        panic!("Unable to locate calibration configuration file");
+        Err(anyhow!("Unable to locate calibration configuration file"))
     }
 }
 
@@ -293,7 +293,7 @@ pub fn locate_calibration_file(file_path: &str) -> Result<String> {
     }
 
     // Oh nos!
-    Err(anyhow!(constants::status::FILE_NOT_FOUND))
+    Err(anyhow!("Calibration file not found: {}", file_path))
 }
 
 pub fn get_calibration_file_for_type(
@@ -312,7 +312,7 @@ pub fn get_calibration_base_file_for_instrument(
     instrument: enums::Instrument,
     cal_file_type: enums::CalFileType,
 ) -> Result<String> {
-    let config = load_caldata_mapping_file().unwrap();
+    let config = load_caldata_mapping_file()?;
 
     match instrument {
         enums::Instrument::MslMAHLI => Ok(get_calibration_file_for_type(

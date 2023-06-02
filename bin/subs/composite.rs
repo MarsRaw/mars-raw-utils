@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Parser;
 use mars_raw_utils::{composite, prelude::*};
@@ -24,7 +25,7 @@ pub struct Composite {
 }
 #[async_trait]
 impl RunnableSubcommand for Composite {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
         print::print_experimental();
@@ -94,5 +95,6 @@ impl RunnableSubcommand for Composite {
         map.save(output).expect("Failed to save image");
 
         pb_done!();
+        Ok(())
     }
 }

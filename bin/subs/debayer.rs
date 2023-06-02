@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
@@ -18,7 +19,7 @@ pub struct Debayer {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for Debayer {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());
 
         for in_file in self.input_files.iter() {
@@ -54,5 +55,6 @@ impl RunnableSubcommand for Debayer {
             }
             pb_inc!();
         }
+        Ok(())
     }
 }

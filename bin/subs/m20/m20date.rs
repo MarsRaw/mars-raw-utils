@@ -1,7 +1,7 @@
-use mars_raw_utils::prelude::*;
-
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
+use mars_raw_utils::prelude::*;
 
 #[derive(Parser)]
 #[command(author, version, about = "Get current Mars2020 mission date information", long_about = None)]
@@ -9,7 +9,7 @@ pub struct M20Date {}
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for M20Date {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         match time::get_lmst(Mission::Mars2020) {
             Ok(mtime) => {
                 println!("Mars Sol Date:          {}", mtime.msd);
@@ -23,5 +23,6 @@ impl RunnableSubcommand for M20Date {
                 eprintln!("Error calculating mission time");
             }
         }
+        Ok(())
     }
 }

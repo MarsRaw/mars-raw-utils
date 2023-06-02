@@ -133,8 +133,7 @@ impl Calibration for MslEcam {
         let flat_file_path = calibfile::get_calibration_file_for_instrument(
             instrument,
             enums::CalFileType::FlatField,
-        )
-        .unwrap();
+        )?;
         vprintln!("Using flat file: {}", flat_file_path);
 
         if path::file_exists(&flat_file_path) {

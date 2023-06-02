@@ -1,3 +1,5 @@
+use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::path;
@@ -45,8 +47,9 @@ pub struct NsytFetch {
     new: bool,
 }
 
-impl NsytFetch {
-    pub async fn run(&self) {
+#[async_trait::async_trait]
+impl RunnableSubcommand for NsytFetch {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
         let instruments = remotequery::get_instrument_map(Mission::InSight).unwrap();
@@ -148,36 +151,6 @@ impl NsytFetch {
             Ok(_) => vprintln!("Done"),
             Err(why) => vprintln!("Error: {}", why),
         };
-        // nsyt::remote::print_header();
-
-        // match nsyt::remote::remote_fetch(
-        //     &RemoteQuery {
-        //         cameras,
-        //         num_per_page,
-        //         page,
-        //         minsol,
-        //         maxsol,
-        //         thumbnails: self.thumbnails,
-        //         movie_only: false,
-        //         list_only: self.list,
-        //         search,
-        //         only_new: self.new,
-        //         product_types: vec![],
-        //         output_path: output,
-        //     },
-        //     |ttl| {
-        //         if !self.list {
-        //             pb_set_length!(ttl);
-        //         }
-        //     },
-        //     |_| {
-        //         pb_inc!();
-        //     },
-        // )
-        // .await
-        // {
-        //     Ok(_) => pb_done!(),
-        //     Err(e) => eprintln!("Error: {}", e),
-        // }
+        Ok(())
     }
 }

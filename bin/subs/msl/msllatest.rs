@@ -1,10 +1,9 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use async_trait::async_trait;
-use mars_raw_utils::prelude::*;
-
-use std::process;
-
 use clap::Parser;
+use mars_raw_utils::prelude::*;
+use std::process;
 
 #[derive(Parser)]
 #[command(author, version, about = "Report sols with new images", long_about = None)]
@@ -15,7 +14,7 @@ pub struct MslLatest {
 
 #[async_trait]
 impl RunnableSubcommand for MslLatest {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         if let Ok(latest) = remotequery::get_latest(Mission::MSL).await {
             if self.list {
                 latest.latest_sols().iter().for_each(|s| {
@@ -33,5 +32,6 @@ impl RunnableSubcommand for MslLatest {
             eprintln!("Error fetching latest data from InSight remote server");
             process::exit(1);
         }
+        Ok(())
     }
 }
