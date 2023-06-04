@@ -43,7 +43,7 @@ pub fn focusmerge(
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
-            vprintln!("Processing File: {}", in_file);
+            info!("Processing File: {}", in_file);
 
             let image = image::Image::open(in_file).unwrap();
 
@@ -60,7 +60,7 @@ pub fn focusmerge(
 
             images.push(make_diff_container(&image, 5));
         } else {
-            eprintln!("File not found: {}", in_file);
+            error!("File not found: {}", in_file);
             panic!("File not found");
         }
     }
@@ -97,7 +97,7 @@ pub fn focusmerge(
 
     // Super mega inefficient. This'll take a few minutes to run.
     for y in 0..b0_merge_buffer.height {
-        vprintln!(
+        info!(
             "Row {} of {}. {}%",
             y,
             b0_merge_buffer.height,

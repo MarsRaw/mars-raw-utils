@@ -28,7 +28,7 @@ impl RunnableSubcommand for M20Latest {
                 println!("Total: {}", latest.total());
             }
         } else {
-            eprintln!("Error fetching latest data from InSight remote server");
+            error!("Error fetching latest data from InSight remote server");
             process::exit(1);
         }
         Ok(())

@@ -68,9 +68,9 @@ impl MarsImage {
 
     fn load_image_metadata(file_path: &str) -> Option<Metadata> {
         let metadata_file = util::replace_image_extension(file_path, "-metadata.json");
-        vprintln!("Checking for metadata file at {}", metadata_file);
+        info!("Checking for metadata file at {}", metadata_file);
         if path::file_exists(metadata_file.as_str()) {
-            vprintln!("Metadata file exists for loaded image: {}", metadata_file);
+            info!("Metadata file exists for loaded image: {}", metadata_file);
             match load_image_metadata(&metadata_file) {
                 Err(why) => panic!("couldn't open {}", why),
                 Ok(md) => Some(md),
@@ -148,7 +148,7 @@ impl MarsImage {
         let mut flat = if let Ok(flat) = flatfield::load_flat(self.instrument) {
             flat
         } else {
-            vprintln!("No flat field found for instrument {:?}", self.instrument);
+            warn!("No flat field found for instrument {:?}", self.instrument);
             return;
         };
 
@@ -159,12 +159,9 @@ impl MarsImage {
         };
 
         if let Some(sf) = subframe_opt {
-            vprintln!(
+            info!(
                 "Cropping flat with x/y/width/height: {},{} {}x{}",
-                sf[0],
-                sf[1],
-                sf[2],
-                sf[3]
+                sf[0], sf[1], sf[2], sf[3]
             );
 
             flat.image.crop(
@@ -181,12 +178,9 @@ impl MarsImage {
         if flat.image.width > self.image.width {
             let x = (flat.image.width - self.image.width) / 2;
             let y = (flat.image.height - self.image.height) / 2;
-            vprintln!(
+            info!(
                 "Cropping flat with x/y/width/height: {},{} {}x{}",
-                x,
-                y,
-                self.image.width,
-                self.image.height
+                x, y, self.image.width, self.image.height
             );
             flat.image.crop(x, y, self.image.width, self.image.height);
         }

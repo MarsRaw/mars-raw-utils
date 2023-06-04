@@ -28,8 +28,8 @@ impl RunnableSubcommand for UpdateCalData {
         )
         .await
         {
-            Ok(_) => println!("Done."),
-            Err(why) => println!("Error: {}", why),
+            Ok(_) => info!("Done."),
+            Err(why) => error!("Error: {}", why),
         };
 
         Ok(())

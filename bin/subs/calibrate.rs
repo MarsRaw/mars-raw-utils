@@ -66,12 +66,12 @@ impl Calibrate {
         default_instrument: &Option<String>,
     ) -> Option<&'static CalContainer> {
         let metadata_file = util::replace_image_extension(input_file, "-metadata.json");
-        vprintln!("Checking for metadata file at {}", metadata_file);
+        info!("Checking for metadata file at {}", metadata_file);
         if path::file_exists(metadata_file.as_str()) {
             vprintln!("Metadata file exists for loaded image: {}", metadata_file);
             match metadata::load_image_metadata(&metadata_file) {
                 Err(_) => {
-                    vprintln!("Could not load metadata file!");
+                    warn!("Could not load metadata file!");
                     None
                 } // Error loading the metadata file
                 Ok(md) => calibrator_for_instrument_from_str(&md.instrument),
@@ -83,7 +83,7 @@ impl Calibrate {
             if let Some(instrument) = default_instrument {
                 calibrator_for_instrument_from_str(instrument)
             } else {
-                vprintln!("We don't know what instrument was used!");
+                warn!("We don't know what instrument was used!");
                 None // Otherwise, we don't know the instrument.
             }
         }

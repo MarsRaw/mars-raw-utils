@@ -1,17 +1,12 @@
-use std::env;
-
 use crate::enums::CalFileType;
 use crate::{constants, enums};
-
-use sciimg::path;
-
-extern crate dirs;
-
-use std::fs::File;
-use std::io::Read;
-
 use anyhow::anyhow;
 use anyhow::Result;
+use dirs;
+use sciimg::path;
+use std::env;
+use std::fs::File;
+use std::io::Read;
 
 //use serde_derive::Deserialize;
 use serde::Deserialize;
@@ -201,7 +196,7 @@ pub fn parse_caldata_from_string(caldata_toml_str: &str) -> Result<Config> {
 
 pub fn load_caldata_mapping_file() -> Result<Config> {
     if let Ok(caldata_toml) = locate_calibration_file(&String::from("caldata.toml")) {
-        vprintln!("Loading calibration spec from {}", caldata_toml);
+        info!("Loading calibration spec from {}", caldata_toml);
 
         let mut file = match File::open(&caldata_toml) {
             Err(why) => panic!("couldn't open {}", why),
@@ -283,6 +278,8 @@ pub fn locate_calibration_file(file_path: &str) -> Result<String> {
     if let Ok(dir) = env::var("MARS_RAW_DATA") {
         locations.insert(0, dir);
     }
+
+    debug!("Calibration file search path: {:?}", locations);
 
     // First match wins
     for loc in locations.iter() {

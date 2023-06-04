@@ -1,14 +1,10 @@
 use crate::{calibfile, constants};
-
-use sciimg::prelude::*;
-
-use serde::{Deserialize, Serialize};
-
-use std::fs::File;
-use std::io::Read;
-
 use anyhow::anyhow;
 use anyhow::Result;
+use sciimg::prelude::*;
+use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::Read;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CalProfile {
@@ -126,12 +122,12 @@ pub fn load_calibration_profile(file_path: &String) -> Result<CalProfile> {
 
             match toml::from_str(&text) {
                 Ok(calprof) => {
-                    vprintln!("Loaded calibration profile from {}", located_file);
-                    vprintln!("Profile: {:?}", calprof);
+                    info!("Loaded calibration profile from {}", located_file);
+                    info!("Profile: {:?}", calprof);
                     Ok(calprof)
                 }
                 Err(why) => {
-                    veprintln!("Error parsing calibration profile: {:?}", why);
+                    error!("Error parsing calibration profile: {:?}", why);
                     Err(anyhow!("Error parsing calibration profile file"))
                 }
             }

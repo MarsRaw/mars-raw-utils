@@ -99,7 +99,7 @@ impl GetCameraModel for MarsImage {
 }
 
 fn simple_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut Image) {
-    vprintln!("Adding images");
+    info!("Adding images");
     map.paste(&right_img.image, 0, 0);
     map.paste(&left_img.image, left_img.image.width, 0);
     map.paste(&right_img.image, left_img.image.width * 2, 0);
@@ -241,19 +241,19 @@ impl RunnableSubcommand for CrossEye {
         let out_file_path = self.output.as_os_str().to_str().unwrap();
 
         if !path::file_exists(&left_image_path) {
-            eprintln!("Error: File not found (left eye): {}", left_image_path);
+            error!("Error: File not found (left eye): {}", left_image_path);
             pb_done_with_error!();
             process::exit(1);
         }
 
         if !path::file_exists(&right_image_path) {
-            eprintln!("Error: File not found (right eye): {}", right_image_path);
+            error!("Error: File not found (right eye): {}", right_image_path);
             pb_done_with_error!();
             process::exit(1);
         }
 
         if !path::parent_exists_and_writable(out_file_path) {
-            eprintln!(
+            error!(
                 "Error: Output file directory not found or is not writable: {}",
                 out_file_path
             );
@@ -261,16 +261,16 @@ impl RunnableSubcommand for CrossEye {
             process::exit(1);
         }
 
-        vprintln!("Left image: {}", left_image_path);
+        info!("Left image: {}", left_image_path);
         let left_img = MarsImage::open(left_image_path, Instrument::M20MastcamZLeft);
 
-        vprintln!("Right image: {}", right_image_path);
+        info!("Right image: {}", right_image_path);
         let right_img = MarsImage::open(right_image_path, Instrument::M20MastcamZRight);
 
         if left_img.image.width != right_img.image.width
             || left_img.image.height != right_img.image.height
         {
-            eprintln!("Error: Left and right images have different dimensions");
+            error!("Error: Left and right images have different dimensions");
             pb_done_with_error!();
             process::exit(1);
         }
@@ -279,7 +279,7 @@ impl RunnableSubcommand for CrossEye {
         let out_height = left_img.image.height + 56;
         let mut map = Image::create(out_width, out_height);
 
-        vprintln!("Adding X icon");
+        info!("Adding X icon");
         let x_icon = Image::open_from_bytes(include_bytes!("icons/Xicon.png").as_ref());
         map.paste(
             &x_icon,
@@ -287,7 +287,7 @@ impl RunnableSubcommand for CrossEye {
             left_img.image.height + 3,
         );
 
-        vprintln!("Adding verteq icon");
+        info!("Adding verteq icon");
         let eq_icon = Image::open_from_bytes(include_bytes!("icons/VertEqIcon.png").as_ref());
         map.paste(
             &eq_icon,
@@ -297,14 +297,14 @@ impl RunnableSubcommand for CrossEye {
         map.normalize_to_16bit_with_max(255.0);
 
         if self.use_cm && left_img.implements_linearized() && right_img.implements_linearized() {
-            vprintln!("Both images support CAHV linearization. Taking that path");
+            info!("Both images support CAHV linearization. Taking that path");
             linearize_create(&left_img, &right_img, &mut map);
         } else {
-            vprintln!("One or both images support CAHV linearization. Doing simple assembly");
+            info!("One or both images support CAHV linearization. Doing simple assembly");
             simple_create(&left_img, &right_img, &mut map);
         }
 
-        vprintln!("Output to {}", out_file_path);
+        info!("Output to {}", out_file_path);
         map.save(out_file_path).expect("Failed to save image");
 
         pb_done!();

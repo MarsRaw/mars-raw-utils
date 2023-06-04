@@ -76,7 +76,7 @@ impl LookUpTable {
         LookUpTable { lut: lut.to_vec() }
     }
     pub fn new_from_vec(lut: &Vec<u32>) -> Result<LookUpTable> {
-        vprintln!("Creating LUT with input of length {}", lut.len());
+        info!("Creating LUT with input of length {}", lut.len());
         if lut.len() != 256 {
             Err(anyhow!("Invalid LUT specification length"))
         } else {
@@ -111,7 +111,7 @@ pub fn load_ilut_spec_file(file_path: &String) -> Result<LookUpTable> {
     vprintln!("Loading LUT file: {}", file_path);
 
     if !path::file_exists(file_path) {
-        veprintln!("ERROR: LUT file not found: {}", file_path);
+        error!("ERROR: LUT file not found: {}", file_path);
         return Err(anyhow!("Lookup table file not found"));
     }
 
@@ -126,6 +126,6 @@ pub fn load_ilut_spec_file(file_path: &String) -> Result<LookUpTable> {
                 lut_vec.push(s_lut_value);
             }
         });
-    vprintln!("LUT file parse successfully with {} entries", lut_vec.len());
+    info!("LUT file parse successfully with {} entries", lut_vec.len());
     LookUpTable::new_from_vec(&lut_vec)
 }

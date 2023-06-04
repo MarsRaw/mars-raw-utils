@@ -124,7 +124,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
         },
     ];
 
-    vprintln!("Computing value ranges...");
+    info!("Computing value ranges...");
     input_files.iter().for_each(|in_file| {
         if in_file.exists() {
             let image = Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
@@ -140,7 +140,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
                 ranges[b].max = max!(mm.max, ranges[b].max);
             }
         } else {
-            eprintln!("File not found: {:?}", in_file);
+            error!("File not found: {:?}", in_file);
             pb_done_with_error!();
             process::exit(1);
         }
@@ -148,7 +148,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
 
     input_files.par_iter().for_each(|in_file| {
         if in_file.exists() {
-            vprintln!("Processing File: {:?}", in_file);
+            info!("Processing File: {:?}", in_file);
 
             let mut image =
                 Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
@@ -159,7 +159,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
 
             image.set_mode(ImageMode::U16BIT);
 
-            vprintln!("Writing to disk...");
+            info!("Writing to disk...");
             image
                 .save(&util::append_file_name(
                     in_file.as_os_str().to_str().unwrap(),
@@ -167,7 +167,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
                 ))
                 .expect("Failed to save image");
         } else {
-            eprintln!("File not found: {:?}", in_file);
+            error!("File not found: {:?}", in_file);
             pb_done_with_error!();
             process::exit(1);
         }
@@ -178,7 +178,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
 fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
     input_files.par_iter().for_each(|in_file| {
         if in_file.exists() {
-            vprintln!("Processing File: {:?}", in_file);
+            info!("Processing File: {:?}", in_file);
 
             let mut image =
                 Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
@@ -194,7 +194,7 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
 
             image.set_mode(ImageMode::U16BIT);
 
-            vprintln!("Writing to disk...");
+            info!("Writing to disk...");
             image
                 .save(&util::append_file_name(
                     in_file.as_os_str().to_str().unwrap(),
@@ -202,7 +202,7 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
                 ))
                 .expect("Failed to save image");
         } else {
-            eprintln!("File not found: {:?}", in_file);
+            error!("File not found: {:?}", in_file);
         }
         pb_inc!();
     });

@@ -1,8 +1,7 @@
 use crate::prelude::*;
+use anyhow::Result;
 use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::Vector};
 use std::str::FromStr;
-
-use anyhow::Result;
 
 pub fn get_cahvor(img: &MarsImage) -> Option<CameraModel> {
     match &img.metadata {
@@ -208,15 +207,15 @@ pub fn process_file<D: Drawable>(
             //     _ => input_model_nonlinear
             // };
 
-            vprintln!("");
-            vprintln!("Input Model C: {:?}", input_model.c());
-            vprintln!("Input Model A: {:?}", input_model.a());
-            vprintln!("Input Model H: {:?}", input_model.h());
-            vprintln!("Input Model V: {:?}", input_model.v());
-            vprintln!("Input Model O: {:?}", input_model.o());
-            vprintln!("Input Model R: {:?}", input_model.r());
-            vprintln!("Input Model E: {:?}", input_model.e());
-            vprintln!("");
+            debug!("");
+            debug!("Input Model C: {:?}", input_model.c());
+            debug!("Input Model A: {:?}", input_model.a());
+            debug!("Input Model H: {:?}", input_model.h());
+            debug!("Input Model V: {:?}", input_model.v());
+            debug!("Input Model O: {:?}", input_model.o());
+            debug!("Input Model R: {:?}", input_model.r());
+            debug!("Input Model E: {:?}", input_model.e());
+            debug!("");
 
             let band_0 = img.image.get_band(0);
             let band_1 = img.image.get_band(1);
@@ -285,7 +284,7 @@ pub fn process_file<D: Drawable>(
             }
         }
         None => {
-            eprintln!("CAHVOR not found for image, cannot continue");
+            error!("CAHVOR not found for image, cannot continue");
             panic!("CAHVOR not found for image, cannot continue");
         }
     }

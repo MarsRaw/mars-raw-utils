@@ -40,13 +40,13 @@ impl RunnableSubcommand for Crop {
 
         for in_file in self.input_files.iter() {
             if in_file.exists() {
-                vprintln!("Processing File: {:?}", in_file);
+                info!("Processing File: {:?}", in_file);
 
                 let mut raw =
                     Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
                 if x >= raw.width {
-                    eprintln!(
+                    error!(
                         "X parameter is out of bounds: {}. Must be between 0 and {}",
                         x,
                         raw.width - 1
@@ -55,7 +55,7 @@ impl RunnableSubcommand for Crop {
                 }
 
                 if y >= raw.height {
-                    eprintln!(
+                    error!(
                         "Y parameter is out of bounds: {}. Must be between 0 and {}",
                         x,
                         raw.height - 1
@@ -64,7 +64,7 @@ impl RunnableSubcommand for Crop {
                 }
 
                 if width > raw.width - x {
-                    eprintln!("Specified width exceeds maximum allowable value");
+                    error!("Specified width exceeds maximum allowable value");
                     process::exit(2);
                 }
 
@@ -76,20 +76,17 @@ impl RunnableSubcommand for Crop {
                 let out_file =
                     util::append_file_name(in_file.as_os_str().to_str().unwrap(), "crop");
 
-                vprintln!(
+                info!(
                     "Cropping with x={}, y={}, width={}, height={}",
-                    x,
-                    y,
-                    width,
-                    height
+                    x, y, width, height
                 );
                 raw.crop(x, y, width, height);
 
-                vprintln!("Saving output to {}", out_file);
+                info!("Saving output to {}", out_file);
 
                 raw.save(&out_file).expect("Failed to save image");
             } else {
-                eprintln!("File not found: {:?}", in_file);
+                error!("File not found: {:?}", in_file);
             }
             pb_inc!();
         }

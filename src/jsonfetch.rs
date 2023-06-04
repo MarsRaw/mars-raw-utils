@@ -59,7 +59,7 @@ fn str_to_vec(s: &str) -> Result<Vec<f64>> {
         if string_is_valid_f64(n_t) {
             tuple_vec.push(n_t.parse::<f64>().unwrap());
         } else {
-            eprintln!("Encoutered invalid float value string: {}", n_t);
+            error!("Encoutered invalid float value string: {}", n_t);
             return Err(anyhow!(constants::status::INVALID_FLOAT_VALUE));
         }
     }
@@ -80,13 +80,11 @@ pub fn default_blank() -> String {
 
 pub mod cahvor_format {
 
-    use serde::{self, Deserialize, Deserializer, Serializer};
-
     use crate::jsonfetch::str_to_vec;
     use crate::util::string_is_valid_f64;
     use sciimg::prelude::*;
-
     use sciimg::vector::Vector;
+    use serde::{self, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(model_opt: &CameraModel, serializer: S) -> Result<S::Ok, S::Error>
     where

@@ -63,7 +63,7 @@ impl HttpFetcher {
     // I'd probably just use the .get(), building my client in main.
     // The reqwest::Client is wrapped in an Arc, so you can clone it cheaply, it's designed for reuse --not so much to be instantiated for every single request you want to make.
     async fn fetch(&self) -> Result<SimpleHttpResponse> {
-        vprintln!("Request URI: {}", self.uri);
+        info!("Request URI: {}", self.uri);
         let res = self.client.get(self.uri.as_str()).send().await?;
         let status = res.status();
         Ok(SimpleHttpResponse {
@@ -76,7 +76,7 @@ impl HttpFetcher {
         &self,
         monitor_callback: F,
     ) -> Result<SimpleHttpResponse> {
-        vprintln!("Request URI: {}", self.uri);
+        info!("Request URI: {}", self.uri);
         let res = self.client.get(self.uri.as_str()).send().await?;
 
         let data_len = res.content_length().ok_or(anyhow!(format!(

@@ -66,11 +66,11 @@ fn generate_mean_stack(input_files: &[String]) -> image::Image {
     let mut count: imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
     let mut ones: imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
 
-    vprintln!("Creating mean stack of all input frames...");
+    info!("Creating mean stack of all input frames...");
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
-            vprintln!("Adding file to stack: {}", in_file);
+            info!("Adding file to stack: {}", in_file);
 
             let raw = image::Image::open(in_file).unwrap();
 
@@ -81,7 +81,7 @@ fn generate_mean_stack(input_files: &[String]) -> image::Image {
                     imagebuffer::ImageBuffer::new_with_fill(mean.width, mean.height, 1.0).unwrap();
             } else {
                 if raw.width != mean.width || raw.height != mean.height {
-                    eprintln!("Input image has differing dimensions, cannot continue");
+                    error!("Input image has differing dimensions, cannot continue");
                     panic!("Input image has differing dimensions, cannot continue");
                 }
 
@@ -90,7 +90,7 @@ fn generate_mean_stack(input_files: &[String]) -> image::Image {
 
             count = count.add(&ones).unwrap();
         } else {
-            eprintln!("File not found: {}", in_file);
+            error!("File not found: {}", in_file);
         }
     }
 
@@ -269,7 +269,7 @@ fn process_file(
     product_type: ProductType,
     convert_to_mono: bool,
 ) {
-    vprintln!("Processing frame differential on file: {}", in_file);
+    info!("Processing frame differential on file: {}", in_file);
 
     let raw = image::Image::open(in_file).unwrap();
 
@@ -366,7 +366,7 @@ pub fn process(params: &DiffGif) {
                 params.convert_to_mono,
             );
         } else {
-            eprintln!("File not found: {}", in_file);
+            error!("File not found: {}", in_file);
             panic!("File not found");
         }
     }

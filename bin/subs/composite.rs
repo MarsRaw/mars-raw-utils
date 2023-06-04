@@ -44,22 +44,22 @@ impl RunnableSubcommand for Composite {
         let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 
         let map_context = composite::determine_map_context(&in_files, &quat);
-        vprintln!("Map Context: {:?}", map_context);
-        vprintln!(
+        debug!("Map Context: {:?}", map_context);
+        debug!(
             "FOV Vertical: {}",
             map_context.top_lat - map_context.bottom_lat
         );
-        vprintln!(
+        debug!(
             "FOV Horizontal: {}",
             map_context.right_lon - map_context.left_lon
         );
 
         if map_context.width == 0 {
-            eprintln!("Output expected to have zero width. Cannot continue with that. Exiting...");
+            error!("Output expected to have zero width. Cannot continue with that. Exiting...");
             pb_done_with_error!();
             process::exit(1);
         } else if map_context.height == 0 {
-            eprintln!("Output expected to have zero height. Cannot continue with that. Exiting...");
+            error!("Output expected to have zero height. Cannot continue with that. Exiting...");
             pb_done_with_error!();
             process::exit(1);
         }
@@ -70,14 +70,14 @@ impl RunnableSubcommand for Composite {
         let initial_origin = if let Some(model) = composite::get_cahvor(&first_image) {
             model.c()
         } else {
-            eprintln!("Cannot determine initial camera origin");
+            error!("Cannot determine initial camera origin");
             pb_done_with_error!();
             process::exit(2);
         };
 
         for in_file in in_files.iter() {
             if path::file_exists(in_file) {
-                vprintln!("Processing File: {}", in_file);
+                info!("Processing File: {}", in_file);
                 composite::process_file(
                     in_file,
                     &map_context,
@@ -87,7 +87,7 @@ impl RunnableSubcommand for Composite {
                     &initial_origin,
                 );
             } else {
-                eprintln!("File not found: {}", in_file);
+                error!("File not found: {}", in_file);
                 pb_done_with_error!();
                 process::exit(1);
             }

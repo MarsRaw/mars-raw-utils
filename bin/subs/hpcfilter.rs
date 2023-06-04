@@ -31,28 +31,28 @@ impl RunnableSubcommand for HpcFilter {
         let threshold = self.threshold.unwrap_or(0.0);
 
         if threshold < 0.0 {
-            eprintln!("Threshold cannot be less than zero!");
+            error!("Threshold cannot be less than zero!");
             process::exit(1);
         }
 
         self.input_files.par_iter().for_each(|in_file| {
             if in_file.exists() {
-                vprintln!("Processing File: {:?}", in_file);
+                info!("Processing File: {:?}", in_file);
                 let mut raw =
                     Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
-                vprintln!(
+                debug!(
                     "Hot pixel correction with variance threshold {}...",
                     threshold
                 );
                 raw.hot_pixel_correction(window_size, threshold);
 
-                vprintln!("Writing to disk...");
+                info!("Writing to disk...");
 
                 let out_file = util::append_file_name(in_file.as_os_str().to_str().unwrap(), "hpc");
                 raw.save(&out_file).expect("Failed to save image");
             } else {
-                eprintln!("File not found: {:?}", in_file);
+                error!("File not found: {:?}", in_file);
             }
             pb_inc!();
         });

@@ -35,19 +35,19 @@ impl RunnableSubcommand for Anaglyph {
         let out_file_path = self.output.as_os_str().to_str().unwrap();
 
         if !path::file_exists(&left_image_path) {
-            eprintln!("Error: File not found (left eye): {}", left_image_path);
+            error!("Error: File not found (left eye): {}", left_image_path);
             pb_done_with_error!();
             process::exit(1);
         }
 
         if !path::file_exists(&right_image_path) {
-            eprintln!("Error: File not found (right eye): {}", right_image_path);
+            error!("Error: File not found (right eye): {}", right_image_path);
             pb_done_with_error!();
             process::exit(1);
         }
 
         if !path::parent_exists_and_writable(out_file_path) {
-            eprintln!(
+            error!(
                 "Error: Output file directory not found or is not writable: {}",
                 out_file_path
             );
@@ -59,7 +59,7 @@ impl RunnableSubcommand for Anaglyph {
         let mut right_img = MarsImage::open(right_image_path, Instrument::M20MastcamZRight);
 
         if self.mono {
-            vprintln!("Converting input images to monochrome...");
+            info!("Converting input images to monochrome...");
             left_img.to_mono();
             right_img.to_mono();
         }

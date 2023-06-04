@@ -103,7 +103,7 @@ impl RunnableSubcommand for Info {
                 println!();
                 println!();
             } else {
-                eprintln!("File not found: {:?}", in_file);
+                error!("File not found: {:?}", in_file);
             }
         }
         Ok(())

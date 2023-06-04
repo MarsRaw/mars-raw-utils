@@ -196,7 +196,7 @@ pub async fn perform_fetch(
                 let tasks: Vec<_> = results
                     .iter()
                     .map(|md| {
-                        vprintln!("Fetching Image from Remote URL: {}", md.remote_image_url);
+                        info!("Fetching Image from Remote URL: {}", md.remote_image_url);
                         download_remote_image(md, query, on_image_downloaded)
                     })
                     .collect();
@@ -204,7 +204,7 @@ pub async fn perform_fetch(
                     task.await?;
                 }
             }
-            Err(why) => eprintln!("Error: {}", why),
+            Err(why) => error!("Error: {}", why),
         };
 
         Ok(())

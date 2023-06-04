@@ -36,38 +36,35 @@ impl RunnableSubcommand for Levels {
         // Some rules on the parameters
         // TODO: Keep an eye on floating point errors
         if white_level < 0.0 || black_level < 0.0 {
-            eprintln!("Levels cannot be negative");
+            error!("Levels cannot be negative");
             process::exit(1);
         }
 
         if white_level < black_level {
-            eprintln!("White level cannot be less than black level");
+            error!("White level cannot be less than black level");
             process::exit(1);
         }
 
         if white_level > 1.0 || black_level > 1.0 {
-            eprintln!("Levels cannot exceed 1.0");
+            error!("Levels cannot exceed 1.0");
             process::exit(1);
         }
 
         if gamma <= 0.0 {
-            eprintln!("Gamma cannot be zero or negative");
+            error!("Gamma cannot be zero or negative");
             process::exit(1);
         }
 
         for in_file in self.input_files.iter() {
             if in_file.exists() {
-                vprintln!("Processing File: {:?}", in_file);
+                info!("Processing File: {:?}", in_file);
 
                 let mut raw =
                     Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
-                vprintln!(
+                debug!(
                     "Black: {}, White: {}, Gamma: {}, {:?}",
-                    black_level,
-                    white_level,
-                    gamma,
-                    in_file
+                    black_level, white_level, gamma, in_file
                 );
                 raw.levels(black_level, white_level, gamma);
 
@@ -75,7 +72,7 @@ impl RunnableSubcommand for Levels {
                     util::append_file_name(in_file.as_os_str().to_str().unwrap(), "lvls");
                 raw.save(&out_file).expect("Failed to save image");
             } else {
-                eprintln!("File not found: {:?}", in_file);
+                error!("File not found: {:?}", in_file);
             }
             pb_inc!();
         }

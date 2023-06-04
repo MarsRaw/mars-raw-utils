@@ -73,7 +73,7 @@ async fn test_fetch_remote_calibration_resource() {
 
         env::remove_var("CALIBRATION_FILE_REMOTE_ROOT"); // Another call in case tests are run concurrently and the env
                                                          // var gets set since the last remove_var was called.
-        let remote_url = caldata::get_calibration_file_remote_url(&test_image);
+        let remote_url = caldata::get_calibration_file_remote_url(test_image);
         let remote_url_expected = format!("{}{}", CALIBRATION_FILE_REMOTE_ROOT, test_image);
 
         // Remote URL should be what we expect
@@ -87,7 +87,7 @@ async fn test_fetch_remote_calibration_resource() {
         // Create a temporary file, write those bytes into it then try to open
         // the resulting image
         let temp_dir = tempdir().expect("Failed to assign a temp directory");
-        let file_path = temp_dir.path().join(&test_image);
+        let file_path = temp_dir.path().join(test_image);
         let mut file = File::create(&file_path).expect("Failed to create a temporary file");
         file.write_all(&cal_file_bytes[..])
             .expect("Failed to write bytes to file");

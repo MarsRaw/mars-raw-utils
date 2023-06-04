@@ -64,19 +64,19 @@ impl RunnableSubcommand for DiffGif {
         let output = self.output.as_os_str().to_str().unwrap();
 
         if white_level < 0.0 || black_level < 0.0 {
-            eprintln!("Levels cannot be negative");
+            error!("Levels cannot be negative");
             pb_done_with_error!();
             process::exit(1);
         }
 
         if white_level < black_level {
-            eprintln!("White level cannot be less than black level");
+            error!("White level cannot be less than black level");
             pb_done_with_error!();
             process::exit(1);
         }
 
         if gamma <= 0.0 {
-            eprintln!("Gamma cannot be zero or negative");
+            error!("Gamma cannot be zero or negative");
             pb_done_with_error!();
             process::exit(1);
         }

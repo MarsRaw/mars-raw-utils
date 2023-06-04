@@ -61,6 +61,12 @@ enum Mru {
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     let t1 = std::time::Instant::now();
+
+    stump::set_min_log_level(stump::LogEntryLevel::WARN);
+    info!("Initialized logging"); // INFO, which means that this won't be seen
+                                  // unless the user overrides via environment
+                                  // variable.
+
     let args = Cli::parse_from(wild::args());
 
     if args.verbose {
@@ -96,9 +102,9 @@ async fn main() -> Result<(), anyhow::Error> {
         Mru::Decorr(args) => args.run().await,
         Mru::UpdateCalData(args) => args.run().await,
     } {
-        eprintln!("{}", "Unhandled program error:".red());
-        eprintln!("{}", why);
+        error!("{}", "Unhandled program error:".red());
+        error!("{}", why);
     };
-    println!("Runtime: {}s", t1.elapsed().as_secs_f64());
+    info!("Runtime: {}s", t1.elapsed().as_secs_f64());
     Ok(())
 }

@@ -51,7 +51,7 @@ use async_trait::async_trait;
 impl RunnableSubcommand for Profile {
     async fn run(&self) -> Result<()> {
         if self.list && self.profile.is_some() {
-            eprintln!("Error: Two actions specified, please only select one at a time");
+            error!("Error: Two actions specified, please only select one at a time");
         } else if self.list {
             print_list_header();
 
@@ -112,11 +112,11 @@ impl RunnableSubcommand for Profile {
                     println!("Output Filename Suffix: {}", profile.filename_suffix);
                 }
                 Err(why) => {
-                    eprintln!("Error: {}", why);
+                    error!("Error: {}", why);
                 }
             };
         } else {
-            eprintln!("Error: No action specified");
+            error!("Error: No action specified");
         }
         Ok(())
     }

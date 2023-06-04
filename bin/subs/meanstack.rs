@@ -29,7 +29,7 @@ impl RunnableSubcommand for MeanStack {
 
         for in_file in self.input_files.iter() {
             if in_file.exists() {
-                vprintln!("Processing File: {:?}", in_file);
+                info!("Processing File: {:?}", in_file);
 
                 let raw =
                     Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
@@ -47,7 +47,7 @@ impl RunnableSubcommand for MeanStack {
                     .unwrap();
                 } else {
                     if raw.width != mean.width || raw.height != mean.height {
-                        eprintln!("Input image has differing dimensions, cannot continue");
+                        error!("Input image has differing dimensions, cannot continue");
                         process::exit(1);
                     }
 
@@ -56,7 +56,7 @@ impl RunnableSubcommand for MeanStack {
 
                 count = count.add(&ones).unwrap();
             } else {
-                eprintln!("File not found: {:?}", in_file);
+                error!("File not found: {:?}", in_file);
             }
             pb_inc!();
         }

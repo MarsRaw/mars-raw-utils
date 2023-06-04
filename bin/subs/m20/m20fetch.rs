@@ -123,7 +123,7 @@ impl RunnableSubcommand for M20Fetch {
         let camera_ids_res = im.find_remote_instrument_names_fromlist(&self.camera);
         let cameras = match camera_ids_res {
             Err(_e) => {
-                eprintln!("Invalid camera instrument(s) specified");
+                error!("Invalid camera instrument(s) specified");
                 process::exit(1);
             }
             Ok(v) => v,
@@ -156,8 +156,8 @@ impl RunnableSubcommand for M20Fetch {
         )
         .await
         {
-            Ok(_) => vprintln!("Done"),
-            Err(why) => vprintln!("Error: {}", why),
+            Ok(_) => info!("Done"),
+            Err(why) => error!("Error: {}", why),
         };
 
         Ok(())
