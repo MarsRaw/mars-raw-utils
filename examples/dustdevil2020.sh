@@ -28,10 +28,10 @@ cd ${soldir}/ECAM
 
 mru m20-fetch -c NAVCAM_LEFT -s $sol -f NCAM00500 NCAM0051 NCAM0052 NCAM0053 ${seqid} -n
 
-mru calibrate -i *J0?.png 
+mru calibrate -i *J0?.png -P m20_ncam_rad
 
 for seqid in `ls *NCAM00514*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
-    mru -v diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 -p stacked 
+    mru -v diffgif -i *${seqid}*-rjcal-rad.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 
 done
 
 for seqid in `ls *NCAM005{1,2,3}*2I*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do

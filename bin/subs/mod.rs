@@ -55,7 +55,8 @@ macro_rules! pb_create_spinner {
 #[macro_export]
 macro_rules! pb_set_print {
     () => {
-        $crate::print::set_print(|s| {
+        use stump;
+        stump::set_print(|s| {
             PB.println(s);
         });
     };

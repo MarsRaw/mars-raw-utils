@@ -73,6 +73,7 @@ toml = "0.7.1"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
 sciimg = {path = "sciimg", features = ["rayon"]}
+stump = {path = "stump"}
 weezl = "0.1.5"
 gif = "0.12.0"
 rayon = "1.7.0"

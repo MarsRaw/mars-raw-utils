@@ -5,6 +5,7 @@ use image::load_from_memory;
 use mars_raw_utils::prelude::*;
 use sciimg::{drawable::*, prelude::*, vector::Vector};
 use std::process;
+use stump;
 
 pb_create_spinner!();
 
@@ -233,7 +234,7 @@ impl RunnableSubcommand for CrossEye {
     async fn run(&self) -> Result<()> {
         pb_set_print!();
 
-        print::print_experimental();
+        stump::print_experimental();
 
         let left_image_path = String::from(self.left.as_os_str().to_str().unwrap());
         let right_image_path = String::from(self.right.as_os_str().to_str().unwrap());

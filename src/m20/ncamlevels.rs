@@ -1,5 +1,4 @@
 use crate::m20::assemble::NavcamTile;
-use crate::vprintln;
 
 use anyhow::Result;
 use sciimg::{blur, image::Image, prelude::ImageBuffer};

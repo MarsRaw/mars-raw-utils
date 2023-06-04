@@ -1,5 +1,3 @@
-use crate::veprintln;
-use crate::vprintln;
 use sciimg::prelude::*;
 use std::collections::HashMap;
 use std::fs;

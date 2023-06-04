@@ -4,12 +4,7 @@ use crate::{calprofile::*, enums::Instrument};
 
 use anyhow::Result;
 // use sciimg::path;
-
-pub enum CompleteStatus {
-    OK,
-    WARN,
-    FAIL,
-}
+use stump::CompleteStatus;
 
 pub struct CompleteContext {
     pub status: CompleteStatus,

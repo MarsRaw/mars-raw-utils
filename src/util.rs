@@ -1,5 +1,4 @@
-use crate::{constants, httpfetch, vprintln};
-
+use crate::{constants, httpfetch};
 use sciimg::path;
 use sciimg::util as sciutil;
 

@@ -1,8 +1,6 @@
 use crate::calibfile;
 use crate::enums;
 use crate::memcache;
-use crate::veprintln;
-use crate::vprintln;
 use regex::Regex;
 use sciimg::path;
 use std::convert::TryInto;

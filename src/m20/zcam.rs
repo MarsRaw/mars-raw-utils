@@ -1,7 +1,6 @@
-use crate::veprintln;
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    inpaintmask, marsimage::MarsImage, util, vprintln,
+    inpaintmask, marsimage::MarsImage, util,
 };
 
 use sciimg::prelude::*;

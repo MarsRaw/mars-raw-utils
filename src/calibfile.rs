@@ -1,7 +1,7 @@
 use std::env;
 
 use crate::enums::CalFileType;
-use crate::{constants, enums, vprintln};
+use crate::{constants, enums};
 
 use sciimg::path;
 

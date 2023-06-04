@@ -1,6 +1,6 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    marsimage::MarsImage, util, veprintln, vprintln,
+    marsimage::MarsImage, util,
 };
 
 use anyhow::Result;

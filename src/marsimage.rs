@@ -1,6 +1,4 @@
-use crate::{
-    decompanding::LookUpTable, enums, flatfield, inpaintmask, metadata::*, util, vprintln,
-};
+use crate::{decompanding::LookUpTable, enums, flatfield, inpaintmask, metadata::*, util};
 
 use anyhow::Result;
 use sciimg::{

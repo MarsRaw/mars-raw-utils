@@ -1,4 +1,4 @@
-use crate::{calibfile, enums, marsimage::MarsImage, memcache::load_image, vprintln};
+use crate::{calibfile, enums, marsimage::MarsImage, memcache::load_image};
 
 use anyhow::Result;
 

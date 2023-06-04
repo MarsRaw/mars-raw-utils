@@ -1,7 +1,6 @@
 // use reqwest::blocking::Client;
 // use reqwest::{blocking, StatusCode};
 
-use crate::vprintln;
 use reqwest::Client;
 use reqwest::Url;
 use std::cmp::min;

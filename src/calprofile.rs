@@ -1,4 +1,4 @@
-use crate::{calibfile, constants, veprintln, vprintln};
+use crate::{calibfile, constants};
 
 use sciimg::prelude::*;
 

@@ -1,6 +1,4 @@
 use crate::httpfetch;
-use crate::print;
-use crate::vprintln;
 use anyhow::Result;
 use dirs;
 use rayon::prelude::*;
@@ -9,6 +7,7 @@ use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
+use stump;
 use url::Url;
 
 // TODO: I would prefer this not being hardcoded. Find how to define it in Cargo.toml
@@ -108,7 +107,7 @@ pub async fn fetch_and_save_file(
     let save_to = get_calibration_file_local_path(remote_file_uri, use_local_store);
     let save_to_exists = save_to.exists();
     if save_to_exists && !replace {
-        print::print_warn(&format!("Skipped: {}", remote_file_uri));
+        stump::print_warn(&format!("Skipped: {}", remote_file_uri));
         vprintln!(
             "Calibraton file {} already exists and replace is set to false",
             remote_file_uri
@@ -136,16 +135,16 @@ pub async fn fetch_and_save_file(
                 let mut file = File::create(save_to).unwrap();
                 file.write_all(&bytes_array[..]).unwrap();
                 if save_to_exists {
-                    print::print_done(&format!("Replaced: {}", remote_file_uri));
+                    stump::print_done(&format!("Replaced: {}", remote_file_uri));
                     Ok(SaveResult::Replaced)
                 } else {
-                    print::print_done(&format!("New File: {}", remote_file_uri));
+                    stump::print_done(&format!("New File: {}", remote_file_uri));
                     Ok(SaveResult::IsNew)
                 }
             }
             Err(why) => {
                 println!("Error fetching {}: {}", remote_file_uri, why);
-                print::print_fail(&format!("Failed: {}", remote_file_uri));
+                stump::print_fail(&format!("Failed: {}", remote_file_uri));
                 Err(format!("{:?}", why))
             }
         }

@@ -1,7 +1,5 @@
 #![allow(clippy::too_many_arguments)]
 
-use crate::vprintln;
-
 use sciimg::{enums::ImageMode, image, imagebuffer, lowpass, path};
 
 use gif;

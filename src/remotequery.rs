@@ -1,11 +1,10 @@
+use crate::constants;
 use crate::enums::Mission;
 use crate::m20::fetch::M20Fetch;
 use crate::metadata::Metadata;
 use crate::msl::fetch::MslFetch;
 use crate::nsyt::fetch::NsytFetch;
 use crate::util::{fetch_image, save_image_json, InstrumentMap};
-use crate::vprintln;
-use crate::{constants, print::do_println};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use cli_table::{
@@ -15,6 +14,7 @@ use cli_table::{
     Table,
 };
 use sciimg::path;
+use stump::do_println;
 
 /// Generic all-mission remote raw image query parameters
 #[derive(Debug, Clone)]

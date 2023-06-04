@@ -4,3 +4,6 @@
 [submodule "sciimg"]
 	path = sciimg
 	url = git@github.com:kmgill/sciimg.git
+[submodule "stump"]
+	path = stump
+	url = git@github.com:kmgill/stump.git

@@ -5,6 +5,7 @@ use clap::Parser;
 use mars_raw_utils::{composite, prelude::*};
 use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
 use std::process;
+use stump;
 
 pb_create_spinner!();
 
@@ -28,7 +29,7 @@ impl RunnableSubcommand for Composite {
     async fn run(&self) -> Result<()> {
         pb_set_print!();
 
-        print::print_experimental();
+        stump::print_experimental();
 
         let in_files: Vec<String> = self
             .input_files

@@ -1,9 +1,11 @@
-use mars_raw_utils::print;
 mod subs;
 use anyhow::Result;
 use colored::Colorize;
 use subs::runnable::RunnableSubcommand;
 use subs::*;
+
+#[macro_use]
+extern crate stump;
 
 extern crate wild;
 use clap::{Parser, Subcommand};
@@ -62,7 +64,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let args = Cli::parse_from(wild::args());
 
     if args.verbose {
-        print::set_verbose(true);
+        stump::set_verbose(true);
     }
 
     if let Err(why) = match args.command {

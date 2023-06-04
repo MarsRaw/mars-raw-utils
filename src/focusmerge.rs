@@ -1,6 +1,6 @@
 use std::process;
 
-use crate::{util, vprintln};
+use crate::util;
 
 use sciimg::{image, imagebuffer, lowpass, path, prelude::ImageMode, quality, stats};
 

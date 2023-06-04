@@ -13,6 +13,7 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, Error, Result};
 use clap::Parser;
+use stump;
 
 pb_create!();
 
@@ -195,7 +196,7 @@ impl RunnableSubcommand for Calibrate {
         pb_set_print_and_length!(in_files.len() * profiles.len());
 
         panic::set_hook(Box::new(|_info| {
-            if print::is_verbose() {
+            if stump::is_verbose() {
                 println!("{:?}", Backtrace::new());
             }
             print_fail(&"Internal Error!".to_string());
