@@ -18,6 +18,7 @@ command = [
     "cargo", "clippy",
     "--all-targets",
     "--color", "always",
+    "--", "-D", "warnings",
 ]
 need_stdout = false
 
@@ -25,6 +26,10 @@ need_stdout = false
 command = ["cargo", "test", "--color=always"]
 need_stdout = true
 watch = ["tests"]
+
+
+[jobs.fmt]
+command = ["cargo", "fmt", "--all", "--", "--check"]
 
 [jobs.doc]
 command = ["cargo", "doc", "--color=always", "--all-features", "--no-deps"]
@@ -64,3 +69,4 @@ t = "job:test"
 r = "job:run"
 c = "job:clippy"
 k = "job:check"
+f = "job:fmt"
