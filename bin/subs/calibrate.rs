@@ -199,7 +199,7 @@ impl RunnableSubcommand for Calibrate {
             if stump::is_verbose() {
                 println!("{:?}", Backtrace::new());
             }
-            print_fail(&"Internal Error!".to_string());
+            print_fail("Internal Error!");
 
             // If the user has exported MRU_EXIT_ON_PANIC=1, then we should exit here.
             // This will prevent situations where errors fly by on the screen and
