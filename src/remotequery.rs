@@ -33,6 +33,44 @@ pub struct RemoteQuery {
     pub output_path: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum FetchError {
+    RemoteError(String),
+    NoNetwork(String),
+    FileFoundLocal(String),
+    MissionNotSupported(String),
+}
+
+macro_rules! why {
+    ($why:expr) => {
+        format!("{:?}", $why)
+    };
+}
+
+macro_rules! remote_error {
+    ($why:expr) => {{
+        FetchError::RemoteError(why!($why))
+    }};
+}
+
+macro_rules! no_network {
+    ($why:expr) => {
+        FetchError::NoNetwork(why!($why))
+    };
+}
+
+macro_rules! file_found_local {
+    ($why:expr) => {
+        FetchError::FileFoundLocal("File exists on destination filesystem")
+    };
+}
+
+macro_rules! mission_not_supported {
+    ($mission:expr) => {{
+        FetchError::MissionNotSupported(why!($mission))
+    }};
+}
+
 /// Generic all-mission api stats from query results
 #[derive(Debug, Clone)]
 pub struct RemoteStats {
@@ -61,16 +99,16 @@ pub type ReturnsFetch = dyn Fn() -> FetchType;
 #[async_trait]
 pub trait Fetch {
     /// Query the remote image service with the supplied parameters
-    async fn query_remote_images(&self, query: &RemoteQuery) -> Result<Vec<Metadata>>;
+    async fn query_remote_images(&self, query: &RemoteQuery) -> Result<Vec<Metadata>, FetchError>;
 
     /// Query the remote image service for information regarding images tagged as 'latest'
     /// 'Latest images' are generally those images to have come down in the most recent downlink. This may
     /// include any number of sols depending on what images were still onboard the rover at the time
     /// of the downlink.
-    async fn fetch_latest(&self) -> Result<Box<dyn LatestData>>;
+    async fn fetch_latest(&self) -> Result<Box<dyn LatestData>, FetchError>;
 
     /// Query the remote image service and return only the stats portion of the results
-    async fn fetch_stats(&self, query: &RemoteQuery) -> Result<RemoteStats>;
+    async fn fetch_stats(&self, query: &RemoteQuery) -> Result<RemoteStats, FetchError>;
 
     /// Return a mission-specific map of supported instruments. Each bottom-level string should match
     /// a supported instrument string on the remote api
@@ -86,7 +124,7 @@ pub fn get_fetcher_for_mission(mission: Mission) -> Result<FetchType> {
         Mission::Mars2020 => Ok(M20Fetch::new_boxed()),
         Mission::MSL => Ok(MslFetch::new_boxed()),
         Mission::InSight => Ok(NsytFetch::new_boxed()),
-        _ => Err(anyhow!("Specified mission not supported: {:?}", mission)),
+        _ => Err(mission_not_supported!(mission)),
     }
 }
 
