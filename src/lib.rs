@@ -8,6 +8,9 @@ extern crate lazy_static;
 #[macro_use]
 extern crate stump;
 
+#[macro_use]
+pub mod error;
+
 /// Routines for creating stereo anaglyph images
 pub mod anaglyph;
 
@@ -83,6 +86,7 @@ pub mod time;
 /// General utilities
 pub mod util;
 
+#[macro_use]
 pub mod remotequery;
 
 /// A simple file cache for calibration files that would otherwise need to be loaded repeatedly in batch operations.

@@ -1,8 +1,8 @@
+use crate::error::*;
 use crate::{constants, httpfetch};
+use anyhow::{anyhow, Result};
 use sciimg::path;
 use sciimg::util as sciutil;
-
-use anyhow::{anyhow, Result};
 
 use serde::Serialize;
 use std::collections::HashMap;
@@ -147,7 +147,7 @@ pub async fn fetch_image(
     image_url: &str,
     only_new: bool,
     output_path: Option<&str>,
-) -> Result<PathBuf> {
+) -> Result<PathBuf, Error> {
     let write_to = match output_path {
         Some(p) => {
             let bn = path::basename(image_url);
@@ -168,7 +168,7 @@ pub async fn fetch_image(
             return Ok(path.to_path_buf());
         }
     }
-    Err(anyhow!("File already exists on disk, skip it."))
+    Err(file_found_local!(output_path))
 }
 
 pub fn save_image_json<T: Serialize>(
