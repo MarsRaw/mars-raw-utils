@@ -4,7 +4,7 @@ use crate::m20::fetch::M20Fetch;
 use crate::metadata::Metadata;
 use crate::msl::fetch::MslFetch;
 use crate::nsyt::fetch::NsytFetch;
-use crate::util::{fetch_image, save_image_json, InstrumentMap};
+use crate::util::{fetch_image, save_image_json, FetchError, InstrumentMap};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use cli_table::{
@@ -156,12 +156,17 @@ async fn download_remote_image(
     on_image_downloaded: OnImageDownloaded,
 ) -> Result<String> {
     if !query.list_only {
-        _ = fetch_image(
+        match fetch_image(
             &image_md.remote_image_url,
             query.only_new,
             Some(query.output_path.as_ref()),
         )
-        .await?;
+        .await
+        {
+            Ok(_) => {}
+            Err(FetchError::FileExists) => {}
+            Err(why) => return Err(anyhow!(why)),
+        };
         let image_base_name = path::basename(image_md.remote_image_url.as_str());
         _ = save_image_json(
             &image_base_name,
