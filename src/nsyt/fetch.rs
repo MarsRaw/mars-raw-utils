@@ -1,5 +1,4 @@
 use crate::constants;
-use crate::error::*;
 use crate::jsonfetch;
 use crate::metadata::{convert_to_std_metadata, Metadata};
 use crate::nsyt::metadata::*;
@@ -91,7 +90,7 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
         return req.fetch_str().await;
     }
 
-    Err(unknown_error!("Unable to submit query."))
+    Err(anyhow!("Unable to submit query."))
 }
 
 /// Submits the query via `submit_query` then deserializes it through serde to a `M20ApiResults` object
@@ -174,7 +173,7 @@ impl remotequery::Fetch for NsytFetch {
                 let res: NsytLatest = serde_json::from_str(v.as_str()).unwrap();
                 Ok(Box::new(res))
             }
-            Err(e) => Err(parse_failure!("Serde parsing from_str failed. {}", e)),
+            Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
         }
     }
 

@@ -191,7 +191,7 @@ impl remotequery::Fetch for M20Fetch {
                 let res: M20LatestData = serde_json::from_str(v.as_str()).unwrap();
                 Ok(Box::new(res))
             }
-            Err(e) => Err(parse_failure!("Serde parsing from_str failed. {}", e)),
+            Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
         }
     }
 

@@ -1,6 +1,5 @@
 use crate::constants;
 use crate::enums::Mission;
-use crate::error;
 use crate::m20::fetch::M20Fetch;
 use crate::metadata::Metadata;
 use crate::msl::fetch::MslFetch;
@@ -57,16 +56,16 @@ pub type ReturnsFetch = dyn Fn() -> FetchType;
 #[async_trait]
 pub trait Fetch {
     /// Query the remote image service with the supplied parameters
-    async fn query_remote_images(&self, query: &RemoteQuery) -> Result<Vec<Metadata>, Error>;
+    async fn query_remote_images(&self, query: &RemoteQuery) -> Result<Vec<Metadata>>;
 
     /// Query the remote image service for information regarding images tagged as 'latest'
     /// 'Latest images' are generally those images to have come down in the most recent downlink. This may
     /// include any number of sols depending on what images were still onboard the rover at the time
     /// of the downlink.
-    async fn fetch_latest(&self) -> Result<Box<dyn LatestData>, Error>;
+    async fn fetch_latest(&self) -> Result<Box<dyn LatestData>>;
 
     /// Query the remote image service and return only the stats portion of the results
-    async fn fetch_stats(&self, query: &RemoteQuery) -> Result<RemoteStats, Error>;
+    async fn fetch_stats(&self, query: &RemoteQuery) -> Result<RemoteStats>;
 
     /// Return a mission-specific map of supported instruments. Each bottom-level string should match
     /// a supported instrument string on the remote api
@@ -77,12 +76,12 @@ pub trait Fetch {
 ///
 /// Note: this mod shouldn't know about m20/msl/nsyt/etc. Look into an auto-registration that
 /// is done from each mission code.
-pub fn get_fetcher_for_mission(mission: Mission) -> Result<FetchType, Error> {
+pub fn get_fetcher_for_mission(mission: Mission) -> Result<FetchType> {
     match mission {
         Mission::Mars2020 => Ok(M20Fetch::new_boxed()),
         Mission::MSL => Ok(MslFetch::new_boxed()),
         Mission::InSight => Ok(NsytFetch::new_boxed()),
-        _ => Err(mission_not_supported!(mission)),
+        _ => Err(anyhow!("Mission not supported: {:?}", mission)),
     }
 }
 
@@ -150,7 +149,7 @@ async fn download_remote_image(
     image_md: &Metadata,
     query: &RemoteQuery,
     on_image_downloaded: OnImageDownloaded,
-) -> Result<String, Error> {
+) -> Result<String> {
     if !query.list_only {
         match fetch_image(
             &image_md.remote_image_url,
@@ -173,7 +172,7 @@ async fn download_remote_image(
         on_image_downloaded(image_md);
         Ok(image_base_name)
     } else {
-        Err(not_downloading!())
+        Err(anyhow!("Skipping file"))
     }
 }
 
@@ -210,7 +209,7 @@ pub async fn perform_fetch(
 
         Ok(())
     } else {
-        Err(mission_not_supported!(mission))
+        Err(anyhow!("Mission not supported: {:?}", mission))
     }
 }
 
@@ -218,7 +217,7 @@ pub async fn get_latest(mission: Mission) -> Result<Box<dyn LatestData>> {
     if let Ok(client) = get_fetcher_for_mission(mission) {
         client.fetch_latest().await
     } else {
-        Err(mission_not_supported!(mission))
+        Err(anyhow!("Mission not supported: {:?}", mission))
     }
 }
 
@@ -226,6 +225,6 @@ pub fn get_instrument_map(mission: Mission) -> Result<InstrumentMap> {
     if let Ok(client) = get_fetcher_for_mission(mission) {
         Ok(client.make_instrument_map())
     } else {
-        Err(mission_not_supported!(mission))
+        Err(anyhow!("Mission not supported: {:?}", mission))
     }
 }
