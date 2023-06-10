@@ -121,14 +121,7 @@ fn process_band(
         }
     }
 
-    let mm = d.get_min_max();
-    let rng = 65535.0;
-    let norm_min = (rng * black_level) + mm.min;
-    let norm_max = (rng * white_level) + mm.min;
-
-    d.clip_mut(norm_min, norm_max);
-    d.power_mut(gamma);
-
+    d.levels_with_gamma_mut(black_level, white_level, gamma);
     let mut n = d.normalize(0.0, 65535.0).unwrap();
 
     for y in 0..d.height {

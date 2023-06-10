@@ -37,17 +37,17 @@ for seqid in `ls *NCAM00514*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
 done
 
 for seqid in `ls *NCAM005{1,2,3}*2I*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
-    mru -v diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 2.0 -l 5 -d 20 -p stacked -m
+    mru -v diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 20 -p stacked -m
 done
 
 
 if [ `ls *NCAM00500*-rjcal.png 2> /dev/null | wc -l` -eq 15 ]; then
     rm DiffGif_${sol}_NCAM00500.gif
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 3` -o DustDevil_${sol}_NCAM00500_part1_rjcal.gif -b 0 -w 70.0 -g 2.0 -l 5 -d 40 -p stacked -m
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 6 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part2_rjcal.gif -b 0 -w 70.0 -g 2.0 -l 5 -d 40 -p stacked -m
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 9 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part3_rjcal.gif -b 0 -w 70.0 -g 2.0 -l 5 -d 40 -p stacked -m
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 12 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part4_rjcal.gif -b 0 -w 70.0 -g 2.0 -l 5 -d 40 -p stacked -m
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 15 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part5_rjcal.gif -b 0 -w 70.0 -g 2.0 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 3` -o DustDevil_${sol}_NCAM00500_part1_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 6 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part2_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 9 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part3_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 12 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part4_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.png | head -n 15 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part5_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m
     /usr/bin/convert DustDevil_${sol}_NCAM00500_part1_rjcal.gif  DustDevil_${sol}_NCAM00500_part2_rjcal.gif DustDevil_${sol}_NCAM00500_part3_rjcal.gif \
         DustDevil_${sol}_NCAM00500_part4_rjcal.gif DustDevil_${sol}_NCAM00500_part5_rjcal.gif DustDevil_${sol}_NCAM00500_rjcal.gif 
     rm DustDevil_${sol}_NCAM00500_part*_rjcal.gif 
