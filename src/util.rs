@@ -8,6 +8,20 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
+#[macro_export]
+macro_rules! f {
+    ($($arg:tt)*) => {
+        format!($($arg)*)
+    };
+}
+
+#[macro_export]
+macro_rules! t {
+    ($s:expr) => {
+        format!("{:?}", $s)
+    };
+}
+
 pub fn string_is_valid_f64(s: &str) -> bool {
     sciutil::string_is_valid_f64(s)
 }

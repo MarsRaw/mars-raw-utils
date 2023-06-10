@@ -58,7 +58,7 @@ impl RunnableSubcommand for M20Fetch {
     async fn run(&self) -> Result<()> {
         pb_set_print!();
 
-        let im = remotequery::get_instrument_map(Mission::Mars2020).unwrap();
+        let im: util::InstrumentMap = remotequery::get_instrument_map(Mission::Mars2020).unwrap();
         if self.instruments {
             im.print_instruments();
             process::exit(0);
@@ -157,6 +157,7 @@ impl RunnableSubcommand for M20Fetch {
         .await
         {
             Ok(_) => info!("Done"),
+            Err(FetchError::SkippingFile) => info!("Not downloading images. Done"),
             Err(why) => error!("Error: {}", why),
         };
 

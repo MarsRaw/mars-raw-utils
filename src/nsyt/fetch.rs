@@ -3,7 +3,9 @@ use crate::jsonfetch;
 use crate::metadata::{convert_to_std_metadata, Metadata};
 use crate::nsyt::metadata::*;
 use crate::remotequery;
+use crate::remotequery::FetchError;
 use crate::util::{stringvec, stringvec_b, InstrumentMap};
+use crate::{f, t};
 use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -139,12 +141,18 @@ impl NsytFetch {
 
 #[async_trait]
 impl remotequery::Fetch for NsytFetch {
-    async fn query_remote_images(&self, query: &remotequery::RemoteQuery) -> Result<Vec<Metadata>> {
+    async fn query_remote_images(
+        &self,
+        query: &remotequery::RemoteQuery,
+    ) -> Result<Vec<Metadata>, FetchError> {
         let stats = self.fetch_stats(query).await?;
 
-        Ok(if query.page.is_some() {
-            let results = fetch_page(query).await?;
-            api_results_to_image_vec(&results, query)
+        if query.page.is_some() {
+            if let Ok(results) = fetch_page(query).await {
+                Ok(api_results_to_image_vec(&results, query))
+            } else {
+                Err(FetchError::ProgrammingError(t!("Error fetching page")))
+            }
         } else {
             let pages = (stats.total_results as f32 / query.num_per_page as f32).ceil() as i32;
 
@@ -156,31 +164,41 @@ impl remotequery::Fetch for NsytFetch {
                 })
                 .collect();
 
-            let fetch_results = future::try_join_all(tasks).await?;
-            fetch_results
-                .into_iter()
-                .flat_map(|md_vec| md_vec.unwrap())
-                .collect()
-        })
+            match future::try_join_all(tasks).await {
+                Ok(r) => Ok(r.into_iter().flat_map(|md_vec| md_vec.unwrap()).collect()),
+                Err(why) => Err(FetchError::ProgrammingError(format!("{:?}", why))),
+            }
+        }
     }
 
-    async fn fetch_latest(&self) -> Result<Box<dyn remotequery::LatestData>> {
+    async fn fetch_latest(&self) -> Result<Box<dyn remotequery::LatestData>, FetchError> {
         let uri = constants::url::NSYT_LATEST_WEBSERVICE_URL;
 
-        let req = jsonfetch::JsonFetcher::new(uri)?;
+        let req = match jsonfetch::JsonFetcher::new(uri) {
+            Ok(req) => req,
+            Err(why) => {
+                return Err(FetchError::ProgrammingError(f!(
+                    "Failed to create json fetch object {:?}",
+                    why
+                )))
+            }
+        };
         match req.fetch_str().await {
             Ok(v) => {
                 let res: NsytLatest = serde_json::from_str(v.as_str()).unwrap();
                 Ok(Box::new(res))
             }
-            Err(e) => Err(anyhow!("Serde parsing from_str failed. {}", e)),
+            Err(e) => Err(FetchError::ParseError(f!(
+                "Serde parsing from_str failed. {}",
+                e
+            ))),
         }
     }
 
     async fn fetch_stats(
         &self,
         query: &remotequery::RemoteQuery,
-    ) -> Result<remotequery::RemoteStats> {
+    ) -> Result<remotequery::RemoteStats, FetchError> {
         match submit_query(query).await {
             Ok(v) => {
                 let res: NsytApiResults = serde_json::from_str(v.as_str()).unwrap();
@@ -193,7 +211,7 @@ impl remotequery::Fetch for NsytFetch {
                     total_images: res.total as i32,
                 })
             }
-            Err(e) => Err(e),
+            Err(e) => Err(FetchError::RemoteError(t!(e))),
         }
     }
 

@@ -81,6 +81,7 @@ pub mod prelude;
 pub mod time;
 
 /// General utilities
+#[macro_use]
 pub mod util;
 
 pub mod remotequery;

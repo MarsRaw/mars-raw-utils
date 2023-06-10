@@ -57,8 +57,8 @@ impl RunnableSubcommand for DiffGif {
             None => diffgif::ProductType::STANDARD,
         };
 
-        println!(
-            "{}, {}, {}, {}, {}",
+        info!(
+            "Black: {}, White: {}, Gamma: {}, Lowpass Window: {}, Gif Delay: {}",
             black_level, white_level, gamma, lowpass_window_size, delay
         );
         let output = self.output.as_os_str().to_str().unwrap();

@@ -6,7 +6,7 @@ use crate::metadata::Metadata;
 use crate::msl::fetch::MslFetch;
 use crate::nsyt::fetch::NsytFetch;
 use crate::util::{save_image_json, InstrumentMap};
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use cli_table::{Cell, Style, Table};
 use sciimg::path;
@@ -59,9 +59,13 @@ pub type ReturnsFetch = dyn Fn() -> FetchType;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum FetchError {
-    RemoteError,
+    RemoteError(String),
     FileExists,
     WriteError,
+    ProgrammingError(String),
+    MissionNotSupportedError(Mission),
+    SkippingFile,
+    ParseError(String),
 }
 
 impl Error for FetchError {}
@@ -111,16 +115,16 @@ pub async fn fetch_image(
 #[async_trait]
 pub trait Fetch {
     /// Query the remote image service with the supplied parameters
-    async fn query_remote_images(&self, query: &RemoteQuery) -> Result<Vec<Metadata>>;
+    async fn query_remote_images(&self, query: &RemoteQuery) -> Result<Vec<Metadata>, FetchError>;
 
     /// Query the remote image service for information regarding images tagged as 'latest'
     /// 'Latest images' are generally those images to have come down in the most recent downlink. This may
     /// include any number of sols depending on what images were still onboard the rover at the time
     /// of the downlink.
-    async fn fetch_latest(&self) -> Result<Box<dyn LatestData>>;
+    async fn fetch_latest(&self) -> Result<Box<dyn LatestData>, FetchError>;
 
     /// Query the remote image service and return only the stats portion of the results
-    async fn fetch_stats(&self, query: &RemoteQuery) -> Result<RemoteStats>;
+    async fn fetch_stats(&self, query: &RemoteQuery) -> Result<RemoteStats, FetchError>;
 
     /// Return a mission-specific map of supported instruments. Each bottom-level string should match
     /// a supported instrument string on the remote api
@@ -131,12 +135,12 @@ pub trait Fetch {
 ///
 /// Note: this mod shouldn't know about m20/msl/nsyt/etc. Look into an auto-registration that
 /// is done from each mission code.
-pub fn get_fetcher_for_mission(mission: Mission) -> Result<FetchType> {
+pub fn get_fetcher_for_mission(mission: Mission) -> Result<FetchType, FetchError> {
     match mission {
         Mission::Mars2020 => Ok(M20Fetch::new_boxed()),
         Mission::MSL => Ok(MslFetch::new_boxed()),
         Mission::InSight => Ok(NsytFetch::new_boxed()),
-        _ => Err(anyhow!("Mission not supported: {:?}", mission)),
+        _ => Err(FetchError::MissionNotSupportedError(mission)),
     }
 }
 
@@ -204,7 +208,7 @@ async fn download_remote_image(
     image_md: &Metadata,
     query: &RemoteQuery,
     on_image_downloaded: OnImageDownloaded,
-) -> Result<String> {
+) -> Result<String, FetchError> {
     if !query.list_only {
         match fetch_image(
             &image_md.remote_image_url,
@@ -215,7 +219,7 @@ async fn download_remote_image(
         {
             Ok(_) => {}
             Err(FetchError::FileExists) => {}
-            Err(why) => return Err(anyhow!(why)),
+            Err(why) => return Err(why),
         };
         let image_base_name = path::basename(image_md.remote_image_url.as_str());
         _ = save_image_json(
@@ -227,7 +231,7 @@ async fn download_remote_image(
         on_image_downloaded(image_md);
         Ok(image_base_name)
     } else {
-        Err(anyhow!("Skipping file"))
+        Err(FetchError::SkippingFile)
     }
 }
 
@@ -242,7 +246,7 @@ pub async fn perform_fetch(
     query: &RemoteQuery,
     on_total_known: OnTotalKnown,
     on_image_downloaded: OnImageDownloaded,
-) -> Result<()> {
+) -> Result<(), FetchError> {
     if let Ok(client) = get_fetcher_for_mission(mission) {
         match client.query_remote_images(query).await {
             Ok(results) => {
@@ -264,22 +268,22 @@ pub async fn perform_fetch(
 
         Ok(())
     } else {
-        Err(anyhow!("Mission not supported: {:?}", mission))
+        Err(FetchError::MissionNotSupportedError(mission))
     }
 }
 
-pub async fn get_latest(mission: Mission) -> Result<Box<dyn LatestData>> {
+pub async fn get_latest(mission: Mission) -> Result<Box<dyn LatestData>, FetchError> {
     if let Ok(client) = get_fetcher_for_mission(mission) {
         client.fetch_latest().await
     } else {
-        Err(anyhow!("Mission not supported: {:?}", mission))
+        Err(FetchError::MissionNotSupportedError(mission))
     }
 }
 
-pub fn get_instrument_map(mission: Mission) -> Result<InstrumentMap> {
+pub fn get_instrument_map(mission: Mission) -> Result<InstrumentMap, FetchError> {
     if let Ok(client) = get_fetcher_for_mission(mission) {
         Ok(client.make_instrument_map())
     } else {
-        Err(anyhow!("Mission not supported: {:?}", mission))
+        Err(FetchError::MissionNotSupportedError(mission))
     }
 }

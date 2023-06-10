@@ -5,6 +5,8 @@ sol=$1
 seqid=NCAM00595
 open_file_manager=0
 
+export STUMP_LOG_AT_LEVEL=info
+
 while [ $# -gt 0 ]; do
     if [ $1 == "-e" ]; then
         open_file_manager=1

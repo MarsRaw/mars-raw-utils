@@ -14,6 +14,7 @@ pub use crate::min;
 pub use crate::msl;
 pub use crate::nsyt;
 pub use crate::remotequery;
+pub use crate::remotequery::FetchError;
 pub use crate::time;
 pub use crate::util;
 use std::str::FromStr;

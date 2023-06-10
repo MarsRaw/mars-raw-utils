@@ -149,6 +149,7 @@ impl RunnableSubcommand for MslFetch {
         .await
         {
             Ok(_) => info!("Done"),
+            Err(FetchError::SkippingFile) => info!("Not downloading images. Done"),
             Err(why) => error!("Error: {}", why),
         };
 
