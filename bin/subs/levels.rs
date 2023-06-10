@@ -66,7 +66,7 @@ impl RunnableSubcommand for Levels {
                     "Black: {}, White: {}, Gamma: {}, {:?}",
                     black_level, white_level, gamma, in_file
                 );
-                raw.levels(black_level, white_level, gamma);
+                raw.levels_with_gamma(black_level, white_level, gamma);
 
                 let out_file =
                     util::append_file_name(in_file.as_os_str().to_str().unwrap(), "lvls");
