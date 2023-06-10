@@ -1,14 +1,13 @@
-use crate::error::*;
 use crate::{constants, httpfetch};
 use anyhow::{anyhow, Result};
 use sciimg::path;
 use sciimg::util as sciutil;
-
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::{error::Error, fmt};
 
 pub fn string_is_valid_f64(s: &str) -> bool {
     sciutil::string_is_valid_f64(s)
@@ -143,11 +142,26 @@ pub fn image_exists_on_filesystem(image_url: &str) -> bool {
     path::file_exists(bn.as_str())
 }
 
+#[derive(Debug, Eq, PartialEq)]
+pub enum FetchError {
+    RemoteError,
+    FileExists,
+    WriteError,
+}
+
+impl Error for FetchError {}
+
+impl fmt::Display for FetchError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Error of type {:?}", self)
+    }
+}
+
 pub async fn fetch_image(
     image_url: &str,
     only_new: bool,
     output_path: Option<&str>,
-) -> Result<PathBuf, Error> {
+) -> Result<PathBuf, FetchError> {
     let write_to = match output_path {
         Some(p) => {
             let bn = path::basename(image_url);
@@ -162,13 +176,20 @@ pub async fn fetch_image(
             let path = Path::new(write_to.as_str());
             info!("Writing image data to {}", write_to);
 
-            let mut file = File::create(path)?;
-            file.write_all(&image_data[..])?;
-
-            return Ok(path.to_path_buf());
+            let mut file = match File::create(path) {
+                Ok(f) => f,
+                Err(_) => return Err(FetchError::WriteError),
+            };
+            match file.write_all(&image_data[..]) {
+                Ok(_) => Ok(path.to_path_buf()),
+                Err(_) => Err(FetchError::WriteError),
+            }
+        } else {
+            Err(FetchError::WriteError)
         }
+    } else {
+        Err(FetchError::FileExists)
     }
-    Err(file_found_local!(output_path))
 }
 
 pub fn save_image_json<T: Serialize>(
