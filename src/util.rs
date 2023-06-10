@@ -1,4 +1,4 @@
-use crate::{constants, httpfetch};
+use crate::constants;
 use anyhow::{anyhow, Result};
 use sciimg::path;
 use sciimg::util as sciutil;
@@ -6,8 +6,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
-use std::path::{Path, PathBuf};
-use std::{error::Error, fmt};
+use std::path::Path;
 
 pub fn string_is_valid_f64(s: &str) -> bool {
     sciutil::string_is_valid_f64(s)
@@ -140,56 +139,6 @@ pub fn stringvec_b(a: &str, b: String) -> Vec<String> {
 pub fn image_exists_on_filesystem(image_url: &str) -> bool {
     let bn = path::basename(image_url);
     path::file_exists(bn.as_str())
-}
-
-#[derive(Debug, Eq, PartialEq)]
-pub enum FetchError {
-    RemoteError,
-    FileExists,
-    WriteError,
-}
-
-impl Error for FetchError {}
-
-impl fmt::Display for FetchError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Error of type {:?}", self)
-    }
-}
-
-pub async fn fetch_image(
-    image_url: &str,
-    only_new: bool,
-    output_path: Option<&str>,
-) -> Result<PathBuf, FetchError> {
-    let write_to = match output_path {
-        Some(p) => {
-            let bn = path::basename(image_url);
-            format!("{}/{}", p, bn)
-        }
-        None => String::from(image_url),
-    };
-
-    // would rather do this as if !... but I'm assuming these vprintln! calls are.. impotant for some reason...
-    if !only_new || !path::file_exists(&write_to) {
-        if let Ok(image_data) = httpfetch::simple_fetch_bin(image_url).await {
-            let path = Path::new(write_to.as_str());
-            info!("Writing image data to {}", write_to);
-
-            let mut file = match File::create(path) {
-                Ok(f) => f,
-                Err(_) => return Err(FetchError::WriteError),
-            };
-            match file.write_all(&image_data[..]) {
-                Ok(_) => Ok(path.to_path_buf()),
-                Err(_) => Err(FetchError::WriteError),
-            }
-        } else {
-            Err(FetchError::WriteError)
-        }
-    } else {
-        Err(FetchError::FileExists)
-    }
 }
 
 pub fn save_image_json<T: Serialize>(
