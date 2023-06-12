@@ -4,8 +4,10 @@ use clap::Parser;
 use cli_table::{Cell, Style, Table};
 use itertools::iproduct;
 use mars_raw_utils::prelude::*;
+use rayon::prelude::*;
 use sciimg::prelude::*;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 use stump::do_println;
 use vicar::*;
 
@@ -42,10 +44,18 @@ impl RunnableSubcommand for Pds2Png {
     async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());
 
-        let mut ranges: Vec<FileMinMax> = vec![];
+        let ranges = Arc::new(Mutex::new(Vec::<FileMinMax>::new()));
 
-        self.input_files.iter().for_each(|input_file| {
-            let vr = VicarReader::new_from_detached_label(input_file).unwrap();
+        self.input_files.par_iter().for_each(|input_file| {
+            info!("Starting conversion for {:?}", input_file);
+            let vr = if let Ok(vr) = VicarReader::new_from_detached_label(input_file) {
+                debug!("Vicar label read successfully");
+                vr
+            } else {
+                error!("Error reading Vicar label");
+                return;
+            };
+
             let mut image =
                 Image::new_with_bands(vr.samples, vr.lines, vr.bands, ImageMode::U16BIT).unwrap();
 
@@ -58,11 +68,14 @@ impl RunnableSubcommand for Pds2Png {
             let use_min = if let Some(m) = self.min { m } else { mn };
             let use_max = if let Some(m) = self.max { m } else { mx };
 
-            ranges.push(FileMinMax {
-                file_name: input_file.to_owned(),
-                min: use_min,
-                max: use_max,
-            });
+            ranges
+                .lock()
+                .expect("`ranges` cannot be locked")
+                .push(FileMinMax {
+                    file_name: input_file.to_owned(),
+                    min: use_min,
+                    max: use_max,
+                });
 
             if !self.minmax {
                 info!(
@@ -80,6 +93,8 @@ impl RunnableSubcommand for Pds2Png {
         });
 
         let table = ranges
+            .lock()
+            .unwrap()
             .iter()
             .map(|rg| {
                 vec![
