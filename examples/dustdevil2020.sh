@@ -36,6 +36,10 @@ for seqid in `ls *NCAM00514*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     mru -v diffgif -i *${seqid}*-rjcal-rad.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 
 done
 
+for seqid in `ls *NCAM00515*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
+    mru -v diffgif -i *${seqid}*-rjcal-rad.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 
+done
+
 for seqid in `ls *NCAM005{1,2,3}*2I*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     mru -v diffgif -i *${seqid}*-rjcal.png -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 20 -p stacked -m
 done

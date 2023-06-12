@@ -9,13 +9,13 @@ use crate::util::{save_image_json, InstrumentMap};
 use anyhow::Result;
 use async_trait::async_trait;
 use cli_table::{Cell, Style, Table};
+use rayon::prelude::*;
 use sciimg::path;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{error::Error, fmt};
 use stump::do_println;
-use rayon::prelude::*;
 
 /// Generic all-mission remote raw image query parameters
 #[derive(Debug, Clone)]
