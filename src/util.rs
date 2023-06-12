@@ -4,6 +4,7 @@ use sciimg::path;
 use sciimg::util as sciutil;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -195,6 +196,17 @@ pub fn save_image_json_from_string(image_path: &str, item: &String, only_new: bo
 pub fn append_file_name(input_file: &str, append: &str) -> String {
     let append_with_ext = format!("-{}.png", append);
     replace_image_extension(input_file, append_with_ext.as_str())
+}
+
+pub fn replace_extension<S>(from_file: &S, new_extension: &str) -> Result<String>
+where
+    S: AsRef<Path> + ?Sized + AsRef<OsStr>,
+{
+    if let Some(new_filename) = Path::new(from_file).with_extension(new_extension).to_str() {
+        Ok(new_filename.to_string())
+    } else {
+        Err(anyhow!("Unable to replace filename"))
+    }
 }
 
 pub fn replace_image_extension(input_file: &str, append: &str) -> String {

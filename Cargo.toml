@@ -72,8 +72,9 @@ lab = "0.11.0"
 toml = "0.7.1"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
-sciimg = {path = "sciimg", features = ["rayon"]}
-stump = {path = "stump"}
+sciimg = {git = "https://github.com/kmgill/sciimg.git", branch = "kmgill_develop", features = ["rayon"]}
+stump = {git = "https://github.com/kmgill/stump.git"}
+vicar = {git = "https://github.com/kmgill/vicar-rs.git"}
 weezl = "0.1.5"
 gif = "0.12.0"
 rayon = "1.7.0"
