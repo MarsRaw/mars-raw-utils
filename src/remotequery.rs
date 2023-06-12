@@ -15,6 +15,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{error::Error, fmt};
 use stump::do_println;
+use rayon::prelude::*;
 
 /// Generic all-mission remote raw image query parameters
 #[derive(Debug, Clone)]
@@ -253,7 +254,7 @@ pub async fn perform_fetch(
                 on_total_known(results.len());
                 print_table(&results, query);
                 let tasks: Vec<_> = results
-                    .iter()
+                    .par_iter()
                     .map(|md| {
                         info!("Fetching Image from Remote URL: {}", md.remote_image_url);
                         download_remote_image(md, query, on_image_downloaded)
