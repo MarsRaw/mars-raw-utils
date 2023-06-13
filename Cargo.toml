@@ -73,6 +73,7 @@ toml = "0.7.1"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
 sciimg = {git = "https://github.com/MarsRaw/sciimg.git", branch = "kmgill_develop", features = ["rayon"]}
+#sciimg = {path = "../sciimg"}
 stump = {git = "https://github.com/MarsRaw/stump.git"}
 vicar = {git = "https://github.com/MarsRaw/vicar-rs.git"}
 weezl = "0.1.5"
