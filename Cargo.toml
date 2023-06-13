@@ -4,7 +4,7 @@ version = "0.7.0"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 edition = "2021"
 description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
-repository = "https://github.com/kmgill/mars-raw-utils"
+repository = "https://github.com/MarsRaw/mars-raw-utils"
 readme = "README.md"
 keywords = ["mars", "msl", "mars2020", "insight"]
 license = "MIT" 
@@ -72,9 +72,9 @@ lab = "0.11.0"
 toml = "0.7.1"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
-sciimg = {git = "https://github.com/kmgill/sciimg.git", branch = "kmgill_develop", features = ["rayon"]}
-stump = {git = "https://github.com/kmgill/stump.git"}
-vicar = {git = "https://github.com/kmgill/vicar-rs.git"}
+sciimg = {git = "https://github.com/MarsRaw/sciimg.git", branch = "kmgill_develop", features = ["rayon"]}
+stump = {git = "https://github.com/MarsRaw/stump.git"}
+vicar = {git = "https://github.com/MarsRaw/vicar-rs.git"}
 weezl = "0.1.5"
 gif = "0.12.0"
 rayon = "1.7.0"
