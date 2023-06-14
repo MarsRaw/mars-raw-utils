@@ -64,19 +64,19 @@ impl RunnableSubcommand for DiffGif {
         let output = self.output.as_os_str().to_str().unwrap();
 
         if white_level < 0.0 || black_level < 0.0 {
-            error!("Levels cannot be negative");
+            eprintln!("Error: Levels cannot be negative");
             pb_done_with_error!();
             process::exit(1);
         }
 
         if white_level < black_level {
-            error!("White level cannot be less than black level");
+            eprintln!("Error: White level cannot be less than black level");
             pb_done_with_error!();
             process::exit(1);
         }
 
         if gamma <= 0.0 {
-            error!("Gamma cannot be zero or negative");
+            eprintln!("Error: Gamma cannot be zero or negative");
             pb_done_with_error!();
             process::exit(1);
         }
@@ -86,6 +86,16 @@ impl RunnableSubcommand for DiffGif {
             .iter()
             .map(|s| String::from(s.as_os_str().to_str().unwrap()))
             .collect();
+
+        if in_files.is_empty() {
+            eprintln!("Error: No images provided!");
+            process::exit(1);
+        } else if in_files.len() == 1 {
+            eprintln!("Error: Requires more than one image");
+            process::exit(1);
+        }
+
+        debug!("Processing on files: {:?}", in_files);
 
         diffgif::process(&diffgif::DiffGif {
             input_files: in_files,

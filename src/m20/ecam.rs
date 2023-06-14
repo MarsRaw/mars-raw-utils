@@ -107,7 +107,7 @@ impl Calibration for M20EECam {
         };
         let scale_factor_str = format!("sf{}", scale_factor);
 
-        let flat = match calibfile::get_calibration_file_for_instrument(
+        let mut flat = match calibfile::get_calibration_file_for_instrument(
             instrument,
             enums::CalFileType::FlatField,
         ) {
@@ -150,27 +150,18 @@ impl Calibration for M20EECam {
         //     }
         // };
 
-        // if let Some(md) = raw.metadata.clone() {
-        //     if let Some(rect) = &md.subframe_rect {
-        //         flat.crop(
-        //             (rect[0] as usize - 1) / scale_factor as usize,
-        //             (rect[1] as usize - 1) / scale_factor as usize,
-        //             (rect[2] as usize) / scale_factor as usize,
-        //             (rect[3] as usize) / scale_factor as usize,
-        //         );
+        if let Some(md) = raw.metadata.clone() {
+            if let Some(rect) = &md.subframe_rect {
+                flat.crop(
+                    (rect[0] as usize - 1) / scale_factor as usize,
+                    (rect[1] as usize - 1) / scale_factor as usize,
+                    (rect[2] as usize) / scale_factor as usize,
+                    (rect[3] as usize) / scale_factor as usize,
+                );
 
-        //         if !mask.is_empty() {
-        //             mask.crop(
-        //                 (rect[0] as usize - 1) / scale_factor as usize,
-        //                 (rect[1] as usize - 1) / scale_factor as usize,
-        //                 (rect[2] as usize) / scale_factor as usize,
-        //                 (rect[3] as usize) / scale_factor as usize,
-        //             );
-        //         }
-
-        //         info!("Flat cropped to {}x{}", flat.width, flat.height);
-        //     }
-        // }
+                info!("Flat cropped to {}x{}", flat.width, flat.height);
+            }
+        }
 
         // if !mask.is_empty() {
         //     let mask_adjusted = create_adjusted_mask(mask.get_band(0));
