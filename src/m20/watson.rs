@@ -3,7 +3,7 @@ use crate::{
     inpaintmask, marsimage::MarsImage, util,
 };
 
-use sciimg::path;
+use sciimg::prelude::*;
 
 use anyhow::Result;
 
@@ -67,6 +67,12 @@ impl Calibration for M20Watson {
         if raw.image.width == 1648 {
             vprintln!("Cropping...");
             raw.image.crop(24, 4, 1600, 1192);
+        }
+
+        if cal_context.srgb_color_correction {
+            vprintln!("Applying sRGB color conversion");
+            raw.image
+                .convert_colorspace(color::ColorSpaceType::RGB, color::ColorSpaceType::sRGB)?;
         }
 
         if cal_context.decorrelate_color {
