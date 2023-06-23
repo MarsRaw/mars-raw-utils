@@ -55,8 +55,8 @@ name = "mru"
 path = "bin/mru.rs"
 
 [profile.release]
-#strip = true  # Automatically strip symbols from the binary.
-debug = 2
+strip = true  # Automatically strip symbols from the binary.
+#debug = 2
 
 [features]
 
@@ -101,3 +101,4 @@ cli-table = "0.4.7"
 itertools = "0.10.5"
 futures = "0.3.28"
 dng = "1.5.0"
+clap_complete = "4.3.1"

@@ -9,7 +9,7 @@ use sciimg::prelude::*;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use stump::do_println;
-use vicar::*;
+use vicar::vicar::*;
 
 pb_create!();
 

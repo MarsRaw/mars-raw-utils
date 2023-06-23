@@ -129,7 +129,7 @@ pub fn focusmerge(
                     x,
                     y,
                 );
-                let q = stats::mean(&[q0, q1, q2]).unwrap_or(0.0);
+                let q = stats::mean(&[q0, q1, q2]);
 
                 if q > max_quality {
                     depth_value = image_num;
