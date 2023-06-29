@@ -33,19 +33,23 @@ mru m20-fetch -c NAVCAM_LEFT -s $sol -f NCAM00500 NCAM0051 NCAM0052 NCAM0053 ${s
 mru calibrate -i *J0?.png
 
 for seqid in `ls *NCAM00514*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
-    mru -v diffgif -i *${seqid}*-rjcal-rad.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 
+    echo "Processing gif for ${seqid}"
+    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 
 done
 
-for seqid in `ls *NCAM00515*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
-    mru -v diffgif -i *${seqid}*-rjcal-rad.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 
+for seqid in `ls *NCAM00515*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
+    echo "Processing gif for ${seqid}"
+    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 
 done
 
-for seqid in `ls *NCAM005{1,2,3}*2I*.png 2> /dev/null | cut -c 36-44 | sort | uniq`; do
+for seqid in `ls *NCAM005{1,2,3}*2I*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
+    echo "Processing gif for ${seqid}"
     mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 20 -p stacked -m
 done
 
 
 if [ `ls *NCAM00500*-rjcal.tif 2> /dev/null | wc -l` -eq 15 ]; then
+    echo "Processing gif for NCAM00500"
     rm DiffGif_${sol}_NCAM00500.gif
     mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 3` -o DustDevil_${sol}_NCAM00500_part1_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m
     mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 6 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part2_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m

@@ -46,7 +46,7 @@ elif [ $mission == "M20" ]; then
 
         mru m20-fetch -c NAVCAM_LEFT NAVCAM_RIGHT -s $sol -n
         assemble_ncams.sh -ncam
-        mru calibrate -i *assembled.png -P m20_ncam_rad m20_ncam_mcz
+        mru calibrate -i *assembled.tif -P m20_ncam_rad m20_ncam_mcz
 
     elif [ $instrument == "WATSON" ]; then
 
