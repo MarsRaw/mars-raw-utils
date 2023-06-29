@@ -16,7 +16,7 @@ if [ $mission == "MSL" ]; then
     if [ $instrument == "MCAM" ]; then
 
         mru msl-fetch -c MASTCAM -s $sol -n
-        mru calibrate -i *jpg -P msl_mcam_rad -D amaze
+        mru calibrate -i *jpg -P msl_mcam_drcx -D amaze
 
     elif [ $instrument == "NCAM" ]; then
 
@@ -26,7 +26,7 @@ if [ $mission == "MSL" ]; then
     elif [ $instrument == "MAHLI" ]; then
 
         mru msl-fetch -c MAHLI -s $sol -n
-        mru calibrate -i *jpg -P msl_mahli_rad
+        mru calibrate -i *jpg -P msl_mahli_drcx
 
     elif [ $instrument == "CCAM" ]; then
 
@@ -40,7 +40,7 @@ elif [ $mission == "M20" ]; then
     if [ $instrument == "ZCAM" ]; then
 
         mru m20-fetch -c MASTCAM -s $sol -P ECM -n
-        mru calibrate -i *J0?.png -P m20_zcam_rad -D amaze
+        mru calibrate -i *J0?.png -P m20_zcam_drcx -D amaze
 
     elif [ $instrument == "NCAM" ]; then
 
