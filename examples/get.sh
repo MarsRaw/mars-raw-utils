@@ -58,6 +58,16 @@ elif [ $mission == "M20" ]; then
         mru m20-fetch -c SUPERCAM -s $sol -P ECM -n
         mru calibrate -i *J0?.png -P  m20_scam_rad -D amaze
 
+    elif [ $instrument == "SHERLOC" ]; then
+
+        mru m20-fetch -c SHERLOC -s $sol -n
+        mru calibrate -i *J0?.png
+
+    elif [ $instrument == "PIXL" ]; then
+
+        mru m20-fetch -c PIXL -s $sol -n
+        mru calibrate -i *J0?.png
+
     fi
 
 fi
