@@ -109,6 +109,7 @@ fn process_band(
     gamma: f32,
     lowpass_window_size: u8,
     add_back_to_mean: bool,
+    light_only: bool,
 ) -> imagebuffer::ImageBuffer {
     let diff = band.subtract(mean_band).unwrap();
     let mut d = diff.clone();
@@ -128,7 +129,13 @@ fn process_band(
         for x in 0..d.width {
             let mult = match diff.get(x, y) >= 0.0 {
                 true => 1.0,
-                false => -1.0,
+                false => {
+                    if light_only {
+                        0.0
+                    } else {
+                        -1.0
+                    }
+                }
             };
             n.put(x, y, n.get(x, y) * mult);
         }
@@ -195,6 +202,7 @@ fn process_frame_3channel(
     lowpass_window_size: u8,
     product_type: ProductType,
     convert_to_mono: bool,
+    light_only: bool,
 ) -> image::Image {
     let mut processed_band_0 = process_band(
         raw.get_band(0),
@@ -204,6 +212,7 @@ fn process_frame_3channel(
         gamma,
         lowpass_window_size,
         product_type == ProductType::STANDARD,
+        light_only,
     );
     let mut processed_band_1 = process_band(
         raw.get_band(1),
@@ -213,6 +222,7 @@ fn process_frame_3channel(
         gamma,
         lowpass_window_size,
         product_type == ProductType::STANDARD,
+        light_only,
     );
     let mut processed_band_2 = process_band(
         raw.get_band(2),
@@ -222,6 +232,7 @@ fn process_frame_3channel(
         gamma,
         lowpass_window_size,
         product_type == ProductType::STANDARD,
+        light_only,
     );
 
     processed_band_0.normalize_force_minmax_mut(0.0, 255.0, 0.0, 65535.0);
@@ -261,6 +272,7 @@ fn process_file(
     delay: u16,
     product_type: ProductType,
     convert_to_mono: bool,
+    light_only: bool,
 ) {
     info!("Processing frame differential on file: {}", in_file);
 
@@ -277,6 +289,7 @@ fn process_file(
                 lowpass_window_size,
                 ProductType::STANDARD,
                 convert_to_mono,
+                light_only,
             );
             let img_diff = process_frame_3channel(
                 &raw,
@@ -287,6 +300,7 @@ fn process_file(
                 lowpass_window_size,
                 ProductType::DIFFERENTIAL,
                 convert_to_mono,
+                light_only,
             );
             let mut stacked = image::Image::new_with_bands(
                 img_std.width,
@@ -309,6 +323,7 @@ fn process_file(
                 lowpass_window_size,
                 product_type,
                 convert_to_mono,
+                light_only,
             );
             (rgbimage_to_vec_v8(&img), img.height)
         }
@@ -330,6 +345,7 @@ pub struct DiffGif {
     pub delay: u16,
     pub lowpass_window_size: u8,
     pub convert_to_mono: bool,
+    pub light_only: bool,
 }
 
 pub fn process(params: &DiffGif) {
@@ -357,6 +373,7 @@ pub fn process(params: &DiffGif) {
                 params.delay,
                 params.product_type,
                 params.convert_to_mono,
+                params.light_only,
             );
         } else {
             error!("File not found: {}", in_file);

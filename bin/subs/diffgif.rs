@@ -35,6 +35,9 @@ pub struct DiffGif {
 
     #[arg(long, short, help = "Convert RGB to mono")]
     mono: bool,
+
+    #[arg(long, short = 'L', help = "Light only, discard dark values")]
+    lightonly: bool,
 }
 
 #[async_trait::async_trait]
@@ -107,6 +110,7 @@ impl RunnableSubcommand for DiffGif {
             delay,
             lowpass_window_size,
             convert_to_mono: self.mono,
+            light_only: self.lightonly,
         });
         pb_done!();
         Ok(())
