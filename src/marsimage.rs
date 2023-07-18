@@ -82,7 +82,24 @@ impl MarsImage {
     }
 
     pub fn save(&self, to_file: &str) -> Result<()> {
-        self.image.save(to_file)
+        self.image.save(to_file)?;
+
+        info!("Writing image buffer to file at {}", to_file);
+        if path::parent_exists_and_writable(to_file) {
+            match &self.metadata {
+                Some(md) => {
+                    util::save_image_json(to_file, &md, false, None).unwrap();
+                }
+                None => {}
+            };
+            info!("File saved.");
+            Ok(())
+        } else {
+            Err(anyhow!(
+                "Parent does not exist or cannot be written: {}",
+                path::get_parent(to_file)
+            ))
+        }
     }
 
     pub fn apply_weight(&mut self, r_scalar: f32, g_scalar: f32, b_scalar: f32) {
