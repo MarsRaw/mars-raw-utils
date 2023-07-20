@@ -42,6 +42,7 @@ impl Calibration for M20EdlRdcam {
         raw.image.normalize_to_16bit_with_max(data_max);
 
         vprintln!("Writing to disk...");
+        raw.update_history();
         match raw.save(&out_file) {
             Ok(_) => cal_ok(cal_context, &out_file),
             Err(why) => {

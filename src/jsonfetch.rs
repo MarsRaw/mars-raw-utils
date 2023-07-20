@@ -78,6 +78,10 @@ pub fn default_blank() -> String {
     "".to_string()
 }
 
+pub fn default_vec<T>() -> Vec<T> {
+    vec![]
+}
+
 pub mod cahvor_format {
 
     use crate::jsonfetch::str_to_vec;

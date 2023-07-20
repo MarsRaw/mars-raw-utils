@@ -5,6 +5,7 @@ use sciimg::{
     debayer::DebayerMethod, drawable::Drawable, enums::ImageMode, image::Image,
     imagebuffer::ImageBuffer, inpaint, path, DnVec, VecMath,
 };
+use std::env;
 
 #[derive(Clone)]
 pub struct MarsImage {
@@ -81,13 +82,25 @@ impl MarsImage {
         }
     }
 
+    pub fn update_history(&mut self) {
+        match &mut self.metadata {
+            Some(md) => {
+                md.history
+                    .push(env::args().collect::<Vec<String>>().join(" "));
+            }
+            None => {}
+        };
+    }
+
     pub fn save(&self, to_file: &str) -> Result<()> {
         self.image.save(to_file)?;
-
         info!("Writing image buffer to file at {}", to_file);
         if path::parent_exists_and_writable(to_file) {
             match &self.metadata {
                 Some(md) => {
+                    if md.history.is_empty() {
+                        warn!("Saving MarsImage without history");
+                    }
                     util::save_image_json(to_file, &md, false, None).unwrap();
                 }
                 None => {}

@@ -73,6 +73,7 @@ impl Calibration for NsytIdc {
         }
 
         info!("Writing to disk...");
+        raw.update_history();
         match raw.save(&out_file) {
             Ok(_) => cal_ok(cal_context, &out_file),
             Err(why) => {

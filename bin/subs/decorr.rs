@@ -171,6 +171,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
             image.image.set_mode(ImageMode::U16BIT);
 
             info!("Writing to disk...");
+            image.update_history();
             image
                 .save(&util::append_file_name(
                     in_file.as_os_str().to_str().unwrap(),
@@ -210,6 +211,7 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
             image.image.set_mode(ImageMode::U16BIT);
 
             info!("Writing to disk...");
+            image.update_history();
             image
                 .save(&util::append_file_name(
                     in_file.as_os_str().to_str().unwrap(),

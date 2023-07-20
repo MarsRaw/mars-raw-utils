@@ -43,32 +43,32 @@ impl RunnableSubcommand for Crop {
                 info!("Processing File: {:?}", in_file);
 
                 let mut raw =
-                    Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+                    MarsImage::open(in_file.as_os_str().to_str().unwrap(), Instrument::None);
 
-                if x >= raw.width {
+                if x >= raw.image.width {
                     error!(
                         "X parameter is out of bounds: {}. Must be between 0 and {}",
                         x,
-                        raw.width - 1
+                        raw.image.width - 1
                     );
                     process::exit(2);
                 }
 
-                if y >= raw.height {
+                if y >= raw.image.height {
                     error!(
                         "Y parameter is out of bounds: {}. Must be between 0 and {}",
                         x,
-                        raw.height - 1
+                        raw.image.height - 1
                     );
                     process::exit(2);
                 }
 
-                if width > raw.width - x {
+                if width > raw.image.width - x {
                     error!("Specified width exceeds maximum allowable value");
                     process::exit(2);
                 }
 
-                if height > raw.height - y {
+                if height > raw.image.height - y {
                     eprintln!("Specified height exceeds maximum allowable value");
                     process::exit(2);
                 }
@@ -84,6 +84,7 @@ impl RunnableSubcommand for Crop {
 
                 info!("Saving output to {}", out_file);
 
+                raw.update_history();
                 raw.save(&out_file).expect("Failed to save image");
             } else {
                 error!("File not found: {:?}", in_file);

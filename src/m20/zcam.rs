@@ -224,7 +224,7 @@ impl Calibration for M20MastcamZ {
         }
 
         vprintln!("Writing to {}", out_file);
-
+        raw.update_history();
         match raw.save(&out_file) {
             Ok(_) => match warn {
                 true => cal_warn(cal_context, &out_file),

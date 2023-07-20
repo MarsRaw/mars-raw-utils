@@ -106,6 +106,9 @@ pub struct Metadata {
 
     #[serde(default = "crate::jsonfetch::default_blank")]
     pub remote_image_url: String,
+
+    #[serde(default = "crate::jsonfetch::default_vec")]
+    pub history: Vec<String>,
 }
 
 pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
@@ -142,6 +145,7 @@ pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
         date_received: im.get_date_received(),
         sample_type: im.get_sample_type(),
         remote_image_url: im.get_remote_image_url(),
+        history: jsonfetch::default_vec(),
     }
 }
 
