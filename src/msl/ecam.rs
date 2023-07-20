@@ -107,7 +107,7 @@ impl Calibration for MslEcam {
         //     }
         // }
 
-        let mut raw = MarsImage::open(String::from(input_file), instrument);
+        let mut raw = MarsImage::open(input_file, instrument);
 
         // Exclude subframed images for now...
         if inpaintmask::inpaint_supported_for_instrument(instrument) && raw.image.height >= 1022 {
@@ -137,7 +137,7 @@ impl Calibration for MslEcam {
         vprintln!("Using flat file: {}", flat_file_path);
 
         if path::file_exists(&flat_file_path) {
-            let mut flat = MarsImage::open(flat_file_path, instrument);
+            let mut flat = MarsImage::open(&flat_file_path, instrument);
 
             if let Some(md) = &raw.metadata {
                 if let Some(rect) = &md.subframe_rect {

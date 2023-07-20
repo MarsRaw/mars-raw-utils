@@ -66,7 +66,7 @@ impl RunnableSubcommand for Composite {
 
         let mut map = Image::create_masked(map_context.width, map_context.height, true);
 
-        let first_image = MarsImage::open(in_files[0].to_owned(), Instrument::M20MastcamZLeft);
+        let first_image = MarsImage::open(&in_files[0], Instrument::M20MastcamZLeft);
         let initial_origin = if let Some(model) = composite::get_cahvor(&first_image) {
             model.c()
         } else {

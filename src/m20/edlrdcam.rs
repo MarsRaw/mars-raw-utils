@@ -25,7 +25,7 @@ impl Calibration for M20EdlRdcam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20EdlRdcam);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20EdlRdcam);
 
         let data_max = 255.0; /*if cal_context.apply_ilt {
                                   vprintln!("Decompanding...");

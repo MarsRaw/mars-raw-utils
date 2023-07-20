@@ -39,7 +39,7 @@ impl Calibration for MslMastcam {
             vprintln!("Processing for Mastcam Left");
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), instrument);
+        let mut raw = MarsImage::open(input_file, instrument);
 
         let lut = decompanding::get_ilt_for_instrument(instrument).unwrap();
         let data_max = if cal_context.apply_ilt {

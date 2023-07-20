@@ -27,7 +27,7 @@ impl Calibration for MslChemCam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslChemCam);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::MslChemCam);
 
         vprintln!("Loading image mask");
         let mask = imagebuffer::ImageBuffer::from_file(

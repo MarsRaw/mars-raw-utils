@@ -76,7 +76,7 @@ impl NavcamTile {
     /// ```
     pub fn new_from_file(file_path: &String, instrument: Instrument) -> Self {
         NavcamTile {
-            image: MarsImage::open(String::from(file_path), instrument),
+            image: MarsImage::open(file_path, instrument),
         }
     }
 

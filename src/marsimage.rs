@@ -50,8 +50,8 @@ impl MarsImage {
         self.empty
     }
 
-    pub fn open(file_path: String, instrument: enums::Instrument) -> Self {
-        if !path::file_exists(file_path.as_str()) {
+    pub fn open(file_path: &str, instrument: enums::Instrument) -> Self {
+        if !path::file_exists(file_path) {
             panic!("File not found: {}", file_path);
         }
 
@@ -62,7 +62,7 @@ impl MarsImage {
             instrument,
             metadata: MarsImage::load_image_metadata(&file_path),
             empty: false,
-            file_path: Some(file_path),
+            file_path: Some(file_path.to_owned()),
         }
     }
 

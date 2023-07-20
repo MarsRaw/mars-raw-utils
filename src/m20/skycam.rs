@@ -27,7 +27,7 @@ impl Calibration for M20SkyCam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20SkyCam);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20SkyCam);
 
         vprintln!("Flatfielding...");
         let flat = flatfield::load_flat(enums::Instrument::M20SkyCam).unwrap();

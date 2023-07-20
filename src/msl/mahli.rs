@@ -27,7 +27,7 @@ impl Calibration for MslMahli {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslMAHLI);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::MslMAHLI);
 
         if raw.image.width == 1632 && raw.image.height == 1200 {
             vprintln!("Cropping...");

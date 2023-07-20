@@ -27,7 +27,7 @@ impl Calibration for MslMardi {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslMARDI);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::MslMARDI);
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");

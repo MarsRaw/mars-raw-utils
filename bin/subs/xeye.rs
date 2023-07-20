@@ -262,10 +262,10 @@ impl RunnableSubcommand for CrossEye {
         }
 
         info!("Left image: {}", left_image_path);
-        let left_img = MarsImage::open(left_image_path, Instrument::M20MastcamZLeft);
+        let left_img = MarsImage::open(&left_image_path, Instrument::M20MastcamZLeft);
 
         info!("Right image: {}", right_image_path);
-        let right_img = MarsImage::open(right_image_path, Instrument::M20MastcamZRight);
+        let right_img = MarsImage::open(&right_image_path, Instrument::M20MastcamZRight);
 
         if left_img.image.width != right_img.image.width
             || left_img.image.height != right_img.image.height

@@ -84,7 +84,7 @@ impl Calibration for M20MastcamZ {
             vprintln!("Processing for Mastcam-Z Left");
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), instrument);
+        let mut raw = MarsImage::open(input_file, instrument);
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
@@ -144,7 +144,7 @@ impl Calibration for M20MastcamZ {
                 vprintln!("Using flat file: {}", file_path);
 
                 if path::file_exists(&file_path) {
-                    let mut flat = MarsImage::open(file_path, instrument);
+                    let mut flat = MarsImage::open(&file_path, instrument);
 
                     if let Some(md) = &raw.metadata {
                         if let Some(rect) = &md.subframe_rect {

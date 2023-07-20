@@ -25,7 +25,7 @@ impl Calibration for M20HeliRte {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20HeliRte);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20HeliRte);
 
         let data_max = 255.0;
 

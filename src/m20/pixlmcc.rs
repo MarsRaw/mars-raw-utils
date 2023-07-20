@@ -26,7 +26,7 @@ impl Calibration for M20Pixl {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20Pixl);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20Pixl);
 
         vprintln!("Flatfielding...");
         raw.flatfield();

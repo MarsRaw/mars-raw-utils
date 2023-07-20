@@ -78,7 +78,7 @@ impl Calibration for M20EECam {
             }
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), instrument);
+        let mut raw = MarsImage::open(input_file, instrument);
 
         let data_max = if cal_context.apply_ilt {
             info!("Decompanding...");

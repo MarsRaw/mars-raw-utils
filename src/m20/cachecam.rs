@@ -26,7 +26,7 @@ impl Calibration for M20CacheCam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20CacheCam);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20CacheCam);
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");

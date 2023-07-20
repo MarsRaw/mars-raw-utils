@@ -30,10 +30,7 @@ impl RunnableSubcommand for Info {
         for in_file in self.input_files.iter() {
             if in_file.exists() {
                 println!("Image: {:?}", in_file);
-                let img = MarsImage::open(
-                    String::from(in_file.as_os_str().to_str().unwrap()),
-                    Instrument::None,
-                );
+                let img = MarsImage::open(in_file.as_os_str().to_str().unwrap(), Instrument::None);
                 if let Some(md) = img.metadata {
                     println!("Sol:                         {}", md.sol);
                     println!("Instrument:                  {}", md.instrument);
