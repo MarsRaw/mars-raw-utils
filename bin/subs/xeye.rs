@@ -68,12 +68,8 @@ trait GetCameraModel {
 
 impl GetCameraModel for MarsImage {
     fn get_camera_model(&self) -> Option<CameraModel> {
-        if let Some(right_md) = &self.metadata {
-            if right_md.camera_model_component_list.is_valid() {
-                Some(right_md.camera_model_component_list.clone())
-            } else {
-                None
-            }
+        if self.metadata.camera_model_component_list.is_valid() {
+            Some(self.metadata.camera_model_component_list.clone())
         } else {
             None
         }

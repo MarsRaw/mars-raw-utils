@@ -100,8 +100,8 @@ impl Calibration for M20EECam {
         raw.image.apply_bias_subtraction(bias);
 
         info!("Flatfielding...");
-        let scale_factor = if let Some(md) = raw.metadata.clone() {
-            md.scale_factor
+        let scale_factor = if raw.metadata.scale_factor >= 1 {
+            raw.metadata.scale_factor
         } else {
             1
         };
@@ -150,17 +150,15 @@ impl Calibration for M20EECam {
         //     }
         // };
 
-        if let Some(md) = raw.metadata.clone() {
-            if let Some(rect) = &md.subframe_rect {
-                flat.crop(
-                    (rect[0] as usize - 1) / scale_factor as usize,
-                    (rect[1] as usize - 1) / scale_factor as usize,
-                    (rect[2] as usize) / scale_factor as usize,
-                    (rect[3] as usize) / scale_factor as usize,
-                );
+        if let Some(rect) = &raw.metadata.subframe_rect {
+            flat.crop(
+                (rect[0] as usize - 1) / scale_factor as usize,
+                (rect[1] as usize - 1) / scale_factor as usize,
+                (rect[2] as usize) / scale_factor as usize,
+                (rect[3] as usize) / scale_factor as usize,
+            );
 
-                info!("Flat cropped to {}x{}", flat.width, flat.height);
-            }
+            info!("Flat cropped to {}x{}", flat.width, flat.height);
         }
 
         // if !mask.is_empty() {
@@ -192,19 +190,18 @@ impl Calibration for M20EECam {
         }
 
         // Trim off border pixels
-        if let Some(mut md) = raw.metadata.clone() {
-            if md.scale_factor == 1 {
-                if let Some(rect) = &md.subframe_rect {
-                    //rect[0] += 1.0;
-                    let new_rect = vec![rect[0] + 2.0, rect[1] + 2.0, rect[2] - 2.0, rect[3] - 2.0];
-                    md.subframe_rect = Some(new_rect);
-                }
+
+        if raw.metadata.scale_factor == 1 {
+            if let Some(rect) = &raw.metadata.subframe_rect {
+                //rect[0] += 1.0;
+                let new_rect = vec![rect[0] + 2.0, rect[1] + 2.0, rect[2] - 2.0, rect[3] - 2.0];
+                raw.metadata.subframe_rect = Some(new_rect);
             }
-            raw.metadata = Some(md);
-            let crop_to_width = raw.image.width - 4;
-            let crop_to_height = raw.image.height - 4;
-            raw.crop(2, 2, crop_to_width, crop_to_height);
         }
+        let crop_to_width = raw.image.width - 4;
+        let crop_to_height = raw.image.height - 4;
+        raw.crop(2, 2, crop_to_width, crop_to_height);
+
         //
         //
 

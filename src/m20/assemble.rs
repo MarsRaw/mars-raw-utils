@@ -150,8 +150,8 @@ impl NavcamTile {
 
     /// Returns the scale factor in the metadata `scale_factor` field
     pub fn get_scale_factor(&self) -> u32 {
-        if let Some(md) = &self.image.metadata {
-            md.scale_factor
+        if self.image.metadata.scale_factor >= 1 {
+            self.image.metadata.scale_factor
         } else {
             1
         }
@@ -159,12 +159,8 @@ impl NavcamTile {
 
     // Returns the subframe coordinates from the metadata `subframe_rect` field
     pub fn get_subframe_region(&self) -> Vec<f64> {
-        if let Some(md) = &self.image.metadata {
-            if let Some(sf) = &md.subframe_rect {
-                sf.clone()
-            } else {
-                vec![0.0]
-            }
+        if let Some(sf) = &self.image.metadata.subframe_rect {
+            sf.clone()
         } else {
             vec![0.0]
         }

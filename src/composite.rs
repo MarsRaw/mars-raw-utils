@@ -4,15 +4,10 @@ use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::
 use std::str::FromStr;
 
 pub fn get_cahvor(img: &MarsImage) -> Option<CameraModel> {
-    match &img.metadata {
-        Some(md) => {
-            if md.camera_model_component_list.is_valid() {
-                Some(md.camera_model_component_list.clone())
-            } else {
-                None
-            }
-        }
-        None => None,
+    if img.metadata.camera_model_component_list.is_valid() {
+        Some(img.metadata.camera_model_component_list.clone())
+    } else {
+        None
     }
 }
 
@@ -179,10 +174,7 @@ pub fn process_file<D: Drawable>(
     initial_origin: &Vector,
 ) {
     let mut img = MarsImage::open(input_file, Instrument::M20MastcamZLeft);
-    img.instrument = match &img.metadata {
-        Some(md) => Instrument::from_str(md.instrument.as_str()).unwrap(),
-        None => Instrument::M20MastcamZLeft,
-    };
+    img.instrument = Instrument::from_str(img.metadata.instrument.as_str()).unwrap();
 
     let eye = if anaglyph {
         match util::filename_char_at_pos(input_file, 1) {

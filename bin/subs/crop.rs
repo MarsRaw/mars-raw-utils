@@ -2,7 +2,6 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
-use sciimg::prelude::*;
 use std::process;
 pb_create!();
 

@@ -8,6 +8,7 @@ use mars_raw_utils::m20::assemble::{Composite, NavcamTile};
 use mars_raw_utils::m20::ncamlevels;
 use mars_raw_utils::util;
 use sciimg::path;
+use std::env;
 use std::process;
 
 pb_create_spinner!();
@@ -86,10 +87,13 @@ impl RunnableSubcommand for M20EcamAssemble {
         composite.finalize_and_save(output);
 
         // Update 'scale_factor' in the metadata and save to disk
-        if let Some(mut md) = tiles[0].image.metadata.clone() {
-            md.subframe_rect = Some(vec![1.0, 1.0, 5120.0, 3840.0]);
-            util::save_image_json(output, &md, false, None).unwrap();
-        }
+        tiles[0].image.metadata.subframe_rect = Some(vec![1.0, 1.0, 5120.0, 3840.0]);
+        tiles[0]
+            .image
+            .metadata
+            .history
+            .push(env::args().collect::<Vec<String>>().join(" "));
+        util::save_image_json(output, &tiles[0].image.metadata, false, None).unwrap();
 
         pb_done!();
         Ok(())

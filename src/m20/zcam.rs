@@ -107,20 +107,12 @@ impl Calibration for M20MastcamZ {
         let focal_length: Result<f32> = match focal_length_from_file_name(input_file) {
             Ok(fl) => Ok(fl),
             Err(_) => {
-                match &raw.metadata {
-                    Some(md) => {
-                        let fl_res = focal_length_from_cahvor(&md.camera_model_component_list);
-                        if let Ok(fl) = fl_res {
-                            Ok(fl)
-                        } else {
-                            //print_fail(&format!("{} ({})", path::basename(input_file), &cal_context.filename_suffix.to_str()));
-                            panic!("Unable to determine zcam focal length")
-                        }
-                    }
-                    None => {
-                        //print_fail(&format!("{} ({})", path::basename(input_file), filename_suffix));
-                        panic!("Unable to determine zcam focal length")
-                    }
+                if let Ok(fl) = focal_length_from_cahvor(&raw.metadata.camera_model_component_list)
+                {
+                    Ok(fl)
+                } else {
+                    //print_fail(&format!("{} ({})", path::basename(input_file), &cal_context.filename_suffix.to_str()));
+                    panic!("Unable to determine zcam focal length")
                 }
             }
         };
@@ -146,15 +138,13 @@ impl Calibration for M20MastcamZ {
                 if path::file_exists(&file_path) {
                     let mut flat = MarsImage::open(&file_path, instrument);
 
-                    if let Some(md) = &raw.metadata {
-                        if let Some(rect) = &md.subframe_rect {
-                            flat.crop(
-                                rect[0] as usize - 1,
-                                rect[1] as usize - 1,
-                                rect[2] as usize,
-                                rect[3] as usize,
-                            );
-                        }
+                    if let Some(rect) = &raw.metadata.subframe_rect {
+                        flat.crop(
+                            rect[0] as usize - 1,
+                            rect[1] as usize - 1,
+                            rect[2] as usize,
+                            rect[3] as usize,
+                        );
                     }
 
                     raw.flatfield_with_flat(&flat);
@@ -172,18 +162,17 @@ impl Calibration for M20MastcamZ {
 
         vprintln!("Inpainting...");
         let mut inpaint_mask = inpaintmask::load_mask(instrument).unwrap();
-        if let Some(md) = &raw.metadata {
-            if let Some(rect) = &md.subframe_rect {
-                inpaint_mask = inpaint_mask
-                    .get_subframe(
-                        rect[0] as usize - 1,
-                        rect[1] as usize - 1,
-                        rect[2] as usize,
-                        rect[3] as usize,
-                    )
-                    .unwrap();
-            }
+        if let Some(rect) = &raw.metadata.subframe_rect {
+            inpaint_mask = inpaint_mask
+                .get_subframe(
+                    rect[0] as usize - 1,
+                    rect[1] as usize - 1,
+                    rect[2] as usize,
+                    rect[3] as usize,
+                )
+                .unwrap();
         }
+
         raw.apply_inpaint_fix_with_mask(&inpaint_mask);
 
         vprintln!("Applying color weights...");

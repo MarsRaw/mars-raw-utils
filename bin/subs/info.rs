@@ -31,72 +31,92 @@ impl RunnableSubcommand for Info {
             if in_file.exists() {
                 println!("Image: {:?}", in_file);
                 let img = MarsImage::open(in_file.as_os_str().to_str().unwrap(), Instrument::None);
-                if let Some(md) = img.metadata {
-                    println!("Sol:                         {}", md.sol);
-                    println!("Instrument:                  {}", md.instrument);
-                    println!("Image Id:                    {}", md.imageid);
-                    println!("Date Taken (UTC):            {}", md.date_taken_utc);
 
-                    if let Some(sclk) = md.sclk {
-                        println!("SCLK:                        {}", sclk);
-                    }
+                println!("Sol:                         {}", img.metadata.sol);
+                println!("Instrument:                  {}", img.metadata.instrument);
+                println!("Image Id:                    {}", img.metadata.imageid);
+                println!(
+                    "Date Taken (UTC):            {}",
+                    img.metadata.date_taken_utc
+                );
 
-                    if let Some(dt) = md.date_taken_mars {
-                        println!("Data Taken (Mars):           {}", dt);
-                    }
-
-                    if let Some(sf) = md.subframe_rect {
-                        println!("Subframe Rectangle:          {:?}", sf);
-                    }
-
-                    if let Some(cmt) = md.camera_model_type {
-                        println!("Camera Model Type:           {}", cmt);
-                    }
-
-                    if let Some(site) = md.site {
-                        println!("Site:                        {}", site);
-                    }
-
-                    if let Some(drive) = md.drive {
-                        println!("Drive:                       {}", drive);
-                    }
-
-                    println!("Scale Factor:                {}", md.scale_factor);
-
-                    if let Some(f) = md.filter_name {
-                        println!("Filter Name:                 {}", f);
-                    }
-
-                    if let Some(az) = md.mast_az {
-                        println!("Mast Azimuth:                {}", az);
-                    }
-
-                    if let Some(el) = md.mast_el {
-                        println!("Mast Elevation:              {}", el);
-                    }
-
-                    println!("Date Received:               {}", md.date_received);
-                    println!("Sample Type:                 {}", md.sample_type);
-
-                    if let Some(d) = md.dimension {
-                        println!("Dimension:                   {:?}", d);
-                    }
-
-                    println!("Decompanded:                 {}", md.decompand.yesno());
-                    println!("Debayered:                   {}", md.debayer.yesno());
-                    println!("Flatfielded:                 {}", md.flatfield.yesno());
-                    println!("Radiometric Correction:      {}", md.radiometric.yesno());
-                    println!("Inpainted:                   {}", md.inpaint.yesno());
-                    println!("Cropped:                     {}", md.cropped.yesno());
-
-                    //println!("Caption:                     {}", md.caption);
-                    println!("Credit:                      {}", md.credit);
-
-                    // Consider adding values derived from CAHVOR camera models
-                } else {
-                    eprintln!("Image {:?} lacks metadata", in_file);
+                if let Some(sclk) = img.metadata.sclk {
+                    println!("SCLK:                        {}", sclk);
                 }
 
+                if let Some(dt) = img.metadata.date_taken_mars {
+                    println!("Data Taken (Mars):           {}", dt);
+                }
+
+                if let Some(sf) = img.metadata.subframe_rect {
+                    println!("Subframe Rectangle:          {:?}", sf);
+                }
+
+                if let Some(cmt) = img.metadata.camera_model_type {
+                    println!("Camera Model Type:           {}", cmt);
+                }
+
+                if let Some(site) = img.metadata.site {
+                    println!("Site:                        {}", site);
+                }
+
+                if let Some(drive) = img.metadata.drive {
+                    println!("Drive:                       {}", drive);
+                }
+
+                println!("Scale Factor:                {}", img.metadata.scale_factor);
+
+                if let Some(f) = img.metadata.filter_name {
+                    println!("Filter Name:                 {}", f);
+                }
+
+                if let Some(az) = img.metadata.mast_az {
+                    println!("Mast Azimuth:                {}", az);
+                }
+
+                if let Some(el) = img.metadata.mast_el {
+                    println!("Mast Elevation:              {}", el);
+                }
+
+                println!(
+                    "Date Received:               {}",
+                    img.metadata.date_received
+                );
+                println!("Sample Type:                 {}", img.metadata.sample_type);
+
+                if let Some(d) = img.metadata.dimension {
+                    println!("Dimension:                   {:?}", d);
+                }
+
+                println!(
+                    "Decompanded:                 {}",
+                    img.metadata.decompand.yesno()
+                );
+                println!(
+                    "Debayered:                   {}",
+                    img.metadata.debayer.yesno()
+                );
+                println!(
+                    "Flatfielded:                 {}",
+                    img.metadata.flatfield.yesno()
+                );
+                println!(
+                    "Radiometric Correction:      {}",
+                    img.metadata.radiometric.yesno()
+                );
+                println!(
+                    "Inpainted:                   {}",
+                    img.metadata.inpaint.yesno()
+                );
+                println!(
+                    "Cropped:                     {}",
+                    img.metadata.cropped.yesno()
+                );
+
+                //println!("Caption:                     {}", md.caption);
+                println!("Credit:                      {}", img.metadata.credit);
+
+                // Consider adding values derived from CAHVOR camera models
                 println!();
                 println!();
             } else {

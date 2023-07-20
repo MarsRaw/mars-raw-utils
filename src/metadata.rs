@@ -37,7 +37,7 @@ pub trait ImageMetadata {
     fn get_remote_image_url(&self) -> String;
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Default)]
 pub struct Metadata {
     pub link: String,
     pub credit: String,
