@@ -58,9 +58,9 @@ impl MarsImage {
         vprintln!("Loading image from {}", file_path);
 
         MarsImage {
-            image: Image::open(&file_path).unwrap(),
+            image: Image::open(file_path).unwrap(),
             instrument,
-            metadata: MarsImage::load_image_metadata(&file_path),
+            metadata: MarsImage::load_image_metadata(file_path),
             empty: false,
             file_path: Some(file_path.to_owned()),
         }

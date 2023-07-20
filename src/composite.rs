@@ -78,7 +78,7 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> MapCo
     };
 
     input_files.iter().for_each(|input_file| {
-        let img = MarsImage::open(&input_file, Instrument::M20MastcamZLeft);
+        let img = MarsImage::open(input_file, Instrument::M20MastcamZLeft);
         if let Some(c) = get_cahvor(&img) {
             if let Ok(ll) = get_lat_lon(&c, 0, 0, quat) {
                 context.bottom_lat = min!(context.bottom_lat, ll.lat);
