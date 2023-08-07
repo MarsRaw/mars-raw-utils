@@ -15,7 +15,6 @@ use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{error::Error, fmt};
-use stump::do_println;
 
 /// Generic all-mission remote raw image query parameters
 #[derive(Debug, Clone)]
@@ -202,7 +201,7 @@ fn print_table(images: &[Metadata], query: &RemoteQuery) {
             "Present".cell().bold(true),
         ]);
 
-    do_println(&format!("{}", &table.display().unwrap()));
+    println!("{}", &table.display().unwrap());
 }
 
 async fn download_remote_image(
