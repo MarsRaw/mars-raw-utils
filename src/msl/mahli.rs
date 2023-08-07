@@ -89,7 +89,9 @@ impl Calibration for MslMahli {
         }
 
         vprintln!("Cropping...");
-        raw.image.crop(2, 3, 1580, 1180);
+        if cal_context.auto_subframing {
+            raw.image.crop(2, 3, 1580, 1180);
+        }
 
         vprintln!("Applying color weights...");
         raw.apply_weight(

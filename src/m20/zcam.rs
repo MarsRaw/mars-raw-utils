@@ -189,8 +189,21 @@ impl Calibration for M20MastcamZ {
         );
 
         vprintln!("Cropping...");
-        raw.image
-            .crop(29, 9, raw.image.width - 29 - 29, raw.image.height - 9 - 9);
+
+        if cal_context.auto_subframing {
+            if let Some(rect) = &raw.metadata.subframe_rect {
+                let new_rect = vec![
+                    rect[0] + 29.0,
+                    rect[1] + 9.0,
+                    rect[2] - 58.0,
+                    rect[3] - 18.0,
+                ];
+                raw.metadata.subframe_rect = Some(new_rect);
+            }
+
+            raw.image
+                .crop(29, 9, raw.image.width - 29 - 29, raw.image.height - 9 - 9);
+        }
 
         vprintln!(
             "Current image width: {}, height: {}",

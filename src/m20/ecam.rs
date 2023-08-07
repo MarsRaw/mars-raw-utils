@@ -191,16 +191,18 @@ impl Calibration for M20EECam {
 
         // Trim off border pixels
 
-        if raw.metadata.scale_factor == 1 {
-            if let Some(rect) = &raw.metadata.subframe_rect {
-                //rect[0] += 1.0;
-                let new_rect = vec![rect[0] + 2.0, rect[1] + 2.0, rect[2] - 2.0, rect[3] - 2.0];
-                raw.metadata.subframe_rect = Some(new_rect);
+        if cal_context.auto_subframing {
+            if raw.metadata.scale_factor == 1 {
+                if let Some(rect) = &raw.metadata.subframe_rect {
+                    //rect[0] += 1.0;
+                    let new_rect = vec![rect[0] + 2.0, rect[1] + 2.0, rect[2] - 2.0, rect[3] - 2.0];
+                    raw.metadata.subframe_rect = Some(new_rect);
+                }
             }
+            let crop_to_width = raw.image.width - 4;
+            let crop_to_height = raw.image.height - 4;
+            raw.crop(2, 2, crop_to_width, crop_to_height);
         }
-        let crop_to_width = raw.image.width - 4;
-        let crop_to_height = raw.image.height - 4;
-        raw.crop(2, 2, crop_to_width, crop_to_height);
 
         //
         //

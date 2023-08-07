@@ -58,6 +58,13 @@ pub struct Calibrate {
 
     #[arg(long, short = 'C', help = "Apply sRGB color correction")]
     srgb_color_correction: bool,
+
+    #[arg(
+        long,
+        short = 'S',
+        help = "Skip auto subframing (cropping) of output images"
+    )]
+    no_subframing: bool,
 }
 
 impl Calibrate {
@@ -184,6 +191,7 @@ impl RunnableSubcommand for Calibrate {
                     DebayerMethod::Malvar
                 },
                 srgb_color_correction: self.srgb_color_correction,
+                auto_subframing: !self.no_subframing,
             }],
         };
 

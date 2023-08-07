@@ -51,6 +51,9 @@ pub struct CalProfile {
 
     #[serde(default = "default_false")]
     pub srgb_color_correction: bool,
+
+    #[serde(default = "default_true")]
+    pub auto_subframing: bool,
 }
 
 impl Default for CalProfile {
@@ -72,6 +75,7 @@ impl Default for CalProfile {
             description: None,
             debayer_method: default_debayer_method(),
             srgb_color_correction: default_false(),
+            auto_subframing: default_true(),
         }
     }
 }
@@ -94,6 +98,10 @@ fn default_decorrelate_color() -> bool {
 
 fn default_false() -> bool {
     false
+}
+
+fn default_true() -> bool {
+    true
 }
 
 fn default_color_scalar() -> f32 {

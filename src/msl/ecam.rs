@@ -165,9 +165,11 @@ impl Calibration for MslEcam {
         raw.image.normalize_to_16bit_with_max(data_max);
 
         // Trim off border pixels
-        let crop_to_width = raw.image.width - 2;
-        let crop_to_height = raw.image.height - 2;
-        raw.image.crop(1, 1, crop_to_width, crop_to_height);
+        if cal_context.auto_subframing {
+            let crop_to_width = raw.image.width - 2;
+            let crop_to_height = raw.image.height - 2;
+            raw.image.crop(1, 1, crop_to_width, crop_to_height);
+        }
 
         vprintln!("Writing to disk...");
         raw.update_history();

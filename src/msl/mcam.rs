@@ -173,8 +173,10 @@ impl Calibration for MslMastcam {
         }
 
         vprintln!("Cropping...");
-        raw.image
-            .crop(3, 3, raw.image.width - 6, raw.image.height - 6);
+        if cal_context.auto_subframing {
+            raw.image
+                .crop(3, 3, raw.image.width - 6, raw.image.height - 6);
+        }
 
         if cal_context.srgb_color_correction {
             vprintln!("Applying sRGB color conversion");
