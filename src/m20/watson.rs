@@ -64,7 +64,7 @@ impl Calibration for M20Watson {
             cal_context.blue_scalar,
         );
 
-        if raw.image.width == 1648 {
+        if cal_context.auto_subframing && raw.image.width == 1648 {
             vprintln!("Cropping...");
             raw.image.crop(24, 4, 1600, 1192);
         }

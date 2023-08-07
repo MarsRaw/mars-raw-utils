@@ -60,13 +60,9 @@ impl Calibration for M20SuperCam {
 
         // Gonna start with standard rectangular flat field, but should really
         // mask it to just the round light-collecting area of the image.
-        raw.image
-            .crop(1, 1, raw.image.width - 2, raw.image.height - 2);
         vprintln!("Flatfielding...");
-        let mut flat = flatfield::load_flat(enums::Instrument::M20SuperCam)
+        let flat = flatfield::load_flat(enums::Instrument::M20SuperCam)
             .expect("Failed to load flatfield image for M20 SuperCam");
-        flat.image
-            .crop(1, 1, flat.image.width - 2, flat.image.height - 2);
         raw.flatfield_with_flat(&flat);
 
         vprintln!("Applying color weights...");
@@ -75,6 +71,11 @@ impl Calibration for M20SuperCam {
             cal_context.green_scalar,
             cal_context.blue_scalar,
         );
+
+        if cal_context.auto_subframing {
+            raw.image
+                .crop(1, 1, raw.image.width - 2, raw.image.height - 2);
+        }
 
         if cal_context.decorrelate_color {
             vprintln!("Normalizing with decorrelated colors...");

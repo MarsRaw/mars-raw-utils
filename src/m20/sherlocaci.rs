@@ -34,12 +34,14 @@ impl Calibration for M20SherlocAci {
         vprintln!("Normalizing...");
         raw.image.normalize_to_16bit_with_max(255.0);
 
-        if raw.image.width == 1648 && raw.image.height == 1200 {
-            vprintln!("Cropping...");
-            raw.image.crop(23, 2, 1607, 1198);
-        } else if raw.image.width == 1600 && raw.image.height == 1200 {
-            vprintln!("Cropping...");
-            raw.image.crop(23, 2, 1577, 1198);
+        if cal_context.auto_subframing {
+            if raw.image.width == 1648 && raw.image.height == 1200 {
+                vprintln!("Cropping...");
+                raw.image.crop(23, 2, 1607, 1198);
+            } else if raw.image.width == 1600 && raw.image.height == 1200 {
+                vprintln!("Cropping...");
+                raw.image.crop(23, 2, 1577, 1198);
+            }
         }
 
         vprintln!("Writing to disk...");
