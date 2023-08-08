@@ -4,7 +4,7 @@ sol=$1
 seqid=
 open_file_manager=0
 
-export STUMP_LOG_AT_LEVEL=info
+export MARS_LOG_AT_LEVEL=info
 
 while [ $# -gt 0 ]; do
     if [ $1 == "-e" ]; then
@@ -28,9 +28,23 @@ fi
 
 cd ${soldir}/ECAM 
 
-mru m20-fetch -c NAVCAM_LEFT -s $sol -f NCAM00500 NCAM0051 NCAM0052 NCAM0053 ${seqid} -n
+mru m20-fetch -c NAVCAM_LEFT -s $sol -f NCAM00500 NCAM00502 NCAM0051 NCAM0052 NCAM0053 ${seqid} -n
 
 mru calibrate -i *J0?.png
+
+# Basic change detection processing using NCAM00502
+if [ `ls *NCAM00502*J0?.png | wc -l` -gt 0 ]; then
+    for id in `ls *NCAM00502*J0?.png | cut -d _ -f 3 | sort | uniq`; do
+        out_filename=`ls NLR*$id*J0?.png | head -n 1 |  sed -e 's/_01_/_00_/' | sed -e 's/.png/-assembled.png/'`
+        export MARS_OUTPUT_FORMAT=png
+        mru -v m20-ecam-assemble -i NLR*$id*J0?.png -o $out_filename
+        export MARS_OUTPUT_FORMAT=tif
+        mru calibrate -i $out_filename
+    done
+    mru -v diffgif -i `ls *NCAM00502*-assembled-rjcal.tif | head -n 3` -o DiffGif_${sol}_NCAM00502_pt1.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 -m -L
+    mru -v diffgif -i `ls *NCAM00502*-assembled-rjcal.tif | tail -n 3` -o DiffGif_${sol}_NCAM00502_pt2.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 -m -L
+fi
+
 
 for seqid in `ls *NCAM00514*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     echo "Processing gif for ${seqid}"
