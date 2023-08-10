@@ -140,6 +140,7 @@ pub mod info;
 pub mod inpaint;
 pub mod levels;
 pub mod meanstack;
+pub mod passes;
 pub mod pds2png;
 pub mod profile;
 pub mod xeye;

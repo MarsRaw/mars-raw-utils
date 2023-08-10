@@ -59,6 +59,8 @@ enum Mru {
 
     #[clap(name = "pds2png")]
     Pds2Png(pds2png::Pds2Png),
+
+    Passes(passes::Passes),
 }
 
 #[tokio::main]
@@ -105,6 +107,7 @@ async fn main() -> Result<(), anyhow::Error> {
         Mru::Decorr(args) => args.run().await,
         Mru::UpdateCalData(args) => args.run().await,
         Mru::Pds2Png(args) => args.run().await,
+        Mru::Passes(args) => args.run().await,
     } {
         error!("{}", "Unhandled program error:".red());
         error!("{}", why);

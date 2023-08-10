@@ -7,44 +7,88 @@ description = "Utilities for working with publicly available raw MSL, Mars2020, 
 repository = "https://github.com/MarsRaw/mars-raw-utils"
 readme = "README.md"
 keywords = ["mars", "msl", "mars2020", "insight"]
-license = "MIT" 
+license = "MIT"
 exclude = ["mars-raw-utils-data"]
 
 [package.metadata.deb]
 maintainer = "Kevin M. Gill <apoapsys@gmail.com>"
 copyright = "2023, Kevin M. Gill <apoapsys@gmail.com>"
 license-file = ["LICENSE", "2"]
-extended-description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images" 
+extended-description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
 depends = "$auto"
 section = "science"
 priority = "optional"
 assets = [
-    ["target/release/mru", "usr/bin/", "755"],
-    ["README.md", "usr/share/doc/mars_raw_utils/README", "644"],
-    ["mars-raw-utils-data/caldata/*png", "usr/share/mars_raw_utils/data/", "644"],
-    ["mars-raw-utils-data/caldata/*jpg", "usr/share/mars_raw_utils/data/", "644"],
-    ["mars-raw-utils-data/caldata/*.toml", "usr/share/mars_raw_utils/data/", "644"],
-    ["mars-raw-utils-data/caldata/msl/ilut/DECOMPAND0.TXT", "usr/share/mars_raw_utils/data/msl/ilut/", "644"],
-    ["mars-raw-utils-data/caldata/m20/ilut/M20_MCZ_LUT2.txt", "usr/share/mars_raw_utils/data/m20/ilut/", "644"],
-    ["mars-raw-utils-data/caldata/m20/ilut/M20_SI_LUT0.txt", "usr/share/mars_raw_utils/data/m20/ilut/", "644"],
-    ["mars-raw-utils-data/caldata/m20/ilut/M20_LUT2_v2a.txt", "usr/share/mars_raw_utils/data/m20/ilut/", "644"],
-    ["mars-raw-utils-data/caldata/m20/ilut/M20_COMP_LUT0.txt", "usr/share/mars_raw_utils/data/m20/ilut/", "644"],
-    ["mars-raw-utils-data/caldata/nsyt/ilut/NSYT_LUT0.txt", "usr/share/mars_raw_utils/data/nsyt/ilut/", "644"]
+    [
+        "target/release/mru",
+        "usr/bin/",
+        "755",
+    ],
+    [
+        "README.md",
+        "usr/share/doc/mars_raw_utils/README",
+        "644",
+    ],
+    [
+        "mars-raw-utils-data/caldata/*png",
+        "usr/share/mars_raw_utils/data/",
+        "644",
+    ],
+    [
+        "mars-raw-utils-data/caldata/*jpg",
+        "usr/share/mars_raw_utils/data/",
+        "644",
+    ],
+    [
+        "mars-raw-utils-data/caldata/*.toml",
+        "usr/share/mars_raw_utils/data/",
+        "644",
+    ],
+    [
+        "mars-raw-utils-data/caldata/msl/ilut/DECOMPAND0.TXT",
+        "usr/share/mars_raw_utils/data/msl/ilut/",
+        "644",
+    ],
+    [
+        "mars-raw-utils-data/caldata/m20/ilut/M20_MCZ_LUT2.txt",
+        "usr/share/mars_raw_utils/data/m20/ilut/",
+        "644",
+    ],
+    [
+        "mars-raw-utils-data/caldata/m20/ilut/M20_SI_LUT0.txt",
+        "usr/share/mars_raw_utils/data/m20/ilut/",
+        "644",
+    ],
+    [
+        "mars-raw-utils-data/caldata/m20/ilut/M20_LUT2_v2a.txt",
+        "usr/share/mars_raw_utils/data/m20/ilut/",
+        "644",
+    ],
+    [
+        "mars-raw-utils-data/caldata/m20/ilut/M20_COMP_LUT0.txt",
+        "usr/share/mars_raw_utils/data/m20/ilut/",
+        "644",
+    ],
+    [
+        "mars-raw-utils-data/caldata/nsyt/ilut/NSYT_LUT0.txt",
+        "usr/share/mars_raw_utils/data/nsyt/ilut/",
+        "644",
+    ],
 ]
 
 [package.metadata.generate-rpm]
 assets = [
-    { source = "target/release/mru", dest = "/usr/bin/mru", mode = "755"},
-    { source = "README.md", dest = "/usr/share/doc/mars_raw_utils/README", mode ="644"},
-    { source = "mars-raw-utils-data/caldata/*png", dest = "/usr/share/mars_raw_utils/data/", mode ="644"},
-    { source = "mars-raw-utils-data/caldata/*jpg", dest = "/usr/share/mars_raw_utils/data/", mode ="644"},
-    { source = "mars-raw-utils-data/caldata/*.toml", dest = "/usr/share/mars_raw_utils/data/", mode ="644"},
-    { source = "mars-raw-utils-data/caldata/msl/ilut/DECOMPAND0.TXT", dest = "/usr/share/mars_raw_utils/data/msl/ilut/DECOMPAND0.TXT", mode ="644"},
-    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_MCZ_LUT2.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_MCZ_LUT2.txt", mode ="644"},
-    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_SI_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_SI_LUT0.txt", mode ="644"},
-    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_LUT2_v2a.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_LUT2_v2a.txt", mode ="644"},
-    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_COMP_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_COMP_LUT0.txt", mode ="644"},
-    { source = "mars-raw-utils-data/caldata/nsyt/ilut/NSYT_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/nsyt/ilut/NSYT_LUT0.txt", mode ="644"}
+    { source = "target/release/mru", dest = "/usr/bin/mru", mode = "755" },
+    { source = "README.md", dest = "/usr/share/doc/mars_raw_utils/README", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/*png", dest = "/usr/share/mars_raw_utils/data/", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/*jpg", dest = "/usr/share/mars_raw_utils/data/", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/*.toml", dest = "/usr/share/mars_raw_utils/data/", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/msl/ilut/DECOMPAND0.TXT", dest = "/usr/share/mars_raw_utils/data/msl/ilut/DECOMPAND0.TXT", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_MCZ_LUT2.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_MCZ_LUT2.txt", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_SI_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_SI_LUT0.txt", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_LUT2_v2a.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_LUT2_v2a.txt", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_COMP_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_COMP_LUT0.txt", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/nsyt/ilut/NSYT_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/nsyt/ilut/NSYT_LUT0.txt", mode = "644" },
 ]
 
 [lib]
@@ -55,7 +99,7 @@ name = "mru"
 path = "bin/mru.rs"
 
 [profile.release]
-strip = true  # Automatically strip symbols from the binary.
+strip = true # Automatically strip symbols from the binary.
 #debug = 2
 
 [features]
@@ -72,10 +116,12 @@ lab = "0.11.0"
 toml = "0.7.1"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
-sciimg = {git = "https://github.com/MarsRaw/sciimg.git", branch = "kmgill_develop", features = ["rayon"]}
+sciimg = { git = "https://github.com/MarsRaw/sciimg.git", branch = "kmgill_develop", features = [
+    "rayon",
+] }
 #sciimg = {path = "../sciimg"}
-stump = {git = "https://github.com/MarsRaw/stump.git"}
-vicar = {git = "https://github.com/MarsRaw/vicar-rs.git"}
+stump = { git = "https://github.com/MarsRaw/stump.git" }
+vicar = { git = "https://github.com/MarsRaw/vicar-rs.git" }
 weezl = "0.1.5"
 gif = "0.12.0"
 rayon = "1.7.0"
@@ -90,7 +136,7 @@ anyhow = "1.0.65"
 bytes = "1.2.1"
 thiserror = "1.0.37"
 async-trait = "0.1.57"
-tokio = {version="1.21.2", features= ["full"]}
+tokio = { version = "1.21.2", features = ["full"] }
 glob = "0.3.0"
 regex = "1.7.0"
 url = "2.3.1"
@@ -102,3 +148,4 @@ itertools = "0.11.0"
 futures = "0.3.28"
 dng = "1.5.0"
 clap_complete = "4.3.1"
+serde-this-or-that = "0.4.2"
