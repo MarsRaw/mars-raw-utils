@@ -31,6 +31,7 @@ enum Mru {
     M20Date(m20::m20date::M20Date),
     M20Latest(m20::m20latest::M20Latest),
     M20EcamAssemble(m20::ecamassemble::M20EcamAssemble),
+    M20SherlocColorizer(m20::sherloccolorizer::M20SherlocColorizer),
 
     NsytFetch(nsyt::nsytfetch::NsytFetch),
     NsytDate(nsyt::nsytdate::NsytDate),
@@ -89,6 +90,7 @@ async fn main() -> Result<(), anyhow::Error> {
         Mru::M20Latest(args) => args.run().await,
         Mru::NsytDate(args) => args.run().await,
         Mru::M20EcamAssemble(args) => args.run().await,
+        Mru::M20SherlocColorizer(args) => args.run().await,
         Mru::NsytLatest(args) => args.run().await,
         Mru::MerDate(args) => args.run().await,
         Mru::Anaglyph(args) => args.run().await,
