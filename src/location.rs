@@ -42,18 +42,31 @@ struct WaypointsCurrent {
 
 pub async fn fetch_location(url: &str) -> Result<Location> {
     let req = jsonfetch::JsonFetcher::new(url)?;
-
-    let response: Location = match req.fetch_str().await {
+    match req.fetch_str().await {
         Ok(v) => {
             let res: WaypointsCurrent = serde_json::from_str(v.as_str())?;
             if !res.features.is_empty() {
-                res.features[0].properties.to_owned()
+                Ok(res.features[0].properties.to_owned())
             } else {
-                return Err(anyhow!("Error: No location found in response"));
+                Err(anyhow!("Error: No location found in response"))
             }
         }
-        Err(e) => return Err(anyhow!("Error: {:?}", e)),
-    };
+        Err(e) => Err(anyhow!("Error: {:?}", e)),
+    }
+}
 
-    Ok(response)
+pub async fn fetch_waypoints(url: &str) -> Result<Vec<Location>> {
+    let req = jsonfetch::JsonFetcher::new(url)?;
+    match req.fetch_str().await {
+        Ok(v) => {
+            let res: WaypointsCurrent = serde_json::from_str(v.as_str())?;
+            let locations: Vec<Location> = res
+                .features
+                .into_iter()
+                .map(|f| f.properties.clone())
+                .collect();
+            Ok(locations)
+        }
+        Err(e) => Err(anyhow!("Error: {:?}", e)),
+    }
 }

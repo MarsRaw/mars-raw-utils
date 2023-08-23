@@ -13,6 +13,15 @@ pub mod url {
     pub const NSYT_RAW_WEBSERVICE_URL: &str = "https://mars.nasa.gov/api/v1/raw_image_items/";
     pub const NSYT_LATEST_WEBSERVICE_URL: &str =
         "https://mars.nasa.gov/api/v1/raw_image_items/insight/latest/";
+
+    pub const MSL_LOCATION_URL: &str =
+        "https://mars.nasa.gov/mmgis-maps/MSL/Layers/json/MSL_waypoints_current.json";
+    pub const MSL_WAYPOINTS_URL: &str =
+        "https://mars.nasa.gov/mmgis-maps/MSL/Layers/json/MSL_waypoints.json";
+    pub const M20_LOCATION_URL: &str =
+        "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints_current.json";
+    pub const M20_WAYPOINTS_URL: &str =
+        "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json";
 }
 
 pub mod time {

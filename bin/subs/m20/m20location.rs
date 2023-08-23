@@ -2,7 +2,7 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Parser;
-use mars_raw_utils::location;
+use mars_raw_utils::{constants::url, location};
 
 #[derive(Parser)]
 #[command(author, version, about = "Current reported Mars2020 location information", long_about = None)]
@@ -11,10 +11,7 @@ pub struct M20Location {}
 #[async_trait]
 impl RunnableSubcommand for M20Location {
     async fn run(&self) -> Result<()> {
-        let loc = location::fetch_location(
-            "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints_current.json",
-        )
-        .await?;
+        let loc = location::fetch_location(url::M20_LOCATION_URL).await?;
 
         println!("Site: {}", loc.site);
         println!("Drive: {}", loc.drive);
