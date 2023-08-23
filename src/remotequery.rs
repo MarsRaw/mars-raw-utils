@@ -222,7 +222,7 @@ async fn download_remote_image(
             on_image_downloaded(image_md);
             Ok(image_base_name)
         }
-        Err(why) => return Err(why),
+        Err(why) => Err(why),
     }
 }
 
@@ -251,11 +251,10 @@ pub async fn perform_fetch(
                     .filter(|_| !query.list_only)
                     .filter(|md| {
                         !query.only_new
-                            || query.only_new
-                                && !image_exists_on_filesystem(
-                                    &md.remote_image_url,
-                                    Some(&query.output_path),
-                                )
+                            || !image_exists_on_filesystem(
+                                &md.remote_image_url,
+                                Some(&query.output_path),
+                            )
                     })
                     .collect();
 
