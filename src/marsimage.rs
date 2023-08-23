@@ -94,7 +94,7 @@ impl MarsImage {
             if self.metadata.history.is_empty() {
                 warn!("Saving MarsImage without history");
             }
-            util::save_image_json(to_file, &self.metadata, false, None).unwrap();
+            util::save_image_json(to_file, &self.metadata, None).unwrap();
             info!("File saved.");
             Ok(())
         } else {

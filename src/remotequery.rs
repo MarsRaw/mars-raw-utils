@@ -76,9 +76,19 @@ impl fmt::Display for FetchError {
     }
 }
 
+pub fn image_exists_on_filesystem(image_url: &str, output_path: Option<&str>) -> bool {
+    let write_to = match output_path {
+        Some(p) => {
+            let bn = path::basename(image_url);
+            format!("{}/{}", p, bn)
+        }
+        None => String::from(image_url),
+    };
+    path::file_exists(&write_to)
+}
+
 pub async fn fetch_image(
     image_url: &str,
-    only_new: bool,
     output_path: Option<&str>,
 ) -> Result<PathBuf, FetchError> {
     let write_to = match output_path {
@@ -90,24 +100,20 @@ pub async fn fetch_image(
     };
 
     // would rather do this as if !... but I'm assuming these vprintln! calls are.. impotant for some reason...
-    if !only_new || !path::file_exists(&write_to) {
-        if let Ok(image_data) = httpfetch::simple_fetch_bin(image_url).await {
-            let path = Path::new(write_to.as_str());
-            info!("Writing image data to {}", write_to);
+    if let Ok(image_data) = httpfetch::simple_fetch_bin(image_url).await {
+        let path = Path::new(write_to.as_str());
+        info!("Writing image data to {}", write_to);
 
-            let mut file = match File::create(path) {
-                Ok(f) => f,
-                Err(_) => return Err(FetchError::WriteError),
-            };
-            match file.write_all(&image_data[..]) {
-                Ok(_) => Ok(path.to_path_buf()),
-                Err(_) => Err(FetchError::WriteError),
-            }
-        } else {
-            Err(FetchError::WriteError)
+        let mut file = match File::create(path) {
+            Ok(f) => f,
+            Err(_) => return Err(FetchError::WriteError),
+        };
+        match file.write_all(&image_data[..]) {
+            Ok(_) => Ok(path.to_path_buf()),
+            Err(_) => Err(FetchError::WriteError),
         }
     } else {
-        Err(FetchError::FileExists)
+        Err(FetchError::WriteError)
     }
 }
 
@@ -209,29 +215,14 @@ async fn download_remote_image(
     query: &RemoteQuery,
     on_image_downloaded: OnImageDownloaded,
 ) -> Result<String, FetchError> {
-    if !query.list_only {
-        match fetch_image(
-            &image_md.remote_image_url,
-            query.only_new,
-            Some(query.output_path.as_ref()),
-        )
-        .await
-        {
-            Ok(_) => {}
-            Err(FetchError::FileExists) => {}
-            Err(why) => return Err(why),
-        };
-        let image_base_name = path::basename(image_md.remote_image_url.as_str());
-        _ = save_image_json(
-            &image_base_name,
-            image_md,
-            query.only_new,
-            Some(query.output_path.as_ref()),
-        );
-        on_image_downloaded(image_md);
-        Ok(image_base_name)
-    } else {
-        Err(FetchError::SkippingFile)
+    match fetch_image(&image_md.remote_image_url, Some(query.output_path.as_ref())).await {
+        Ok(_) => {
+            let image_base_name = path::basename(image_md.remote_image_url.as_str());
+            _ = save_image_json(&image_base_name, image_md, Some(query.output_path.as_ref()));
+            on_image_downloaded(image_md);
+            Ok(image_base_name)
+        }
+        Err(why) => return Err(why),
     }
 }
 
@@ -250,17 +241,38 @@ pub async fn perform_fetch(
     if let Ok(client) = get_fetcher_for_mission(mission) {
         match client.query_remote_images(query).await {
             Ok(results) => {
-                on_total_known(results.len());
+                // print a table of all the results.
                 print_table(&results, query);
-                let tasks: Vec<_> = results
-                    .par_iter()
-                    .map(|md| {
-                        info!("Fetching Image from Remote URL: {}", md.remote_image_url);
-                        download_remote_image(md, query, on_image_downloaded)
+
+                // Iterate over the results and remove existing images
+                // if the user has selected to skip any images that already exist locally
+                let to_download: Vec<Metadata> = results
+                    .into_iter()
+                    .filter(|_| !query.list_only)
+                    .filter(|md| {
+                        !query.only_new
+                            || query.only_new
+                                && !image_exists_on_filesystem(
+                                    &md.remote_image_url,
+                                    Some(&query.output_path),
+                                )
                     })
                     .collect();
-                for task in tasks {
-                    task.await?;
+
+                // Don't bother with the result if we have nothing to download
+                if !to_download.is_empty() {
+                    on_total_known(to_download.len());
+
+                    let tasks: Vec<_> = to_download
+                        .par_iter()
+                        .map(|md| {
+                            info!("Fetching Image from Remote URL: {}", md.remote_image_url);
+                            download_remote_image(md, query, on_image_downloaded)
+                        })
+                        .collect();
+                    for task in tasks {
+                        task.await?;
+                    }
                 }
             }
             Err(why) => error!("Error: {}", why),

@@ -93,7 +93,7 @@ impl RunnableSubcommand for M20EcamAssemble {
             .metadata
             .history
             .push(env::args().collect::<Vec<String>>().join(" "));
-        util::save_image_json(output, &tiles[0].image.metadata, false, None).unwrap();
+        util::save_image_json(output, &tiles[0].image.metadata, None).unwrap();
 
         pb_done!();
         Ok(())

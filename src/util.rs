@@ -159,7 +159,6 @@ pub fn image_exists_on_filesystem(image_url: &str) -> bool {
 pub fn save_image_json<T: Serialize>(
     image_url: &str,
     item: &T,
-    only_new: bool,
     output_path: Option<&str>,
 ) -> Result<()> {
     let item_str = serde_json::to_string_pretty(item)?;
@@ -172,24 +171,21 @@ pub fn save_image_json<T: Serialize>(
         None => String::from(image_url),
     };
 
-    save_image_json_from_string(&write_to, &item_str, only_new)
+    save_image_json_from_string(&write_to, &item_str)
 }
 
-pub fn save_image_json_from_string(image_path: &str, item: &String, only_new: bool) -> Result<()> {
+pub fn save_image_json_from_string(image_path: &str, item: &String) -> Result<()> {
     let out_file = image_path
         .replace(".jpg", "-metadata.json")
         .replace(".JPG", "-metadata.json")
         .replace(".png", "-metadata.json")
         .replace(".PNG", "-metadata.json");
 
-    if !only_new || !path::file_exists(out_file.as_str()) {
-        let path = Path::new(out_file.as_str());
-        info!("Writing metadata file to {}", path.to_str().unwrap());
+    let path = Path::new(out_file.as_str());
+    info!("Writing metadata file to {}", path.to_str().unwrap());
 
-        let mut file = File::create(path)?;
-        file.write_all(item.as_bytes())?;
-    }
-
+    let mut file = File::create(path)?;
+    file.write_all(item.as_bytes())?;
     Ok(())
 }
 
