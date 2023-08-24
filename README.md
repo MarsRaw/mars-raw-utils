@@ -66,12 +66,10 @@ To build successfully on Linux, you'll likely need the following packages instal
 ```
 git clone git@github.com:kmgill/mars-raw-utils.git
 cd mars-raw-utils/
-git submodule init
-git submodule update
 ```
 
 ### Install via cargo
-This is the easiest installation method for *nix-based systems. While the software does build and run natively on Windows, it is recommended to be used within a Ubuntu container on the Windows Subsystem for Linux.
+This is the easiest installation method for *nix-based systems, though it does require a working installation of the Rust toolchain. While the software does build and run natively on Windows, it is recommended to be used within a Ubuntu container on the Windows Subsystem for Linux.
 
 ```
 cargo install --path .
@@ -127,6 +125,12 @@ Build outputs will be placed into the `target` directory.
 ## Specifying Calibration Data Location
 By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can use the default `~/.marsdata` or set the calibration file directory by using the `$MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
 
+## Updating Calibration Data
+Once MRU is installed, or if a update is available, the calibration files can be updated by running::
+```
+mru update-cal-data
+```
+
 ## Calibration Profiles
 Calibration files are used to specify commonly used parameters for the various instruments and output product types. The files are in toml format and if not specified by their absolute path, need to be discoverable in a known calibration folder.
 
@@ -161,50 +165,66 @@ filename_suffix = "rjcal-rad"
  * msl_mcam_rad
 
 ## Calibration
+Images posted to the NASA raw image pages are derived from what are known as Experimental Data Records (EDR). Not having gone through the ground pipelines, these images are raw and unprocessed. Further, the images have had various levels of compression applied to make them easier to serve on a website. 
+
+This tool provides a way to apply some of the steps required to generate a calibrated data product. Given the compression applied, it is impossible to produce a completely calibrated image on par with those in JPL's internal systems or the planetary data system. However, this best-effort calibration tool was developed to provide products suitable for image processing enthusiasts and some limited utility for researchers. 
+
+### Running
+This tool uses associated metadata to identify the calibration routine required for a given mission and instrument (see list of supported instruments above). A such, this is the single subcommand for calibration. 
+
+To execute the default calibration on a set of images (modify input expression as required):
 ```
-USAGE:
-    mru calibrate [OPTIONS]
-
-OPTIONS:
-    -B, --blue-weight <BLUE_WEIGHT>
-            Blue weight
-
-    -c, --color-noise-reduction-amount <COLOR_NOISE_REDUCTION_AMOUNT>
-            Color noise reduction amount
-
-    -G, --green-weight <GREEN_WEIGHT>
-            Green weight
-
-    -h, --help
-            Print help information
-
-    -i, --input-files <INPUT_FILES>...
-            Input raw images
-
-    -I, --instrument <INSTRUMENT>
-            Force instrument
-
-    -P, --profile <PROFILE>...
-            Calibration profile
-
-    -r, --raw
-            Raw color, skip ILT
-
-    -R, --red-weight <RED_WEIGHT>
-            Red weight
-
-    -t, --hpc-threshold <HPC_THRESHOLD>
-            HPC threshold
-
-    -V, --version
-            Print version information
-
-    -w, --hpc-window <HPC_WINDOW>
-            HPC window size
+mru calibrate -i *jpg
 ```
 
-## Mars Science Laboratory (Curiosity)
-### Fetch Raws
+
+To calibrate a set of images and apply a specific calibration profile, in this case `msl_mcam_rad`, run:
+```
+mru calibrate -i *jpg -P msl_mcam_rad
+```
+
+### Usage
+```
+Usage: mru calibrate [OPTIONS]
+
+Options:
+  -i, --input-files <INPUT_FILES>...
+          Input raw images
+  -I, --instrument <INSTRUMENT>
+          Force instrument
+  -R, --red-weight <RED_WEIGHT>
+          Red weight
+  -G, --green-weight <GREEN_WEIGHT>
+          Green weight
+  -B, --blue-weight <BLUE_WEIGHT>
+          Blue weight
+  -r, --raw
+          Raw color, skip ILT
+  -c, --color-noise-reduction-amount <COLOR_NOISE_REDUCTION_AMOUNT>
+          Color noise reduction amount
+  -t, --hpc-threshold <HPC_THRESHOLD>
+          HPC threshold
+  -w, --hpc-window <HPC_WINDOW>
+          HPC window size
+  -d, --decorrelate
+          Decorrelate color channels
+  -P, --profile <PROFILE>...
+          Calibration profile
+  -D, --debayer <DEBAYER>
+          Debayer method (malvar, amaze)
+  -C, --srgb-color-correction
+          Apply sRGB color correction
+  -S, --no-subframing
+          Skip auto subframing (cropping) of output images
+  -h, --help
+          Print help
+  -V, --version
+          Print version
+```
+
+## Fetch Raws for MSL
+
+### Usage
 ```
 USAGE:
     mru msl-fetch [OPTIONS]
@@ -226,7 +246,33 @@ OPTIONS:
     -V, --version               Print version information
 ```
 
-#### Examples
+### Instrument Identifiers
+Top level idenfiers include those in the sublevels.
+* NAV_LEFT
+  *  NAV_LEFT_A
+  * NAV_LEFT_B
+* MAHLI
+* NAV_RIGHT
+  * NAV_RIGHT_A
+  * NAV_RIGHT_B
+* CHEMCAM
+  * CHEMCAM_RMI
+* MARDI
+* HAZ_REAR
+  * RHAZ_RIGHT_A
+  * RHAZ_LEFT_A
+  * RHAZ_RIGHT_B
+  * RHAZ_LEFT_B
+* MASTCAM
+  * MAST_LEFT
+  * MAST_RIGHT
+* HAZ_FRONT
+  * FHAZ_RIGHT_A
+  * FHAZ_LEFT_A
+  * FHAZ_RIGHT_B
+  * FHAZ_LEFT_B
+
+### Examples
 
 Show available instruments:
 ```
@@ -249,9 +295,9 @@ mru msl-fetch -c NAV_RIGHT -m 3110 -M 3112 -S NCAM00595
 ```
 
 
+## Fetch Raws for Mars2020
 
-## Mars 2020 (Perseverance)
-### Fetch Raws
+### Usage
 ```
 USAGE:
     mru m20-fetch [OPTIONS]
@@ -273,11 +319,46 @@ OPTIONS:
     -t, --thumbnails            Download thumbnails in the results
     -V, --version               Print version information
 ```
+### Instrument Identifiers
+Top level idenfiers include those in the sublevels.
+* MASTCAM
+  * MCZ_LEFT
+  * MCZ_RIGHT
+* NAVCAM
+  * NAVCAM_LEFT
+  * NAVCAM_RIGHT
+* HELI_RTE
+* CACHECAM
+* SKYCAM
+* EDLCAM
+  * EDL_DDCAM
+  * EDL_PUCAM1
+  * EDL_PUCAM2
+  * EDL_RUCAM
+  * EDL_RDCAM
+  * LCAM
+* SHERLOC
+  * SHERLOC_ACI
+* HELI_NAV
+* WATSON
+  * SHERLOC_WATSON
+* HAZ_FRONT
+  * FRONT_HAZCAM_LEFT_A
+  * FRONT_HAZCAM_LEFT_B
+  * FRONT_HAZCAM_RIGHT_A
+  * FRONT_HAZCAM_RIGHT_B
+* SUPERCAM
+  * SUPERCAM_RMI
+* PIXL
+  * PIXL_MCC
+* HAZ_REAR
+  * REAR_HAZCAM_LEFT
+  * REAR_HAZCAM_RIGH
 
 
 
-## InSight
-### Fetch Raws
+## Fetch Raws for InSight
+### Usage
 ```
 USAGE:
     mru nsyt-fetch [OPTIONS]
@@ -299,19 +380,22 @@ OPTIONS:
     -V, --version               Print version information
 ```
 
+### Instrument Identifiers
+* ICC
+* IDC
+
 ## Anaglyph
 Generate a red/blue anaglyph from a matching stereo pair.
 ```
-USAGE:
-    mru anaglyph [OPTIONS] --left <LEFT> --right <RIGHT> --output <OUTPUT>
+Usage: mru anaglyph [OPTIONS] --left <LEFT> --right <RIGHT> --output <OUTPUT>
 
-OPTIONS:
-    -h, --help               Print help information
-    -l, --left <LEFT>        Left image
-    -m, --mono               Monochrome color (before converting to red/blue)
-    -o, --output <OUTPUT>    Output image
-    -r, --right <RIGHT>      Right image
-    -V, --version            Print version information
+Options:
+  -l, --left <LEFT>      Left image
+  -r, --right <RIGHT>    Right image
+  -o, --output <OUTPUT>  Output image
+  -m, --mono             Monochrome color (before converting to red/blue)
+  -h, --help             Print help
+  -V, --version          Print version
 ```
 
 ## Hot Pixel Correction Filter
@@ -325,27 +409,25 @@ For each pixel (excluding image border pixels):
  1. If the z-score exceeds a threshold variance (example: 2.5) from the mean we replace the pixel value with a median filter
 
 ```
-USAGE:
-    mru hpc-filter [OPTIONS]
+Usage: mru hpc-filter [OPTIONS]
 
-OPTIONS:
-    -h, --help                            Print help information
-    -i, --input-files <INPUT_FILES>...    Input images
-    -t, --threshold <THRESHOLD>           HPC threshold
-    -V, --version                         Print version information
-    -w, --window <WINDOW>                 HPC window size
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -t, --threshold <THRESHOLD>         HPC threshold
+  -w, --window <WINDOW>               HPC window size
+  -h, --help                          Print help
+  -V, --version                       Print version
 ```
 
 ## Inpainting Filter
 Applies a basic inpainting filter on a set of input images. Inpainting regions need to be marked in red (rgb 255, 0, 0).
 ```
-USAGE:
-    mru inpaint [OPTIONS]
+Usage: mru inpaint [OPTIONS]
 
-OPTIONS:
-    -h, --help                            Print help information
-    -i, --input-files <INPUT_FILES>...    Input images
-    -V, --version                         Print version information
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -h, --help                          Print help
+  -V, --version                       Print version
 ```
 
 
@@ -362,51 +444,51 @@ OPTIONS:
 ```
 
 ## Debayer
-Apply Malvar Demosaicking (Debayer) on a grayscale bayer-pattern image. Optionally apply a color noise reduction.
+Apply Malvar or Amaze Demosaicking (Debayer) on a grayscale bayer-pattern image. Optionally apply a color noise reduction.
 ```
-USAGE:
-    mru debayer [OPTIONS]
+Usage: mru debayer [OPTIONS]
 
-OPTIONS:
-    -h, --help                            Print help information
-    -i, --input-files <INPUT_FILES>...    Input images
-    -V, --version                         Print version information
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -D, --debayer <DEBAYER>             Debayer method (malvar, amaze)
+  -h, --help                          Print help
+  -V, --version                       Print version                      Print version information
 ```
 
 
 ## Levels
 Apply levels adjustments to an image. Analogous to 'Levels' in Photoshop or GIMP. 
 ```
-USAGE:
-    mru levels [OPTIONS]
+Usage: mru levels [OPTIONS]
 
-OPTIONS:
-    -b, --black <BLACK>                   Black level
-    -g, --gamma <GAMMA>                   Gamma level
-    -h, --help                            Print help information
-    -i, --input-files <INPUT_FILES>...    Input images
-    -V, --version                         Print version information
-    -w, --white <WHITE>                   White level
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -b, --black <BLACK>                 Black level
+  -w, --white <WHITE>                 White level
+  -g, --gamma <GAMMA>                 Gamma level
+  -h, --help                          Print help
+  -V, --version                       Print version
 ```
 
 ## Change Detection (Dust devils, clouds)
 Calculates a per-frame differential from a mean across a series of images. Intended for use with MSL and Mars2020 dust devil movies and sky surveys. Optional options are for contrast enhancement through Photoshop-like black level, white level, and gamma. 
 
 ```
-USAGE:
-    mru diffgif [OPTIONS] --output <OUTPUT>
+Usage: mru diffgif [OPTIONS] --output <OUTPUT>
 
-OPTIONS:
-    -b, --black <BLACK>                   Black level
-    -d, --delay <DELAY>                   Interframe delay in increments of 10ms
-    -g, --gamma <GAMMA>                   Gamma level
-    -h, --help                            Print help information
-    -i, --input-files <INPUT_FILES>...    Input images
-    -l, --lowpass <LOWPASS>               Lowpass window size
-    -o, --output <OUTPUT>                 Output image
-    -p, --prodtype <PRODTYPE>             Product type
-    -V, --version                         Print version information
-    -w, --white <WHITE>                   White level
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -b, --black <BLACK>                 Black level
+  -w, --white <WHITE>                 White level
+  -g, --gamma <GAMMA>                 Gamma level
+  -d, --delay <DELAY>                 Interframe delay in increments of 10ms
+  -l, --lowpass <LOWPASS>             Lowpass window size
+  -o, --output <OUTPUT>               Output image
+  -p, --prodtype <PRODTYPE>           Product type
+  -m, --mono                          Convert RGB to mono
+  -L, --lightonly                     Light only, discard dark values
+  -h, --help                          Print help
+  -V, --version                       Print version
 
 ```
 
@@ -524,17 +606,26 @@ The tool takes an input of 2+ images and an output location. An optional paramet
 
 
 ```
-USAGE:
-    mru focus-merge [OPTIONS] --output <OUTPUT>
+Usage: mru focus-merge [OPTIONS] --output <OUTPUT>
 
-OPTIONS:
-    -d, --depth-map                       Produce a depth map
-    -h, --help                            Print help information
-    -i, --input-files <INPUT_FILES>...    Input images
-    -o, --output <OUTPUT>                 Output image
-    -V, --version                         Print version information
-    -w, --window <WINDOW>                 Quality determination window size (pixels)
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -o, --output <OUTPUT>               Output image
+  -w, --window <WINDOW>               Quality determination window size (pixels)
+  -d, --depth-map                     Produce a depth map
+  -h, --help                          Print help
+  -V, --version                       Print version
 ```
+
+## Cross-eye Stereograms
+
+## Color Decorrelation Stetching
+
+## Mars Relay Network Pass Information
+
+## Rover Surface Location and Waypoint Information
+
+## Converting PDS images to MRU-readable Format
 
 ## References
 
