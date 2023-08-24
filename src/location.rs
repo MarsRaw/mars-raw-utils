@@ -70,3 +70,87 @@ pub async fn fetch_waypoints(url: &str) -> Result<Vec<Location>> {
         Err(e) => Err(anyhow!("Error: {:?}", e)),
     }
 }
+
+pub async fn print_all(url: &str) -> Result<()> {
+    let waypoints = fetch_waypoints(url).await?;
+    let mut first_evel = if !waypoints.is_empty() {
+        waypoints[0].elev_geoid
+    } else {
+        return Err(anyhow!("No waypoints found"));
+    };
+
+    println!("Site  Drive   Sol     Easting    Northing  Elevation   Climb       Lon       Lat Dist(m) Total (km)");
+    waypoints.into_iter().for_each(|wp| {
+        let elev_change = wp.elev_geoid - first_evel;
+        first_evel = wp.elev_geoid;
+
+        println!(
+            "{:>5} {:>5} {:>5} {:>11.3} {:>11.3} {:>10.2} {:>7.2} {:>9.5} {:>9.5} {:>7.2} {:10.2}",
+            wp.site,
+            wp.drive,
+            wp.sol,
+            wp.easting,
+            wp.northing,
+            wp.elev_geoid,
+            elev_change,
+            wp.lon,
+            wp.lat,
+            wp.dist_m,
+            wp.dist_km
+        );
+    });
+    Ok(())
+}
+
+pub async fn print_all_csv(url: &str) -> Result<()> {
+    let waypoints = fetch_waypoints(url).await?;
+    println!("Site,Drive,Sol,Easting,Northing,Elevation,Lon,Lat,Dist(m),Total (km)");
+
+    let mut first_evel = if !waypoints.is_empty() {
+        waypoints[0].elev_geoid
+    } else {
+        return Err(anyhow!("No waypoints found"));
+    };
+
+    waypoints.into_iter().for_each(|wp| {
+        let elev_change = wp.elev_geoid - first_evel;
+        first_evel = wp.elev_geoid;
+
+        println!(
+            "{},{},{},{},{},{},{:.3},{},{},{},{}",
+            wp.site,
+            wp.drive,
+            wp.sol,
+            wp.easting,
+            wp.northing,
+            wp.elev_geoid,
+            elev_change,
+            wp.lon,
+            wp.lat,
+            wp.dist_m,
+            wp.dist_km
+        );
+    });
+    Ok(())
+}
+
+pub async fn print_single(url: &str) -> Result<()> {
+    let loc = fetch_location(url).await?;
+
+    println!("Site: {}", loc.site);
+    println!("Drive: {}", loc.drive);
+    println!("Sol: {}", loc.sol);
+    println!("Easting: {}", loc.easting);
+    println!("Northing: {}", loc.northing);
+    println!("Elevation (geoid): {}", loc.elev_geoid);
+    println!("Longitude: {}", loc.lon);
+    println!("Latitude: {}", loc.lat);
+    println!("Roll: {}", loc.roll);
+    println!("Pitch: {}", loc.pitch);
+    println!("Yaw: {}", loc.yaw);
+    println!("Tilt: {}", loc.tilt);
+    println!("Drive Distance (meters): {}", loc.dist_m);
+    println!("Total Traverse Distance (kilometers): {}", loc.dist_km);
+
+    Ok(())
+}
