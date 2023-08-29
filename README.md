@@ -618,14 +618,90 @@ Options:
 ```
 
 ## Cross-eye Stereograms
+This provides the capability for MRU to produce cross-eye/parallel-eye 3D stereograms. 
+
+```
+Usage: mru xeye [OPTIONS] --left <LEFT> --right <RIGHT> --output <OUTPUT>
+
+Options:
+  -l, --left <LEFT>      Left image
+  -r, --right <RIGHT>    Right image
+  -o, --output <OUTPUT>  Output image
+  -u, --use-cm           Use camera model, if available
+  -h, --help             Print help
+  -V, --version          Print version
+```
 
 ## Color Decorrelation Stetching
+Stretches each color band of an image independent of one another to the minimum and maximum values of the bit depth.
+
+```
+Usage: mru decorr [OPTIONS]
+
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -c, --cross-file                    Cross-File decorrelation (value ranges determined across all files rather than individually)
+  -b, --ignore-black                  Ignore black values
+  -h, --help                          Print help
+  -V, --version                       Print version
+```
+
 
 ## Mars Relay Network Pass Information
+Retrieve overflight and downlink information from the Mars Relay Network. Information can be filtered by lander (`M20`, `M20`), and/or orbiter (`MRO`, `ODY`, `TGO`, `MVN`).
+
+```
+Usage: mru passes [OPTIONS]
+
+Options:
+  -o, --orbiter <ORBITER>...  Limit to orbiter(s)
+  -l, --lander <LANDER>...    Limit to lander(s)
+  -f, --future                Limit to future overflights
+  -h, --help                  Print help
+  -V, --version               Print version
+```
 
 ## Rover Surface Location and Waypoint Information
+Fetches drive, location, and vehicle attitude information. 
+
+### Curiosity
+```
+Usage: mru msl-location [OPTIONS]
+
+Options:
+  -a, --all      Print all known waypoints
+  -c, --csv      Print CSV format
+  -h, --help     Print help
+  -V, --version  Print version
+```
+
+### Perseverance
+
+```
+Usage: mru m20-location [OPTIONS]
+
+Options:
+  -a, --all      Print all known waypoints
+  -c, --csv      Print CSV format
+  -h, --help     Print help
+  -V, --version  Print version
+```
+
 
 ## Converting PDS images to MRU-readable Format
+This provides a simple utility for converting archived VICAR images from the Planetary Data System (PDS) into a format readable by MRU.
+
+```
+Usage: mru pds2png [OPTIONS]
+
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -m, --min <MIN>                     Minimum value
+  -M, --max <MAX>                     Maximum value
+  -x, --minmax                        Prints minimum and maximum values then exit
+  -h, --help                          Print help
+  -V, --version                       Print version
+```
 
 ## References
 
