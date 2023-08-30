@@ -9,6 +9,10 @@ Supported Missions and Data Sources:
 * Mars Perseverance Rover (Mars2020): https://mars.nasa.gov/mars2020/multimedia/raw-images/
 * Mars Curiosity Rover (Mars Science Laboratory): https://mars.nasa.gov/msl/multimedia/raw-images/
 * Mars InSight Lander (legacy): https://mars.nasa.gov/insight/multimedia/raw-images/
+* Explore with Curiosity: https://mars.nasa.gov/msl/surface-experience/
+* Curiosity's Location: https://mars.nasa.gov/maps/location/?mission=MSL
+* Explore with Perseverance: https://mars.nasa.gov/mars2020/surface-experience/
+* Perseverance's Location: https://mars.nasa.gov/maps/location/?mission=M20
 
 Though not comprehensive, MRU aims to provide image calibration with the goal of achieving an output as close as possible to the full science data. The primary limitation being that prior to becoming available online, most images are converted to web-friendly formats that involve downscaling, lossy compression, and other changes that result in a loss of data precision. 
 
@@ -45,7 +49,7 @@ Currently supported camera instruments and primary calibration functions:
 Additional instruments will be implemented more or less whenever I get to them.
 
 ## Quick Start
-Check out the wiki for some quick start topics: https://github.com/kmgill/mars-raw-utils/wiki
+Check out the wiki for some quick start topics: https://github.com/MarsRaw/mars-raw-utils/wiki
 
 ## Contributing
 Feedback, issues, and contributions are always welcomed. Should enough interest arise in contributing development efforts, I will write up a contribution guide. 
@@ -81,7 +85,7 @@ NOTE: You can set `$MARS_RAW_DATA` in `~/.bash_profile` if a custom data directo
 ### Install via apt (Debian, Ubuntu, ...)
 Download the pre-built deb file from the project page.
 
-```
+```bash
 sudo apt install ./mars_raw_utils_0.7.0_amd64.deb
 ```
 NOTE: Adjust the output debian package filename to what is output by the build.
