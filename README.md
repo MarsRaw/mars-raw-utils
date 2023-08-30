@@ -25,7 +25,7 @@ Currently supported camera instruments and primary calibration functions:
 | Mars2020   | Mastcam-Z   | &#9745;   | &#9745; | &#9745;      | &#9745;|        |
 | Mars2020   | NavCam      | &#9745;   | &#9745; |              | &#9745;|        |
 | Mars2020   | Rear Haz    | &#9745;   | &#9745; |              | &#9745;|        |
-| Mars2020   | Front Haz   | &#9745;   | &#9745; |              |        |        |
+| Mars2020   | Front Haz   | &#9745;   | &#9745; |              | &#9745;|        |
 | Mars2020   | Watson      | &#9745;   | &#9745; | &#9745;      | &#9745;|        |
 | Mars2020   | SuperCam    | &#9745;   | &#9745; |              | &#9745;|        |
 | Mars2020   | PIXL MCC    |           |         |              | &#9745;|        |
@@ -63,7 +63,7 @@ To build successfully on Linux, you'll likely need the following packages instal
 * `openssl-devel` (RHEL, CentOS, Fedora)
 
 ### Clone from git
-```
+```bash
 git clone git@github.com:kmgill/mars-raw-utils.git
 cd mars-raw-utils/
 ```
@@ -71,7 +71,7 @@ cd mars-raw-utils/
 ### Install via cargo
 This is the easiest installation method for *nix-based systems, though it does require a working installation of the Rust toolchain. While the software does build and run natively on Windows, it is recommended to be used within a Ubuntu container on the Windows Subsystem for Linux.
 
-```
+```bash
 cargo install --path .
 mkdir ~/.marsdata
 cp mars-raw-utils-data/caldata/* ~/.marsdata
@@ -88,32 +88,32 @@ NOTE: Adjust the output debian package filename to what is output by the build.
 
 ### Install via rpm (RHEL, CentOS, Fedora, ...)
 Download the pre-built rpm file from the project page.
-```
+```bash
 rpm -ivh mars_raw_utils-0.7.0-1.x86_64.rpm
 ```
 NOTE: Adjust the output rpm package filename to what is created by build.
 
 ### Install on MacOS via Homebrew
-```
+```bash
 brew tap kmgill/homebrew-mars-raw-utils
 brew install marsrawutils
 ```
 
 ### Docker
 A prebuilt docker image is available for use:
-```
+```bash
 docker pull kevinmgill/mars_raw_utils:latest
 ```
 
 However, the container can also be built locally:
-```
+```bash
 sh dockerbuild.sh
 ```
 
 
 ### Building Install Packages using Docker
 Install packages for MRU are currently built within Docker containers and are kicked off thusly:
-```
+```bash
 # Fedora / Red Hat:
 sh dockerbuild-fedora.sh
 
@@ -127,7 +127,7 @@ By default, if the software is installed using the .deb file in Debian/Ubuntu, t
 
 ## Updating Calibration Data
 Once MRU is installed, or if a update is available, the calibration files can be updated by running::
-```
+```bash
 mru update-cal-data
 ```
 
@@ -135,20 +135,39 @@ mru update-cal-data
 Calibration files are used to specify commonly used parameters for the various instruments and output product types. The files are in toml format and if not specified by their absolute path, need to be discoverable in a known calibration folder.
 
 An example profile 
-```
+```ini
+calfiletype = "profile"
 apply_ilt = true
-red_scalar = 1.16
-green_scalar = 1.0
-blue_scalar = 1.05
+red_scalar = 1.0
+green_scalar = 0.96
+blue_scalar = 1.2095
 color_noise_reduction = false
 color_noise_reduction_amount = 0
 hot_pixel_detection_threshold = 0
-filename_suffix = "rjcal-rad"
+filename_suffix = "rjcal-dcc"
+decorrelate_color = true
+mission = "Mars2020"
+instrument = "WATSON"
+description = "Applies color decorrelation to RAD calibrated images"
 ```
 
 ### Included calibration profiles
+ * m20_cachecam_ilt
+ * m20_cachecam_rad
  * m20_hrte_rad
+ * m20_ncam_bay
+ * m20_ncam_dcc
+ * m20_ncam_drcx
+ * m20_ncam_ilt
+ * m20_ncam_mcz
+ * m20_ncam_rad
+ * m20_scam_bay
+ * m20_scam_dcc
+ * m20_scam_ilt
+ * m20_scam_rad
  * m20_watson_bay
+ * m20_watson_dcc
+ * m20_watson_drcx
  * m20_watson_ilt
  * m20_watson_rad
  * m20_zcam_bay
@@ -156,13 +175,21 @@ filename_suffix = "rjcal-rad"
  * m20_zcam_rad
  * m20_zcam_cwb
  * m20_zcam_cb2
+ * m20_zcam_dcc
+ * m20_zcam_drcx
  * msl_mahli_bay
  * msl_mahli_ilt
  * msl_mahli_rad
  * msl_mahli_cwb
+ * msl_mahli_dcc
+ * msl_mahli_drcx
+ * msl_mahli_drxx
  * msl_mcam_bay
  * msl_mcam_ilt
  * msl_mcam_rad
+ * msl_mcam_dcc
+ * msl_mcam_drcx
+ * msl_mcam_drxx
 
 ## Calibration
 Images posted to the NASA raw image pages are derived from what are known as Experimental Data Records (EDR). Not having gone through the ground pipelines, these images are raw and unprocessed. Further, the images have had various levels of compression applied to make them easier to serve on a website. 
@@ -173,13 +200,13 @@ This tool provides a way to apply some of the steps required to generate a calib
 This tool uses associated metadata to identify the calibration routine required for a given mission and instrument (see list of supported instruments above). A such, this is the single subcommand for calibration. 
 
 To execute the default calibration on a set of images (modify input expression as required):
-```
+```bash
 mru calibrate -i *jpg
 ```
 
 
 To calibrate a set of images and apply a specific calibration profile, in this case `msl_mcam_rad`, run:
-```
+```bash
 mru calibrate -i *jpg -P msl_mcam_rad
 ```
 
@@ -223,6 +250,7 @@ Options:
 ```
 
 ## Fetch Raws for MSL
+This tool fetches images from the public raw image website at https://mars.nasa.gov/msl/multimedia/raw-images/
 
 ### Usage
 ```
@@ -275,27 +303,28 @@ Top level idenfiers include those in the sublevels.
 ### Examples
 
 Show available instruments:
-```
+```bash
 mru msl-fetch -I
 ```
 
 List what's available for Mastcam on sol 3113: (remove the `-l` to download the images)
-```
+```bash
 mru msl-fetch -c MASTCAM -s 3113 -l
 ```
 
 List what's available for NAV_RIGHT between sols 3110 and 3112: (remove the `-l` to download the images)
-```
+```bash
 mru msl-fetch -c NAV_RIGHT -m 3110 -M 3112 -l
 ```
 
 Download NAV_RIGHT during sols 3110 through 3112, filtering for sequence id NCAM00595:
-```
+```bash
 mru msl-fetch -c NAV_RIGHT -m 3110 -M 3112 -S NCAM00595
 ```
 
 
 ## Fetch Raws for Mars2020
+This tool fetches images from the public raw image website at https://mars.nasa.gov/mars2020/multimedia/raw-images/
 
 ### Usage
 ```
@@ -358,6 +387,11 @@ Top level idenfiers include those in the sublevels.
 
 
 ## Fetch Raws for InSight
+This tool fetches images from the public raw image website at https://mars.nasa.gov/insight/multimedia/raw-images/
+
+*NOTE*: The InSight mission has come to an end. Because of this, no new images will be appearing on the raw image website beyond what it already there.
+
+
 ### Usage
 ```
 USAGE:
@@ -397,6 +431,24 @@ Options:
   -h, --help             Print help
   -V, --version          Print version
 ```
+
+### Example:
+Generate an analyph from a sol 3931 ENV sequence stereo pair:
+
+```bash
+mru msl-fetch -c NAV_RIGHT NAV_LEFT -s 3931 -f NCAM00593
+
+mru calibrate -i /data/MSL/3931/NCAM/NLB_746463314EDR_S1031742NCAM00593M_.JPG /data/MSL/3931/NCAM/NRB_746463314EDR_S1031742NCAM00593M_.JPG
+
+mru anaglyph -l /data/MSL/3931/NCAM/NLB_746463314EDR_S1031742NCAM00593M_-rjcal.tif  -r /data/MSL/3931/NCAM/NRB_746463314EDR_S1031742NCAM00593M_-rjcal.tif -o MSL_NCAM_3931_anaglyph_1.tif
+
+
+```
+
+Output:
+<p align="center">
+  <img src="doc/images/MSL_NCAM_3931_anaglyph_1.jpg">
+</p>
 
 ## Hot Pixel Correction Filter
 Attempt at hot pixel detection and removal. 
@@ -494,35 +546,43 @@ Options:
 
 ### Examples
 #### Dust Devils, MSL Sol 3372, Seq id NCAM00595
-```
-mru msl-fetch -c NAV_RIGHT_B -s 3372 -S NCAM00595
+```bash
+mru msl-fetch -c NAV_RIGHT_B -s 3372 -f NCAM00595
 
-mru calibrate -i *JPG -v -t 2.0
+mru calibrate -i *JPG -t 2.0
 
-mru diffgif -i *NCAM00595*-rjcal.png -o DustDevilMovie_Sol3372.gif -v -b 0 -w 2.0 -g 2.5 -l 5 -d 20
+mru diffgif -i *NCAM00595*-rjcal.tif -o DustDevilMovie_Sol3372.gif -b 0 -w 2.0 -g 2.5 -l 5 -d 20
 ```
+
+Output:
+
+<p align="center">
+  <img src="doc/images/DustDevilMovie_Sol3372-small.gif" alt="Dust Devil"> 
+</p>
+
+
 #### Cloud motion and shadows, MSL Sol 3325, Seq id NCAM00556
-```
+```bash
 mru msl-fetch -c NAV_RIGHT -s 3325
 
-mru calibrate -i *JPG -v -t 2.0
+mru calibrate -i *JPG -t 2.0
 
-mru diffgif -i *NCAM00556*-rjcal.png -o CloudShadow_3325.gif -v -b 0 -w 1.0 -g 2.5 -l 5 -d 20
+mru diffgif -i *NCAM00556*-rjcal.tif -o CloudShadow_3325.gif -b 0 -w 1.0 -g 2.5 -l 5 -d 20
 ```
 #### Clouds, zenith movie, MSL Sol 3325, Seq id NCAM00551
-```
+```bash
 mru msl-fetch -c NAV_RIGHT -s 3325
 
-mru calibrate -i *JPG -v -t 2.0
+mru calibrate -i *JPG -t 2.0
 
-mru diffgif -i *NCAM00551*-rjcal.png -o CloudZenith_3325.gif -v -b 0 -w 3.0 -g 1.0 -l 5 -d 20
+mru diffgif -i *NCAM00551*-rjcal.tif -o CloudZenith_3325.gif -b 0 -w 3.0 -g 1.0 -l 5 -d 20
 ```
 
 ## Data Update Checks
 Fetches information as to the latest updated sols.
 
 Example Output:
-```
+```bash
 $ mru msl-latest
 Latest data: 2022-02-23T18:30:03Z
 Latest sol: 3395
@@ -556,7 +616,7 @@ Mission time and sol are available for MSL, Mars2020, InSight, and the Mars Expl
 Currently, the output provides valules for the Mars Sol Date, coordinated Mars time, mission sol, mission time (LMST/HLST), local true color time, and areocentric solar longitude. The algorithm used for the calculation is based on James Tauber's marsclock.com and is exposed via `time::get_time(sol_offset:f64, longitude:f64, time_system:time::TimeSystem)`.
 
 Example Output:
-```
+```bash
 $ mru msl-date
 Mars Sol Date:          52391.26879394437
 Coordinated Mars Time:  06:27:03.797
@@ -618,14 +678,177 @@ Options:
 ```
 
 ## Cross-eye Stereograms
+This provides the capability for MRU to produce cross-eye/parallel-eye 3D stereograms. 
+
+```
+Usage: mru xeye [OPTIONS] --left <LEFT> --right <RIGHT> --output <OUTPUT>
+
+Options:
+  -l, --left <LEFT>      Left image
+  -r, --right <RIGHT>    Right image
+  -o, --output <OUTPUT>  Output image
+  -u, --use-cm           Use camera model, if available
+  -h, --help             Print help
+  -V, --version          Print version
+```
+
+### Example:
+Download MAHLI stereo pair from sol 3931, calibrate them, then create a cross-eye stereogram:
+```bash
+mru msl-fetch -c MAHLI -s 3931
+
+mru calibrate -i 3931MH0001700001402361R00_DXXX.jpg 3931MH0001700001402363R00_DXXX.jpg -P msl_mahli_rad
+
+mru xeye -l 3931MH0001700001402363R00_DXXX-rjcal-rad.tif -r 3931MH0001700001402361R00_DXXX-rjcal-rad.tif -o MSL_MAHLI_3931_xeye_1.tif
+```
+
+Output:
+<p align="center">
+  <img src="doc/images/MSL_MAHLI_3931_xeye_1.jpg" alt="xeye stereogram"> 
+</p>
+
 
 ## Color Decorrelation Stetching
+Stretches each color band of an image independent of one another to the minimum and maximum values of the bit depth.
+
+```
+Usage: mru decorr [OPTIONS]
+
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -c, --cross-file                    Cross-File decorrelation (value ranges determined across all files rather than individually)
+  -b, --ignore-black                  Ignore black values
+  -h, --help                          Print help
+  -V, --version                       Print version
+```
+
+Example Before (M20 MCZ calibrated with `m20_zcam_rad`)
+<p align="center">
+  <img src="doc/images/ZR0_0897_0746567741_568ECM_N0440820ZCAM08906_1100LMJ02-rjcal-rad.jpg">
+</p>
+
+Example After following `mru decorr`
+<p align="center">
+  <img src="doc/images/ZR0_0897_0746567741_568ECM_N0440820ZCAM08906_1100LMJ02-rjcal-rad-decorr.jpg">
+</p>
 
 ## Mars Relay Network Pass Information
+Retrieve overflight and downlink information from the Mars Relay Network. Information can be filtered by lander (`M20`, `MSL`), and/or orbiter (`MRO`, `ODY`, `TGO`, `MVN`).
+
+```
+Usage: mru passes [OPTIONS]
+
+Options:
+  -o, --orbiter <ORBITER>...  Limit to orbiter(s)
+  -l, --lander <LANDER>...    Limit to lander(s)
+  -f, --future                Limit to future overflights
+  -h, --help                  Print help
+  -V, --version               Print version
+```
+
+### Example:
+
+Retrieve upcoming passes for Curiosity:
+```bash
+mru passes -l MSL -f
++---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
+| ID                  | Orbiter | Lander | Max El Time             | Max El (deg) | Duration | Range   | Data Vol |
++---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
+| TGO_MSL_2023_242_03 | TGO     | MSL    | 2023-08-30 18:20:01 UTC | 33.448813    | 16.566   | 635.226 | 710      |
++---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
+| MRO_MSL_2023_242_02 | MRO     | MSL    | 2023-08-30 20:40:32 UTC | 72.00407     | 13.5     | 277.561 | 397      |
++---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
+| ODY_MSL_2023_243_02 | ODY     | MSL    | 2023-08-31 12:13:00 UTC | 70.262318    | 17.316   | 426.163 | 114      |
++---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
+| MRO_MSL_2023_243_03 | MRO     | MSL    | 2023-08-31 20:59:15 UTC | 30.584128    | 12.933   | 474.955 | 211      |
++---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
+...
+```
 
 ## Rover Surface Location and Waypoint Information
+Fetches drive, location, and vehicle attitude information. 
+
+### Curiosity
+```
+Usage: mru msl-location [OPTIONS]
+
+Options:
+  -a, --all      Print all known waypoints
+  -c, --csv      Print CSV format
+  -h, --help     Print help
+  -V, --version  Print version
+```
+
+#### Example:
+
+Current vehicle status:
+
+```bash
+mru msl-location
+Site: 103
+Drive: 2216
+Sol: 3931
+Easting: 8144432.505
+Northing: -282950.238
+Elevation (geoid): -3777.79
+Longitude: 137.4015026
+Latitude: -4.77354166
+Roll: -10.81
+Pitch: 1.8
+Yaw: 134.87
+Tilt: 10.96
+Drive Distance (meters): 64.63
+Total Traverse Distance (kilometers): 30.78
+```
+
+### Perseverance
+
+```
+Usage: mru m20-location [OPTIONS]
+
+Options:
+  -a, --all      Print all known waypoints
+  -c, --csv      Print CSV format
+  -h, --help     Print help
+  -V, --version  Print version
+```
+
+#### Example:
+
+Current vehicle status:
+
+```bash
+mru m20-location
+Site: 44
+Drive: 830
+Sol: 897
+Easting: 4349292.079
+Northing: 1095551.419
+Elevation (geoid): -2414.699463
+Longitude: 77.35836062
+Latitude: 18.48261509
+Roll: -1.581429204
+Pitch: 0.356870366
+Yaw: -94.94701482
+Tilt: 1.621185506
+Drive Distance (meters): 0.047
+Total Traverse Distance (kilometers): 19.93
+```
 
 ## Converting PDS images to MRU-readable Format
+This provides a simple utility for converting archived VICAR images from the Planetary Data System (PDS) into a format readable by MRU.
+
+```
+Usage: mru pds2png [OPTIONS]
+
+Options:
+  -i, --input-files <INPUT_FILES>...  Input images
+  -m, --min <MIN>                     Minimum value
+  -M, --max <MAX>                     Maximum value
+  -x, --minmax                        Prints minimum and maximum values then exit
+  -h, --help                          Print help
+  -V, --version                       Print version
+```
 
 ## References
 
