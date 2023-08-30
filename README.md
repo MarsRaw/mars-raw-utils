@@ -766,7 +766,7 @@ mru passes -l MSL -f
 ```
 
 ## Rover Surface Location and Waypoint Information
-Fetches drive, location, and vehicle attitude information. 
+Fetches drive, location, and vehicle attitude information. By default, this includes information from the latest reported drive. However, by using the `-a` option, MRU will print out all reported site locations since the beginning of the mission (Use `-c` for CSV formatting);
 
 ### Curiosity
 ```
@@ -799,6 +799,25 @@ Yaw: 134.87
 Tilt: 10.96
 Drive Distance (meters): 64.63
 Total Traverse Distance (kilometers): 30.78
+```
+
+Vehicle Location History:
+
+```bash
+mru msl-location -a
+Site  Drive   Sol     Easting    Northing  Elevation   Climb       Lon       Lat Dist(m) Total (km)
+    2     0     3 8146811.223 -272039.268   -4500.97    0.00 137.44163  -4.58947    0.00       0.00
+    3    78    16 8146817.210 -272039.150   -4501.12   -0.15 137.44173  -4.58946    7.01       0.01
+    3   100    21 8146814.363 -272035.346   -4501.39   -0.27 137.44169  -4.58940    4.90       0.01
+    3   260    22 8146826.607 -272035.482   -4502.36   -0.98 137.44189  -4.58940   15.14       0.03
+    3   372    24 8146843.725 -272038.080   -4502.61   -0.25 137.44218  -4.58945   21.51       0.05
+    3   530    26 8146861.191 -272056.004   -4503.03   -0.41 137.44248  -4.58975   29.79       0.08
+    4     0    29 8146885.959 -272078.049   -4503.56   -0.53 137.44289  -4.59012   30.56       0.11
+    4   404    38 8146910.129 -272085.295   -4504.60   -1.05 137.44330  -4.59024   32.35       0.14
+    4   468    39 8146931.566 -272089.740   -4504.76   -0.15 137.44366  -4.59032   21.70       0.16
+    4   916    40 8146962.057 -272073.023   -4504.47    0.29 137.44418  -4.59004   37.22       0.20
+    4  1238    41 8146985.961 -272061.770   -4504.95   -0.49 137.44458  -4.58985   26.89       0.23
+...
 ```
 
 ### Perseverance
@@ -835,6 +854,25 @@ Drive Distance (meters): 0.047
 Total Traverse Distance (kilometers): 19.93
 ```
 
+Vehicle Location History:
+
+```bash
+mru m20-location -a 
+Site  Drive   Sol     Easting    Northing  Elevation   Climb       Lon       Lat Dist(m) Total (km)
+    3     0    13 4354494.086 1093299.695   -2569.91    0.00  77.45089  18.44463    0.00       0.00
+    3   110    14 4354497.517 1093294.730   -2569.86    0.05  77.45095  18.44454    6.25       0.01
+    3   386    15 4354502.424 1093329.801   -2569.94   -0.08  77.45103  18.44514   36.39       0.04
+    3   578    16 4354528.468 1093338.387   -2569.29    0.65  77.45150  18.44528   27.43       0.07
+    3   770    20 4354548.640 1093330.590   -2568.93    0.36  77.45186  18.44515   23.42       0.09
+    3   792    23 4354544.202 1093333.786   -2568.97   -0.04  77.45178  18.44520    5.47       0.10
+    3   828    29 4354546.709 1093331.539   -2568.93    0.04  77.45182  18.44516    3.94       0.10
+    3  1044    31 4354519.166 1093332.465   -2569.60   -0.67  77.45133  18.44518   33.39       0.14
+    3  1266    32 4354511.566 1093304.014   -2569.81   -0.21  77.45120  18.44470   30.61       0.17
+    3  1374    33 4354501.886 1093307.106   -2569.99   -0.18  77.45102  18.44475   12.96       0.18
+...
+```
+
+
 ## Converting PDS images to MRU-readable Format
 This provides a simple utility for converting archived VICAR images from the Planetary Data System (PDS) into a format readable by MRU.
 
@@ -849,6 +887,19 @@ Options:
   -h, --help                          Print help
   -V, --version                       Print version
 ```
+
+### Example
+
+Download MastCam image from PDS and convert to a usable format:
+
+```bash
+curl -O https://planetarydata.jpl.nasa.gov/img/data/msl/MSLMST_0028/DATA/RDR/SURFACE/3154/3154ML1002700011203864E01_DRCX.IMG
+
+curl -O https://planetarydata.jpl.nasa.gov/img/data/msl/MSLMST_0028/DATA/RDR/SURFACE/3154/3154ML1002700011203864E01_DRCX.LBL
+
+mru pds2png -i 3154ML1002700011203864E01_DRCX.LBL
+```
+
 
 ## References
 
