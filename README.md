@@ -155,6 +155,30 @@ instrument = "WATSON"
 description = "Applies color decorrelation to RAD calibrated images"
 ```
 
+### Listing available profiles
+List profiles by running 
+```bash 
+mru profile -l
+```
+
+### Describing a profile
+You can ask MRU to describe a profile by running, for example:
+
+```bash
+mru profile -p msl_mcam_rad
+Mission: MSL
+Instrument: MASTCAM
+Description: Calibration steps through to radiometric correction for MSL MastCam
+Apply Decompanding: true
+Red Scalar: 0.965
+Green Scalar: 0.985
+Blue Scalar: 1.155
+Apply Color Noise Reduction: false
+Apply Hot Pixel Correction: false
+Output Filename Suffix: rjcal-rad
+```
+
+
 ### Included calibration profiles
  * m20_cachecam_ilt
  * m20_cachecam_rad
