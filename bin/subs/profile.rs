@@ -109,6 +109,7 @@ impl RunnableSubcommand for Profile {
                         println!("HPC Threshold: {}", profile.hot_pixel_detection_threshold);
                         println!("HPC Window Size: {}", profile.hot_pixel_window_size);
                     }
+                    println!("Decorrelated Color Stretch: {}", profile.decorrelate_color);
                     println!("Output Filename Suffix: {}", profile.filename_suffix);
                 }
                 Err(why) => {
