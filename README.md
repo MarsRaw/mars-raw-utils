@@ -54,6 +54,24 @@ Check out the wiki for some quick start topics: https://github.com/MarsRaw/mars-
 ## Contributing
 Feedback, issues, and contributions are always welcomed. Should enough interest arise in contributing development efforts, I will write up a contribution guide. 
 
+For developers, the primary project structure is as follows:
+```
+   ./crate                      - Project root
+   ├── bin                      - Main executable and subcommands
+   ├── doc                      - Documentation resources
+   ├── docker                   - Docker resources
+   ├── examples                 - Example usage scripts
+   ├── mars-raw-utils-data      - Main calibration data (git submodule)
+   ├── src                      - Main library source code
+   │   ├── caldata              - Calibration update and loading
+   │   ├── m20                  - Code specific to Mars2020 mission
+   │   ├── mer                  - Code specific to the MER mission
+   │   ├── msl                  - Code specific to the MSL mission
+   │   ╰── nsyt                 - Code specific to the InSight mission
+   ╰── tests                    - Tests
+```
+
+
 ## Citing Mars Raw Utils
 Citing MRU is not required, but if the software has significantly contributed to your research or if you'd like to acknowledge the project in your works, I would be grateful if you did so.  
 
@@ -114,7 +132,6 @@ However, the container can also be built locally:
 sh dockerbuild.sh
 ```
 
-
 ### Building Install Packages using Docker
 Install packages for MRU are currently built within Docker containers and are kicked off thusly:
 ```bash
@@ -125,6 +142,10 @@ sh dockerbuild-fedora.sh
 sh dockerbuild-debian.sh
 ```
 Build outputs will be placed into the `target` directory.
+
+## Informational and Debug Output
+MRU uses the Strump library (https://github.com/MarsRaw/stump) for logging. By default, MRU it set up to write any major errors to the console. This can be modified by setting the environment variable `MARS_LOG_AT_LEVEL` to one of `error`, `warn`, `info`, or `debug`.
+
 
 ## Specifying Calibration Data Location
 By default, if the software is installed using the .deb file in Debian/Ubuntu, the calibration files will be located in `/usr/share/mars_raw_utils/data/`. In Homebrew on MacOS, they will be located in `/usr/local/share/mars_raw_utils/data/`. For installations using `cargo install --path .` or custom installations, you can use the default `~/.marsdata` or set the calibration file directory by using the `$MARS_RAW_DATA` environment variable. The variable will override the default locations (if installed via apt or rpm), as well.
