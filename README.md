@@ -523,6 +523,12 @@ OPTIONS:
     -V, --version                         Print version information
 ```
 
+### Example
+Crop an input image at the top left pixel at 100x480 and of width and height of 590x500:
+```bash
+mru crop -i ZR0_0897_0746567432_598ECM_N0440820ZCAM08906_1100LMJ01-rjcal-drcx.tif -c 100,480,590,500
+```
+
 ## Debayer
 Apply Malvar or Amaze Demosaicking (Debayer) on a grayscale bayer-pattern image. Optionally apply a color noise reduction.
 ```
@@ -533,6 +539,12 @@ Options:
   -D, --debayer <DEBAYER>             Debayer method (malvar, amaze)
   -h, --help                          Print help
   -V, --version                       Print version                      Print version information
+```
+
+### Example
+Debayer a directory of jpeg images using the Amaze algorithm:
+```bash
+mru debayer -i *jpg -D amaze
 ```
 
 
