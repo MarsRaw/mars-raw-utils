@@ -940,6 +940,41 @@ curl -O https://planetarydata.jpl.nasa.gov/img/data/msl/MSLMST_0028/DATA/RDR/SUR
 mru pds2png -i 3154ML1002700011203864E01_DRCX.LBL
 ```
 
+## Perseverance NavCam Assembly
+
+TODO
+
+## Perseverance Sherloc Colorization
+As part of some SHERLOC ACI observations, LEDs on different sides of the camera are used to produce alternate angles of illumination. These alternate lighting angles can be used to create an interesting false-color image when mapped to red and blue. Green can be simulated as a simple mean of the two.
+
+### Usage
+```
+Usage: mru m20-sherloc-colorizer --red <RED> --blue <BLUE> --output <OUTPUT>
+
+Options:
+  -r, --red <RED>        Image for red channel
+  -b, --blue <BLUE>      Image for blue channel
+  -o, --output <OUTPUT>  Output image
+  -h, --help             Print help
+  -V, --version          Print version
+```
+
+### Example
+
+```bash
+mru m20-fetch -c SHERLOC -s 851
+
+mru calibrate -i SC3_0851_0742516884_101ECM_N0410188SRLC10600_0000LMJ01.png SC3_0851_0742516900_691ECM_N0410188SRLC10600_0000LMJ01.png
+
+mru m20-sherloc-colorizer -r SC3_0851_0742516900_691ECM_N0410188SRLC10600_0000LMJ01-rjcal.tif -b SC3_0851_0742516884_101ECM_N0410188SRLC10600_0000LMJ01-rjcal.tif -o M20_SHERLOC_0851_colorized_1.tif
+
+```
+
+Output Image:
+
+<p align="center">
+  <img src="doc/images/M20_SHERLOC_0851_colorized_1.jpg">
+</p>
 
 ## References
 
