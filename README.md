@@ -14,6 +14,12 @@ Supported Missions and Data Sources:
 * Explore with Perseverance: https://mars.nasa.gov/mars2020/surface-experience/
 * Perseverance's Location: https://mars.nasa.gov/maps/location/?mission=M20
 
+Supported Mission and Camera SIS documents
+* MSL: https://pds-imaging.jpl.nasa.gov/data/msl/MSLHAZ_0XXX/DOCUMENT/MSL_CAMERA_SIS_latest.PDF
+* Mars2020: https://pds-geosciences.wustl.edu/m2020/urn-nasa-pds-mars2020_mission/document_camera/Mars2020_Camera_SIS.pdf
+* InSight: https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/insight_cameras_sis.pdf
+* MSAM: https://pds-imaging.jpl.nasa.gov/data/individual_investigation/deen_pdart16_msl_msam/document/MSAM_sis.pdf
+
 Though not comprehensive, MRU aims to provide image calibration with the goal of achieving an output as close as possible to the full science data. The primary limitation being that prior to becoming available online, most images are converted to web-friendly formats that involve downscaling, lossy compression, and other changes that result in a loss of data precision. 
 
 Currently supported camera instruments and primary calibration functions:
@@ -244,6 +250,8 @@ Output Filename Suffix: rjcal-rad
 Images posted to the NASA raw image pages are derived from what are known as Experimental Data Records (EDR). Not having gone through the ground pipelines, these images are raw and unprocessed. Further, the images have had various levels of compression applied to make them easier to serve on a website. 
 
 This tool provides a way to apply some of the steps required to generate a calibrated data product. Given the compression applied, it is impossible to produce a completely calibrated image on par with those in JPL's internal systems or the planetary data system. However, this best-effort calibration tool was developed to provide products suitable for image processing enthusiasts and some limited utility for researchers. 
+
+*A note on radiometric and photometric calibration:* Due to the nature of the public images and limited telemetry (temperature, tau, time, pointing, etc) available, full and proper radiometric calibration is presently not possible. MRU does have the means of setting per-channel mulipliers which simulate radiometric correction, however this is not a full solution. 
 
 ### Running
 This tool uses associated metadata to identify the calibration routine required for a given mission and instrument (see list of supported instruments above). A such, this is the single subcommand for calibration. 
