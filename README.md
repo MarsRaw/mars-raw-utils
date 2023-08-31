@@ -942,7 +942,25 @@ mru pds2png -i 3154ML1002700011203864E01_DRCX.LBL
 
 ## Perseverance NavCam Assembly
 
-TODO
+The Perseverance Rover's NavCam sensors have a resolution of 5120x3840 pixels, however due to heritage data interface these images must be split into tiles of 1280x960 pixels. These sub-image tiles are then transmitted back to JPL and reassembled by the internal pipelines to the full data product. The public raw images don't receive this reassembly, instead posting the tiles online. 
+
+Reassembly of the public raw tiles into the full frame image must take a few things into account. When converted from the internal data format to a PNG, each tile is stretched to within the 8bit data bounds. This stretching results in each tile presenting an altered histogram relative to the others. This needs to be corrected. Additionally, telemetry pixels are added to the borders of each tile which need to be discarded prior to histogram matching. 
+
+Assembly of the tiles into the full data frame is done with the `m20-ecam-assemble` subcommand. This command takes as input the tiles of a single full frame product (it will not reassemble multiple products at once):
+
+```bash
+mru -v m20-ecam-assemble -i NLF_0897_0746580073_784ECM_N0440830NCAM03897_??_195J02.png -o NLF_0897_0746580073_784ECM_N0440830NCAM03897_00_195J01.tif
+```
+
+A helper script is available in `examples` which automates the reassembly of Navcam images within a directory:
+
+```bash
+mru m20-fetch -c NAVCAM_LEFT NAVCAM_RIGHT -s 897 -n
+assemble_ncams.sh -ncam
+mru calibrate -i *assembled.tif -P m20_ncam_mcz
+```
+
+
 
 ## Perseverance Sherloc Colorization
 As part of some SHERLOC ACI observations, LEDs on different sides of the camera are used to produce alternate angles of illumination. These alternate lighting angles can be used to create an interesting false-color image when mapped to red and blue. Green can be simulated as a simple mean of the two.
