@@ -1,2 +1,8 @@
+[env]
+LOG_DATETIME_FORMAT_VAR_NAME = "MARS_LOG_DATETIME_FORMAT"
+LOG_LEVEL_VAR_NAME = "MARS_LOG_AT_LEVEL"
+
+
 [target.x86_64-apple-darwin]
 rustflags = ["-C", "link-arg=-Wl,-rpath,/Applications/Xcode.app/Contents/Frameworks"]
+

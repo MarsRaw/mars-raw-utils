@@ -55,7 +55,8 @@ macro_rules! pb_create_spinner {
 #[macro_export]
 macro_rules! pb_set_print {
     () => {
-        $crate::print::set_print(|s| {
+        use stump;
+        stump::set_print(|s| {
             PB.println(s);
         });
     };
@@ -139,5 +140,7 @@ pub mod info;
 pub mod inpaint;
 pub mod levels;
 pub mod meanstack;
+pub mod passes;
+pub mod pds2png;
 pub mod profile;
 pub mod xeye;

@@ -1,17 +1,12 @@
-use std::env;
-
 use crate::enums::CalFileType;
-use crate::{constants, enums, vprintln};
-
-use sciimg::path;
-
-extern crate dirs;
-
-use std::fs::File;
-use std::io::Read;
-
+use crate::{constants, enums};
 use anyhow::anyhow;
 use anyhow::Result;
+use dirs;
+use sciimg::path;
+use std::env;
+use std::fs::File;
+use std::io::Read;
 
 //use serde_derive::Deserialize;
 use serde::Deserialize;
@@ -201,7 +196,7 @@ pub fn parse_caldata_from_string(caldata_toml_str: &str) -> Result<Config> {
 
 pub fn load_caldata_mapping_file() -> Result<Config> {
     if let Ok(caldata_toml) = locate_calibration_file(&String::from("caldata.toml")) {
-        vprintln!("Loading calibration spec from {}", caldata_toml);
+        info!("Loading calibration spec from {}", caldata_toml);
 
         let mut file = match File::open(&caldata_toml) {
             Err(why) => panic!("couldn't open {}", why),
@@ -214,7 +209,7 @@ pub fn load_caldata_mapping_file() -> Result<Config> {
 
         parse_caldata_from_string(&toml)
     } else {
-        panic!("Unable to locate calibration configuration file");
+        Err(anyhow!("Unable to locate calibration configuration file"))
     }
 }
 
@@ -284,6 +279,8 @@ pub fn locate_calibration_file(file_path: &str) -> Result<String> {
         locations.insert(0, dir);
     }
 
+    debug!("Calibration file search path: {:?}", locations);
+
     // First match wins
     for loc in locations.iter() {
         let full_file_path = format!("{}/{}", loc, file_path);
@@ -293,7 +290,7 @@ pub fn locate_calibration_file(file_path: &str) -> Result<String> {
     }
 
     // Oh nos!
-    Err(anyhow!(constants::status::FILE_NOT_FOUND))
+    Err(anyhow!("Calibration file not found: {}", file_path))
 }
 
 pub fn get_calibration_file_for_type(
@@ -312,7 +309,7 @@ pub fn get_calibration_base_file_for_instrument(
     instrument: enums::Instrument,
     cal_file_type: enums::CalFileType,
 ) -> Result<String> {
-    let config = load_caldata_mapping_file().unwrap();
+    let config = load_caldata_mapping_file()?;
 
     match instrument {
         enums::Instrument::MslMAHLI => Ok(get_calibration_file_for_type(

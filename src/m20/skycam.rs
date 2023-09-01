@@ -1,6 +1,6 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, enums, enums::Instrument, flatfield,
-    marsimage::MarsImage, util, vprintln,
+    marsimage::MarsImage, util,
 };
 
 use sciimg::path;
@@ -27,7 +27,7 @@ impl Calibration for M20SkyCam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20SkyCam);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20SkyCam);
 
         vprintln!("Flatfielding...");
         let flat = flatfield::load_flat(enums::Instrument::M20SkyCam).unwrap();
@@ -54,8 +54,13 @@ impl Calibration for M20SkyCam {
         raw.image.crop(18, 1, crop_to_width, crop_to_height);
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        raw.update_history();
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

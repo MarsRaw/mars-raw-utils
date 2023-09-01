@@ -1,6 +1,6 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    marsimage::MarsImage, util, vprintln,
+    marsimage::MarsImage, util,
 };
 
 use anyhow::Result;
@@ -26,7 +26,7 @@ impl Calibration for M20CacheCam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20CacheCam);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20CacheCam);
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
@@ -58,8 +58,12 @@ impl Calibration for M20CacheCam {
         }
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

@@ -5,6 +5,9 @@ extern crate clap;
 #[macro_use]
 extern crate lazy_static;
 
+#[macro_use]
+extern crate stump;
+
 /// Routines for creating stereo anaglyph images
 pub mod anaglyph;
 
@@ -74,13 +77,11 @@ pub mod nsyt;
 /// Single-point import for most utilized MRU API
 pub mod prelude;
 
-/// Utilities for outputting verbose and error text
-pub mod print;
-
 /// Time and date support
 pub mod time;
 
 /// General utilities
+#[macro_use]
 pub mod util;
 
 pub mod remotequery;
@@ -90,3 +91,8 @@ pub mod memcache;
 
 ///
 pub mod caldata;
+
+/// Retrieval of orbiter overpasses
+pub mod passes;
+
+pub mod location;

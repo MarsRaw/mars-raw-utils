@@ -1,6 +1,6 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument, inpaintmask,
-    marsimage::MarsImage, util, vprintln,
+    marsimage::MarsImage, util,
 };
 
 use sciimg::path;
@@ -107,7 +107,7 @@ impl Calibration for MslEcam {
         //     }
         // }
 
-        let mut raw = MarsImage::open(String::from(input_file), instrument);
+        let mut raw = MarsImage::open(input_file, instrument);
 
         // Exclude subframed images for now...
         if inpaintmask::inpaint_supported_for_instrument(instrument) && raw.image.height >= 1022 {
@@ -133,22 +133,19 @@ impl Calibration for MslEcam {
         let flat_file_path = calibfile::get_calibration_file_for_instrument(
             instrument,
             enums::CalFileType::FlatField,
-        )
-        .unwrap();
+        )?;
         vprintln!("Using flat file: {}", flat_file_path);
 
         if path::file_exists(&flat_file_path) {
-            let mut flat = MarsImage::open(flat_file_path, instrument);
+            let mut flat = MarsImage::open(&flat_file_path, instrument);
 
-            if let Some(md) = &raw.metadata {
-                if let Some(rect) = &md.subframe_rect {
-                    flat.crop(
-                        rect[0] as usize - 1,
-                        rect[1] as usize - 1,
-                        rect[2] as usize,
-                        rect[3] as usize,
-                    );
-                }
+            if let Some(rect) = &raw.metadata.subframe_rect {
+                flat.crop(
+                    rect[0] as usize - 1,
+                    rect[1] as usize - 1,
+                    rect[2] as usize,
+                    rect[3] as usize,
+                );
             }
 
             raw.flatfield_with_flat(&flat);
@@ -168,13 +165,20 @@ impl Calibration for MslEcam {
         raw.image.normalize_to_16bit_with_max(data_max);
 
         // Trim off border pixels
-        let crop_to_width = raw.image.width - 2;
-        let crop_to_height = raw.image.height - 2;
-        raw.image.crop(1, 1, crop_to_width, crop_to_height);
+        if cal_context.auto_subframing {
+            let crop_to_width = raw.image.width - 2;
+            let crop_to_height = raw.image.height - 2;
+            raw.image.crop(1, 1, crop_to_width, crop_to_height);
+        }
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        raw.update_history();
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

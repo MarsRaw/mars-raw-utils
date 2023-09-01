@@ -4,9 +4,6 @@ pub mod ccam;
 /// Calibration routines for the MSL engineering cameras
 pub mod ecam;
 
-/// Support for retrieving latest data information
-pub mod latest;
-
 /// Calibration routines for MSL MAHLI camera.
 pub mod mahli;
 
@@ -23,4 +20,4 @@ pub mod metadata;
 pub mod missiontime;
 
 /// Support for retrieving images from the public raw image API
-pub mod remote;
+pub mod fetch;

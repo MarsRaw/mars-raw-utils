@@ -1,4 +1,4 @@
-use crate::{constants, metadata::*, vprintln};
+use crate::{constants, metadata::*};
 
 use sciimg::prelude::*;
 
@@ -201,6 +201,14 @@ impl ImageMetadata for ImageRecord {
             Ok(v) => Some(v),
             Err(_) => None,
         }
+    }
+
+    fn is_thumbnail(&self) -> bool {
+        self.sample_type == "Thumbnail"
+    }
+
+    fn get_remote_image_url(&self) -> String {
+        self.image_files.full_res.clone()
     }
 }
 

@@ -11,7 +11,9 @@ use std::panic;
 use std::process;
 use std::str::FromStr;
 
+use anyhow::{anyhow, Error, Result};
 use clap::Parser;
+use stump;
 
 pb_create!();
 
@@ -53,6 +55,16 @@ pub struct Calibrate {
 
     #[arg(long, short = 'D', help = "Debayer method (malvar, amaze)")]
     debayer: Option<String>,
+
+    #[arg(long, short = 'C', help = "Apply sRGB color correction")]
+    srgb_color_correction: bool,
+
+    #[arg(
+        long,
+        short = 'S',
+        help = "Skip auto subframing (cropping) of output images"
+    )]
+    no_subframing: bool,
 }
 
 impl Calibrate {
@@ -61,12 +73,12 @@ impl Calibrate {
         default_instrument: &Option<String>,
     ) -> Option<&'static CalContainer> {
         let metadata_file = util::replace_image_extension(input_file, "-metadata.json");
-        vprintln!("Checking for metadata file at {}", metadata_file);
+        info!("Checking for metadata file at {}", metadata_file);
         if path::file_exists(metadata_file.as_str()) {
             vprintln!("Metadata file exists for loaded image: {}", metadata_file);
             match metadata::load_image_metadata(&metadata_file) {
                 Err(_) => {
-                    vprintln!("Could not load metadata file!");
+                    warn!("Could not load metadata file!");
                     None
                 } // Error loading the metadata file
                 Ok(md) => calibrator_for_instrument_from_str(&md.instrument),
@@ -78,7 +90,7 @@ impl Calibrate {
             if let Some(instrument) = default_instrument {
                 calibrator_for_instrument_from_str(instrument)
             } else {
-                vprintln!("We don't know what instrument was used!");
+                warn!("We don't know what instrument was used!");
                 None // Otherwise, we don't know the instrument.
             }
         }
@@ -88,62 +100,71 @@ impl Calibrate {
 use async_trait::async_trait;
 #[async_trait]
 impl RunnableSubcommand for Calibrate {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         let profiles: Vec<CalProfile> = match &self.profile {
             Some(profile_list) => {
                 let mut v: Vec<CalProfile> = Vec::new();
-                profile_list.iter().for_each(|profile_name| {
-                    v.push(match load_calibration_profile(profile_name) {
-                        Ok(profile) => {
-                            let mut profile_mut = profile;
+                let profile_results: Vec<Result<CalProfile, Error>> = profile_list
+                    .iter()
+                    .map(|profile_name| {
+                        match load_calibration_profile(profile_name) {
+                            Ok(profile) => {
+                                let mut profile_mut = profile;
 
-                            // Overrides
-                            if self.raw {
-                                profile_mut.apply_ilt = true;
-                            }
+                                // Overrides
+                                if self.raw {
+                                    profile_mut.apply_ilt = true;
+                                }
 
-                            if let Some(red_scalar) = self.red_weight {
-                                profile_mut.red_scalar = red_scalar;
-                            }
+                                if let Some(red_scalar) = self.red_weight {
+                                    profile_mut.red_scalar = red_scalar;
+                                }
 
-                            if let Some(green_scalar) = self.green_weight {
-                                profile_mut.green_scalar = green_scalar;
-                            }
+                                if let Some(green_scalar) = self.green_weight {
+                                    profile_mut.green_scalar = green_scalar;
+                                }
 
-                            if let Some(color_noise_reduction_amount) =
-                                self.color_noise_reduction_amount
-                            {
-                                profile_mut.color_noise_reduction = true;
-                                profile_mut.color_noise_reduction_amount =
-                                    color_noise_reduction_amount;
-                            }
-
-                            if let Some(hpc_threshold) = self.hpc_threshold {
-                                profile_mut.hot_pixel_detection_threshold = hpc_threshold;
-                            }
-
-                            if let Some(hpc_window) = self.hpc_window {
-                                profile_mut.hot_pixel_window_size = hpc_window;
-                            }
-
-                            if self.decorrelate {
-                                profile_mut.decorrelate_color = true;
-                            }
-
-                            if let Some(debayer) = &self.debayer {
-                                profile_mut.debayer_method = match DebayerMethod::from_str(debayer)
+                                if let Some(color_noise_reduction_amount) =
+                                    self.color_noise_reduction_amount
                                 {
-                                    Ok(m) => m,
-                                    Err(why) => panic!("Error: {}", why),
-                                };
+                                    profile_mut.color_noise_reduction = true;
+                                    profile_mut.color_noise_reduction_amount =
+                                        color_noise_reduction_amount;
+                                }
+
+                                if let Some(hpc_threshold) = self.hpc_threshold {
+                                    profile_mut.hot_pixel_detection_threshold = hpc_threshold;
+                                }
+
+                                if let Some(hpc_window) = self.hpc_window {
+                                    profile_mut.hot_pixel_window_size = hpc_window;
+                                }
+
+                                if self.decorrelate {
+                                    profile_mut.decorrelate_color = true;
+                                }
+
+                                if let Some(debayer) = &self.debayer {
+                                    profile_mut.debayer_method =
+                                        match DebayerMethod::from_str(debayer) {
+                                            Ok(m) => m,
+                                            Err(why) => panic!("Error: {}", why),
+                                        };
+                                }
+                                Ok(profile_mut)
                             }
-                            profile_mut
+                            Err(why) => Err(anyhow!("Error loading calibration profile: {}", why)),
                         }
-                        Err(why) => {
-                            panic!("Error loading calibration profile: {}", why);
-                        }
-                    });
-                });
+
+                        //v.push(
+                    })
+                    .collect();
+                for f in profile_results {
+                    match f {
+                        Ok(cp) => v.push(cp.clone()),
+                        Err(why) => return Err(anyhow!(why)),
+                    };
+                }
                 v
             }
             None => vec![CalProfile {
@@ -169,6 +190,8 @@ impl RunnableSubcommand for Calibrate {
                 } else {
                     DebayerMethod::Malvar
                 },
+                srgb_color_correction: self.srgb_color_correction,
+                auto_subframing: !self.no_subframing,
             }],
         };
 
@@ -181,10 +204,10 @@ impl RunnableSubcommand for Calibrate {
         pb_set_print_and_length!(in_files.len() * profiles.len());
 
         panic::set_hook(Box::new(|_info| {
-            if print::is_verbose() {
+            if stump::is_verbose() {
                 println!("{:?}", Backtrace::new());
             }
-            print_fail(&"Internal Error!".to_string());
+            print_fail("Internal Error!");
 
             // If the user has exported MRU_EXIT_ON_PANIC=1, then we should exit here.
             // This will prevent situations where errors fly by on the screen and
@@ -229,5 +252,7 @@ impl RunnableSubcommand for Calibrate {
                 ));
             }
         });
+
+        Ok(())
     }
 }

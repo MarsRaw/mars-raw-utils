@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::focusmerge;
 
@@ -22,7 +23,7 @@ pub struct FocusMerge {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for FocusMerge {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
         let quality_window_size = self.window.unwrap_or(15);
@@ -36,5 +37,6 @@ impl RunnableSubcommand for FocusMerge {
         focusmerge::focusmerge(&in_files, quality_window_size, self.depth_map, output);
 
         pb_done!();
+        Ok(())
     }
 }

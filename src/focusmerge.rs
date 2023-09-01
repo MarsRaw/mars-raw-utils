@@ -1,8 +1,8 @@
 use std::process;
 
-use crate::{util, vprintln};
+use crate::util;
 
-use sciimg::{image, imagebuffer, lowpass, path, quality, stats};
+use sciimg::{image, imagebuffer, lowpass, path, prelude::ImageMode, quality, stats};
 
 use colored::*;
 
@@ -43,7 +43,7 @@ pub fn focusmerge(
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
-            vprintln!("Processing File: {}", in_file);
+            info!("Processing File: {}", in_file);
 
             let image = image::Image::open(in_file).unwrap();
 
@@ -60,7 +60,7 @@ pub fn focusmerge(
 
             images.push(make_diff_container(&image, 5));
         } else {
-            eprintln!("File not found: {}", in_file);
+            error!("File not found: {}", in_file);
             panic!("File not found");
         }
     }
@@ -97,7 +97,7 @@ pub fn focusmerge(
 
     // Super mega inefficient. This'll take a few minutes to run.
     for y in 0..b0_merge_buffer.height {
-        vprintln!(
+        info!(
             "Row {} of {}. {}%",
             y,
             b0_merge_buffer.height,
@@ -129,7 +129,7 @@ pub fn focusmerge(
                     x,
                     y,
                 );
-                let q = stats::mean(&[q0, q1, q2]).unwrap_or(0.0);
+                let q = stats::mean(&[q0, q1, q2]);
 
                 if q > max_quality {
                     depth_value = image_num;
@@ -155,11 +155,15 @@ pub fn focusmerge(
     )
     .unwrap();
 
-    merge_buffer.save(output_file);
+    merge_buffer
+        .save(output_file)
+        .expect("Failed to save image");
 
     if depth_map {
         depth_map_buffer = depth_map_buffer.normalize(0.0, 65535.0).unwrap();
         let depth_map_out_file = util::append_file_name(output_file, "depth");
-        depth_map_buffer.save_16bit(&depth_map_out_file);
+        depth_map_buffer
+            .save_use_mode(&depth_map_out_file, ImageMode::U16BIT)
+            .expect("Failed to save image");
     }
 }

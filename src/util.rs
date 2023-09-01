@@ -1,15 +1,27 @@
-use crate::{constants, httpfetch, vprintln};
-
+use crate::constants;
+use anyhow::{anyhow, Result};
 use sciimg::path;
 use sciimg::util as sciutil;
-
-use anyhow::{anyhow, Result};
-
 use serde::Serialize;
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+
+#[macro_export]
+macro_rules! f {
+    ($($arg:tt)*) => {
+        format!($($arg)*)
+    };
+}
+
+#[macro_export]
+macro_rules! t {
+    ($s:expr) => {
+        format!("{:?}", $s)
+    };
+}
 
 pub fn string_is_valid_f64(s: &str) -> bool {
     sciutil::string_is_valid_f64(s)
@@ -144,38 +156,9 @@ pub fn image_exists_on_filesystem(image_url: &str) -> bool {
     path::file_exists(bn.as_str())
 }
 
-pub async fn fetch_image(
-    image_url: &str,
-    only_new: bool,
-    output_path: Option<&str>,
-) -> Result<PathBuf> {
-    let write_to = match output_path {
-        Some(p) => {
-            let bn = path::basename(image_url);
-            format!("{}/{}", p, bn)
-        }
-        None => String::from(image_url),
-    };
-
-    // would rather do this as if !... but I'm assuming these vprintln! calls are.. impotant for some reason...
-    if !only_new || !path::file_exists(&write_to) {
-        if let Ok(image_data) = httpfetch::simple_fetch_bin(image_url).await {
-            let path = Path::new(write_to.as_str());
-            vprintln!("Writing image data to {}", write_to);
-
-            let mut file = File::create(path)?;
-            file.write_all(&image_data[..])?;
-
-            return Ok(path.to_path_buf());
-        }
-    }
-    Err(anyhow!("File already exists on disk, skip it."))
-}
-
 pub fn save_image_json<T: Serialize>(
     image_url: &str,
     item: &T,
-    only_new: bool,
     output_path: Option<&str>,
 ) -> Result<()> {
     let item_str = serde_json::to_string_pretty(item)?;
@@ -188,38 +171,38 @@ pub fn save_image_json<T: Serialize>(
         None => String::from(image_url),
     };
 
-    save_image_json_from_string(&write_to, &item_str, only_new)
+    save_image_json_from_string(&write_to, &item_str)
 }
 
-pub fn save_image_json_from_string(image_path: &str, item: &String, only_new: bool) -> Result<()> {
+pub fn save_image_json_from_string(image_path: &str, item: &String) -> Result<()> {
     let out_file = image_path
         .replace(".jpg", "-metadata.json")
         .replace(".JPG", "-metadata.json")
         .replace(".png", "-metadata.json")
         .replace(".PNG", "-metadata.json");
 
-    if !only_new || !path::file_exists(out_file.as_str()) {
-        let path = Path::new(out_file.as_str());
-        vprintln!("Writing metadata file to {}", path.to_str().unwrap());
+    let path = Path::new(out_file.as_str());
+    info!("Writing metadata file to {}", path.to_str().unwrap());
 
-        let mut file = File::create(path)?;
-        file.write_all(item.as_bytes())?;
-    }
-
+    let mut file = File::create(path)?;
+    file.write_all(item.as_bytes())?;
     Ok(())
 }
 
 pub fn append_file_name(input_file: &str, append: &str) -> String {
     let append_with_ext = format!("-{}.png", append);
     replace_image_extension(input_file, append_with_ext.as_str())
-    // let append_with_ext = format!("-{}.png", append);
-    // let out_file = input_file.replace(".png", append_with_ext.as_str())
-    //                          .replace(".PNG", append_with_ext.as_str())
-    //                          .replace(".jpg", append_with_ext.as_str())
-    //                          .replace(".JPG", append_with_ext.as_str())
-    //                          .replace(".tif", append_with_ext.as_str())
-    //                          .replace(".TIF", append_with_ext.as_str());
-    // String::from(out_file)
+}
+
+pub fn replace_extension<S>(from_file: &S, new_extension: &str) -> Result<String>
+where
+    S: AsRef<Path> + ?Sized + AsRef<OsStr>,
+{
+    if let Some(new_filename) = Path::new(from_file).with_extension(new_extension).to_str() {
+        Ok(new_filename.to_string())
+    } else {
+        Err(anyhow!("Unable to replace filename"))
+    }
 }
 
 pub fn replace_image_extension(input_file: &str, append: &str) -> String {
@@ -230,4 +213,6 @@ pub fn replace_image_extension(input_file: &str, append: &str) -> String {
         .replace(".JPG", append)
         .replace(".tif", append)
         .replace(".TIF", append)
+        .replace(".dng", append)
+        .replace(".DNG", append)
 }

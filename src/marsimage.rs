@@ -1,17 +1,17 @@
-use crate::{
-    decompanding::LookUpTable, enums, flatfield, inpaintmask, metadata::*, util, vprintln,
-};
+use crate::{decompanding::LookUpTable, enums, flatfield, inpaintmask, metadata::*, util};
 
+use anyhow::Result;
 use sciimg::{
     debayer::DebayerMethod, drawable::Drawable, enums::ImageMode, image::Image,
     imagebuffer::ImageBuffer, inpaint, path, DnVec, VecMath,
 };
+use std::env;
 
 #[derive(Clone)]
 pub struct MarsImage {
     pub image: Image,
     pub instrument: enums::Instrument,
-    pub metadata: Option<Metadata>,
+    pub metadata: Metadata,
     empty: bool,
     pub file_path: Option<String>,
 }
@@ -21,7 +21,7 @@ impl MarsImage {
         MarsImage {
             image: Image::new_with_bands(width, height, 3, ImageMode::U8BIT).unwrap(),
             instrument,
-            metadata: None,
+            metadata: Metadata::default(),
             empty: false,
             file_path: None,
         }
@@ -31,7 +31,7 @@ impl MarsImage {
         MarsImage {
             image: img.clone(),
             instrument,
-            metadata: None,
+            metadata: Metadata::default(),
             empty: false,
             file_path: None,
         }
@@ -41,7 +41,7 @@ impl MarsImage {
         MarsImage {
             image: Image::new_empty().unwrap(),
             instrument: enums::Instrument::None,
-            metadata: None,
+            metadata: Metadata::default(),
             empty: true,
             file_path: None,
         }
@@ -51,54 +51,57 @@ impl MarsImage {
         self.empty
     }
 
-    pub fn open(file_path: String, instrument: enums::Instrument) -> Self {
-        if !path::file_exists(file_path.as_str()) {
+    pub fn open(file_path: &str, instrument: enums::Instrument) -> Self {
+        if !path::file_exists(file_path) {
             panic!("File not found: {}", file_path);
         }
 
         vprintln!("Loading image from {}", file_path);
 
         MarsImage {
-            image: Image::open(&file_path).unwrap(),
+            image: Image::open(file_path).unwrap(),
             instrument,
-            metadata: MarsImage::load_image_metadata(&file_path),
+            metadata: MarsImage::load_image_metadata(file_path),
             empty: false,
-            file_path: Some(file_path),
+            file_path: Some(file_path.to_owned()),
         }
     }
 
-    fn load_image_metadata(file_path: &str) -> Option<Metadata> {
+    fn load_image_metadata(file_path: &str) -> Metadata {
         let metadata_file = util::replace_image_extension(file_path, "-metadata.json");
-        vprintln!("Checking for metadata file at {}", metadata_file);
+        info!("Checking for metadata file at {}", metadata_file);
         if path::file_exists(metadata_file.as_str()) {
-            vprintln!("Metadata file exists for loaded image: {}", metadata_file);
+            info!("Metadata file exists for loaded image: {}", metadata_file);
             match load_image_metadata(&metadata_file) {
                 Err(why) => panic!("couldn't open {}", why),
-                Ok(md) => Some(md),
+                Ok(md) => md,
             }
         } else {
-            None
-            //panic!("Metadata file not found: {}", metadata_file);
+            Metadata::default()
         }
     }
 
-    pub fn save(&self, to_file: &str) {
-        self.image.save(to_file);
+    pub fn update_history(&mut self) {
+        self.metadata
+            .history
+            .push(env::args().collect::<Vec<String>>().join(" "));
+    }
 
-        vprintln!("Writing image buffer to file at {}", to_file);
+    pub fn save(&self, to_file: &str) -> Result<()> {
+        self.image.save(to_file)?;
+        info!("Writing image buffer to file at {}", to_file);
         if path::parent_exists_and_writable(to_file) {
-            match &self.metadata {
-                Some(md) => {
-                    util::save_image_json(to_file, &md, false, None).unwrap();
-                }
-                None => {}
-            };
-            vprintln!("File saved.");
+            if self.metadata.history.is_empty() {
+                warn!("Saving MarsImage without history");
+            }
+            util::save_image_json(to_file, &self.metadata, None).unwrap();
+            info!("File saved.");
+            Ok(())
         } else {
-            panic!(
+            Err(anyhow!(
                 "Parent does not exist or cannot be written: {}",
                 path::get_parent(to_file)
-            );
+            ))
         }
     }
 
@@ -106,51 +109,35 @@ impl MarsImage {
         self.image.apply_weight_on_band(r_scalar, 0);
         self.image.apply_weight_on_band(g_scalar, 1);
         self.image.apply_weight_on_band(b_scalar, 2);
-
-        if let Some(ref mut md) = self.metadata {
-            md.radiometric = true;
-        }
+        self.metadata.radiometric = true;
     }
 
     pub fn debayer(&mut self) {
         self.image.debayer();
 
-        if let Some(ref mut md) = self.metadata {
-            md.debayer = true;
-        }
+        self.metadata.debayer = true;
     }
 
     pub fn debayer_with_method(&mut self, method: DebayerMethod) {
         vprintln!("Debayering with method: {:?}", method);
         self.image.debayer_with_method(method);
 
-        if let Some(ref mut md) = self.metadata {
-            md.debayer = true;
-        }
+        self.metadata.debayer = true;
     }
 
     pub fn decompand(&mut self, ilt: &LookUpTable) {
         self.image.decompand(&ilt.to_array());
-
-        if let Some(ref mut md) = self.metadata {
-            md.decompand = true;
-        }
+        self.metadata.decompand = true;
     }
 
     pub fn compand(&mut self, ilt: &LookUpTable) {
         self.image.compand(&ilt.to_array());
-
-        if let Some(ref mut md) = self.metadata {
-            md.decompand = false;
-        }
+        self.metadata.decompand = false;
     }
 
     pub fn apply_flat(&mut self, flat: &Image) {
         self.image.apply_flat(flat);
-
-        if let Some(ref mut md) = self.metadata {
-            md.flatfield = true;
-        }
+        self.metadata.flatfield = true;
     }
 
     pub fn flatfield_with_flat(&mut self, flat: &MarsImage) {
@@ -165,23 +152,16 @@ impl MarsImage {
         let mut flat = if let Ok(flat) = flatfield::load_flat(self.instrument) {
             flat
         } else {
-            vprintln!("No flat field found for instrument {:?}", self.instrument);
+            warn!("No flat field found for instrument {:?}", self.instrument);
             return;
         };
 
-        let subframe_opt = if let Some(md) = &self.metadata {
-            md.subframe_rect.clone()
-        } else {
-            None
-        };
+        let subframe_opt = self.metadata.subframe_rect.clone();
 
         if let Some(sf) = subframe_opt {
-            vprintln!(
+            info!(
                 "Cropping flat with x/y/width/height: {},{} {}x{}",
-                sf[0],
-                sf[1],
-                sf[2],
-                sf[3]
+                sf[0], sf[1], sf[2], sf[3]
             );
 
             flat.image.crop(
@@ -198,12 +178,9 @@ impl MarsImage {
         if flat.image.width > self.image.width {
             let x = (flat.image.width - self.image.width) / 2;
             let y = (flat.image.height - self.image.height) / 2;
-            vprintln!(
+            info!(
                 "Cropping flat with x/y/width/height: {},{} {}x{}",
-                x,
-                y,
-                self.image.width,
-                self.image.height
+                x, y, self.image.width, self.image.height
             );
             flat.image.crop(x, y, self.image.width, self.image.height);
         }
@@ -238,9 +215,7 @@ impl MarsImage {
         fixed.set_mode(self.image.get_mode());
         self.image = fixed;
 
-        if let Some(ref mut md) = self.metadata {
-            md.inpaint = true;
-        }
+        self.metadata.inpaint = true;
     }
 
     pub fn hot_pixel_correction(&mut self, window_size: i32, threshold: f32) {

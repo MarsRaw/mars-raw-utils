@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
@@ -18,12 +19,12 @@ pub struct Debayer {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for Debayer {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());
 
         for in_file in self.input_files.iter() {
             if in_file.exists() {
-                vprintln!("Processing File: {:?}", in_file);
+                info!("Processing File: {:?}", in_file);
 
                 let mut raw =
                     Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
@@ -32,10 +33,8 @@ impl RunnableSubcommand for Debayer {
                     util::append_file_name(in_file.as_os_str().to_str().unwrap(), "debayer");
 
                 if !raw.is_grayscale() {
-                    vprintln!(
-                        "WARNING: Image doesn't appear to be grayscale as would be expected."
-                    );
-                    vprintln!("Results may be inaccurate");
+                    warn!("WARNING: Image doesn't appear to be grayscale as would be expected.");
+                    warn!("Results may be inaccurate");
                 }
 
                 let debayer_method = if let Some(debayer) = &self.debayer {
@@ -44,15 +43,16 @@ impl RunnableSubcommand for Debayer {
                     DebayerMethod::Malvar
                 };
 
-                vprintln!("Debayering image...");
+                info!("Debayering image...");
                 raw.debayer_with_method(debayer_method);
 
-                vprintln!("Writing to disk...");
-                raw.save(&out_file);
+                info!("Writing to disk...");
+                raw.save(&out_file).expect("Failed to save image");
             } else {
-                eprintln!("File not found: {:?}", in_file);
+                error!("File not found: {:?}", in_file);
             }
             pb_inc!();
         }
+        Ok(())
     }
 }

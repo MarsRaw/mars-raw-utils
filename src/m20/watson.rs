@@ -1,9 +1,9 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, flatfield,
-    inpaintmask, marsimage::MarsImage, util, vprintln,
+    inpaintmask, marsimage::MarsImage, util,
 };
 
-use sciimg::path;
+use sciimg::prelude::*;
 
 use anyhow::Result;
 
@@ -27,7 +27,7 @@ impl Calibration for M20Watson {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20Watson);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20Watson);
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
@@ -64,9 +64,15 @@ impl Calibration for M20Watson {
             cal_context.blue_scalar,
         );
 
-        if raw.image.width == 1648 {
+        if cal_context.auto_subframing && raw.image.width == 1648 {
             vprintln!("Cropping...");
             raw.image.crop(24, 4, 1600, 1192);
+        }
+
+        if cal_context.srgb_color_correction {
+            vprintln!("Applying sRGB color conversion");
+            raw.image
+                .convert_colorspace(color::ColorSpaceType::RGB, color::ColorSpaceType::sRGB)?;
         }
 
         if cal_context.decorrelate_color {
@@ -78,8 +84,13 @@ impl Calibration for M20Watson {
         }
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        raw.update_history();
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

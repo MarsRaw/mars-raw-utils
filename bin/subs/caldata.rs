@@ -1,7 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::caldata;
-
 pb_create!();
 
 #[derive(Parser)]
@@ -16,7 +16,7 @@ pub struct UpdateCalData {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for UpdateCalData {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
         match caldata::update_calibration_data(
             !self.noreplace,
@@ -28,8 +28,10 @@ impl RunnableSubcommand for UpdateCalData {
         )
         .await
         {
-            Ok(_) => println!("Done."),
-            Err(why) => println!("Error: {}", why),
+            Ok(_) => info!("Done."),
+            Err(why) => error!("Error: {}", why),
         };
+
+        Ok(())
     }
 }

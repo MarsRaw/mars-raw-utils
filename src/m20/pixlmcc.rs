@@ -1,6 +1,5 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, enums, enums::Instrument, marsimage::MarsImage, util,
-    vprintln,
 };
 
 use sciimg::path;
@@ -27,7 +26,7 @@ impl Calibration for M20Pixl {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20Pixl);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20Pixl);
 
         vprintln!("Flatfielding...");
         raw.flatfield();
@@ -36,8 +35,13 @@ impl Calibration for M20Pixl {
         raw.image.normalize_to_16bit_with_max(255.0);
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        raw.update_history();
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

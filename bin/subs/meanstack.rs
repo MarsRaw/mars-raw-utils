@@ -1,6 +1,6 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
-use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
 use std::process;
 
@@ -18,7 +18,7 @@ pub struct MeanStack {
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for MeanStack {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len() + 1); // The +1 accounts for the final division by # of images
 
         let output = self.output.as_os_str().to_str().unwrap();
@@ -29,18 +29,25 @@ impl RunnableSubcommand for MeanStack {
 
         for in_file in self.input_files.iter() {
             if in_file.exists() {
-                vprintln!("Processing File: {:?}", in_file);
+                info!("Processing File: {:?}", in_file);
 
                 let raw =
                     Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
 
                 if mean.is_empty() {
                     mean = raw;
-                    count = ImageBuffer::new(mean.width, mean.height).unwrap();
-                    ones = ImageBuffer::new_with_fill(mean.width, mean.height, 1.0).unwrap();
+                    count =
+                        ImageBuffer::new_as_mode(mean.width, mean.height, mean.get_mode()).unwrap();
+                    ones = ImageBuffer::new_with_fill_as_mode(
+                        mean.width,
+                        mean.height,
+                        1.0,
+                        mean.get_mode(),
+                    )
+                    .unwrap();
                 } else {
                     if raw.width != mean.width || raw.height != mean.height {
-                        eprintln!("Input image has differing dimensions, cannot continue");
+                        error!("Input image has differing dimensions, cannot continue");
                         process::exit(1);
                     }
 
@@ -49,7 +56,7 @@ impl RunnableSubcommand for MeanStack {
 
                 count = count.add(&ones).unwrap();
             } else {
-                eprintln!("File not found: {:?}", in_file);
+                error!("File not found: {:?}", in_file);
             }
             pb_inc!();
         }
@@ -59,7 +66,7 @@ impl RunnableSubcommand for MeanStack {
 
             if path::parent_exists_and_writable(output) {
                 vprintln!("Writing image to {}", output);
-                mean.save(output);
+                mean.save(output).expect("Failed to save image");
             } else {
                 eprintln!("Unable to write output image, parent doesn't exist or is not writable");
             }
@@ -67,5 +74,6 @@ impl RunnableSubcommand for MeanStack {
             println!("No images processed, cannot create output");
         }
         pb_inc!();
+        Ok(())
     }
 }

@@ -1,6 +1,7 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use rayon::prelude::*;
@@ -123,12 +124,15 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
         },
     ];
 
-    vprintln!("Computing value ranges...");
+    info!("Computing value ranges...");
     input_files.iter().for_each(|in_file| {
         if in_file.exists() {
-            let image = Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+            let image = MarsImage::open(
+                &String::from(in_file.as_os_str().to_str().unwrap()),
+                Instrument::None,
+            );
 
-            let prepped = color_range_determine_prep(&image);
+            let prepped = color_range_determine_prep(&image.image);
 
             for b in 0..prepped.num_bands() {
                 let mm = match ignore_black {
@@ -139,7 +143,7 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
                 ranges[b].max = max!(mm.max, ranges[b].max);
             }
         } else {
-            eprintln!("File not found: {:?}", in_file);
+            error!("File not found: {:?}", in_file);
             pb_done_with_error!();
             process::exit(1);
         }
@@ -147,24 +151,35 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
 
     input_files.par_iter().for_each(|in_file| {
         if in_file.exists() {
-            vprintln!("Processing File: {:?}", in_file);
+            info!("Processing File: {:?}", in_file);
 
-            let mut image =
-                Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+            let mut image = MarsImage::open(
+                &String::from(in_file.as_os_str().to_str().unwrap()),
+                Instrument::None,
+            );
 
-            for b in 0..image.num_bands() {
-                image.normalize_band_to_with_min_max(b, 0.0, 65535.0, ranges[b].min, ranges[b].max);
+            for b in 0..image.image.num_bands() {
+                image.image.normalize_band_to_with_min_max(
+                    b,
+                    0.0,
+                    65535.0,
+                    ranges[b].min,
+                    ranges[b].max,
+                );
             }
 
-            image.set_mode(ImageMode::U16BIT);
+            image.image.set_mode(ImageMode::U16BIT);
 
-            vprintln!("Writing to disk...");
-            image.save(&util::append_file_name(
-                in_file.as_os_str().to_str().unwrap(),
-                "decorr",
-            ));
+            info!("Writing to disk...");
+            image.update_history();
+            image
+                .save(&util::append_file_name(
+                    in_file.as_os_str().to_str().unwrap(),
+                    "decorr",
+                ))
+                .expect("Failed to save image");
         } else {
-            eprintln!("File not found: {:?}", in_file);
+            error!("File not found: {:?}", in_file);
             pb_done_with_error!();
             process::exit(1);
         }
@@ -175,29 +190,36 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
 fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
     input_files.par_iter().for_each(|in_file| {
         if in_file.exists() {
-            vprintln!("Processing File: {:?}", in_file);
+            info!("Processing File: {:?}", in_file);
 
-            let mut image =
-                Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+            let mut image = MarsImage::open(
+                &String::from(in_file.as_os_str().to_str().unwrap()),
+                Instrument::None,
+            );
 
-            let prepped = color_range_determine_prep(&image);
+            let prepped = color_range_determine_prep(&image.image);
             for b in 0..3 {
                 let mm = match ignore_black {
                     true => prepped.get_band(b).get_min_max_ignore_black(),
                     false => prepped.get_band(b).get_min_max(),
                 };
-                image.normalize_band_to_with_min_max(b, 0.0, 65535.0, mm.min, mm.max);
+                image
+                    .image
+                    .normalize_band_to_with_min_max(b, 0.0, 65535.0, mm.min, mm.max);
             }
 
-            image.set_mode(ImageMode::U16BIT);
+            image.image.set_mode(ImageMode::U16BIT);
 
-            vprintln!("Writing to disk...");
-            image.save(&util::append_file_name(
-                in_file.as_os_str().to_str().unwrap(),
-                "decorr",
-            ));
+            info!("Writing to disk...");
+            image.update_history();
+            image
+                .save(&util::append_file_name(
+                    in_file.as_os_str().to_str().unwrap(),
+                    "decorr",
+                ))
+                .expect("Failed to save image");
         } else {
-            eprintln!("File not found: {:?}", in_file);
+            error!("File not found: {:?}", in_file);
         }
         pb_inc!();
     });
@@ -205,11 +227,12 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for DecorrelationStretch {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());
         match self.cross_file {
             true => cross_file_decorrelation(&self.input_files, self.ignore_black),
             false => individual_file_decorrelation(&self.input_files, self.ignore_black),
         };
+        Ok(())
     }
 }

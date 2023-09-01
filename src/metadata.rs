@@ -17,7 +17,6 @@ pub trait ImageMetadata {
     fn get_date_taken_utc(&self) -> String;
     fn get_date_taken_mars(&self) -> Option<String>;
     fn get_subframe_rect(&self) -> Option<Vec<f64>>;
-    // fn get_dimension(&self) -> Option<&[f64]>;
     fn get_scale_factor(&self) -> u32;
     fn get_instrument(&self) -> String;
     fn get_filter_name(&self) -> Option<String>;
@@ -30,13 +29,15 @@ pub trait ImageMetadata {
     fn get_mast_az(&self) -> Option<f64>;
     fn get_mast_el(&self) -> Option<f64>;
     fn get_sclk(&self) -> Option<f64>;
+    fn is_thumbnail(&self) -> bool;
     fn get_date_received(&self) -> String;
     fn get_xyz(&self) -> Option<Vec<f64>>;
     fn get_dimension(&self) -> Option<Vec<f64>>;
     fn get_sample_type(&self) -> String;
+    fn get_remote_image_url(&self) -> String;
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Default)]
 pub struct Metadata {
     pub link: String,
     pub credit: String,
@@ -53,6 +54,9 @@ pub struct Metadata {
     pub mast_az: Option<f64>,
     pub mast_el: Option<f64>,
     pub sclk: Option<f64>,
+
+    #[serde(default = "crate::jsonfetch::default_false")]
+    pub thumbnail: bool,
 
     #[serde(default = "crate::jsonfetch::default_blank")]
     pub date_received: String,
@@ -99,6 +103,12 @@ pub struct Metadata {
 
     #[serde(default = "crate::jsonfetch::default_false")]
     pub cropped: bool,
+
+    #[serde(default = "crate::jsonfetch::default_blank")]
+    pub remote_image_url: String,
+
+    #[serde(default = "crate::jsonfetch::default_vec")]
+    pub history: Vec<String>,
 }
 
 pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
@@ -129,10 +139,13 @@ pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
         mast_el: im.get_mast_el(),
         mast_az: im.get_mast_az(),
         sclk: im.get_sclk(),
+        thumbnail: im.is_thumbnail(),
         dimension: im.get_dimension(),
         xyz: im.get_xyz(),
         date_received: im.get_date_received(),
         sample_type: im.get_sample_type(),
+        remote_image_url: im.get_remote_image_url(),
+        history: jsonfetch::default_vec(),
     }
 }
 

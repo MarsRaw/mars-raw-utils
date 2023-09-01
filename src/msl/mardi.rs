@@ -1,6 +1,6 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    marsimage::MarsImage, util, vprintln,
+    marsimage::MarsImage, util,
 };
 
 use sciimg::path;
@@ -27,7 +27,7 @@ impl Calibration for MslMardi {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslMARDI);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::MslMARDI);
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
@@ -55,8 +55,13 @@ impl Calibration for MslMardi {
         raw.image.normalize_to_16bit_with_max(data_max);
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        raw.update_history();
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

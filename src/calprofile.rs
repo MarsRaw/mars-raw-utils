@@ -1,14 +1,15 @@
-use crate::{calibfile, constants, veprintln, vprintln};
-
+use crate::{calibfile, constants};
+use anyhow::anyhow;
+use anyhow::Result;
+use regex::Regex;
 use sciimg::prelude::*;
-
 use serde::{Deserialize, Serialize};
-
 use std::fs::File;
 use std::io::Read;
 
-use anyhow::anyhow;
-use anyhow::Result;
+lazy_static! {
+    static ref CAL_TYPE_REGEX: Regex = Regex::new(r#"calfiletype\s+=\s+"profile""#).unwrap();
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CalProfile {
@@ -52,6 +53,12 @@ pub struct CalProfile {
 
     #[serde(default = "default_debayer_method")]
     pub debayer_method: DebayerMethod,
+
+    #[serde(default = "default_false")]
+    pub srgb_color_correction: bool,
+
+    #[serde(default = "default_true")]
+    pub auto_subframing: bool,
 }
 
 impl Default for CalProfile {
@@ -72,6 +79,8 @@ impl Default for CalProfile {
             instrument: None,
             description: None,
             debayer_method: default_debayer_method(),
+            srgb_color_correction: default_false(),
+            auto_subframing: default_true(),
         }
     }
 }
@@ -94,6 +103,10 @@ fn default_decorrelate_color() -> bool {
 
 fn default_false() -> bool {
     false
+}
+
+fn default_true() -> bool {
+    true
 }
 
 fn default_color_scalar() -> f32 {
@@ -120,14 +133,19 @@ pub fn load_calibration_profile(file_path: &String) -> Result<CalProfile> {
             file.read_to_end(&mut buf).unwrap();
             let text = String::from_utf8(buf).unwrap();
 
+            if !CAL_TYPE_REGEX.is_match(&text) {
+                return Err(anyhow!("Invalid calibration profile file"));
+            }
+
             match toml::from_str(&text) {
                 Ok(calprof) => {
-                    vprintln!("Loaded calibration profile from {}", located_file);
-                    vprintln!("Profile: {:?}", calprof);
+                    info!("Loaded calibration profile from {}", located_file);
+                    info!("Profile: {:?}", calprof);
                     Ok(calprof)
                 }
                 Err(why) => {
-                    veprintln!("Error parsing calibration profile: {:?}", why);
+                    error!("Error parsing calibration profile file: {}", located_file);
+                    error!("Reason: {:?}", why);
                     Err(anyhow!("Error parsing calibration profile file"))
                 }
             }

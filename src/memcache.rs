@@ -1,4 +1,3 @@
-use crate::vprintln;
 use sciimg::prelude::*;
 use std::collections::HashMap;
 use std::fs;
@@ -42,7 +41,7 @@ impl<T: Clone> ImageCache<T> {
         if self.cache_has_file(file_path) {
             match self.cache.get(file_path) {
                 Some(img) => {
-                    vprintln!("File found in cache: {}", file_path);
+                    debug!("File found in cache: {}", file_path);
                     Ok(img.clone())
                 }
                 None => Err(anyhow!("file not in cache")),
@@ -51,8 +50,9 @@ impl<T: Clone> ImageCache<T> {
             let img_res = load_file(file_path);
             match img_res {
                 Ok(img) => {
-                    vprintln!("Adding file to calibration cache: {}", file_path);
+                    debug!("Adding file to calibration cache: {}", file_path);
                     self.cache.insert(file_path.into(), img.clone());
+                    debug!("File inserted into cache");
                     Ok(img)
                 }
                 Err(why) => panic!("Failed to load image from {}: {:?}", file_path, why),
@@ -76,8 +76,17 @@ pub fn load_imagebuffer(file_path: &str) -> Result<ImageBuffer> {
 }
 
 pub fn load_text_file(file_path: &str) -> Result<String> {
-    TEXT_CACHE
-        .lock()
-        .unwrap()
-        .load_file(file_path, |fp| Ok(fs::read_to_string(fp).unwrap())) // Awkward rewrapping of error
+    TEXT_CACHE.lock().unwrap().load_file(file_path, |fp| {
+        vprintln!("Loading text file from {}", fp);
+        match fs::read_to_string(fp) {
+            Ok(s) => {
+                info!("File of {} length read successfully", s.len());
+                Ok(s)
+            }
+            Err(why) => {
+                error!("Error reading file: {:?}", why);
+                Err(anyhow!(why))
+            }
+        }
+    })
 }

@@ -1,9 +1,11 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::{drawable::*, prelude::*, vector::Vector};
 use std::process;
+use stump;
 
 pb_create_spinner!();
 
@@ -24,28 +26,28 @@ pub struct Anaglyph {
 }
 #[async_trait]
 impl RunnableSubcommand for Anaglyph {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
-        print::print_experimental();
+        stump::print_experimental();
 
         let left_image_path = String::from(self.left.as_os_str().to_str().unwrap());
         let right_image_path = String::from(self.right.as_os_str().to_str().unwrap());
         let out_file_path = self.output.as_os_str().to_str().unwrap();
 
         if !path::file_exists(&left_image_path) {
-            eprintln!("Error: File not found (left eye): {}", left_image_path);
+            error!("Error: File not found (left eye): {}", left_image_path);
             pb_done_with_error!();
             process::exit(1);
         }
 
         if !path::file_exists(&right_image_path) {
-            eprintln!("Error: File not found (right eye): {}", right_image_path);
+            error!("Error: File not found (right eye): {}", right_image_path);
             pb_done_with_error!();
             process::exit(1);
         }
 
         if !path::parent_exists_and_writable(out_file_path) {
-            eprintln!(
+            error!(
                 "Error: Output file directory not found or is not writable: {}",
                 out_file_path
             );
@@ -53,37 +55,27 @@ impl RunnableSubcommand for Anaglyph {
             process::exit(1);
         }
 
-        let mut left_img = MarsImage::open(left_image_path, Instrument::M20MastcamZLeft);
-        let mut right_img = MarsImage::open(right_image_path, Instrument::M20MastcamZRight);
+        let mut left_img = MarsImage::open(&left_image_path, Instrument::M20MastcamZLeft);
+        let mut right_img = MarsImage::open(&right_image_path, Instrument::M20MastcamZRight);
 
         if self.mono {
-            vprintln!("Converting input images to monochrome...");
+            info!("Converting input images to monochrome...");
             left_img.to_mono();
             right_img.to_mono();
         }
 
-        let left_cahv = if let Some(left_md) = &left_img.metadata {
-            if left_md.camera_model_component_list.is_valid() {
-                left_md.camera_model_component_list.clone()
-            } else {
-                pb_done_with_error!();
-                process::exit(2);
-            }
+        let left_cahv = if left_img.metadata.camera_model_component_list.is_valid() {
+            left_img.metadata.camera_model_component_list.clone()
         } else {
             pb_done_with_error!();
-            process::exit(1);
+            process::exit(2);
         };
 
-        let right_cahv = if let Some(right_md) = &right_img.metadata {
-            if right_md.camera_model_component_list.is_valid() {
-                right_md.camera_model_component_list.clone()
-            } else {
-                pb_done_with_error!();
-                process::exit(2);
-            }
+        let right_cahv = if right_img.metadata.camera_model_component_list.is_valid() {
+            right_img.metadata.camera_model_component_list.clone()
         } else {
             pb_done_with_error!();
-            process::exit(1);
+            process::exit(2);
         };
 
         let ground = Vector::new(0.0, 0.0, 1.84566);
@@ -115,7 +107,8 @@ impl RunnableSubcommand for Anaglyph {
             Eye::Left,
         );
 
-        map.save(out_file_path);
+        map.save(out_file_path).expect("Failed to save image");
         pb_done!();
+        Ok(())
     }
 }

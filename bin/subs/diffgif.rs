@@ -1,4 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::diffgif;
 use std::process;
@@ -34,11 +35,14 @@ pub struct DiffGif {
 
     #[arg(long, short, help = "Convert RGB to mono")]
     mono: bool,
+
+    #[arg(long, short = 'L', help = "Light only, discard dark values")]
+    lightonly: bool,
 }
 
 #[async_trait::async_trait]
 impl RunnableSubcommand for DiffGif {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
         let white_level = self.white.unwrap_or(1.0);
@@ -56,26 +60,26 @@ impl RunnableSubcommand for DiffGif {
             None => diffgif::ProductType::STANDARD,
         };
 
-        println!(
-            "{}, {}, {}, {}, {}",
+        info!(
+            "Black: {}, White: {}, Gamma: {}, Lowpass Window: {}, Gif Delay: {}",
             black_level, white_level, gamma, lowpass_window_size, delay
         );
         let output = self.output.as_os_str().to_str().unwrap();
 
         if white_level < 0.0 || black_level < 0.0 {
-            eprintln!("Levels cannot be negative");
+            eprintln!("Error: Levels cannot be negative");
             pb_done_with_error!();
             process::exit(1);
         }
 
         if white_level < black_level {
-            eprintln!("White level cannot be less than black level");
+            eprintln!("Error: White level cannot be less than black level");
             pb_done_with_error!();
             process::exit(1);
         }
 
         if gamma <= 0.0 {
-            eprintln!("Gamma cannot be zero or negative");
+            eprintln!("Error: Gamma cannot be zero or negative");
             pb_done_with_error!();
             process::exit(1);
         }
@@ -85,6 +89,16 @@ impl RunnableSubcommand for DiffGif {
             .iter()
             .map(|s| String::from(s.as_os_str().to_str().unwrap()))
             .collect();
+
+        if in_files.is_empty() {
+            eprintln!("Error: No images provided!");
+            process::exit(1);
+        } else if in_files.len() == 1 {
+            eprintln!("Error: Requires more than one image");
+            process::exit(1);
+        }
+
+        debug!("Processing on files: {:?}", in_files);
 
         diffgif::process(&diffgif::DiffGif {
             input_files: in_files,
@@ -96,7 +110,9 @@ impl RunnableSubcommand for DiffGif {
             delay,
             lowpass_window_size,
             convert_to_mono: self.mono,
+            light_only: self.lightonly,
         });
         pb_done!();
+        Ok(())
     }
 }

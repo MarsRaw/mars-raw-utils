@@ -1,9 +1,9 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, flatfield,
-    marsimage::MarsImage, util, vprintln,
+    marsimage::MarsImage, util,
 };
 
-use sciimg::path;
+use sciimg::prelude::*;
 
 use anyhow::Result;
 
@@ -27,7 +27,7 @@ impl Calibration for MslMahli {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslMAHLI);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::MslMAHLI);
 
         if raw.image.width == 1632 && raw.image.height == 1200 {
             vprintln!("Cropping...");
@@ -89,7 +89,9 @@ impl Calibration for MslMahli {
         }
 
         vprintln!("Cropping...");
-        raw.image.crop(2, 3, 1580, 1180);
+        if cal_context.auto_subframing {
+            raw.image.crop(2, 3, 1580, 1180);
+        }
 
         vprintln!("Applying color weights...");
         raw.apply_weight(
@@ -97,6 +99,12 @@ impl Calibration for MslMahli {
             cal_context.green_scalar,
             cal_context.blue_scalar,
         );
+
+        if cal_context.srgb_color_correction {
+            vprintln!("Applying sRGB color conversion");
+            raw.image
+                .convert_colorspace(color::ColorSpaceType::RGB, color::ColorSpaceType::sRGB)?;
+        }
 
         if cal_context.decorrelate_color {
             vprintln!("Normalizing with decorrelated colors...");
@@ -107,8 +115,13 @@ impl Calibration for MslMahli {
         }
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        raw.update_history();
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

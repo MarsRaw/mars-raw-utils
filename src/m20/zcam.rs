@@ -1,6 +1,6 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    inpaintmask, marsimage::MarsImage, util, vprintln,
+    inpaintmask, marsimage::MarsImage, util,
 };
 
 use sciimg::prelude::*;
@@ -84,7 +84,7 @@ impl Calibration for M20MastcamZ {
             vprintln!("Processing for Mastcam-Z Left");
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), instrument);
+        let mut raw = MarsImage::open(input_file, instrument);
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
@@ -107,20 +107,12 @@ impl Calibration for M20MastcamZ {
         let focal_length: Result<f32> = match focal_length_from_file_name(input_file) {
             Ok(fl) => Ok(fl),
             Err(_) => {
-                match &raw.metadata {
-                    Some(md) => {
-                        let fl_res = focal_length_from_cahvor(&md.camera_model_component_list);
-                        if let Ok(fl) = fl_res {
-                            Ok(fl)
-                        } else {
-                            //print_fail(&format!("{} ({})", path::basename(input_file), &cal_context.filename_suffix.to_str()));
-                            panic!("Unable to determine zcam focal length")
-                        }
-                    }
-                    None => {
-                        //print_fail(&format!("{} ({})", path::basename(input_file), filename_suffix));
-                        panic!("Unable to determine zcam focal length")
-                    }
+                if let Ok(fl) = focal_length_from_cahvor(&raw.metadata.camera_model_component_list)
+                {
+                    Ok(fl)
+                } else {
+                    //print_fail(&format!("{} ({})", path::basename(input_file), &cal_context.filename_suffix.to_str()));
+                    panic!("Unable to determine zcam focal length")
                 }
             }
         };
@@ -144,17 +136,15 @@ impl Calibration for M20MastcamZ {
                 vprintln!("Using flat file: {}", file_path);
 
                 if path::file_exists(&file_path) {
-                    let mut flat = MarsImage::open(file_path, instrument);
+                    let mut flat = MarsImage::open(&file_path, instrument);
 
-                    if let Some(md) = &raw.metadata {
-                        if let Some(rect) = &md.subframe_rect {
-                            flat.crop(
-                                rect[0] as usize - 1,
-                                rect[1] as usize - 1,
-                                rect[2] as usize,
-                                rect[3] as usize,
-                            );
-                        }
+                    if let Some(rect) = &raw.metadata.subframe_rect {
+                        flat.crop(
+                            rect[0] as usize - 1,
+                            rect[1] as usize - 1,
+                            rect[2] as usize,
+                            rect[3] as usize,
+                        );
                     }
 
                     raw.flatfield_with_flat(&flat);
@@ -172,18 +162,17 @@ impl Calibration for M20MastcamZ {
 
         vprintln!("Inpainting...");
         let mut inpaint_mask = inpaintmask::load_mask(instrument).unwrap();
-        if let Some(md) = &raw.metadata {
-            if let Some(rect) = &md.subframe_rect {
-                inpaint_mask = inpaint_mask
-                    .get_subframe(
-                        rect[0] as usize - 1,
-                        rect[1] as usize - 1,
-                        rect[2] as usize,
-                        rect[3] as usize,
-                    )
-                    .unwrap();
-            }
+        if let Some(rect) = &raw.metadata.subframe_rect {
+            inpaint_mask = inpaint_mask
+                .get_subframe(
+                    rect[0] as usize - 1,
+                    rect[1] as usize - 1,
+                    rect[2] as usize,
+                    rect[3] as usize,
+                )
+                .unwrap();
         }
+
         raw.apply_inpaint_fix_with_mask(&inpaint_mask);
 
         vprintln!("Applying color weights...");
@@ -193,9 +182,39 @@ impl Calibration for M20MastcamZ {
             cal_context.blue_scalar,
         );
 
-        if raw.image.width == 1648 && raw.image.height == 1200 {
-            vprintln!("Cropping...");
-            raw.image.crop(29, 9, 1590, 1182);
+        vprintln!(
+            "Current image width: {}, height: {}",
+            raw.image.width,
+            raw.image.height
+        );
+
+        vprintln!("Cropping...");
+
+        if cal_context.auto_subframing {
+            if let Some(rect) = &raw.metadata.subframe_rect {
+                let new_rect = vec![
+                    rect[0] + 29.0,
+                    rect[1] + 9.0,
+                    rect[2] - 58.0,
+                    rect[3] - 18.0,
+                ];
+                raw.metadata.subframe_rect = Some(new_rect);
+            }
+
+            raw.image
+                .crop(29, 9, raw.image.width - 29 - 29, raw.image.height - 9 - 9);
+        }
+
+        vprintln!(
+            "Current image width: {}, height: {}",
+            raw.image.width,
+            raw.image.height
+        );
+
+        if cal_context.srgb_color_correction {
+            vprintln!("Applying sRGB color conversion");
+            raw.image
+                .convert_colorspace(color::ColorSpaceType::RGB, color::ColorSpaceType::sRGB)?;
         }
 
         if cal_context.decorrelate_color {
@@ -206,13 +225,17 @@ impl Calibration for M20MastcamZ {
             raw.image.normalize_to_16bit_with_max(data_max);
         }
 
-        vprintln!("Writing to disk...");
-
-        raw.save(&out_file);
-
-        match warn {
-            true => cal_warn(cal_context, &out_file),
-            false => cal_ok(cal_context, &out_file),
+        vprintln!("Writing to {}", out_file);
+        raw.update_history();
+        match raw.save(&out_file) {
+            Ok(_) => match warn {
+                true => cal_warn(cal_context, &out_file),
+                false => cal_ok(cal_context, &out_file),
+            },
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
         }
     }
 }

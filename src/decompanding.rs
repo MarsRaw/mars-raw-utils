@@ -1,8 +1,6 @@
 use crate::calibfile;
 use crate::enums;
 use crate::memcache;
-use crate::veprintln;
-use crate::vprintln;
 use regex::Regex;
 use sciimg::path;
 use std::convert::TryInto;
@@ -65,7 +63,7 @@ pub const LUT2: [u32; 256] = [
 ];
 
 lazy_static! {
-    static ref LUT_SPEC_PAIR: Regex = Regex::new(r"([0-9]+) ([0-9]+)").unwrap();
+    static ref LUT_SPEC_PAIR: Regex = Regex::new(r"([0-9]+)\s+([0-9]+)").unwrap();
 }
 
 #[derive(Debug, Clone)]
@@ -78,6 +76,7 @@ impl LookUpTable {
         LookUpTable { lut: lut.to_vec() }
     }
     pub fn new_from_vec(lut: &Vec<u32>) -> Result<LookUpTable> {
+        info!("Creating LUT with input of length {}", lut.len());
         if lut.len() != 256 {
             Err(anyhow!("Invalid LUT specification length"))
         } else {
@@ -112,13 +111,12 @@ pub fn load_ilut_spec_file(file_path: &String) -> Result<LookUpTable> {
     vprintln!("Loading LUT file: {}", file_path);
 
     if !path::file_exists(file_path) {
-        veprintln!("ERROR: LUT file not found: {}", file_path);
+        error!("ERROR: LUT file not found: {}", file_path);
         return Err(anyhow!("Lookup table file not found"));
     }
 
     let mut lut_vec: Vec<u32> = vec![];
-    memcache::load_text_file(file_path)
-        .unwrap()
+    memcache::load_text_file(file_path)?
         .split('\n')
         .for_each(|line| {
             // This regex capture will validate if the line is in the format "<number><space><number>"
@@ -128,5 +126,6 @@ pub fn load_ilut_spec_file(file_path: &String) -> Result<LookUpTable> {
                 lut_vec.push(s_lut_value);
             }
         });
+    info!("LUT file parse successfully with {} entries", lut_vec.len());
     LookUpTable::new_from_vec(&lut_vec)
 }

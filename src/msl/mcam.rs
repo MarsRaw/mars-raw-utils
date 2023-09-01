@@ -1,9 +1,9 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, flatfield,
-    inpaintmask, marsimage::MarsImage, util, vprintln,
+    inpaintmask, marsimage::MarsImage, util,
 };
 
-use sciimg::{enums::ImageMode, path};
+use sciimg::prelude::*;
 
 use anyhow::Result;
 
@@ -39,7 +39,7 @@ impl Calibration for MslMastcam {
             vprintln!("Processing for Mastcam Left");
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), instrument);
+        let mut raw = MarsImage::open(input_file, instrument);
 
         let lut = decompanding::get_ilt_for_instrument(instrument).unwrap();
         let data_max = if cal_context.apply_ilt {
@@ -173,8 +173,16 @@ impl Calibration for MslMastcam {
         }
 
         vprintln!("Cropping...");
-        raw.image
-            .crop(3, 3, raw.image.width - 6, raw.image.height - 6);
+        if cal_context.auto_subframing {
+            raw.image
+                .crop(3, 3, raw.image.width - 6, raw.image.height - 6);
+        }
+
+        if cal_context.srgb_color_correction {
+            vprintln!("Applying sRGB color conversion");
+            raw.image
+                .convert_colorspace(color::ColorSpaceType::RGB, color::ColorSpaceType::sRGB)?;
+        }
 
         if cal_context.decorrelate_color {
             vprintln!("Normalizing with decorrelated colors...");
@@ -185,8 +193,13 @@ impl Calibration for MslMastcam {
         }
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        raw.update_history();
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

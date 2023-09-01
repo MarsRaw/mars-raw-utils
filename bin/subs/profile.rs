@@ -1,6 +1,7 @@
 use mars_raw_utils::calprofile::*;
 
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use glob::glob;
 use std::env;
 use std::path::Path;
@@ -48,9 +49,9 @@ fn list_profiles_in_directory(path: &str) {
 use async_trait::async_trait;
 #[async_trait]
 impl RunnableSubcommand for Profile {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         if self.list && self.profile.is_some() {
-            eprintln!("Error: Two actions specified, please only select one at a time");
+            error!("Error: Two actions specified, please only select one at a time");
         } else if self.list {
             print_list_header();
 
@@ -108,14 +109,16 @@ impl RunnableSubcommand for Profile {
                         println!("HPC Threshold: {}", profile.hot_pixel_detection_threshold);
                         println!("HPC Window Size: {}", profile.hot_pixel_window_size);
                     }
+                    println!("Decorrelated Color Stretch: {}", profile.decorrelate_color);
                     println!("Output Filename Suffix: {}", profile.filename_suffix);
                 }
                 Err(why) => {
-                    eprintln!("Error: {}", why);
+                    error!("Error: {}", why);
                 }
             };
         } else {
-            eprintln!("Error: No action specified");
+            error!("Error: No action specified");
         }
+        Ok(())
     }
 }

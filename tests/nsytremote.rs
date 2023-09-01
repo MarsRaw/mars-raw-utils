@@ -1,9 +1,11 @@
-use mars_raw_utils::nsyt::{remote::fetch_latest, remote::remote_fetch};
+use mars_raw_utils::prelude::*;
 use mars_raw_utils::remotequery::RemoteQuery;
 
 #[tokio::test]
 async fn test_nsyt_latest() {
-    fetch_latest().await.expect("Failed to fetch latest data");
+    remotequery::get_latest(Mission::InSight)
+        .await
+        .expect("Failed to fetch latest data");
 }
 
 #[tokio::test]
@@ -11,7 +13,8 @@ async fn test_nsyt_instrument_fetches() {
     let instruments = vec!["idc", "icc"];
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
-        remote_fetch(
+        _ = remotequery::perform_fetch(
+            Mission::InSight,
             &RemoteQuery {
                 cameras: vec![i.into()],
                 num_per_page: 5,
@@ -29,7 +32,6 @@ async fn test_nsyt_instrument_fetches() {
             |_| {},
             |_| {},
         )
-        .await
-        .unwrap();
+        .await;
     }
 }

@@ -2,11 +2,13 @@ use std::num::ParseIntError;
 use std::str::FromStr;
 
 // Supported missions
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Mission {
-    MSL,
-    MARS2020,
-    INSIGHT,
+    MSL,      // Mars Science Laboratory - Curiosity Rover
+    Mars2020, // Perseverance Rover
+    InSight,  // InSight Lander
+    MerA,     // Mars Exploration Rovers - Spirit Rover
+    MerB,     // Mars Exploration Rovers - Opportunity Rover
 }
 
 /// Representation of left/right side of a stereo image with an option to simply not care (or unknown).

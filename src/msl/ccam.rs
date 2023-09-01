@@ -1,6 +1,6 @@
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument,
-    marsimage::MarsImage, util, vprintln,
+    marsimage::MarsImage, util,
 };
 
 use sciimg::{imagebuffer, path};
@@ -27,7 +27,7 @@ impl Calibration for MslChemCam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::MslChemCam);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::MslChemCam);
 
         vprintln!("Loading image mask");
         let mask = imagebuffer::ImageBuffer::from_file(
@@ -58,9 +58,14 @@ impl Calibration for MslChemCam {
         raw.image.normalize_to_16bit_with_max(data_max);
 
         vprintln!("Writing to disk...");
+        raw.update_history();
         raw.image.set_using_alpha(true);
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

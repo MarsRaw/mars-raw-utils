@@ -1,6 +1,5 @@
 use crate::{
     calibrate::*, calprofile::CalProfile, enums, enums::Instrument, marsimage::MarsImage, util,
-    vprintln,
 };
 
 use sciimg::path;
@@ -27,7 +26,7 @@ impl Calibration for M20SherlocAci {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(String::from(input_file), enums::Instrument::M20SherlocAci);
+        let mut raw = MarsImage::open(input_file, enums::Instrument::M20SherlocAci);
 
         vprintln!("Flatfielding...");
         raw.flatfield();
@@ -35,17 +34,24 @@ impl Calibration for M20SherlocAci {
         vprintln!("Normalizing...");
         raw.image.normalize_to_16bit_with_max(255.0);
 
-        if raw.image.width == 1648 && raw.image.height == 1200 {
-            vprintln!("Cropping...");
-            raw.image.crop(23, 2, 1607, 1198);
-        } else if raw.image.width == 1600 && raw.image.height == 1200 {
-            vprintln!("Cropping...");
-            raw.image.crop(23, 2, 1577, 1198);
+        if cal_context.auto_subframing {
+            if raw.image.width == 1648 && raw.image.height == 1200 {
+                vprintln!("Cropping...");
+                raw.image.crop(23, 2, 1607, 1198);
+            } else if raw.image.width == 1600 && raw.image.height == 1200 {
+                vprintln!("Cropping...");
+                raw.image.crop(23, 2, 1577, 1198);
+            }
         }
 
         vprintln!("Writing to disk...");
-        raw.save(&out_file);
-
-        cal_ok(cal_context, &out_file)
+        raw.update_history();
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
     }
 }

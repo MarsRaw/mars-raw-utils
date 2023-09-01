@@ -1,7 +1,11 @@
-use mars_raw_utils::print;
 mod subs;
+use anyhow::Result;
+use colored::Colorize;
 use subs::runnable::RunnableSubcommand;
 use subs::*;
+
+#[macro_use]
+extern crate stump;
 
 extern crate wild;
 use clap::{Parser, Subcommand};
@@ -22,11 +26,14 @@ enum Mru {
     MslFetch(msl::mslfetch::MslFetch),
     MslDate(msl::msldate::MslDate),
     MslLatest(msl::msllatest::MslLatest),
+    MslLocation(msl::msllocation::MslLocation),
 
     M20Fetch(m20::m20fetch::M20Fetch),
     M20Date(m20::m20date::M20Date),
     M20Latest(m20::m20latest::M20Latest),
     M20EcamAssemble(m20::ecamassemble::M20EcamAssemble),
+    M20SherlocColorizer(m20::sherloccolorizer::M20SherlocColorizer),
+    M20Location(m20::m20location::M20Location),
 
     NsytFetch(nsyt::nsytfetch::NsytFetch),
     NsytDate(nsyt::nsytdate::NsytDate),
@@ -52,99 +59,65 @@ enum Mru {
     Profile(profile::Profile),
     Decorr(decorr::DecorrelationStretch),
     UpdateCalData(caldata::UpdateCalData),
+
+    #[clap(name = "pds2png")]
+    Pds2Png(pds2png::Pds2Png),
+
+    Passes(passes::Passes),
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), anyhow::Error> {
     let t1 = std::time::Instant::now();
+
+    stump::set_min_log_level(stump::LogEntryLevel::WARN);
+    info!("Initialized logging"); // INFO, which means that this won't be seen
+                                  // unless the user overrides via environment
+                                  // variable.
+
     let args = Cli::parse_from(wild::args());
 
     if args.verbose {
-        print::set_verbose(true);
+        stump::set_verbose(true);
     }
 
-    match args.command {
-        Mru::MslFetch(args) => {
-            args.run().await;
-        }
-        Mru::M20Fetch(args) => {
-            args.run().await;
-        }
-        Mru::NsytFetch(args) => {
-            args.run().await;
-        }
-        Mru::Calibrate(args) => {
-            args.run().await;
-        }
-        Mru::MslDate(args) => {
-            args.run().await;
-        }
-        Mru::MslLatest(args) => {
-            args.run().await;
-        }
-        Mru::M20Date(args) => {
-            args.run().await;
-        }
-        Mru::M20Latest(args) => {
-            args.run().await;
-        }
-        Mru::NsytDate(args) => {
-            args.run().await;
-        }
-        Mru::M20EcamAssemble(args) => {
-            args.run().await;
-        }
-        Mru::NsytLatest(args) => {
-            args.run().await;
-        }
-        Mru::MerDate(args) => {
-            args.run().await;
-        }
-        Mru::Anaglyph(args) => {
-            args.run().await;
-        }
-        Mru::Composite(args) => {
-            args.run().await;
-        }
-        Mru::Crop(args) => {
-            args.run().await;
-        }
-        Mru::Debayer(args) => {
-            args.run().await;
-        }
-        Mru::DiffGif(args) => {
-            args.run().await;
-        }
-        Mru::FocusMerge(args) => {
-            args.run().await;
-        }
-        Mru::MeanStack(args) => {
-            args.run().await;
-        }
-        Mru::HpcFilter(args) => {
-            args.run().await;
-        }
-        Mru::Inpaint(args) => {
-            args.run().await;
-        }
-        Mru::Levels(args) => {
-            args.run().await;
-        }
-        Mru::Info(args) => {
-            args.run().await;
-        }
-        Mru::Xeye(args) => {
-            args.run().await;
-        }
-        Mru::Profile(args) => {
-            args.run().await;
-        }
-        Mru::Decorr(args) => {
-            args.run().await;
-        }
-        Mru::UpdateCalData(args) => {
-            args.run().await;
-        }
+    if let Err(why) = match args.command {
+        Mru::MslFetch(args) => args.run().await,
+        Mru::M20Fetch(args) => args.run().await,
+        Mru::NsytFetch(args) => args.run().await,
+        Mru::Calibrate(args) => args.run().await,
+        Mru::MslDate(args) => args.run().await,
+        Mru::MslLatest(args) => args.run().await,
+        Mru::MslLocation(args) => args.run().await,
+        Mru::M20Date(args) => args.run().await,
+        Mru::M20Latest(args) => args.run().await,
+        Mru::NsytDate(args) => args.run().await,
+        Mru::M20EcamAssemble(args) => args.run().await,
+        Mru::M20SherlocColorizer(args) => args.run().await,
+        Mru::M20Location(args) => args.run().await,
+        Mru::NsytLatest(args) => args.run().await,
+        Mru::MerDate(args) => args.run().await,
+        Mru::Anaglyph(args) => args.run().await,
+        Mru::Composite(args) => args.run().await,
+        Mru::Crop(args) => args.run().await,
+        Mru::Debayer(args) => args.run().await,
+        Mru::DiffGif(args) => args.run().await,
+        Mru::FocusMerge(args) => args.run().await,
+        Mru::MeanStack(args) => args.run().await,
+        Mru::HpcFilter(args) => args.run().await,
+        Mru::Inpaint(args) => args.run().await,
+        Mru::Levels(args) => args.run().await,
+        Mru::Info(args) => args.run().await,
+        Mru::Xeye(args) => args.run().await,
+        Mru::Profile(args) => args.run().await,
+        Mru::Decorr(args) => args.run().await,
+        Mru::UpdateCalData(args) => args.run().await,
+        Mru::Pds2Png(args) => args.run().await,
+        Mru::Passes(args) => args.run().await,
+    } {
+        error!("{}", "Unhandled program error:".red());
+        error!("{}", why);
     };
-    println!("Runtime: {}s", t1.elapsed().as_secs_f64());
+    info!("Runtime: {}s", t1.elapsed().as_secs_f64());
+    Ok(())
 }

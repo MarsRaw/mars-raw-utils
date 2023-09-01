@@ -1,9 +1,11 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Parser;
 use mars_raw_utils::{composite, prelude::*};
 use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
 use std::process;
+use stump;
 
 pb_create_spinner!();
 
@@ -24,10 +26,10 @@ pub struct Composite {
 }
 #[async_trait]
 impl RunnableSubcommand for Composite {
-    async fn run(&self) {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
-        print::print_experimental();
+        stump::print_experimental();
 
         let in_files: Vec<String> = self
             .input_files
@@ -42,40 +44,40 @@ impl RunnableSubcommand for Composite {
         let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 
         let map_context = composite::determine_map_context(&in_files, &quat);
-        vprintln!("Map Context: {:?}", map_context);
-        vprintln!(
+        debug!("Map Context: {:?}", map_context);
+        debug!(
             "FOV Vertical: {}",
             map_context.top_lat - map_context.bottom_lat
         );
-        vprintln!(
+        debug!(
             "FOV Horizontal: {}",
             map_context.right_lon - map_context.left_lon
         );
 
         if map_context.width == 0 {
-            eprintln!("Output expected to have zero width. Cannot continue with that. Exiting...");
+            error!("Output expected to have zero width. Cannot continue with that. Exiting...");
             pb_done_with_error!();
             process::exit(1);
         } else if map_context.height == 0 {
-            eprintln!("Output expected to have zero height. Cannot continue with that. Exiting...");
+            error!("Output expected to have zero height. Cannot continue with that. Exiting...");
             pb_done_with_error!();
             process::exit(1);
         }
 
         let mut map = Image::create_masked(map_context.width, map_context.height, true);
 
-        let first_image = MarsImage::open(in_files[0].to_owned(), Instrument::M20MastcamZLeft);
+        let first_image = MarsImage::open(&in_files[0], Instrument::M20MastcamZLeft);
         let initial_origin = if let Some(model) = composite::get_cahvor(&first_image) {
             model.c()
         } else {
-            eprintln!("Cannot determine initial camera origin");
+            error!("Cannot determine initial camera origin");
             pb_done_with_error!();
             process::exit(2);
         };
 
         for in_file in in_files.iter() {
             if path::file_exists(in_file) {
-                vprintln!("Processing File: {}", in_file);
+                info!("Processing File: {}", in_file);
                 composite::process_file(
                     in_file,
                     &map_context,
@@ -85,14 +87,15 @@ impl RunnableSubcommand for Composite {
                     &initial_origin,
                 );
             } else {
-                eprintln!("File not found: {}", in_file);
+                error!("File not found: {}", in_file);
                 pb_done_with_error!();
                 process::exit(1);
             }
         }
 
-        map.save(output);
+        map.save(output).expect("Failed to save image");
 
         pb_done!();
+        Ok(())
     }
 }

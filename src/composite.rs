@@ -1,19 +1,13 @@
 use crate::prelude::*;
+use anyhow::Result;
 use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::Vector};
 use std::str::FromStr;
 
-use anyhow::Result;
-
 pub fn get_cahvor(img: &MarsImage) -> Option<CameraModel> {
-    match &img.metadata {
-        Some(md) => {
-            if md.camera_model_component_list.is_valid() {
-                Some(md.camera_model_component_list.clone())
-            } else {
-                None
-            }
-        }
-        None => None,
+    if img.metadata.camera_model_component_list.is_valid() {
+        Some(img.metadata.camera_model_component_list.clone())
+    } else {
+        None
     }
 }
 
@@ -79,7 +73,7 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> MapCo
     };
 
     input_files.iter().for_each(|input_file| {
-        let img = MarsImage::open(input_file.to_owned(), Instrument::M20MastcamZLeft);
+        let img = MarsImage::open(input_file, Instrument::M20MastcamZLeft);
         if let Some(c) = get_cahvor(&img) {
             if let Ok(ll) = get_lat_lon(&c, 0, 0, quat) {
                 context.bottom_lat = min!(context.bottom_lat, ll.lat);
@@ -179,11 +173,8 @@ pub fn process_file<D: Drawable>(
     quat: &Quaternion,
     initial_origin: &Vector,
 ) {
-    let mut img = MarsImage::open(String::from(input_file), Instrument::M20MastcamZLeft);
-    img.instrument = match &img.metadata {
-        Some(md) => Instrument::from_str(md.instrument.as_str()).unwrap(),
-        None => Instrument::M20MastcamZLeft,
-    };
+    let mut img = MarsImage::open(input_file, Instrument::M20MastcamZLeft);
+    img.instrument = Instrument::from_str(img.metadata.instrument.as_str()).unwrap();
 
     let eye = if anaglyph {
         match util::filename_char_at_pos(input_file, 1) {
@@ -208,15 +199,15 @@ pub fn process_file<D: Drawable>(
             //     _ => input_model_nonlinear
             // };
 
-            vprintln!("");
-            vprintln!("Input Model C: {:?}", input_model.c());
-            vprintln!("Input Model A: {:?}", input_model.a());
-            vprintln!("Input Model H: {:?}", input_model.h());
-            vprintln!("Input Model V: {:?}", input_model.v());
-            vprintln!("Input Model O: {:?}", input_model.o());
-            vprintln!("Input Model R: {:?}", input_model.r());
-            vprintln!("Input Model E: {:?}", input_model.e());
-            vprintln!("");
+            debug!("");
+            debug!("Input Model C: {:?}", input_model.c());
+            debug!("Input Model A: {:?}", input_model.a());
+            debug!("Input Model H: {:?}", input_model.h());
+            debug!("Input Model V: {:?}", input_model.v());
+            debug!("Input Model O: {:?}", input_model.o());
+            debug!("Input Model R: {:?}", input_model.r());
+            debug!("Input Model E: {:?}", input_model.e());
+            debug!("");
 
             let band_0 = img.image.get_band(0);
             let band_1 = img.image.get_band(1);
@@ -285,7 +276,7 @@ pub fn process_file<D: Drawable>(
             }
         }
         None => {
-            eprintln!("CAHVOR not found for image, cannot continue");
+            error!("CAHVOR not found for image, cannot continue");
             panic!("CAHVOR not found for image, cannot continue");
         }
     }

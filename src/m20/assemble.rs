@@ -74,9 +74,9 @@ impl NavcamTile {
     ///
     /// NavcamTile::new_from_file(&String::from("tests/testdata/NLF_0670_0726421423_362ECM_N0320604NCAM08111_01_095J01.png"), Instrument::M20NavcamRight);
     /// ```
-    pub fn new_from_file(file_path: &String, instrument: Instrument) -> Self {
+    pub fn new_from_file(file_path: &str, instrument: Instrument) -> Self {
         NavcamTile {
-            image: MarsImage::open(String::from(file_path), instrument),
+            image: MarsImage::open(file_path, instrument),
         }
     }
 
@@ -150,8 +150,8 @@ impl NavcamTile {
 
     /// Returns the scale factor in the metadata `scale_factor` field
     pub fn get_scale_factor(&self) -> u32 {
-        if let Some(md) = &self.image.metadata {
-            md.scale_factor
+        if self.image.metadata.scale_factor >= 1 {
+            self.image.metadata.scale_factor
         } else {
             1
         }
@@ -159,12 +159,8 @@ impl NavcamTile {
 
     // Returns the subframe coordinates from the metadata `subframe_rect` field
     pub fn get_subframe_region(&self) -> Vec<f64> {
-        if let Some(md) = &self.image.metadata {
-            if let Some(sf) = &md.subframe_rect {
-                sf.clone()
-            } else {
-                vec![0.0]
-            }
+        if let Some(sf) = &self.image.metadata.subframe_rect {
+            sf.clone()
         } else {
             vec![0.0]
         }
@@ -263,6 +259,8 @@ impl Composite {
     /// Normalize the canvas to 16 bit value range and save to disk.
     pub fn finalize_and_save(&mut self, output_path: &str) {
         self.composite_image.normalize_to_8bit();
-        self.composite_image.save(output_path);
+        self.composite_image
+            .save(output_path)
+            .expect("Failed to save image");
     }
 }

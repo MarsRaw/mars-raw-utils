@@ -1,6 +1,7 @@
+use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
-use mars_raw_utils::remotequery::RemoteQuery;
 use sciimg::path;
 use std::process;
 
@@ -46,11 +47,12 @@ pub struct MslFetch {
     new: bool,
 }
 
-impl MslFetch {
-    pub async fn run(&self) {
+#[async_trait::async_trait]
+impl RunnableSubcommand for MslFetch {
+    async fn run(&self) -> Result<()> {
         pb_set_print!();
 
-        let instruments = msl::remote::make_instrument_map();
+        let instruments = remotequery::get_instrument_map(Mission::MSL).unwrap();
         if self.instruments {
             instruments.print_instruments();
             process::exit(0);
@@ -115,16 +117,15 @@ impl MslFetch {
         let camera_ids_res = instruments.find_remote_instrument_names_fromlist(&self.camera);
         let cameras = match camera_ids_res {
             Err(_e) => {
-                eprintln!("Invalid camera instrument(s) specified");
+                error!("Invalid camera instrument(s) specified");
                 process::exit(1);
             }
             Ok(v) => v,
         };
 
-        msl::remote::print_header();
-
-        match msl::remote::remote_fetch(
-            &RemoteQuery {
+        match remotequery::perform_fetch(
+            Mission::MSL,
+            &remotequery::RemoteQuery {
                 cameras,
                 num_per_page,
                 page,
@@ -138,10 +139,8 @@ impl MslFetch {
                 product_types: vec![],
                 output_path: output,
             },
-            |ttl| {
-                if !self.list {
-                    pb_set_length!(ttl);
-                }
+            |total| {
+                pb_set_length!(total);
             },
             |_| {
                 pb_inc!();
@@ -149,8 +148,11 @@ impl MslFetch {
         )
         .await
         {
-            Ok(_) => pb_done!(),
-            Err(e) => eprintln!("Error: {}", e),
-        }
+            Ok(_) => info!("Done"),
+            Err(FetchError::SkippingFile) => info!("Not downloading images. Done"),
+            Err(why) => error!("Error: {}", why),
+        };
+
+        Ok(())
     }
 }
