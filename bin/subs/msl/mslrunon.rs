@@ -36,7 +36,7 @@ impl RunnableSubcommand for MslRunOn {
             minsol: self.sol,
             maxsol: self.sol,
             movie_only: false,
-            thumbnails: true,
+            thumbnails: false,
             list_only: true,
             search: vec![],
             only_new: false,

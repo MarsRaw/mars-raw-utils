@@ -36,7 +36,7 @@ impl RunnableSubcommand for M20RunOn {
             minsol: self.sol,
             maxsol: self.sol,
             movie_only: false,
-            thumbnails: true,
+            thumbnails: false,
             list_only: true,
             search: vec![],
             only_new: false,
