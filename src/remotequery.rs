@@ -232,54 +232,61 @@ type OnTotalKnown = fn(usize);
 // Callback to inform the caller that an image has been downloaded
 type OnImageDownloaded = fn(&Metadata);
 
+pub async fn fetch_available(
+    mission: Mission,
+    query: &RemoteQuery,
+) -> Result<Vec<Metadata>, FetchError> {
+    if let Ok(client) = get_fetcher_for_mission(mission) {
+        let results = client.query_remote_images(query).await?;
+        Ok(results)
+    } else {
+        Err(FetchError::MissionNotSupportedError(mission))
+    }
+}
+
 pub async fn perform_fetch(
     mission: Mission,
     query: &RemoteQuery,
     on_total_known: OnTotalKnown,
     on_image_downloaded: OnImageDownloaded,
 ) -> Result<(), FetchError> {
-    if let Ok(client) = get_fetcher_for_mission(mission) {
-        match client.query_remote_images(query).await {
-            Ok(results) => {
-                // print a table of all the results.
-                print_table(&results, query);
+    match fetch_available(mission, query).await {
+        Ok(results) => {
+            // print a table of all the results.
+            print_table(&results, query);
 
-                // Iterate over the results and remove existing images
-                // if the user has selected to skip any images that already exist locally
-                let to_download: Vec<Metadata> = results
-                    .into_iter()
-                    .filter(|_| !query.list_only)
-                    .filter(|md| {
-                        !query.only_new
-                            || !image_exists_on_filesystem(
-                                &md.remote_image_url,
-                                Some(&query.output_path),
-                            )
+            // Iterate over the results and remove existing images
+            // if the user has selected to skip any images that already exist locally
+            let to_download: Vec<Metadata> = results
+                .into_iter()
+                .filter(|_| !query.list_only)
+                .filter(|md| {
+                    !query.only_new
+                        || !image_exists_on_filesystem(
+                            &md.remote_image_url,
+                            Some(&query.output_path),
+                        )
+                })
+                .collect();
+
+            // Don't bother with the result if we have nothing to download
+            if !to_download.is_empty() {
+                on_total_known(to_download.len());
+
+                let tasks: Vec<_> = to_download
+                    .par_iter()
+                    .map(|md| {
+                        info!("Fetching Image from Remote URL: {}", md.remote_image_url);
+                        download_remote_image(md, query, on_image_downloaded)
                     })
                     .collect();
-
-                // Don't bother with the result if we have nothing to download
-                if !to_download.is_empty() {
-                    on_total_known(to_download.len());
-
-                    let tasks: Vec<_> = to_download
-                        .par_iter()
-                        .map(|md| {
-                            info!("Fetching Image from Remote URL: {}", md.remote_image_url);
-                            download_remote_image(md, query, on_image_downloaded)
-                        })
-                        .collect();
-                    for task in tasks {
-                        task.await?;
-                    }
+                for task in tasks {
+                    task.await?;
                 }
             }
-            Err(why) => error!("Error: {}", why),
-        };
-
-        Ok(())
-    } else {
-        Err(FetchError::MissionNotSupportedError(mission))
+            Ok(())
+        }
+        Err(why) => Err(why),
     }
 }
 

@@ -27,6 +27,7 @@ enum Mru {
     MslDate(msl::msldate::MslDate),
     MslLatest(msl::msllatest::MslLatest),
     MslLocation(msl::msllocation::MslLocation),
+    MslRunOn(msl::mslrunon::MslRunOn),
 
     M20Fetch(m20::m20fetch::M20Fetch),
     M20Date(m20::m20date::M20Date),
@@ -89,6 +90,7 @@ async fn main() -> Result<(), anyhow::Error> {
         Mru::MslDate(args) => args.run().await,
         Mru::MslLatest(args) => args.run().await,
         Mru::MslLocation(args) => args.run().await,
+        Mru::MslRunOn(args) => args.run().await,
         Mru::M20Date(args) => args.run().await,
         Mru::M20Latest(args) => args.run().await,
         Mru::NsytDate(args) => args.run().await,
