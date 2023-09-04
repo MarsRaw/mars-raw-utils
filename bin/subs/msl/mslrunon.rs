@@ -44,15 +44,22 @@ impl RunnableSubcommand for MslRunOn {
             output_path: "".to_string(),
         };
 
-        // let mut sequences: HashSet<String> = HashSet::new();
+        let mut sequences: HashSet<String> = HashSet::new();
 
         let available = remotequery::fetch_available(Mission::MSL, &query).await?;
-        println!("Number of images available: {}", available.len());
 
-        available.into_iter().for_each(|md| {
-            println!("Sequence: {}", md.imageid);
+        available
+            .into_iter()
+            .filter(|md| md.imageid.len() >= 36)
+            .for_each(|md| {
+                sequences.insert(md.imageid[25..34].to_string());
+            });
+
+        let mut seq_vec = sequences.into_iter().collect::<Vec<_>>();
+        seq_vec.sort();
+        seq_vec.into_iter().for_each(|seqid| {
+            println!("{}", seqid);
         });
-
         Ok(())
     }
 }
