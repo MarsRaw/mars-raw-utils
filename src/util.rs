@@ -94,7 +94,6 @@ impl InstrumentMap {
     pub fn remote_instrument_names(&self) -> Vec<String> {
         self.map
             .values()
-            .into_iter()
             .flatten()
             .map(|i| i.to_string())
             .collect::<Vec<String>>()
