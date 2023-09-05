@@ -20,15 +20,19 @@ impl RunnableSubcommand for M20RunOn {
     async fn run(&self) -> Result<()> {
         let instruments = remotequery::get_instrument_map(Mission::Mars2020).unwrap();
 
-        let camera_ids_res = instruments.find_remote_instrument_names_fromlist(&self.camera);
-        let cameras = match camera_ids_res {
-            Err(_e) => {
-                error!("Invalid camera instrument(s) specified");
-                process::exit(1);
+        let cameras = if self.camera.is_empty() {
+            instruments.remote_instrument_names()
+        } else {
+            let camera_ids_res = instruments.find_remote_instrument_names_fromlist(&self.camera);
+            match camera_ids_res {
+                Err(_e) => {
+                    error!("Invalid camera instrument(s) specified");
+                    process::exit(1);
+                }
+                Ok(v) => v,
             }
-            Ok(v) => v,
         };
-        // ZR3_0901_0746923185_303ECM_T0440898ZCAM03014_048300J
+
         let query = remotequery::RemoteQuery {
             cameras,
             num_per_page: 100,

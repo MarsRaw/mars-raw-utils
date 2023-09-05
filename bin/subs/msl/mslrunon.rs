@@ -8,7 +8,7 @@ use std::process;
 #[derive(Parser)]
 #[command(author, version, about = "List sequences run on a specific sol", long_about = None)]
 pub struct MslRunOn {
-    #[arg(long, short, help = "MSL Camera Instrument(s)", num_args = 1..)]
+    #[arg(long, short, help = "MSL Camera Instrument(s)", num_args = 0..)]
     camera: Vec<String>,
 
     #[arg(long, short = 's', help = "Mission Sol")]
@@ -20,13 +20,17 @@ impl RunnableSubcommand for MslRunOn {
     async fn run(&self) -> Result<()> {
         let instruments = remotequery::get_instrument_map(Mission::MSL).unwrap();
 
-        let camera_ids_res = instruments.find_remote_instrument_names_fromlist(&self.camera);
-        let cameras = match camera_ids_res {
-            Err(_e) => {
-                error!("Invalid camera instrument(s) specified");
-                process::exit(1);
+        let cameras = if self.camera.is_empty() {
+            instruments.remote_instrument_names()
+        } else {
+            let camera_ids_res = instruments.find_remote_instrument_names_fromlist(&self.camera);
+            match camera_ids_res {
+                Err(_e) => {
+                    error!("Invalid camera instrument(s) specified");
+                    process::exit(1);
+                }
+                Ok(v) => v,
             }
-            Ok(v) => v,
         };
 
         let query = remotequery::RemoteQuery {

@@ -91,6 +91,15 @@ impl InstrumentMap {
         false
     }
 
+    pub fn remote_instrument_names(&self) -> Vec<String> {
+        self.map
+            .values()
+            .into_iter()
+            .flatten()
+            .map(|i| i.to_string())
+            .collect::<Vec<String>>()
+    }
+
     pub fn find_remote_instrument_names(&self, instrument: &str) -> Result<Vec<String>> {
         let mut inst_list: Vec<String> = Vec::new();
         if self.is_name_a_remote_instrument(instrument) {
