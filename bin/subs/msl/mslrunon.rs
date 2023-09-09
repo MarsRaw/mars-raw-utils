@@ -13,6 +13,9 @@ pub struct MslRunOn {
 
     #[arg(long, short = 's', help = "Mission Sol")]
     sol: i32,
+
+    #[arg(long, short = 't', help = "Allow thumbnails in the results")]
+    thumbnails: bool,
 }
 
 #[async_trait::async_trait]
@@ -40,7 +43,7 @@ impl RunnableSubcommand for MslRunOn {
             minsol: self.sol,
             maxsol: self.sol,
             movie_only: false,
-            thumbnails: false,
+            thumbnails: self.thumbnails,
             list_only: true,
             search: vec![],
             only_new: false,
