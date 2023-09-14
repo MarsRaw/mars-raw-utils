@@ -1,14 +1,16 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
+use itertools::Itertools;
+use mars_raw_utils::metadata::Metadata;
 use mars_raw_utils::prelude::*;
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::process;
 
 #[derive(Parser)]
 #[command(author, version, about = "List sequences run on a specific sol", long_about = None)]
 pub struct MslRunOn {
-    #[arg(long, short, help = "MSL Camera Instrument(s)", num_args = 0..)]
+    #[arg(long, short = 'c', help = "MSL Camera Instrument(s)", num_args = 0..)]
     camera: Vec<String>,
 
     #[arg(long, short = 's', help = "Mission Sol")]
@@ -16,6 +18,39 @@ pub struct MslRunOn {
 
     #[arg(long, short = 't', help = "Allow thumbnails in the results")]
     thumbnails: bool,
+
+    #[arg(long, short = 'C', help = "Show sequence and eye counts")]
+    counts: bool,
+}
+
+struct SequenceStats {
+    seqid: String,
+    count: u32,
+    left: u32,
+    right: u32,
+}
+
+impl SequenceStats {
+    pub fn new(seqid: &str, md: &Metadata) -> SequenceStats {
+        let mut ss = SequenceStats {
+            seqid: seqid.to_owned(),
+            count: 0,
+            left: 0,
+            right: 0,
+        };
+        ss.add(md);
+        ss
+    }
+
+    pub fn add(&mut self, md: &Metadata) {
+        self.count += 1;
+        if md.instrument.to_uppercase().contains("LEFT") {
+            self.left += 1;
+        } else if md.instrument.to_uppercase().contains("RIGHT") {
+            // Some cameras are mono. They won't use left/right counts
+            self.right += 1;
+        }
+    }
 }
 
 #[async_trait::async_trait]
@@ -51,22 +86,39 @@ impl RunnableSubcommand for MslRunOn {
             output_path: "".to_string(),
         };
 
-        let mut sequences: HashSet<String> = HashSet::new();
-
+        let mut sequences: HashMap<String, SequenceStats> = HashMap::new();
         let available = remotequery::fetch_available(Mission::MSL, &query).await?;
 
         available
             .into_iter()
             .filter(|md| md.imageid.len() >= 36)
             .for_each(|md| {
-                sequences.insert(md.imageid[25..34].to_string());
+                let seqid = md.imageid[25..34].to_string();
+
+                if let Some(ss) = sequences.get_mut(&seqid) {
+                    ss.add(&md)
+                } else {
+                    sequences.insert(seqid.clone(), SequenceStats::new(&seqid, &md));
+                }
             });
 
-        let mut seq_vec = sequences.into_iter().collect::<Vec<_>>();
-        seq_vec.sort();
-        seq_vec.into_iter().for_each(|seqid| {
-            println!("{}", seqid);
-        });
+        let mut seq_vec = sequences.values().collect_vec();
+        seq_vec.sort_by_key(|ss| &ss.seqid);
+
+        if self.counts {
+            println!("{:10} {:>6} {:>6} {:>6}", "SeqID", "Left", "Right", "Total");
+            seq_vec.into_iter().for_each(|ss| {
+                println!(
+                    "{:10} {:6} {:6} {:6}",
+                    ss.seqid, ss.left, ss.right, ss.count
+                );
+            });
+        } else {
+            seq_vec.into_iter().for_each(|ss| {
+                println!("{}", ss.seqid);
+            });
+        }
+
         Ok(())
     }
 }
