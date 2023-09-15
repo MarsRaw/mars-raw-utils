@@ -129,13 +129,15 @@ if [ `ls *NCAM00597*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
 fi
 
 if [ $open_file_manager -eq 1 ]; then 
-    if [ `which dolphin | wc -l` -eq 1 ]; then         # KDE on Linux
-        dolphin --new-window . &
-    elif [ `which explorer.exe | wc -l` -eq 1 ]; then   # Windows Subsystem for Linux
+    if [ `which xdg-open | wc -l` -eq 1 ]; then          # Linux generic
+        xdg-open . 2> /dev/null &                        
+    elif [ `which dolphin | wc -l` -eq 1 ]; then         # KDE on Linux
+        dolphin --new-window . 2> /dev/null &
+    elif [ `which explorer.exe | wc -l` -eq 1 ]; then    # Windows Subsystem for Linux
         explorer.exe .
-    elif [ `which open | wc -l` -eq 1 ]; then          # macOS
+    elif [ `which open | wc -l` -eq 1 ]; then            # macOS
         open . &
-    fi # Nautilus (GNOME), whatever Xfce uses, etc.
+    fi 
 fi
 
 
