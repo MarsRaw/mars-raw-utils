@@ -113,7 +113,7 @@ const_format = "0.2.14"
 reqwest = { version = "0.11.2", features = ["stream"] }
 platforms = "3.0.0"
 lab = "0.11.0"
-toml = "0.7.1"
+toml = "0.8.0"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
 sciimg = { git = "https://github.com/MarsRaw/sciimg.git", branch = "kmgill_develop", features = [

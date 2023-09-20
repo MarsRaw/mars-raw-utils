@@ -68,6 +68,11 @@ elif [ $mission == "M20" ]; then
         mru m20-fetch -c PIXL -s $sol -n
         mru calibrate -i *J0?.png
 
+    elif [ $instrument == "HRTE" ]; then
+
+        mru m20-fetch -c HELI_RTE -s $sol -n
+        mru calibrate -i *J0?.png -P m20_hrte_rad
+    
     fi
 
 fi
