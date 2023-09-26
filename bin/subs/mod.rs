@@ -95,6 +95,14 @@ macro_rules! pb_inc {
     };
 }
 
+/// Increment the progress bar by one
+#[macro_export]
+macro_rules! pb_set_zero {
+    () => {
+        PB.set_position(0)
+    };
+}
+
 /// Print to the console via the progress bar's println method.
 #[macro_export]
 macro_rules! pb_println {

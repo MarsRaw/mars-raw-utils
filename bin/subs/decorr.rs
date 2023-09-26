@@ -10,6 +10,7 @@ use sciimg::prelude::*;
 use sciimg::MinMax;
 use std::path::PathBuf;
 use std::process;
+use std::sync::{Arc, Mutex};
 
 pb_create!();
 
@@ -108,8 +109,8 @@ fn color_range_determine_prep(image: &Image) -> Image {
     cloned
 }
 
-fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
-    let mut ranges = vec![
+fn cross_file_decorrelation(input_files: &[PathBuf], ignore_black: bool) {
+    let ranges_mtx = Arc::new(Mutex::new(vec![
         MinMax {
             min: std::f32::MAX,
             max: std::f32::MIN,
@@ -122,10 +123,10 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
             min: std::f32::MAX,
             max: std::f32::MIN,
         },
-    ];
+    ]));
 
     info!("Computing value ranges...");
-    input_files.iter().for_each(|in_file| {
+    input_files.par_iter().for_each(|in_file| {
         if in_file.exists() {
             let image = MarsImage::open(
                 &String::from(in_file.as_os_str().to_str().unwrap()),
@@ -134,20 +135,29 @@ fn cross_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
 
             let prepped = color_range_determine_prep(&image.image);
 
-            for b in 0..prepped.num_bands() {
+            (0..prepped.num_bands()).for_each(|b| {
                 let mm = match ignore_black {
                     true => prepped.get_band(b).get_min_max_ignore_black(),
                     false => prepped.get_band(b).get_min_max(),
                 };
-                ranges[b].min = min!(mm.min, ranges[b].min);
-                ranges[b].max = max!(mm.max, ranges[b].max);
-            }
+
+                if let Ok(mut ranges) = ranges_mtx.lock() {
+                    ranges[b].min = min!(mm.min, ranges[b].min);
+                    ranges[b].max = max!(mm.max, ranges[b].max);
+                }
+            });
         } else {
             error!("File not found: {:?}", in_file);
             pb_done_with_error!();
             process::exit(1);
         }
+        pb_inc!();
     });
+
+    pb_set_zero!();
+
+    // Mutex no longer needed
+    let ranges = ranges_mtx.lock().unwrap();
 
     input_files.par_iter().for_each(|in_file| {
         if in_file.exists() {
