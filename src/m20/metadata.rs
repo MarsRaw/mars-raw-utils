@@ -59,7 +59,9 @@ pub struct Camera {
 pub struct ImageRecord {
     pub extended: Extended,
     pub sol: u32,
-    pub attitude: String,
+
+    #[serde(with = "crate::jsonfetch::tuple_format")]
+    pub attitude: Option<Vec<f64>>,
     pub image_files: ImageFiles,
     pub imageid: String,
     pub camera: Camera,
@@ -209,6 +211,10 @@ impl ImageMetadata for ImageRecord {
 
     fn get_remote_image_url(&self) -> String {
         self.image_files.full_res.clone()
+    }
+
+    fn get_attitude(&self) -> Option<Vec<f64>> {
+        self.attitude.clone()
     }
 }
 

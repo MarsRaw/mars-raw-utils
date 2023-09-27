@@ -35,6 +35,7 @@ pub trait ImageMetadata {
     fn get_dimension(&self) -> Option<Vec<f64>>;
     fn get_sample_type(&self) -> String;
     fn get_remote_image_url(&self) -> String;
+    fn get_attitude(&self) -> Option<Vec<f64>>;
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
@@ -109,6 +110,12 @@ pub struct Metadata {
 
     #[serde(default = "crate::jsonfetch::default_vec")]
     pub history: Vec<String>,
+
+    #[serde(
+        with = "crate::jsonfetch::tuple_format",
+        default = "crate::jsonfetch::default_vec_f64_none"
+    )]
+    pub attitude: Option<Vec<f64>>,
 }
 
 pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
@@ -146,6 +153,7 @@ pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
         sample_type: im.get_sample_type(),
         remote_image_url: im.get_remote_image_url(),
         history: jsonfetch::default_vec(),
+        attitude: im.get_attitude(),
     }
 }
 

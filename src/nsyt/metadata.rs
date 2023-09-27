@@ -190,6 +190,10 @@ impl ImageMetadata for ImageRecord {
     fn get_remote_image_url(&self) -> String {
         self.url.clone()
     }
+
+    fn get_attitude(&self) -> Option<Vec<f64>> {
+        self.attitude.clone()
+    }
 }
 
 pub fn load_metadata_file(file_path: String) -> Result<Metadata> {
