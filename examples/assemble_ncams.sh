@@ -33,7 +33,7 @@ function composite_sclk() {
         num_parts=`ls ${prefix}*${sclk}*J0?.png 2> /dev/null | wc -l`
         if [ $num_parts -ge 2 ]; then
             output_image=`ls ${prefix}*${sclk}*J0?.png | head -n 1 | sed -e 's/_01_/_00_/' | sed -e 's/.png/-assembled.png/'`
-            mru -v m20-ecam-assemble -i ${prefix}*${sclk}*J0?.png -o $output_image
+            mru -v m20-ecam-assemble -i ${prefix}*${sclk}*J0?.png -o $output_image -n
         fi
     done
 }

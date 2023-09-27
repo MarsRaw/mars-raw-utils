@@ -21,6 +21,9 @@ pub struct M20EcamAssemble {
 
     #[arg(long, short, help = "Output image")]
     output: std::path::PathBuf,
+
+    #[arg(long, short, help = "Do not perform brightness matching")]
+    nobright: bool,
 }
 
 #[async_trait::async_trait]
@@ -72,7 +75,12 @@ impl RunnableSubcommand for M20EcamAssemble {
         }
 
         // Runs each tile through the level matching algorithms
-        ncamlevels::match_levels(&mut tiles);
+        if !self.nobright {
+            vprintln!("Computing relative brightnesses");
+            ncamlevels::match_levels(&mut tiles);
+        } else {
+            vprintln!("Skipping the computation of relative brightnesses");
+        }
 
         // Build a composite canvas. This will be the output image
         vprintln!("Creating composite structure");
