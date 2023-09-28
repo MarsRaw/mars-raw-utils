@@ -60,11 +60,7 @@ pub async fn fetch_waypoints(url: &str) -> Result<Vec<Location>> {
     match req.fetch_str().await {
         Ok(v) => {
             let res: WaypointsCurrent = serde_json::from_str(v.as_str())?;
-            let locations: Vec<Location> = res
-                .features
-                .into_iter()
-                .map(|f| f.properties.clone())
-                .collect();
+            let locations: Vec<Location> = res.features.into_iter().map(|f| f.properties).collect();
             Ok(locations)
         }
         Err(e) => Err(anyhow!("Error: {:?}", e)),

@@ -5,6 +5,7 @@ use crate::mer::missiontime as mertime;
 use crate::msl::missiontime as msltime;
 use crate::nsyt::missiontime as nsyttime;
 use anyhow::Result;
+use chrono::{DateTime, TimeZone, Utc};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub enum TimeSystem {
@@ -45,6 +46,7 @@ pub struct MissionTime {
     pub nu: f64,
     pub e: f64,
     pub time_system: TimeSystem,
+    pub earth_time_utc: DateTime<Utc>,
 }
 
 /// Perform a time calculation for the provided mission
@@ -102,6 +104,7 @@ fn t_to_hms(t: f64) -> Hms {
 // See http://marsclock.com/
 pub fn get_time(sol_offset: f64, longitude: f64, time_system: TimeSystem) -> Result<MissionTime> {
     let seconds_since_epoch = get_seconds_since_epoch();
+
     let millis = seconds_since_epoch * 1000.0;
 
     let jd_ut = 2440587.5 + (millis / 8.64E7);
@@ -182,5 +185,6 @@ pub fn get_time(sol_offset: f64, longitude: f64, time_system: TimeSystem) -> Res
         nu,
         e,
         time_system,
+        earth_time_utc: Utc.timestamp_opt(seconds_since_epoch as i64, 0).unwrap(),
     })
 }
