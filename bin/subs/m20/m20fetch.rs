@@ -129,7 +129,7 @@ impl RunnableSubcommand for M20Fetch {
             Ok(v) => v,
         };
 
-        let product_types = self.product_types.clone().unwrap_or(vec![]);
+        let product_types = self.product_types.clone().unwrap_or_default();
 
         match remotequery::perform_fetch(
             Mission::Mars2020,
