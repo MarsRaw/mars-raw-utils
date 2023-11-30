@@ -135,7 +135,6 @@ mod doy_date_format {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        println!("Deserialize this: {}", s);
         if s.is_empty() {
             Ok(Utc::now().fixed_offset())
         } else {
