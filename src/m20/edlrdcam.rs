@@ -1,5 +1,6 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, enums, enums::Instrument, marsimage::MarsImage, util,
+    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
+    marsimage::MarsImage, util,
 };
 
 use anyhow::Result;
@@ -27,16 +28,26 @@ impl Calibration for M20EdlRdcam {
 
         let mut raw = MarsImage::open(input_file, enums::Instrument::M20EdlRdcam);
 
-        let data_max = 255.0; /*if cal_context.apply_ilt {
-                                  vprintln!("Decompanding...");
-                                  raw.decompand(&decompanding::ILT);
-                                  decompanding::get_max_for_instrument(enums::Instrument::M20EdlRdcam) as f32
-                              } else {
-                                  255.0
-                              };*/
+        let data_max = if cal_context.apply_ilt {
+            vprintln!("Decompanding...");
+            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::M20EdlRdcam).unwrap();
+            raw.decompand(&lut);
+            lut.max() as f32
+        } else {
+            255.0
+        };
 
-        vprintln!("Debayering...");
-        raw.debayer();
+        if raw.image.is_grayscale() {
+            vprintln!("Debayering...");
+            raw.debayer_with_method(cal_context.debayer_method);
+        }
+
+        vprintln!("Applying color weights...");
+        raw.apply_weight(
+            cal_context.red_scalar,
+            cal_context.green_scalar,
+            cal_context.blue_scalar,
+        );
 
         vprintln!("Normalizing...");
         raw.image.normalize_to_16bit_with_max(data_max);
