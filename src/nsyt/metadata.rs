@@ -1,3 +1,4 @@
+use crate::serializers::{as_cahvore, as_tuple};
 use crate::{constants, metadata::*};
 
 use sciimg::prelude::*;
@@ -20,20 +21,20 @@ pub struct ImageRecord {
     //FIXME: make uuid type
     pub id: u32,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub camera_vector: Option<Vec<f64>>,
 
     pub site: Option<u32>,
     //FIXME make uuid type
     pub imageid: String,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub subframe_rect: Option<Vec<f64>>,
 
     pub sol: u32,
     pub scale_factor: u32,
 
-    #[serde(with = "crate::jsonfetch::cahvor_format")]
+    #[serde(with = "as_cahvore")]
     pub camera_model_component_list: CameraModel,
 
     pub instrument: String,
@@ -42,17 +43,17 @@ pub struct ImageRecord {
     // FIXME use different type?
     pub spacecraft_clock: f64,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub attitude: Option<Vec<f64>>,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub camera_position: Option<Vec<f64>>,
 
     pub camera_model_type: Option<String>,
 
     pub drive: Option<u32>,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub xyz: Option<Vec<f64>>,
     // FIXME datetime type
     pub created_at: String,

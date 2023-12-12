@@ -1,6 +1,5 @@
+use crate::serializers;
 use serde::{Deserialize, Serialize};
-
-use crate::jsonfetch;
 
 use sciimg::prelude::*;
 
@@ -56,27 +55,27 @@ pub struct Metadata {
     pub mast_el: Option<f64>,
     pub sclk: Option<f64>,
 
-    #[serde(default = "crate::jsonfetch::default_false")]
+    #[serde(default = "serializers::default_false")]
     pub thumbnail: bool,
 
-    #[serde(default = "crate::jsonfetch::default_blank")]
+    #[serde(default = "serializers::default_blank")]
     pub date_received: String,
 
-    #[serde(default = "crate::jsonfetch::default_blank")]
+    #[serde(default = "serializers::default_blank")]
     pub sample_type: String,
 
     #[serde(
-        with = "crate::jsonfetch::tuple_format",
-        default = "crate::jsonfetch::default_vec_f64_none"
+        with = "serializers::as_tuple",
+        default = "serializers::default_vec_f64_none"
     )]
     pub dimension: Option<Vec<f64>>,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "serializers::as_tuple")]
     pub camera_position: Option<Vec<f64>>,
 
     #[serde(
-        with = "crate::jsonfetch::tuple_format",
-        default = "crate::jsonfetch::default_vec_f64_none"
+        with = "serializers::as_tuple",
+        default = "serializers::default_vec_f64_none"
     )]
     pub xyz: Option<Vec<f64>>,
 
@@ -84,36 +83,36 @@ pub struct Metadata {
     pub site: Option<u32>,
     pub drive: Option<u32>,
 
-    #[serde(with = "crate::jsonfetch::cahvor_format")]
+    #[serde(with = "serializers::as_cahvore")]
     pub camera_model_component_list: CameraModel,
 
-    #[serde(default = "crate::jsonfetch::default_false")]
+    #[serde(default = "serializers::default_false")]
     pub decompand: bool,
 
-    #[serde(default = "crate::jsonfetch::default_false")]
+    #[serde(default = "serializers::default_false")]
     pub debayer: bool,
 
-    #[serde(default = "crate::jsonfetch::default_false")]
+    #[serde(default = "serializers::default_false")]
     pub flatfield: bool,
 
-    #[serde(default = "crate::jsonfetch::default_false")]
+    #[serde(default = "serializers::default_false")]
     pub radiometric: bool,
 
-    #[serde(default = "crate::jsonfetch::default_false")]
+    #[serde(default = "serializers::default_false")]
     pub inpaint: bool,
 
-    #[serde(default = "crate::jsonfetch::default_false")]
+    #[serde(default = "serializers::default_false")]
     pub cropped: bool,
 
-    #[serde(default = "crate::jsonfetch::default_blank")]
+    #[serde(default = "serializers::default_blank")]
     pub remote_image_url: String,
 
-    #[serde(default = "crate::jsonfetch::default_vec")]
+    #[serde(default = "serializers::default_vec")]
     pub history: Vec<String>,
 
     #[serde(
-        with = "crate::jsonfetch::tuple_format",
-        default = "crate::jsonfetch::default_vec_f64_none"
+        with = "serializers::as_tuple",
+        default = "serializers::default_vec_f64_none"
     )]
     pub attitude: Option<Vec<f64>>,
 }
@@ -131,12 +130,12 @@ pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
         scale_factor: im.get_scale_factor(),
         instrument: im.get_instrument(),
         filter_name: im.get_filter_name(),
-        decompand: jsonfetch::default_false(),
-        debayer: jsonfetch::default_false(),
-        flatfield: jsonfetch::default_false(),
-        radiometric: jsonfetch::default_false(),
-        inpaint: jsonfetch::default_false(),
-        cropped: jsonfetch::default_false(),
+        decompand: serializers::default_false(),
+        debayer: serializers::default_false(),
+        flatfield: serializers::default_false(),
+        radiometric: serializers::default_false(),
+        inpaint: serializers::default_false(),
+        cropped: serializers::default_false(),
         camera_vector: im.get_camera_vector(),
         camera_model_component_list: im.get_camera_model_component_list(),
         camera_position: im.get_camera_position(),
@@ -152,7 +151,7 @@ pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
         date_received: im.get_date_received(),
         sample_type: im.get_sample_type(),
         remote_image_url: im.get_remote_image_url(),
-        history: jsonfetch::default_vec(),
+        history: serializers::default_vec(),
         attitude: im.get_attitude(),
     }
 }

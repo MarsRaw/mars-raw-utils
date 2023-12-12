@@ -1,5 +1,5 @@
+use crate::serializers::{as_cahvore, as_tuple};
 use crate::{constants, metadata::*};
-
 use sciimg::prelude::*;
 
 use anyhow::anyhow;
@@ -20,14 +20,14 @@ pub struct Extended {
     #[serde(alias = "scaleFactor")]
     pub scale_factor: String,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub xyz: Option<Vec<f64>>,
 
     #[serde(alias = "subframeRect")]
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub subframe_rect: Option<Vec<f64>>,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub dimension: Option<Vec<f64>>,
 }
 
@@ -43,13 +43,13 @@ pub struct ImageFiles {
 pub struct Camera {
     pub filter_name: String,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub camera_vector: Option<Vec<f64>>,
 
-    #[serde(with = "crate::jsonfetch::cahvor_format")]
+    #[serde(with = "as_cahvore")]
     pub camera_model_component_list: CameraModel,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub camera_position: Option<Vec<f64>>,
     pub instrument: String,
     pub camera_model_type: String,
@@ -60,7 +60,7 @@ pub struct ImageRecord {
     pub extended: Extended,
     pub sol: u32,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub attitude: Option<Vec<f64>>,
     pub image_files: ImageFiles,
     pub imageid: String,

@@ -1,5 +1,5 @@
+use crate::serializers::{as_cahvore, as_tuple};
 use crate::{constants, metadata::*};
-
 use sciimg::prelude::*;
 
 use std::fs::File;
@@ -27,31 +27,31 @@ pub struct ImageRecord {
     pub extended: Extended,
     pub id: u32,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub camera_vector: Option<Vec<f64>>,
     pub site: Option<u32>,
     pub imageid: String,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub subframe_rect: Option<Vec<f64>>,
     pub sol: u32,
     pub scale_factor: Option<u32>,
 
-    #[serde(with = "crate::jsonfetch::cahvor_format")]
+    #[serde(with = "as_cahvore")]
     pub camera_model_component_list: CameraModel,
     pub instrument: String,
     pub url: String,
     pub spacecraft_clock: Option<f64>,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub attitude: Option<Vec<f64>>,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub camera_position: Option<Vec<f64>>,
     pub camera_model_type: Option<String>,
     pub drive: Option<u32>,
 
-    #[serde(with = "crate::jsonfetch::tuple_format")]
+    #[serde(with = "as_tuple")]
     pub xyz: Option<Vec<f64>>,
     pub created_at: String,
     pub updated_at: String,
