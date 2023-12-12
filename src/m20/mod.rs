@@ -43,5 +43,8 @@ pub mod skycam;
 /// Calibration routines for M20 WATSON Camera
 pub mod watson;
 
+/// Interact with the public weather API feeding from MEDA
+pub mod weather;
+
 /// Calibration routines for M20 MastCam-Z
 pub mod zcam;

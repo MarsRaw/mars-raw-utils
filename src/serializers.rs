@@ -65,6 +65,35 @@ pub mod as_f64 {
 }
 
 //////////////////////////////////////////////////
+// f32
+//////////////////////////////////////////////////
+
+pub mod as_f32 {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(num: &f32, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(num.to_string().as_str())
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<f32, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() {
+            Ok(0.0)
+        } else {
+            s.replace(',', "")
+                .parse::<f32>()
+                .map_err(serde::de::Error::custom)
+        }
+    }
+}
+
+//////////////////////////////////////////////////
 // i64
 //////////////////////////////////////////////////
 
@@ -88,6 +117,35 @@ pub mod as_i64 {
         } else {
             s.replace(',', "")
                 .parse::<i64>()
+                .map_err(serde::de::Error::custom)
+        }
+    }
+}
+
+//////////////////////////////////////////////////
+// i32
+//////////////////////////////////////////////////
+
+pub mod as_i32 {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(num: &i32, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(num.to_string().as_str())
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<i32, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() {
+            Ok(0)
+        } else {
+            s.replace(',', "")
+                .parse::<i32>()
                 .map_err(serde::de::Error::custom)
         }
     }
@@ -121,6 +179,39 @@ pub mod as_df_doy {
             Ok(Utc::now().fixed_offset())
         } else {
             DateTime::parse_from_str(&format!("{} +0000", s), FORMAT)
+                .map_err(serde::de::Error::custom)
+        }
+    }
+}
+
+//////////////////////////////////////////////////
+// Simple Date Format, e.g. 2023-12-03
+//////////////////////////////////////////////////
+
+// https://serde.rs/custom-date-format.html
+pub mod as_df_date {
+    use chrono::{DateTime, FixedOffset, Utc};
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    const FORMAT: &str = "%Y-%m-%dT%H:%M:%S%.3f %z";
+
+    pub fn serialize<S>(date: &DateTime<FixedOffset>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = format!("{}", date.format(FORMAT));
+        serializer.serialize_str(&s)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<FixedOffset>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() {
+            Ok(Utc::now().fixed_offset())
+        } else {
+            DateTime::parse_from_str(&format!("{}T00:00:00.000 +0000", s), FORMAT)
                 .map_err(serde::de::Error::custom)
         }
     }

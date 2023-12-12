@@ -36,6 +36,7 @@ enum Mru {
     M20SherlocColorizer(m20::sherloccolorizer::M20SherlocColorizer),
     M20Location(m20::m20location::M20Location),
     M20RunOn(m20::m20runon::M20RunOn),
+    M20Weather(m20::m20weather::M20Weather),
 
     NsytFetch(nsyt::nsytfetch::NsytFetch),
     NsytDate(nsyt::nsytdate::NsytDate),
@@ -95,6 +96,7 @@ async fn main() -> Result<(), anyhow::Error> {
         Mru::M20Date(args) => args.run().await,
         Mru::M20Latest(args) => args.run().await,
         Mru::M20RunOn(args) => args.run().await,
+        Mru::M20Weather(args) => args.run().await,
         Mru::NsytDate(args) => args.run().await,
         Mru::M20EcamAssemble(args) => args.run().await,
         Mru::M20SherlocColorizer(args) => args.run().await,
