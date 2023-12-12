@@ -21,3 +21,6 @@ pub mod missiontime;
 
 /// Support for retrieving images from the public raw image API
 pub mod fetch;
+
+/// Support for REMS weather measurements API
+pub mod weather;

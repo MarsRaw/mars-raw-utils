@@ -83,7 +83,7 @@ pub mod as_f32 {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        if s.is_empty() {
+        if s.is_empty() || s == "--" {
             Ok(0.0)
         } else {
             s.replace(',', "")
