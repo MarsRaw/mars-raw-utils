@@ -84,8 +84,6 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
     let mut extended: Vec<String> = vec![];
     if query.thumbnails {
         extended.push("sample_type::thumbnail".into());
-    } else {
-        extended.push("sample_type::full".into());
     }
 
     if query.movie_only {
