@@ -57,7 +57,7 @@ pub mod as_f64 {
         if s.is_empty() {
             Ok(0.0)
         } else {
-            s.replace(",", "")
+            s.replace(',', "")
                 .parse::<f64>()
                 .map_err(serde::de::Error::custom)
         }
@@ -86,7 +86,7 @@ pub mod as_i64 {
         if s.is_empty() {
             Ok(0)
         } else {
-            s.replace(",", "")
+            s.replace(',', "")
                 .parse::<i64>()
                 .map_err(serde::de::Error::custom)
         }
