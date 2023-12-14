@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
@@ -14,6 +16,14 @@ pub struct MslWeather {
     csv: bool,
 }
 
+fn format_if_some<T: Display>(v: Option<T>) -> String {
+    if v.is_some() {
+        format!("{}", v.unwrap())
+    } else {
+        "--".to_string()
+    }
+}
+
 fn print_csv(rems_list: &[&RemsSol]) {
     println!("Date,Sol,Max C,Min C,Pressure,Sunrise,Sunset,Opacity,Season");
     rems_list.iter().for_each(|w| {
@@ -21,9 +31,9 @@ fn print_csv(rems_list: &[&RemsSol]) {
             "{},{},{},{},{},{},{},{},{}",
             w.terrestrial_date,
             w.sol,
-            w.max_temp,
-            w.min_temp,
-            w.pressure,
+            format_if_some(w.max_temp),
+            format_if_some(w.min_temp),
+            format_if_some(w.pressure),
             w.sunrise,
             w.sunset,
             w.atmo_opacity,
@@ -39,9 +49,9 @@ fn print_table(rems_list: &[&RemsSol]) {
             vec![
                 w.terrestrial_date.cell(),
                 w.sol.cell(),
-                w.max_temp.cell(),
-                w.min_temp.cell(),
-                w.pressure.cell(),
+                format_if_some(w.max_temp).cell(),
+                format_if_some(w.min_temp).cell(),
+                format_if_some(w.pressure).cell(),
                 w.sunrise.clone().cell(),
                 w.sunset.clone().cell(),
                 w.atmo_opacity.clone().cell(),
