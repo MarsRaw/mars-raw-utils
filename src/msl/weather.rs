@@ -1,5 +1,5 @@
 use crate::jsonfetch;
-use crate::serializers::{as_df_date, as_f32, as_i32};
+use crate::serializers::{as_df_date, as_f32, as_f32_opt, as_i32};
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
@@ -19,22 +19,22 @@ pub struct RemsSol {
 
     pub season: String,
 
-    #[serde(with = "as_f32")]
-    pub min_temp: f32,
+    #[serde(with = "as_f32_opt")]
+    pub min_temp: Option<f32>,
 
-    #[serde(with = "as_f32")]
-    pub max_temp: f32,
+    #[serde(with = "as_f32_opt")]
+    pub max_temp: Option<f32>,
 
-    #[serde(with = "as_f32")]
-    pub pressure: f32,
+    #[serde(with = "as_f32_opt")]
+    pub pressure: Option<f32>,
 
     pub pressure_string: String,
 
-    #[serde(with = "as_f32")]
-    pub abs_humidity: f32,
+    #[serde(with = "as_f32_opt")]
+    pub abs_humidity: Option<f32>,
 
-    #[serde(with = "as_f32")]
-    pub wind_speed: f32,
+    #[serde(with = "as_f32_opt")]
+    pub wind_speed: Option<f32>,
 
     pub wind_direction: String,
 
@@ -46,11 +46,11 @@ pub struct RemsSol {
 
     pub local_uv_irradiance_index: String,
 
-    #[serde(with = "as_f32")]
-    pub min_gts_temp: f32,
+    #[serde(with = "as_f32_opt")]
+    pub min_gts_temp: Option<f32>,
 
-    #[serde(with = "as_f32")]
-    pub max_gts_temp: f32,
+    #[serde(with = "as_f32_opt")]
+    pub max_gts_temp: Option<f32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

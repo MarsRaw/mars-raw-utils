@@ -65,6 +65,44 @@ pub mod as_f64 {
 }
 
 //////////////////////////////////////////////////
+// f64 (Option)
+//////////////////////////////////////////////////
+
+pub mod as_f64_opt {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(num: &Option<f64>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if let Some(v) = num {
+            serializer.serialize_str(v.to_string().as_str())
+        } else {
+            serializer.serialize_str("")
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<f64>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() || s == "--" {
+            Ok(None)
+        } else {
+            match s
+                .replace(',', "")
+                .parse::<f64>()
+                .map_err(serde::de::Error::custom)
+            {
+                Ok(v) => Ok(Some(v)),
+                Err(why) => Err(why),
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////
 // f32
 //////////////////////////////////////////////////
 
@@ -89,6 +127,44 @@ pub mod as_f32 {
             s.replace(',', "")
                 .parse::<f32>()
                 .map_err(serde::de::Error::custom)
+        }
+    }
+}
+
+//////////////////////////////////////////////////
+// f32 (Option)
+//////////////////////////////////////////////////
+
+pub mod as_f32_opt {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(num: &Option<f32>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if let Some(v) = num {
+            serializer.serialize_str(v.to_string().as_str())
+        } else {
+            serializer.serialize_str("")
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<f32>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() || s == "--" {
+            Ok(None)
+        } else {
+            match s
+                .replace(',', "")
+                .parse::<f32>()
+                .map_err(serde::de::Error::custom)
+            {
+                Ok(v) => Ok(Some(v)),
+                Err(why) => Err(why),
+            }
         }
     }
 }
@@ -123,6 +199,44 @@ pub mod as_i64 {
 }
 
 //////////////////////////////////////////////////
+// i64 (Option)
+//////////////////////////////////////////////////
+
+pub mod as_i64_opt {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(num: &Option<i64>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if let Some(v) = num {
+            serializer.serialize_str(v.to_string().as_str())
+        } else {
+            serializer.serialize_str("")
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() || s == "--" {
+            Ok(None)
+        } else {
+            match s
+                .replace(',', "")
+                .parse::<i64>()
+                .map_err(serde::de::Error::custom)
+            {
+                Ok(v) => Ok(Some(v)),
+                Err(why) => Err(why),
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////
 // i32
 //////////////////////////////////////////////////
 
@@ -147,6 +261,44 @@ pub mod as_i32 {
             s.replace(',', "")
                 .parse::<i32>()
                 .map_err(serde::de::Error::custom)
+        }
+    }
+}
+
+//////////////////////////////////////////////////
+// i32 (Option)
+//////////////////////////////////////////////////
+
+pub mod as_i32_opt {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(num: &Option<i32>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if let Some(v) = num {
+            serializer.serialize_str(v.to_string().as_str())
+        } else {
+            serializer.serialize_str("")
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<i32>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() || s == "--" {
+            Ok(None)
+        } else {
+            match s
+                .replace(',', "")
+                .parse::<i32>()
+                .map_err(serde::de::Error::custom)
+            {
+                Ok(v) => Ok(Some(v)),
+                Err(why) => Err(why),
+            }
         }
     }
 }
