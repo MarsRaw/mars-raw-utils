@@ -13,7 +13,7 @@ pub struct M20Weather {
 
 fn print_csv(meda_list: &[MedaSol]) {
     println!("Date,Sol,Max C,Min C,Pressure,Sunrise,Sunset,Season");
-    meda_list.into_iter().for_each(|w| {
+    meda_list.iter().for_each(|w| {
         println!(
             "{},{},{},{},{},{},{},{}",
             w.terrestrial_date,
@@ -30,7 +30,7 @@ fn print_csv(meda_list: &[MedaSol]) {
 
 fn print_table(meda_list: &[MedaSol]) {
     let table = meda_list
-        .into_iter()
+        .iter()
         .map(|w| {
             vec![
                 w.terrestrial_date.cell(),

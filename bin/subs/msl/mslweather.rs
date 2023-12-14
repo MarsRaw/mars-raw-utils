@@ -16,7 +16,7 @@ pub struct MslWeather {
 
 fn print_csv(rems_list: &[&RemsSol]) {
     println!("Date,Sol,Max C,Min C,Pressure,Sunrise,Sunset,Opacity,Season");
-    rems_list.into_iter().for_each(|w| {
+    rems_list.iter().for_each(|w| {
         println!(
             "{},{},{},{},{},{},{},{},{}",
             w.terrestrial_date,
@@ -34,7 +34,7 @@ fn print_csv(rems_list: &[&RemsSol]) {
 
 fn print_table(rems_list: &[&RemsSol]) {
     let table = rems_list
-        .into_iter()
+        .iter()
         .map(|w| {
             vec![
                 w.terrestrial_date.cell(),
