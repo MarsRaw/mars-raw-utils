@@ -1,7 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
-use async_trait::async_trait;
 use clap::Parser;
+use mars_raw_utils::msl::fetch::MslFetch as MslFetchClient;
 use mars_raw_utils::prelude::*;
 use std::process;
 
@@ -12,10 +12,10 @@ pub struct MslLatest {
     list: bool,
 }
 
-#[async_trait]
 impl RunnableSubcommand for MslLatest {
     async fn run(&self) -> Result<()> {
-        if let Ok(latest) = remotequery::get_latest(Mission::MSL).await {
+        let client = MslFetchClient::new();
+        if let Ok(latest) = remotequery::get_latest(&client).await {
             if self.list {
                 latest.latest_sols().iter().for_each(|s| {
                     println!("{}", s);

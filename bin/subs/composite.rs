@@ -1,6 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
-use async_trait::async_trait;
 use clap::Parser;
 use mars_raw_utils::{composite, prelude::*};
 use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
@@ -24,7 +23,7 @@ pub struct Composite {
     #[arg(long, short = 'r', help = "Azimuth rotation")]
     azimuth: Option<f64>,
 }
-#[async_trait]
+
 impl RunnableSubcommand for Composite {
     async fn run(&self) -> Result<()> {
         pb_set_print!();

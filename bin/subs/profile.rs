@@ -46,8 +46,6 @@ fn list_profiles_in_directory(path: &str) {
     }
 }
 
-use async_trait::async_trait;
-#[async_trait]
 impl RunnableSubcommand for Profile {
     async fn run(&self) -> Result<()> {
         if self.list && self.profile.is_some() {

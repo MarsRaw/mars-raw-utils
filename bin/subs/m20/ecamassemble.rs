@@ -26,7 +26,6 @@ pub struct M20EcamAssemble {
     nobright: bool,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for M20EcamAssemble {
     async fn run(&self) -> Result<()> {
         pb_set_print!();

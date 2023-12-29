@@ -2,6 +2,7 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
 use itertools::Itertools;
+use mars_raw_utils::m20::fetch::M20Fetch as M20FetchClient;
 use mars_raw_utils::metadata::Metadata;
 use mars_raw_utils::prelude::*;
 use std::collections::HashMap;
@@ -53,10 +54,10 @@ impl SequenceStats {
     }
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for M20RunOn {
     async fn run(&self) -> Result<()> {
-        let instruments = remotequery::get_instrument_map(Mission::Mars2020).unwrap();
+        let client = M20FetchClient::new();
+        let instruments = remotequery::get_instrument_map(&client).unwrap();
 
         let cameras = if self.camera.is_empty() {
             instruments.remote_instrument_names()
@@ -87,7 +88,7 @@ impl RunnableSubcommand for M20RunOn {
         };
 
         let mut sequences: HashMap<String, SequenceStats> = HashMap::new();
-        let available = remotequery::fetch_available(Mission::Mars2020, &query).await?;
+        let available = remotequery::fetch_available(&client, &query).await?;
 
         // sequences.insert(md.imageid[35..44].to_string());
 

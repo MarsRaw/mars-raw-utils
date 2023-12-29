@@ -1,6 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
-use async_trait::async_trait;
 use chrono::Utc;
 use clap::Parser;
 use cli_table::{Cell, Style, Table};
@@ -19,7 +18,6 @@ pub struct Passes {
     future: bool,
 }
 
-#[async_trait]
 impl RunnableSubcommand for Passes {
     async fn run(&self) -> Result<()> {
         let now = Utc::now();

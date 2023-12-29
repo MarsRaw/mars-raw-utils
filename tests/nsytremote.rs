@@ -1,9 +1,10 @@
+use mars_raw_utils::nsyt::fetch::NsytFetch as NsytFetchClient;
 use mars_raw_utils::prelude::*;
 use mars_raw_utils::remotequery::RemoteQuery;
 
 #[tokio::test]
 async fn test_nsyt_latest() {
-    remotequery::get_latest(Mission::InSight)
+    remotequery::get_latest(&NsytFetchClient::new())
         .await
         .expect("Failed to fetch latest data");
 }
@@ -14,7 +15,7 @@ async fn test_nsyt_instrument_fetches() {
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
         _ = remotequery::perform_fetch(
-            Mission::InSight,
+            &NsytFetchClient::new(),
             &RemoteQuery {
                 cameras: vec![i.into()],
                 num_per_page: 5,

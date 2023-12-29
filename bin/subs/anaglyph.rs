@@ -1,6 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
-use async_trait::async_trait;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::{drawable::*, prelude::*, vector::Vector};
@@ -24,7 +23,7 @@ pub struct Anaglyph {
     #[arg(long, short, help = "Monochrome color (before converting to red/blue)")]
     mono: bool,
 }
-#[async_trait]
+
 impl RunnableSubcommand for Anaglyph {
     async fn run(&self) -> Result<()> {
         pb_set_print!();

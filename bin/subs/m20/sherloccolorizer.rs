@@ -20,7 +20,6 @@ pub struct M20SherlocColorizer {
     output: std::path::PathBuf,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for M20SherlocColorizer {
     async fn run(&self) -> Result<()> {
         pb_set_print!();

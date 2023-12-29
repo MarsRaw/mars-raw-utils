@@ -97,8 +97,6 @@ impl Calibrate {
     }
 }
 
-use async_trait::async_trait;
-#[async_trait]
 impl RunnableSubcommand for Calibrate {
     async fn run(&self) -> Result<()> {
         let profiles: Vec<CalProfile> = match &self.profile {

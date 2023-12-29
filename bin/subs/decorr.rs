@@ -235,7 +235,6 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
     });
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for DecorrelationStretch {
     async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());

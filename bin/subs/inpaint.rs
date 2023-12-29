@@ -14,7 +14,6 @@ pub struct Inpaint {
     input_files: Vec<std::path::PathBuf>,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for Inpaint {
     async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());

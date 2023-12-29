@@ -59,7 +59,6 @@ fn print_table(meda_list: &[MedaSol]) {
     println!("{}", &table.display().unwrap());
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for M20Weather {
     async fn run(&self) -> Result<()> {
         let meda_list = weather::fetch_weather().await?;

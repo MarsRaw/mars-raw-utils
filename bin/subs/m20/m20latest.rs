@@ -1,6 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
+use mars_raw_utils::m20::fetch::M20Fetch as M20FetchClient;
 use mars_raw_utils::prelude::*;
 use std::process;
 
@@ -11,10 +12,10 @@ pub struct M20Latest {
     list: bool,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for M20Latest {
     async fn run(&self) -> Result<()> {
-        if let Ok(latest) = remotequery::get_latest(Mission::Mars2020).await {
+        let client = M20FetchClient::new();
+        if let Ok(latest) = remotequery::get_latest(&client).await {
             if self.list {
                 latest.latest_sols().iter().for_each(|s| {
                     println!("{}", s);

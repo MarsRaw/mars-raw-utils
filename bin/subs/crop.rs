@@ -15,7 +15,6 @@ pub struct Crop {
     crop: String,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for Crop {
     async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());

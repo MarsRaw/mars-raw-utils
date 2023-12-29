@@ -7,7 +7,6 @@ use mars_raw_utils::prelude::*;
 #[command(author, version, about = "Get current MSL mission date information", long_about = None)]
 pub struct MslDate {}
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for MslDate {
     async fn run(&self) -> Result<()> {
         match time::get_lmst(Mission::MSL) {

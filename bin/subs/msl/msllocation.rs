@@ -1,6 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
-use async_trait::async_trait;
 use clap::Parser;
 use mars_raw_utils::{constants::url, location};
 use std::process;
@@ -15,7 +14,6 @@ pub struct MslLocation {
     csv: bool,
 }
 
-#[async_trait]
 impl RunnableSubcommand for MslLocation {
     async fn run(&self) -> Result<()> {
         if !self.all && self.csv {

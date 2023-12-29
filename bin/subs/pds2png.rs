@@ -39,7 +39,6 @@ struct FileMinMax {
     max: f32,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for Pds2Png {
     async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());

@@ -40,7 +40,6 @@ pub struct DiffGif {
     lightonly: bool,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for DiffGif {
     async fn run(&self) -> Result<()> {
         pb_set_print!();

@@ -8,7 +8,6 @@ use crate::util::{stringvec, stringvec_b, InstrumentMap};
 use crate::{f, t};
 use anyhow::anyhow;
 use anyhow::Result;
-use async_trait::async_trait;
 use futures::future;
 use serde::{Deserialize, Serialize};
 use tokio;
@@ -133,13 +132,8 @@ impl MslFetch {
     pub fn new() -> MslFetch {
         MslFetch {}
     }
-
-    pub fn new_boxed() -> remotequery::FetchType {
-        Box::new(MslFetch::new())
-    }
 }
 
-#[async_trait]
 impl remotequery::Fetch for MslFetch {
     async fn query_remote_images(
         &self,

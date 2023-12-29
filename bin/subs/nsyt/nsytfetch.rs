@@ -1,6 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
+use mars_raw_utils::nsyt::fetch::NsytFetch as NsytFetchClient;
 use mars_raw_utils::prelude::*;
 use sciimg::path;
 use std::process;
@@ -47,12 +48,13 @@ pub struct NsytFetch {
     new: bool,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for NsytFetch {
     async fn run(&self) -> Result<()> {
         pb_set_print!();
 
-        let instruments = remotequery::get_instrument_map(Mission::InSight).unwrap();
+        let client = NsytFetchClient::new();
+
+        let instruments = remotequery::get_instrument_map(&client).unwrap();
         if self.instruments {
             instruments.print_instruments();
             process::exit(0);
@@ -124,7 +126,7 @@ impl RunnableSubcommand for NsytFetch {
         };
 
         match remotequery::perform_fetch(
-            Mission::InSight,
+            &client,
             &remotequery::RemoteQuery {
                 cameras,
                 num_per_page,

@@ -21,7 +21,6 @@ pub struct FocusMerge {
     depth_map: bool,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for FocusMerge {
     async fn run(&self) -> Result<()> {
         pb_set_print!();

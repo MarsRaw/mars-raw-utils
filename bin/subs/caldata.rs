@@ -14,7 +14,6 @@ pub struct UpdateCalData {
     local_store: Option<String>,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for UpdateCalData {
     async fn run(&self) -> Result<()> {
         pb_set_print!();

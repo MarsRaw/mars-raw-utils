@@ -1,9 +1,10 @@
+use mars_raw_utils::m20::fetch::M20Fetch as M20FetchClient;
 use mars_raw_utils::prelude::*;
 use mars_raw_utils::remotequery::RemoteQuery;
 
 #[tokio::test]
 async fn test_m20_latest() {
-    remotequery::get_latest(Mission::Mars2020)
+    remotequery::get_latest(&M20FetchClient::new())
         .await
         .expect("Failed to fetch latest data");
 }
@@ -35,7 +36,7 @@ async fn test_m20_instrument_fetches() {
     for i in instruments {
         eprintln!("Testing fetch for {}", i);
         _ = remotequery::perform_fetch(
-            Mission::Mars2020,
+            &M20FetchClient::new(),
             &RemoteQuery {
                 cameras: vec![String::from(i)],
                 num_per_page: 5,

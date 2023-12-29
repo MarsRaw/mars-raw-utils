@@ -3,6 +3,7 @@ use anyhow::Result;
 use clap::Parser;
 use itertools::Itertools;
 use mars_raw_utils::metadata::Metadata;
+use mars_raw_utils::msl::fetch::MslFetch as MslFetchClient;
 use mars_raw_utils::prelude::*;
 use std::collections::HashMap;
 use std::process;
@@ -53,10 +54,10 @@ impl SequenceStats {
     }
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for MslRunOn {
     async fn run(&self) -> Result<()> {
-        let instruments = remotequery::get_instrument_map(Mission::MSL).unwrap();
+        let client = MslFetchClient::new();
+        let instruments = remotequery::get_instrument_map(&client).unwrap();
 
         let cameras = if self.camera.is_empty() {
             instruments.remote_instrument_names()
@@ -87,7 +88,7 @@ impl RunnableSubcommand for MslRunOn {
         };
 
         let mut sequences: HashMap<String, SequenceStats> = HashMap::new();
-        let available = remotequery::fetch_available(Mission::MSL, &query).await?;
+        let available = remotequery::fetch_available(&client, &query).await?;
 
         available
             .into_iter()

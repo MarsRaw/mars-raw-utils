@@ -7,7 +7,6 @@ use mars_raw_utils::prelude::*;
 #[command(author, version, about = "Get current MER mission date information", long_about = None)]
 pub struct MerDate {}
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for MerDate {
     async fn run(&self) -> Result<()> {
         match time::get_lmst(Mission::MerA) {

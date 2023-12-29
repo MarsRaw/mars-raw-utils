@@ -17,7 +17,6 @@ pub struct Debayer {
     debayer: Option<String>,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for Debayer {
     async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len());

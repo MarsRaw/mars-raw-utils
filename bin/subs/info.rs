@@ -24,7 +24,6 @@ impl YesNo for bool {
     }
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for Info {
     async fn run(&self) -> Result<()> {
         for in_file in self.input_files.iter() {

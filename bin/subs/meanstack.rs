@@ -16,7 +16,6 @@ pub struct MeanStack {
     output: std::path::PathBuf,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for MeanStack {
     async fn run(&self) -> Result<()> {
         pb_set_print_and_length!(self.input_files.len() + 1); // The +1 accounts for the final division by # of images

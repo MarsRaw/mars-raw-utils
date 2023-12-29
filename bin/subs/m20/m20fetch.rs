@@ -1,6 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
+use mars_raw_utils::m20::fetch::M20Fetch as M20FetchClient;
 use mars_raw_utils::prelude::*;
 use sciimg::path;
 use std::process;
@@ -53,12 +54,13 @@ pub struct M20Fetch {
     product_types: Option<Vec<String>>,
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for M20Fetch {
     async fn run(&self) -> Result<()> {
         pb_set_print!();
 
-        let im: util::InstrumentMap = remotequery::get_instrument_map(Mission::Mars2020).unwrap();
+        let client = M20FetchClient::new();
+
+        let im: util::InstrumentMap = remotequery::get_instrument_map(&client).unwrap();
         if self.instruments {
             im.print_instruments();
             process::exit(0);
@@ -132,7 +134,7 @@ impl RunnableSubcommand for M20Fetch {
         let product_types = self.product_types.clone().unwrap_or_default();
 
         match remotequery::perform_fetch(
-            Mission::Mars2020,
+            &client,
             &remotequery::RemoteQuery {
                 cameras,
                 num_per_page,

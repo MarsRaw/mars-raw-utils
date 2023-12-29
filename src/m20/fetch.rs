@@ -7,7 +7,6 @@ use crate::remotequery::FetchError;
 use crate::util::{stringvec, stringvec_b, InstrumentMap};
 use crate::{f, t};
 use anyhow::Result;
-use async_trait::async_trait;
 use futures::future;
 use serde::{Deserialize, Serialize};
 use tokio;
@@ -148,13 +147,8 @@ impl M20Fetch {
     pub fn new() -> M20Fetch {
         M20Fetch {}
     }
-
-    pub fn new_boxed() -> remotequery::FetchType {
-        Box::new(M20Fetch::new())
-    }
 }
 
-#[async_trait]
 impl remotequery::Fetch for M20Fetch {
     async fn query_remote_images(
         &self,

@@ -75,7 +75,6 @@ fn print_table(rems_list: &[&RemsSol]) {
     println!("{}", &table.display().unwrap());
 }
 
-#[async_trait::async_trait]
 impl RunnableSubcommand for MslWeather {
     async fn run(&self) -> Result<()> {
         let rems_list = weather::fetch_weather().await?;
