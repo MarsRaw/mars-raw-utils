@@ -5,3 +5,5 @@ test*.gif
 test*.png
 test*.jpg
 tests/testdata/caltesting
+.idea
+rustfmt.toml
