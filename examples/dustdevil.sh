@@ -7,6 +7,14 @@ open_file_manager=0
 
 export STUMP_LOG_AT_LEVEL=info
 
+: ${MRUDATAHOME:=/data}
+
+# Make sure we use the ImageMagick convert rather than the ISIS convert
+CONVERT=/usr/bin/convert
+if [ ! -f $CONVERT ]; then
+    CONVERT=/usr/local/bin/convert
+fi
+
 while [ $# -gt 0 ]; do
     if [ $1 == "-e" ]; then
         open_file_manager=1
@@ -14,7 +22,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-cd /data/MSL
+cd $MRUDATAHOME/MSL
 
 if [ ! -d $sol/ECAM ]; then
     mkdir -p $sol/ECAM
@@ -56,8 +64,8 @@ if [ $num_parts_ncam00594 -gt 0 ]; then
         let p=$p+1
         let n=$n+3
     done
-    if [ -f /usr/bin/convert ]; then
-        /usr/bin/convert DustDevil_${sol}_NCAM00594_part*_rjcal.gif  DustDevil_${sol}_NCAM00594_rjcal.gif 
+    if [ -f $CONVERT ]; then
+        $CONVERT DustDevil_${sol}_NCAM00594_part*_rjcal.gif  DustDevil_${sol}_NCAM00594_rjcal.gif
         rm DustDevil_${sol}_NCAM00594_part*_rjcal.gif 
     fi
 fi
@@ -68,14 +76,14 @@ if [ `ls *NCAM00545*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
     mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 2'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_3.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
 
     if [ -f /usr/bin/convert ]; then
-        /usr/bin/convert TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif   TwilightCloudSearch_${sol}_NCAM00545_rjcal.gif 
+        $CONVERT TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif   TwilightCloudSearch_${sol}_NCAM00545_rjcal.gif
         rm TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif 
     fi
 fi
 
 
 if [ `ls *NCAM00593*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i NRB*NCAM00593*-rjcal.tif -o DustDevil_${sol}_NCAM00593_rjcal.gif -b 0 -w 2.0 -g 0.4 -l 5 -d 20 -p stacked
+    mru -v diffgif -i NRB*NCAM00593*-rjcal.tif -o DustDevil_${sol}_NCAM00593_rjcal.gif -b 0 -w 2.0 -g 1.0 -l 5 -d 20 -p stacked
 fi
 
 if [ `ls *${seqid}*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
@@ -83,7 +91,7 @@ if [ `ls *${seqid}*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
 fi
 
 if [ `ls *FHAZ00595*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *FHAZ00595*-rjcal.tif -o DustDevil_FHAZ_${sol}_FHAZ00595_rjcal.gif -b 0 -w 2.0 -g 0.4 -l 5 -d 20 -p stacked
+    mru -v diffgif -i *FHAZ00595*-rjcal.tif -o DustDevil_FHAZ_${sol}_FHAZ00595_rjcal.gif -b 0 -w 2.0 -g 1.0 -l 5 -d 20 -p stacked
 fi
 
 if [ `ls *RHAZ00595*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then

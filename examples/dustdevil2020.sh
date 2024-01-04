@@ -4,6 +4,15 @@ sol=$1
 seqid=
 open_file_manager=0
 
+: ${MRUDATAHOME:=/data}
+
+# Make sure we use the ImageMagick convert rather than the ISIS convert
+CONVERT=/usr/bin/convert
+if [ ! -f $CONVERT ]; then
+    CONVERT=/usr/local/bin/convert
+fi
+
+
 export MARS_LOG_AT_LEVEL=info
 
 while [ $# -gt 0 ]; do
@@ -13,7 +22,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-cd /data/M20
+cd $MRUDATAHOME/M20
 
 soldir=$sol
 if [ $soldir -lt 1000 ]; then
@@ -41,41 +50,41 @@ if [ `ls *NCAM00502*J0?.png | wc -l` -gt 0 ]; then
         export MARS_OUTPUT_FORMAT=tif
         mru calibrate -i $out_filename
     done
-    mru -v diffgif -i `ls *NCAM00502*-assembled-rjcal.tif | head -n 3` -o DiffGif_${sol}_NCAM00502_pt1.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 -m -L
-    mru -v diffgif -i `ls *NCAM00502*-assembled-rjcal.tif | tail -n 3` -o DiffGif_${sol}_NCAM00502_pt2.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 -m -L
+    mru -v diffgif -i `ls *NCAM00502*-assembled-rjcal.tif | head -n 3` -o DiffGif_${sol}_NCAM00502_pt1.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 20 -m
+    mru -v diffgif -i `ls *NCAM00502*-assembled-rjcal.tif | tail -n 3` -o DiffGif_${sol}_NCAM00502_pt2.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 20 -m
 fi
 
 
 for seqid in `ls *NCAM00514*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     echo "Processing gif for ${seqid}"
-    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20 -L
+    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 10.0 -g 1.0 -l 3 -d 20 -L
 done
 
 for seqid in `ls *NCAM00515*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     echo "Processing gif for ${seqid}"
-    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 70.0 -g 1.0 -l 5 -d 20  -L
+    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 10.0 -g 1.0 -l 3 -d 20
 done
 
 for seqid in `ls *NCAM005{1,2,3}*2I*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     echo "Processing gif for ${seqid}"
-    mru -v diffgif -i *${seqid}*2I*-rjcal.tif -o DiffGif_${sol}_${seqid}_2I.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 20 -p stacked -m -L
+    mru -v diffgif -i *${seqid}*2I*-rjcal.tif -o DiffGif_${sol}_${seqid}_2I.gif -b 0 -w 10.0 -g 1.0 -l 3 -d 20 -p stacked -m
 done
 
 for seqid in `ls *NCAM005{1,2,3}*1I*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     echo "Processing gif for ${seqid}"
-    mru -v diffgif -i *${seqid}*2I*-rjcal.tif -o DiffGif_${sol}_${seqid}_1I.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 20 -p stacked -m -L
+    mru -v diffgif -i *${seqid}*2I*-rjcal.tif -o DiffGif_${sol}_${seqid}_1I.gif -b 0 -w 10.0 -g 1.0 -l 3 -d 20 -p stacked -m
 done
 
 
 if [ `ls *NCAM00500*-rjcal.tif 2> /dev/null | wc -l` -eq 15 ]; then
     echo "Processing gif for NCAM00500"
     rm DiffGif_${sol}_NCAM00500.gif
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 3` -o DustDevil_${sol}_NCAM00500_part1_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m -L
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 6 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part2_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m -L
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 9 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part3_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m -L
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 12 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part4_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m -L
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 15 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part5_rjcal.gif -b 0 -w 70.0 -g 0.5 -l 5 -d 40 -p stacked -m -L
-    /usr/bin/convert DustDevil_${sol}_NCAM00500_part1_rjcal.gif  DustDevil_${sol}_NCAM00500_part2_rjcal.gif DustDevil_${sol}_NCAM00500_part3_rjcal.gif \
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 3` -o DustDevil_${sol}_NCAM00500_part1_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 6 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part2_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 9 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part3_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 12 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part4_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 15 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part5_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    $CONVERT DustDevil_${sol}_NCAM00500_part1_rjcal.gif  DustDevil_${sol}_NCAM00500_part2_rjcal.gif DustDevil_${sol}_NCAM00500_part3_rjcal.gif \
         DustDevil_${sol}_NCAM00500_part4_rjcal.gif DustDevil_${sol}_NCAM00500_part5_rjcal.gif DustDevil_${sol}_NCAM00500_rjcal.gif 
     rm DustDevil_${sol}_NCAM00500_part*_rjcal.gif 
 fi

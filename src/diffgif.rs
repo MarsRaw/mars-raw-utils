@@ -1,9 +1,8 @@
 #![allow(clippy::too_many_arguments)]
 
-use sciimg::{enums::ImageMode, image, imagebuffer, lowpass, path};
-
+use anyhow::{anyhow, Result};
 use gif;
-
+use sciimg::{enums::ImageMode, image, imagebuffer, lowpass, path};
 use std::fs::File;
 use std::str::FromStr;
 
@@ -61,44 +60,50 @@ fn rgbimage_to_vec_v8(img3band: &image::Image) -> Vec<u8> {
     imagebuffer_to_vec_v8(b0, b1, b2)
 }
 
-fn generate_mean_stack(input_files: &[String]) -> image::Image {
-    let mut mean: image::Image = image::Image::new_empty().unwrap();
-    let mut count: imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
-    let mut ones: imagebuffer::ImageBuffer = imagebuffer::ImageBuffer::new_empty().unwrap();
-
+fn generate_mean_stack(input_files: &[String]) -> Result<image::Image> {
+    let mut mean: Option<image::Image> = None;
+    let mut count: f32 = 0.0;
     info!("Creating mean stack of all input frames...");
 
     for in_file in input_files.iter() {
         if path::file_exists(in_file) {
             info!("Adding file to stack: {}", in_file);
 
-            let raw = image::Image::open(in_file).unwrap();
+            let mut raw = image::Image::open(in_file).unwrap();
+            raw.normalize_between(0.0, 65535.0);
 
-            if mean.is_empty() {
-                mean = raw;
-                count = imagebuffer::ImageBuffer::new(mean.width, mean.height).unwrap();
-                ones =
-                    imagebuffer::ImageBuffer::new_with_fill(mean.width, mean.height, 1.0).unwrap();
-            } else {
+            if mean.is_none() {
+                mean = Some(raw);
+            } else if let Some(mean) = &mut mean {
                 if raw.width != mean.width || raw.height != mean.height {
                     error!("Input image has differing dimensions, cannot continue");
-                    panic!("Input image has differing dimensions, cannot continue");
+                    return Err(anyhow!(
+                        "Input image has differing dimensions, cannot continue"
+                    ));
                 }
 
                 mean.add(&raw);
             }
-
-            count = count.add(&ones).unwrap();
+            count += 1.0;
         } else {
             error!("File not found: {}", in_file);
+            return Err(anyhow!("File not found: {}", in_file));
         }
     }
 
-    if !mean.is_empty() {
-        mean.divide_from_each(&count);
+    if let Some(mean) = &mut mean {
+        if count > 0.0 {
+            mean.divide_into_each(count)
+        } else {
+            warn!("Encountering zero entries to mean stack!");
+        }
     }
 
-    mean
+    if let Some(mean) = mean {
+        Ok(mean)
+    } else {
+        Err(anyhow!("Did not generate image"))
+    }
 }
 
 fn process_band(
@@ -122,8 +127,9 @@ fn process_band(
         }
     }
 
+    let mm = mean_band.get_min_max();
     d.levels_with_gamma_mut(black_level, white_level, gamma);
-    let mut n = d.normalize(0.0, 65535.0).unwrap();
+    let mut n = d.normalize(mm.min, mm.max).unwrap();
 
     for y in 0..d.height {
         for x in 0..d.width {
@@ -171,7 +177,6 @@ fn process_band(
             b
         }
     };
-
     match add_back_to_mean {
         true => {
             let mut merged = mean_band.add(&blurred).unwrap();
@@ -187,8 +192,9 @@ fn process_band(
                 blurred.clip_mut(-1.0 * mnmx.max, mnmx.max);
             }
 
-            blurred.add_across_mut(32767.0);
-            blurred.clip(0.0, 65355.0).unwrap()
+            blurred.add_across_mut(mean_band.mean());
+            blurred.clip_mut(0.0, 65355.0);
+            blurred
         }
     }
 }
@@ -276,8 +282,8 @@ fn process_file(
 ) {
     info!("Processing frame differential on file: {}", in_file);
 
-    let raw = image::Image::open(in_file).unwrap();
-
+    let mut raw = image::Image::open(in_file).unwrap();
+    raw.normalize_between(0.0, 65535.0);
     let (pixels, height) = match product_type {
         ProductType::STACKED => {
             let img_std = process_frame_3channel(
@@ -348,16 +354,29 @@ pub struct DiffGif {
     pub light_only: bool,
 }
 
-pub fn process(params: &DiffGif) {
-    let mean_stack = generate_mean_stack(&params.input_files);
+pub fn process(params: &DiffGif) -> Result<()> {
+    let mean_stack = match generate_mean_stack(&params.input_files) {
+        Ok(mean_stack) => mean_stack,
+        Err(why) => return Err(why),
+    };
+
     let height = match params.product_type {
         ProductType::STACKED => mean_stack.height * 2,
         _ => mean_stack.height,
     };
 
-    let mut image = File::create(&params.output).unwrap();
-    let mut encoder =
-        gif::Encoder::new(&mut image, mean_stack.width as u16, height as u16, &[]).unwrap();
+    let mut image_output = match File::create(&params.output) {
+        Ok(image_output) => image_output,
+        Err(why) => return Err(anyhow!("{:?}", why)),
+    };
+
+    let mut encoder = gif::Encoder::new(
+        &mut image_output,
+        mean_stack.width as u16,
+        height as u16,
+        &[],
+    )
+    .unwrap();
     encoder.set_repeat(gif::Repeat::Infinite).unwrap();
 
     for in_file in params.input_files.iter() {
@@ -377,7 +396,9 @@ pub fn process(params: &DiffGif) {
             );
         } else {
             error!("File not found: {}", in_file);
-            panic!("File not found");
+            return Err(anyhow!("File not found: {}", in_file));
         }
     }
+
+    Ok(())
 }
