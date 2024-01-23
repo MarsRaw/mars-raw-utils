@@ -55,7 +55,7 @@ impl remotequery::LatestData for M20LatestData {
 
 /// Submits a query to the M20 api endpoint
 async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
-    let joined_cameras = query.cameras.join("|");
+    let joined_cameras = query.cameras.join("%7C");
 
     let mut category = "mars2020";
     if query.cameras.contains(&String::from("HELI_NAV"))

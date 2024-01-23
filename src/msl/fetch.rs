@@ -73,7 +73,7 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
             "order",
             "sol desc,instrument_sort asc,sample_type_sort asc, date_taken desc",
         ),
-        stringvec_b("search", query.cameras.join("|")),
+        stringvec_b("search", query.cameras.join("%7C")),
         stringvec_b("condition_2", format!("{}:sol:gte", query.minsol)),
         stringvec_b("condition_3", format!("{}:sol:lte", query.maxsol)),
     ];
