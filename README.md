@@ -566,6 +566,7 @@ Usage: mru debayer [OPTIONS]
 Options:
   -i, --input-files <INPUT_FILES>...  Input images
   -D, --debayer <DEBAYER>             Debayer method (malvar, amaze)
+      --zero-final-ac                 For JPEG inputs, zero AC[63] in each 8x8 DCT block in memory before decode
   -h, --help                          Print help
   -V, --version                       Print version                      Print version information
 ```
@@ -574,6 +575,11 @@ Options:
 Debayer a directory of jpeg images using the Amaze algorithm:
 ```bash
 mru debayer -i *jpg -D amaze
+```
+
+Debayer JPEGs while zeroing AC[63] in every DCT block before decode:
+```bash
+mru debayer -i *jpg -D amaze --zero-final-ac
 ```
 
 

@@ -3,6 +3,7 @@ use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
 use sciimg::prelude::*;
+use std::path::Path;
 use std::str::FromStr;
 
 pb_create!();
@@ -15,6 +16,12 @@ pub struct Debayer {
 
     #[arg(long, short = 'D', help = "Debayer method (malvar, amaze)")]
     debayer: Option<String>,
+
+    #[arg(
+        long,
+        help = "For JPEG inputs, zero AC[63] in each 8x8 DCT block in memory before decode"
+    )]
+    zero_final_ac: bool,
 }
 
 #[async_trait::async_trait]
@@ -26,8 +33,21 @@ impl RunnableSubcommand for Debayer {
             if in_file.exists() {
                 info!("Processing File: {:?}", in_file);
 
-                let mut raw =
-                    Image::open(&String::from(in_file.as_os_str().to_str().unwrap())).unwrap();
+                let in_file_str = String::from(in_file.as_os_str().to_str().unwrap());
+
+                let mut raw = if self.zero_final_ac {
+                    if is_jpeg_path(in_file.as_path()) {
+                        super::jpeg_final_ac::load_jpeg_with_zeroed_final_ac(in_file.as_path())?
+                    } else {
+                        warn!(
+                            "--zero-final-ac requested for non-JPEG input, falling back to default decoder: {:?}",
+                            in_file
+                        );
+                        Image::open(&in_file_str)?
+                    }
+                } else {
+                    Image::open(&in_file_str)?
+                };
 
                 let out_file =
                     util::append_file_name(in_file.as_os_str().to_str().unwrap(), "debayer");
@@ -47,7 +67,7 @@ impl RunnableSubcommand for Debayer {
                 raw.debayer_with_method(debayer_method);
 
                 info!("Writing to disk...");
-                raw.save(&out_file).expect("Failed to save image");
+                raw.save(&out_file)?;
             } else {
                 error!("File not found: {:?}", in_file);
             }
@@ -55,4 +75,11 @@ impl RunnableSubcommand for Debayer {
         }
         Ok(())
     }
+}
+
+fn is_jpeg_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|v| v.to_str())
+        .map(|ext| ext.eq_ignore_ascii_case("jpg") || ext.eq_ignore_ascii_case("jpeg"))
+        .unwrap_or(false)
 }

@@ -138,6 +138,7 @@ pub mod focusmerge;
 pub mod hpcfilter;
 pub mod info;
 pub mod inpaint;
+mod jpeg_final_ac;
 pub mod levels;
 pub mod meanstack;
 pub mod passes;
