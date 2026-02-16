@@ -2,7 +2,7 @@ use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
     marsimage::MarsImage, memcache::load_image, util,
 };
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use sciimg::{image::Image, path};
 
 #[derive(Copy, Clone)]

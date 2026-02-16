@@ -117,7 +117,7 @@ pub struct Overflight {
 
 // https://serde.rs/custom-date-format.html
 mod doy_date_format {
-    use chrono::{DateTime, TimeZone, Utc};
+    use chrono::{DateTime, NaiveDateTime, Utc};
     use serde::{self, Deserialize, Deserializer, Serializer};
 
     const FORMAT: &str = "%Y-%jT%H:%M:%S%.3f";
@@ -138,7 +138,8 @@ mod doy_date_format {
         if s.is_empty() {
             Ok(Utc::now())
         } else {
-            Utc.datetime_from_str(&s, FORMAT)
+            NaiveDateTime::parse_from_str(&s, FORMAT)
+                .map(|dt| dt.and_utc())
                 .map_err(serde::de::Error::custom)
         }
     }

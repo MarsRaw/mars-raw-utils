@@ -1,6 +1,6 @@
 use crate::{decompanding::LookUpTable, enums, flatfield, inpaintmask, metadata::*, util};
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use sciimg::{
     debayer::DebayerMethod, drawable::Drawable, enums::ImageMode, image::Image,
     imagebuffer::ImageBuffer, inpaint, path, DnVec, VecMath,
