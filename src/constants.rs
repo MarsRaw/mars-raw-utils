@@ -4,6 +4,10 @@ pub const DEFAULT_BLUE_WEIGHT: f32 = 1.0;
 
 pub const OUTPUT_FILENAME_APPEND: &str = "rjcal";
 
+pub mod env {
+    pub const HTTP_TIMEOUT_VAR: &str = "MRU_HTTP_TIMEOUT";
+}
+
 pub mod url {
     pub const MSL_RAW_WEBSERVICE_URL: &str = "https://mars.nasa.gov/api/v1/raw_image_items/";
     pub const MSL_LATEST_WEBSERVICE_URL: &str =
