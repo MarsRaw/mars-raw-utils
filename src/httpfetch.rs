@@ -188,3 +188,28 @@ pub async fn simple_fetch_text_monitored<F: Fn(u64, u64, f32)>(uri: &str, f: F) 
         Err(why) => Err(why.into()),
     }
 }
+
+#[test]
+fn test_get_timeout_seconds() {
+    env::remove_var("MRU_HTTP_TIMEOUT");
+
+    assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
+
+    env::set_var("MRU_HTTP_TIMEOUT", "FOO");
+    assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
+
+    env::set_var("MRU_HTTP_TIMEOUT", "-34");
+    assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
+
+    env::set_var("MRU_HTTP_TIMEOUT", "34.45");
+    assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
+
+    env::set_var("MRU_HTTP_TIMEOUT", "-34.45");
+    assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
+
+    env::set_var("MRU_HTTP_TIMEOUT", "120");
+    assert_eq!(get_timeout_seconds().unwrap(), 120);
+
+    env::set_var("MRU_HTTP_TIMEOUT", "120_u64");
+    assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
+}
