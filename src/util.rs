@@ -27,6 +27,10 @@ pub fn string_is_valid_f64(s: &str) -> bool {
     sciutil::string_is_valid_f64(s)
 }
 
+pub fn string_is_valid_u64(s: &str) -> bool {
+    sciutil::string_is_valid_num::<u64>(s)
+}
+
 pub fn string_is_valid_f32(s: &str) -> bool {
     sciutil::string_is_valid_f32(s)
 }

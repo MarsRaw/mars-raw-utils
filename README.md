@@ -246,6 +246,9 @@ Output Filename Suffix: rjcal-rad
  * msl_mcam_drcx
  * msl_mcam_drxx
 
+## Data Retrieval
+By default, HTTP requests are limited to a default of 60 seconds before timeout occurs. If another value is needed, set the environment variable `MRU_HTTP_TIMEOUT` to a positive whole-number integer in number of seconds. 
+
 ## Calibration
 Images posted to the NASA raw image pages are derived from what are known as Experimental Data Records (EDR). Not having gone through the ground pipelines, these images are raw and unprocessed. Further, the images have had various levels of compression applied to make them easier to serve on a website. 
 
