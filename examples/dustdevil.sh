@@ -70,6 +70,34 @@ if [ $num_parts_ncam00594 -gt 0 ]; then
     fi
 fi
 
+if [ `ls *NCAM00590*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
+    p=1
+    n=12
+    while [ $p -le 3 ]; do
+        mru -v diffgif -i `ls *NCAM00590*-rjcal.tif | head -n $n | tail -n 12` -o DustDevil_${sol}_NCAM00590_part${p}_rjcal.gif -b 0 -w 2.0 -g 0.4 -l 5 -d 40 -p stacked
+        let p=$p+1
+        let n=$n+12
+    done
+    if [ -f $CONVERT ]; then
+        $CONVERT DustDevil_${sol}_NCAM00590_part*_rjcal.gif  DustDevil_${sol}_NCAM00590_rjcal.gif
+        rm DustDevil_${sol}_NCAM00590_part*_rjcal.gif
+    fi
+fi
+
+if [ `ls *NCAM00592*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
+    p=1
+    n=8
+    while [ $p -le 8 ]; do
+        mru -v diffgif -i `ls *NCAM00592*-rjcal.tif | head -n $n | tail -n 8` -o DustDevil_${sol}_NCAM00592_part${p}_rjcal.gif -b 0 -w 2.0 -g 0.4 -l 5 -d 40 -p stacked
+        let p=$p+1
+        let n=$n+8
+    done
+    if [ -f $CONVERT ]; then
+        $CONVERT DustDevil_${sol}_NCAM00592_part*_rjcal.gif  DustDevil_${sol}_NCAM00592_rjcal.gif
+        rm DustDevil_${sol}_NCAM00592_part*_rjcal.gif
+    fi
+fi
+
 if [ `ls *NCAM00545*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
     mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 0'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_1.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
     mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 1'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_2.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
