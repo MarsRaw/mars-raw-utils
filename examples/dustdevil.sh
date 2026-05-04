@@ -10,10 +10,7 @@ export STUMP_LOG_AT_LEVEL=info
 : ${MRUDATAHOME:=/data}
 
 # Make sure we use the ImageMagick convert rather than the ISIS convert
-CONVERT=/usr/bin/convert
-if [ ! -f $CONVERT ]; then
-    CONVERT=/usr/local/bin/convert
-fi
+MAGICK="`which magick`"
 
 while [ $# -gt 0 ]; do
     if [ $1 == "-e" ]; then
@@ -64,9 +61,20 @@ if [ $num_parts_ncam00594 -gt 0 ]; then
         let p=$p+1
         let n=$n+3
     done
-    if [ -f $CONVERT ]; then
-        $CONVERT DustDevil_${sol}_NCAM00594_part*_rjcal.gif  DustDevil_${sol}_NCAM00594_rjcal.gif
+    if [ -f $MAGICK ]; then
+        $MAGICK convert DustDevil_${sol}_NCAM00594_part*_rjcal.gif  DustDevil_${sol}_NCAM00594_rjcal.gif
         rm DustDevil_${sol}_NCAM00594_part*_rjcal.gif 
+    fi
+fi
+
+if [ `ls *NCAM00545*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
+    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 0'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_1.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
+    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 1'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_2.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
+    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 2'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_3.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
+
+    if [ -f $MAGICK ]; then
+        $MAGICK convert TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif   TwilightCloudSearch_${sol}_NCAM00545_rjcal.gif
+        rm TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif 
     fi
 fi
 
@@ -78,8 +86,8 @@ if [ `ls *NCAM00590*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
         let p=$p+1
         let n=$n+12
     done
-    if [ -f $CONVERT ]; then
-        $CONVERT DustDevil_${sol}_NCAM00590_part*_rjcal.gif  DustDevil_${sol}_NCAM00590_rjcal.gif
+    if [ -f $MAGICK ]; then
+        $MAGICK convert DustDevil_${sol}_NCAM00590_part*_rjcal.gif  DustDevil_${sol}_NCAM00590_rjcal.gif
         rm DustDevil_${sol}_NCAM00590_part*_rjcal.gif
     fi
 fi
@@ -92,23 +100,11 @@ if [ `ls *NCAM00592*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
         let p=$p+1
         let n=$n+8
     done
-    if [ -f $CONVERT ]; then
-        $CONVERT DustDevil_${sol}_NCAM00592_part*_rjcal.gif  DustDevil_${sol}_NCAM00592_rjcal.gif
+    if [ -f $MAGICK ]; then
+        $MAGICK convert DustDevil_${sol}_NCAM00592_part*_rjcal.gif  DustDevil_${sol}_NCAM00592_rjcal.gif
         rm DustDevil_${sol}_NCAM00592_part*_rjcal.gif
     fi
 fi
-
-if [ `ls *NCAM00545*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 0'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_1.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
-    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 1'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_2.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
-    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 2'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_3.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
-
-    if [ -f /usr/bin/convert ]; then
-        $CONVERT TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif   TwilightCloudSearch_${sol}_NCAM00545_rjcal.gif
-        rm TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif 
-    fi
-fi
-
 
 if [ `ls *NCAM00593*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
     mru -v diffgif -i NRB*NCAM00593*-rjcal.tif -o DustDevil_${sol}_NCAM00593_rjcal.gif -b 0 -w 2.0 -g 1.0 -l 5 -d 20 -p stacked
@@ -162,6 +158,15 @@ if [ `ls *NCAM00597*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
     mru -v diffgif -i `ls *NCAM00597*-rjcal.tif | head -n 16` -o SPENDI_NCAM00597_Set1_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
     mru -v diffgif -i *_F*NCAM00597*rjcal.tif -o SPENDI_NCAM00597_Set2_${sol}.gif -b 0 -w 3.0 -g 1.5 -l 5 -d 40
     mru -v diffgif -i `ls *NCAM00597*-rjcal.tif | tail -n 23` -o SPENDI_NCAM00597_Set3_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
+fi
+
+if [ `ls *NCAM00599*-rjcal.tif 2> /dev/null | wc -l` -eq 48 ]; then
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 8` -o SPENDI_NCAM00599_Set1_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 16 | tail -n 8` -o SPENDI_NCAM00599_Set2_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 24 | tail -n 8` -o SPENDI_NCAM00599_Set3_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 32 | tail -n 8` -o SPENDI_NCAM00599_Set4_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 40 | tail -n 8` -o SPENDI_NCAM00599_Set5_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | tail -n 8` -o SPENDI_NCAM00599_Set6_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
 fi
 
 if [ $open_file_manager -eq 1 ]; then 
