@@ -3,6 +3,7 @@
 sol=$1
 seqid=
 open_file_manager=0
+lights_only=""
 
 : ${MRUDATAHOME:=/data}
 
@@ -18,6 +19,8 @@ export MARS_LOG_AT_LEVEL=info
 while [ $# -gt 0 ]; do
     if [ $1 == "-e" ]; then
         open_file_manager=1
+    elif [ $1 == "-l" ]; then
+        lights_only="-L"
     fi
     shift
 done
@@ -50,29 +53,29 @@ if [ `ls *NCAM00502*J0?.png | wc -l` -gt 0 ]; then
         export MARS_OUTPUT_FORMAT=tif
         mru calibrate -i $out_filename
     done
-    mru -v diffgif -i `ls *NCAM00502*-assembled-rjcal.tif | head -n 3` -o DiffGif_${sol}_NCAM00502_pt1.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 20 -m
-    mru -v diffgif -i `ls *NCAM00502*-assembled-rjcal.tif | tail -n 3` -o DiffGif_${sol}_NCAM00502_pt2.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 20 -m
+    mru -v diffgif ${lights_only} -i `ls *NCAM00502*-assembled-rjcal.tif | head -n 3` -o DiffGif_${sol}_NCAM00502_pt1.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 20 -m
+    mru -v diffgif ${lights_only} -i `ls *NCAM00502*-assembled-rjcal.tif | tail -n 3` -o DiffGif_${sol}_NCAM00502_pt2.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 20 -m
 fi
 
 
 for seqid in `ls *NCAM00514*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     echo "Processing gif for ${seqid}"
-    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 10.0 -g 1.0 -l 3 -d 20 -L
+    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif ${lights_only} -b 0 -w 10.0 -g 1.0 -l 3 -d 20 -L
 done
 
 for seqid in `ls *NCAM00515*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     echo "Processing gif for ${seqid}"
-    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif -b 0 -w 10.0 -g 1.0 -l 3 -d 20
+    mru -v diffgif -i *${seqid}*-rjcal.tif -o DiffGif_${sol}_${seqid}.gif ${lights_only} -b 0 -w 10.0 -g 1.0 -l 3 -d 20
 done
 
 for seqid in `ls *NCAM005{1,2,3}*2I*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     echo "Processing gif for ${seqid}"
-    mru -v diffgif -i *${seqid}*2I*-rjcal.tif -o DiffGif_${sol}_${seqid}_2I.gif -b 0 -w 10.0 -g 1.0 -l 3 -d 20 -p stacked -m
+    mru -v diffgif -i *${seqid}*2I*-rjcal.tif -o DiffGif_${sol}_${seqid}_2I.gif ${lights_only} -b 0 -w 10.0 -g 1.0 -l 3 -d 20 -p stacked -m
 done
 
 for seqid in `ls *NCAM005{1,2,3}*1I*.tif 2> /dev/null | cut -c 36-44 | sort | uniq`; do
     echo "Processing gif for ${seqid}"
-    mru -v diffgif -i *${seqid}*2I*-rjcal.tif -o DiffGif_${sol}_${seqid}_1I.gif -b 0 -w 10.0 -g 1.0 -l 3 -d 20 -p stacked -m
+    mru -v diffgif -i *${seqid}*2I*-rjcal.tif -o DiffGif_${sol}_${seqid}_1I.gif ${lights_only} -b 0 -w 10.0 -g 1.0 -l 3 -d 20 -p stacked -m
 done
 
 
