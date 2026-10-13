@@ -3,12 +3,12 @@ use anyhow::Result;
 use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::Vector};
 use std::str::FromStr;
 
-pub fn get_cahvor(img: &MarsImage) -> Option<CameraModel> {
-    if img.metadata.camera_model_component_list.is_valid() {
-        Some(img.metadata.camera_model_component_list.clone())
-    } else {
-        None
-    }
+pub fn get_cahvor(img: &MarsImage) -> Option<Cahvore> {
+    //if img.metadata.camera_model_component_list.is_valid() {
+    Some(img.metadata.camera_model_component_list.clone())
+    //} else {
+    //    None
+    //}
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -51,7 +51,7 @@ fn lookvector_to_cylindrical(
 
 static SPHERE_RADIUS: f64 = 100.0;
 
-fn get_lat_lon(c: &CameraModel, x: usize, y: usize, _quat: &Quaternion) -> Result<LatLon> {
+fn get_lat_lon(c: &Cahvore, x: usize, y: usize, _quat: &Quaternion) -> Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate {
         line: y as f64,
         sample: x as f64,
@@ -135,7 +135,7 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> MapCo
 }
 
 fn get_ls_from_map_xy(
-    model: &CameraModel,
+    model: &Cahvore,
     map_context: &MapContext,
     x: usize,
     y: usize,

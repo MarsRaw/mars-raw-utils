@@ -61,7 +61,7 @@ impl OpenFromBytes for Image {
 }
 
 trait GetCameraModel {
-    fn get_camera_model(&self) -> Option<CameraModel>;
+    fn get_camera_model(&self) -> Option<Cahvore>;
 
     #[allow(dead_code)]
     fn has_camera_model(&self) -> bool;
@@ -69,12 +69,12 @@ trait GetCameraModel {
 }
 
 impl GetCameraModel for MarsImage {
-    fn get_camera_model(&self) -> Option<CameraModel> {
-        if self.metadata.camera_model_component_list.is_valid() {
-            Some(self.metadata.camera_model_component_list.clone())
-        } else {
-            None
-        }
+    fn get_camera_model(&self) -> Option<Cahvore> {
+        //if self.metadata.camera_model_component_list.is_valid() {
+        Some(self.metadata.camera_model_component_list.clone())
+        //} else {
+        //    None
+        //}
     }
 
     fn has_camera_model(&self) -> bool {
@@ -83,14 +83,16 @@ impl GetCameraModel for MarsImage {
 
     fn implements_linearized(&self) -> bool {
         match self.get_camera_model() {
-            Some(c) => c
-                .linearize(
-                    self.image.width,
-                    self.image.height,
-                    self.image.width,
-                    self.image.height,
-                )
-                .is_ok(),
+            Some(_c) =>
+            /*c.linearize(
+                self.image.width,
+                self.image.height,
+                self.image.width,
+                self.image.height,
+            */
+            {
+                true
+            }
             None => false,
         }
     }
@@ -105,8 +107,8 @@ fn simple_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut Image) {
 
 fn project_line_sample(
     img: &Image,
-    input_model: &CameraModel,
-    output_model: &CameraModel,
+    input_model: &Cahvore,
+    output_model: &Cahvore,
     line: usize,
     sample: usize,
     map: &mut Image,
@@ -171,26 +173,24 @@ fn linearize_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut Image
     let left_input_cahv = left_img
         .get_camera_model()
         .expect("No left CAHV after all...");
-    let left_output_cahv = left_input_cahv
-        .linearize(
-            left_img.image.width,
-            left_img.image.height,
-            left_img.image.width,
-            left_img.image.height,
-        )
-        .expect("Failed to linearize left CAHV");
+    let left_output_cahv = left_input_cahv.linearize(
+        left_img.image.width,
+        left_img.image.height,
+        left_img.image.width,
+        left_img.image.height,
+    );
+    //.expect("Failed to linearize left CAHV");
 
     let right_input_cahv = right_img
         .get_camera_model()
         .expect("No right CAHV after all...");
-    let right_output_cahv = right_input_cahv
-        .linearize(
-            right_img.image.width,
-            right_img.image.height,
-            right_img.image.width,
-            right_img.image.height,
-        )
-        .expect("Failed to linearize right CAHV");
+    let right_output_cahv = right_input_cahv.linearize(
+        right_img.image.width,
+        right_img.image.height,
+        right_img.image.width,
+        right_img.image.height,
+    );
+    //.expect("Failed to linearize right CAHV");
 
     for y in 0..left_img.image.height {
         for x in 0..left_img.image.width {

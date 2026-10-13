@@ -47,7 +47,7 @@ pub struct Camera {
     pub camera_vector: Option<Vec<f64>>,
 
     #[serde(with = "as_cahvore")]
-    pub camera_model_component_list: CameraModel,
+    pub camera_model_component_list: Cahvore,
 
     #[serde(with = "as_tuple")]
     pub camera_position: Option<Vec<f64>>,
@@ -161,7 +161,7 @@ impl ImageMetadata for ImageRecord {
         self.camera.camera_vector.clone()
     }
 
-    fn get_camera_model_component_list(&self) -> CameraModel {
+    fn get_camera_model_component_list(&self) -> Cahvore {
         self.camera.camera_model_component_list.clone()
     }
 

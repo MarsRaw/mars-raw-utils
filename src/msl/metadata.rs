@@ -38,7 +38,7 @@ pub struct ImageRecord {
     pub scale_factor: Option<u32>,
 
     #[serde(with = "as_cahvore")]
-    pub camera_model_component_list: CameraModel,
+    pub camera_model_component_list: Cahvore,
     pub instrument: String,
     pub url: String,
     pub spacecraft_clock: Option<f64>,
@@ -147,7 +147,7 @@ impl ImageMetadata for ImageRecord {
         self.camera_vector.clone()
     }
 
-    fn get_camera_model_component_list(&self) -> CameraModel {
+    fn get_camera_model_component_list(&self) -> Cahvore {
         self.camera_model_component_list.clone()
     }
 

@@ -110,7 +110,7 @@ impl RunnableSubcommand for Pds2Png {
                 "Maximum".cell().bold(true),
             ]);
 
-        do_println(&format!("{}", &table.display().unwrap()));
+        do_println(&format!("{}", table.display().unwrap()));
         Ok(())
     }
 }

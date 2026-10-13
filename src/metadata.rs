@@ -20,7 +20,7 @@ pub trait ImageMetadata {
     fn get_instrument(&self) -> String;
     fn get_filter_name(&self) -> Option<String>;
     fn get_camera_vector(&self) -> Option<Vec<f64>>;
-    fn get_camera_model_component_list(&self) -> CameraModel;
+    fn get_camera_model_component_list(&self) -> Cahvore;
     fn get_camera_position(&self) -> Option<Vec<f64>>;
     fn get_camera_model_type(&self) -> Option<String>;
     fn get_site(&self) -> Option<u32>;
@@ -84,7 +84,7 @@ pub struct Metadata {
     pub drive: Option<u32>,
 
     #[serde(with = "serializers::as_cahvore")]
-    pub camera_model_component_list: CameraModel,
+    pub camera_model_component_list: Cahvore,
 
     #[serde(default = "serializers::default_false")]
     pub decompand: bool,

@@ -62,32 +62,31 @@ impl RunnableSubcommand for Anaglyph {
             left_img.to_mono();
             right_img.to_mono();
         }
+        let left_cahv = left_img.metadata.camera_model_component_list.clone();
+        //let left_cahv = if left_img.metadata.camera_model_component_list.is_valid() {
+        //    left_img.metadata.camera_model_component_list.clone()
+        //} else {
+        //    pb_done_with_error!();
+        //    process::exit(2);
+        //};
 
-        let left_cahv = if left_img.metadata.camera_model_component_list.is_valid() {
-            left_img.metadata.camera_model_component_list.clone()
-        } else {
-            pb_done_with_error!();
-            process::exit(2);
-        };
-
-        let right_cahv = if right_img.metadata.camera_model_component_list.is_valid() {
-            right_img.metadata.camera_model_component_list.clone()
-        } else {
-            pb_done_with_error!();
-            process::exit(2);
-        };
+        let right_cahv = right_img.metadata.camera_model_component_list.clone();
+        //let right_cahv = if right_img.metadata.camera_model_component_list.is_valid() {
+        //    right_img.metadata.camera_model_component_list.clone()
+        //} else {
+        //    pb_done_with_error!();
+        //    process::exit(2);
+        //};
 
         let ground = Vector::new(0.0, 0.0, 1.84566);
 
         let mut map = Image::create(left_img.image.width, left_img.image.height);
-        let output_model = left_cahv
-            .linearize(
-                left_img.image.width,
-                left_img.image.height,
-                left_img.image.width,
-                left_img.image.height,
-            )
-            .unwrap();
+        let output_model = left_cahv.linearize(
+            left_img.image.width,
+            left_img.image.height,
+            left_img.image.width,
+            left_img.image.height,
+        );
 
         anaglyph::process_image(
             &right_img,

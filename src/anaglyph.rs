@@ -4,8 +4,8 @@ use sciimg::{drawable::*, prelude::*, vector::Vector};
 pub fn process_image(
     img: &MarsImage,
     map: &mut Image,
-    input_model: &CameraModel,
-    output_model: &CameraModel,
+    input_model: &Cahvore,
+    output_model: &Cahvore,
     ground: &Vector,
     eye: Eye,
 ) {

@@ -35,7 +35,7 @@ pub struct ImageRecord {
     pub scale_factor: u32,
 
     #[serde(with = "as_cahvore")]
-    pub camera_model_component_list: CameraModel,
+    pub camera_model_component_list: Cahvore,
 
     pub instrument: String,
     //FIXME make url type
@@ -152,7 +152,7 @@ impl ImageMetadata for ImageRecord {
         self.camera_vector.clone()
     }
 
-    fn get_camera_model_component_list(&self) -> CameraModel {
+    fn get_camera_model_component_list(&self) -> Cahvore {
         self.camera_model_component_list.clone()
     }
 
