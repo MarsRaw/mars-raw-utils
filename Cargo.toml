@@ -116,10 +116,10 @@ lab = "0.11.0"
 toml = "1.0.6+spec-1.1.0"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
-sciimg = { git = "https://github.com/MarsRaw/sciimg.git", branch = "cahvore_simplification", features = [
-    "rayon",
-] }
-#sciimg = { path = "../sciimg", features = ["rayon"] }
+#sciimg = { git = "https://github.com/MarsRaw/sciimg.git", branch = "cahvore_simplification", features = [
+#    "rayon",
+#] }
+sciimg = { path = "../sciimg", features = ["rayon"] }
 stump = { git = "https://github.com/MarsRaw/stump.git" }
 vicar = { git = "https://github.com/MarsRaw/vicar-rs.git" }
 weezl = "0.2.1"

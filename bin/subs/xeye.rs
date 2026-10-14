@@ -120,49 +120,54 @@ fn project_line_sample(
         line: line as f64,
         sample: sample as f64,
     }) {
-        let ls_in = match lv.intersect_to_plane(&ground) {
+        let ls_in_res = match lv.intersect_to_plane(&ground) {
             Some(ray) => output_model.xyz_to_ls(&ray, false),
             None => output_model.xyz_to_ls(&lv.look_direction, true),
         };
 
-        let in_x = ls_in.sample.round() as usize;
-        let in_y = ls_in.line.round() as usize;
+        if let Ok(ls_in) = ls_in_res {
+            let in_x = ls_in.sample.round() as usize;
+            let in_y = ls_in.line.round() as usize;
 
-        if ls_in.sample >= 0.0 && ls_in.line >= 0.0 && in_x < img.width - 1 && in_y < img.height - 1
-        {
-            let tl = Point::create_rgb(
-                sample as f64 + x_offset as f64,
-                line as f64,
-                img.get_band(0).get(in_x, in_y) as f64,
-                img.get_band(1).get(in_x, in_y) as f64,
-                img.get_band(2).get(in_x, in_y) as f64,
-            );
+            if ls_in.sample >= 0.0
+                && ls_in.line >= 0.0
+                && in_x < img.width - 1
+                && in_y < img.height - 1
+            {
+                let tl = Point::create_rgb(
+                    sample as f64 + x_offset as f64,
+                    line as f64,
+                    img.get_band(0).get(in_x, in_y) as f64,
+                    img.get_band(1).get(in_x, in_y) as f64,
+                    img.get_band(2).get(in_x, in_y) as f64,
+                );
 
-            let bl = Point::create_rgb(
-                sample as f64 + x_offset as f64,
-                (line + 1) as f64,
-                img.get_band(0).get(in_x, in_y) as f64,
-                img.get_band(1).get(in_x, in_y) as f64,
-                img.get_band(2).get(in_x, in_y) as f64,
-            );
+                let bl = Point::create_rgb(
+                    sample as f64 + x_offset as f64,
+                    (line + 1) as f64,
+                    img.get_band(0).get(in_x, in_y) as f64,
+                    img.get_band(1).get(in_x, in_y) as f64,
+                    img.get_band(2).get(in_x, in_y) as f64,
+                );
 
-            let tr = Point::create_rgb(
-                (sample + 1) as f64 + x_offset as f64,
-                line as f64,
-                img.get_band(0).get(in_x, in_y) as f64,
-                img.get_band(1).get(in_x, in_y) as f64,
-                img.get_band(2).get(in_x, in_y) as f64,
-            );
+                let tr = Point::create_rgb(
+                    (sample + 1) as f64 + x_offset as f64,
+                    line as f64,
+                    img.get_band(0).get(in_x, in_y) as f64,
+                    img.get_band(1).get(in_x, in_y) as f64,
+                    img.get_band(2).get(in_x, in_y) as f64,
+                );
 
-            let br = Point::create_rgb(
-                (sample + 1) as f64 + x_offset as f64,
-                (line + 1) as f64,
-                img.get_band(0).get(in_x, in_y) as f64,
-                img.get_band(1).get(in_x, in_y) as f64,
-                img.get_band(2).get(in_x, in_y) as f64,
-            );
+                let br = Point::create_rgb(
+                    (sample + 1) as f64 + x_offset as f64,
+                    (line + 1) as f64,
+                    img.get_band(0).get(in_x, in_y) as f64,
+                    img.get_band(1).get(in_x, in_y) as f64,
+                    img.get_band(2).get(in_x, in_y) as f64,
+                );
 
-            map.paint_square(&tl, &bl, &br, &tr, false);
+                map.paint_square(&tl, &bl, &br, &tr, false);
+            }
         }
     }
 }

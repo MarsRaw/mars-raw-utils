@@ -17,7 +17,7 @@ pub fn process_image(
             }) {
                 let ray = lv.intersect_to_plane(ground);
 
-                let ls_in = match ray {
+                let ls_in_res = match ray {
                     Some(ray) => {
                         let diff = input_model.c().subtract(&output_model.c());
                         let ray_moved = ray.subtract(&diff);
@@ -26,50 +26,52 @@ pub fn process_image(
                     None => input_model.xyz_to_ls(&lv.look_direction, true),
                 };
 
-                let in_x = ls_in.sample.round() as usize;
-                let in_y = ls_in.line.round() as usize;
+                if let Ok(ls_in) = ls_in_res {
+                    let in_x = ls_in.sample.round() as usize;
+                    let in_y = ls_in.line.round() as usize;
 
-                if ls_in.sample >= 0.0
-                    && ls_in.line >= 0.0
-                    && in_x < img.image.width - 1
-                    && in_y < img.image.height - 1
-                {
-                    let tl = Point::create_rgb(
-                        x as f64,
-                        y as f64,
-                        img.image.get_band(0).get(in_x, in_y) as f64,
-                        img.image.get_band(1).get(in_x, in_y) as f64,
-                        img.image.get_band(2).get(in_x, in_y) as f64,
-                    );
+                    if ls_in.sample >= 0.0
+                        && ls_in.line >= 0.0
+                        && in_x < img.image.width - 1
+                        && in_y < img.image.height - 1
+                    {
+                        let tl = Point::create_rgb(
+                            x as f64,
+                            y as f64,
+                            img.image.get_band(0).get(in_x, in_y) as f64,
+                            img.image.get_band(1).get(in_x, in_y) as f64,
+                            img.image.get_band(2).get(in_x, in_y) as f64,
+                        );
 
-                    let bl = Point::create_rgb(
-                        x as f64,
-                        (y + 1) as f64,
-                        img.image.get_band(0).get(in_x, in_y) as f64,
-                        img.image.get_band(1).get(in_x, in_y) as f64,
-                        img.image.get_band(2).get(in_x, in_y) as f64,
-                    );
+                        let bl = Point::create_rgb(
+                            x as f64,
+                            (y + 1) as f64,
+                            img.image.get_band(0).get(in_x, in_y) as f64,
+                            img.image.get_band(1).get(in_x, in_y) as f64,
+                            img.image.get_band(2).get(in_x, in_y) as f64,
+                        );
 
-                    let tr = Point::create_rgb(
-                        (x + 1) as f64,
-                        y as f64,
-                        img.image.get_band(0).get(in_x, in_y) as f64,
-                        img.image.get_band(1).get(in_x, in_y) as f64,
-                        img.image.get_band(2).get(in_x, in_y) as f64,
-                    );
+                        let tr = Point::create_rgb(
+                            (x + 1) as f64,
+                            y as f64,
+                            img.image.get_band(0).get(in_x, in_y) as f64,
+                            img.image.get_band(1).get(in_x, in_y) as f64,
+                            img.image.get_band(2).get(in_x, in_y) as f64,
+                        );
 
-                    let br = Point::create_rgb(
-                        (x + 1) as f64,
-                        (y + 1) as f64,
-                        img.image.get_band(0).get(in_x, in_y) as f64,
-                        img.image.get_band(1).get(in_x, in_y) as f64,
-                        img.image.get_band(2).get(in_x, in_y) as f64,
-                    );
+                        let br = Point::create_rgb(
+                            (x + 1) as f64,
+                            (y + 1) as f64,
+                            img.image.get_band(0).get(in_x, in_y) as f64,
+                            img.image.get_band(1).get(in_x, in_y) as f64,
+                            img.image.get_band(2).get(in_x, in_y) as f64,
+                        );
 
-                    map.paint_square_with_channel_rule(&tl, &bl, &br, &tr, false, |c| {
-                        (c == 0 && matches!(eye, Eye::Left | Eye::DontCare))
-                            || ((c == 1 || c == 2) && matches!(eye, Eye::Right | Eye::DontCare))
-                    });
+                        map.paint_square_with_channel_rule(&tl, &bl, &br, &tr, false, |c| {
+                            (c == 0 && matches!(eye, Eye::Left | Eye::DontCare))
+                                || ((c == 1 || c == 2) && matches!(eye, Eye::Right | Eye::DontCare))
+                        });
+                    }
                 }
             }
         }
