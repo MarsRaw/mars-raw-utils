@@ -518,38 +518,37 @@ pub mod as_cahvore {
                 }
                 match parts.len() {
                     4 => Ok(Cahvore::new_cahv(
-                        Vector::from_vec(&parts[0]).unwrap(),
-                        Vector::from_vec(&parts[1]).unwrap(),
-                        Vector::from_vec(&parts[2]).unwrap(),
-                        Vector::from_vec(&parts[3]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::CENTER]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::AXIS]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::HORIZONTAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::VERTICAL]).unwrap(),
                     )),
                     6 => Ok(Cahvore::new_cahvor(
-                        Vector::from_vec(&parts[0]).unwrap(),
-                        Vector::from_vec(&parts[1]).unwrap(),
-                        Vector::from_vec(&parts[2]).unwrap(),
-                        Vector::from_vec(&parts[3]).unwrap(),
-                        Vector::from_vec(&parts[4]).unwrap(),
-                        Vector::from_vec(&parts[5]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::CENTER]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::AXIS]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::HORIZONTAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::VERTICAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::OPTICAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::RADIAL]).unwrap(),
                     )),
                     9 => Ok(Cahvore::new(
-                        Vector::from_vec(&parts[0]).unwrap(),
-                        Vector::from_vec(&parts[1]).unwrap(),
-                        Vector::from_vec(&parts[2]).unwrap(),
-                        Vector::from_vec(&parts[3]).unwrap(),
-                        Vector::from_vec(&parts[4]).unwrap(),
-                        Vector::from_vec(&parts[5]).unwrap(),
-                        Vector::from_vec(&parts[6]).unwrap(),
-                        match parts[7][0] {
+                        Vector::from_vec(&parts[cahvore_components::CENTER]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::AXIS]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::HORIZONTAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::VERTICAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::OPTICAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::RADIAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::ENTRANCE]).unwrap(),
+                        match parts[cahvore_components::PUPIL_TYPE][0] {
                             0.0 => PupilType::Perspective,
                             1.0 => PupilType::Fisheye,
                             2.0 => PupilType::General,
-                            _ => PupilType::General,
+                            _ => panic!(
+                                "Unrecognized pupil type code in CAHVORE model: {}",
+                                parts[cahvore_components::PUPIL_TYPE][0]
+                            ),
                         },
-                        if parts[8][0] > 0.0 {
-                            parts[8][0]
-                        } else {
-                            LINEARITY_PERSPECTIVE
-                        },
+                        parts[cahvore_components::LINEARITY][0],
                     )),
                     _ => Ok(Cahvore::default()),
                 }

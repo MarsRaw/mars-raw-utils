@@ -207,6 +207,8 @@ pub fn process_file<D: Drawable>(
             debug!("Input Model O: {:?}", input_model.o());
             debug!("Input Model R: {:?}", input_model.r());
             debug!("Input Model E: {:?}", input_model.e());
+            debug!("Input Model Pupil Type: {:?}", input_model.pupil_type);
+            debug!("Input Model Linearity: {:?}", input_model.linearity);
             debug!("");
 
             let band_0 = img.image.get_band(0);

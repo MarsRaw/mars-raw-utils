@@ -178,23 +178,27 @@ fn linearize_create(left_img: &MarsImage, right_img: &MarsImage, map: &mut Image
     let left_input_cahv = left_img
         .get_camera_model()
         .expect("No left CAHV after all...");
-    let left_output_cahv = left_input_cahv.linearize(
-        left_img.image.width,
-        left_img.image.height,
-        left_img.image.width,
-        left_img.image.height,
-    );
+    let left_output_cahv = left_input_cahv
+        .linearize(
+            left_img.image.width,
+            left_img.image.height,
+            left_img.image.width,
+            left_img.image.height,
+        )
+        .unwrap();
     //.expect("Failed to linearize left CAHV");
 
     let right_input_cahv = right_img
         .get_camera_model()
         .expect("No right CAHV after all...");
-    let right_output_cahv = right_input_cahv.linearize(
-        right_img.image.width,
-        right_img.image.height,
-        right_img.image.width,
-        right_img.image.height,
-    );
+    let right_output_cahv = right_input_cahv
+        .linearize(
+            right_img.image.width,
+            right_img.image.height,
+            right_img.image.width,
+            right_img.image.height,
+        )
+        .unwrap();
     //.expect("Failed to linearize right CAHV");
 
     for y in 0..left_img.image.height {
