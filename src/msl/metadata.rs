@@ -1,6 +1,7 @@
-use crate::serializers::{as_cahvore, as_tuple};
+use crate::serializers::{as_cahvore, as_quaternion, as_tuple};
 use crate::{constants, metadata::*};
 use sciimg::prelude::*;
+use sciimg::quaternion::Quaternion;
 
 use std::fs::File;
 use std::io::Read;
@@ -43,8 +44,8 @@ pub struct ImageRecord {
     pub url: String,
     pub spacecraft_clock: Option<f64>,
 
-    #[serde(with = "as_tuple")]
-    pub attitude: Option<Vec<f64>>,
+    #[serde(with = "as_quaternion")]
+    pub attitude: Option<Quaternion>,
 
     #[serde(with = "as_tuple")]
     pub camera_position: Option<Vec<f64>>,
@@ -195,8 +196,8 @@ impl ImageMetadata for ImageRecord {
         self.url.clone()
     }
 
-    fn get_attitude(&self) -> Option<Vec<f64>> {
-        self.attitude.clone()
+    fn get_attitude(&self) -> Option<Quaternion> {
+        self.attitude
     }
 }
 

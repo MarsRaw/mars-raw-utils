@@ -542,17 +542,57 @@ pub mod as_cahvore {
                         match parts[cahvore_components::PUPIL_TYPE][0] {
                             0.0 => PupilType::Perspective,
                             1.0 => PupilType::Fisheye,
-                            2.0 => PupilType::General,
-                            _ => panic!(
+                            _ => PupilType::General,
+                            /*_ => panic!(
                                 "Unrecognized pupil type code in CAHVORE model: {}",
                                 parts[cahvore_components::PUPIL_TYPE][0]
-                            ),
+                            ),*/
                         },
                         parts[cahvore_components::LINEARITY][0],
                     )),
                     _ => Ok(Cahvore::default()),
                 }
             }
+        }
+    }
+}
+
+/////////////////////////////////////////////////
+// Quaternion as tuples
+/////////////////////////////////////////////////
+pub mod as_quaternion {
+    use super::{str_to_vec, vec_to_str};
+    use anyhow::Result;
+    use sciimg::quaternion::Quaternion;
+    use serde::{self, de::Error, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(quat_opt: &Option<Quaternion>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match quat_opt {
+            None => serializer.serialize_unit(),
+            Some(q) => serializer.serialize_str(vec_to_str(&q.to_vec()).as_ref()),
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Quaternion>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let r: Result<&str, D::Error> = Deserialize::deserialize(deserializer);
+        match r {
+            Err(_) => Ok(None),
+            Ok(s) => match s {
+                "UNK" => Ok(None),
+                _ => match Quaternion::from_vec(&str_to_vec(s).unwrap()) {
+                    Err(why) => Err(D::Error::custom(format!(
+                        "Deserialization error: {:?}",
+                        why
+                    ))),
+                    Ok(q) => Ok(Some(q)),
+                },
+            },
         }
     }
 }

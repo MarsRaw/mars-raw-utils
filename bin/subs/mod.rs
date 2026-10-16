@@ -147,6 +147,7 @@ pub mod hpcfilter;
 pub mod info;
 pub mod inpaint;
 pub mod levels;
+pub mod linearize;
 pub mod meanstack;
 pub mod passes;
 pub mod pds2png;

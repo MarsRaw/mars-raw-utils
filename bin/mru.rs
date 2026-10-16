@@ -48,6 +48,7 @@ enum Mru {
     Calibrate(calibrate::Calibrate),
     Anaglyph(anaglyph::Anaglyph),
     Composite(composite::Composite),
+    Linearize(linearize::Linearize),
     Crop(crop::Crop),
     Debayer(debayer::Debayer),
 
@@ -107,6 +108,7 @@ async fn main() -> Result<(), anyhow::Error> {
         Mru::MerDate(args) => args.run().await,
         Mru::Anaglyph(args) => args.run().await,
         Mru::Composite(args) => args.run().await,
+        Mru::Linearize(args) => args.run().await,
         Mru::Crop(args) => args.run().await,
         Mru::Debayer(args) => args.run().await,
         Mru::DiffGif(args) => args.run().await,

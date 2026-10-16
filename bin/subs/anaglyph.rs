@@ -2,6 +2,7 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::anyhow;
 use anyhow::Result;
 use clap::Parser;
+use mars_raw_utils::composite;
 use mars_raw_utils::prelude::*;
 use sciimg::{drawable::*, prelude::*, vector::Vector};
 use std::process;
@@ -76,7 +77,7 @@ impl RunnableSubcommand for Anaglyph {
             left_img.image.height,
         )?;
 
-        let ext = anaglyph::anaglyph_extent(
+        let ext = composite::map_extent(
             &[
                 (&left_cahv, left_img.image.width, left_img.image.height),
                 (&right_cahv, right_img.image.width, right_img.image.height),
