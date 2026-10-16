@@ -1,6 +1,6 @@
 use std::env;
 
-use anyhow::{Error, Result};
+use anyhow::{anyhow, Error, Result};
 use sciimg::{
     debayer::DebayerMethod, drawable::Drawable, enums::ImageMode, image::Image,
     imagebuffer::ImageBuffer, inpaint, path, DnVec, VecMath,
@@ -121,7 +121,9 @@ impl MarsImage {
     }
 
     pub fn save(&self, to_file: &str) -> Result<()> {
-        self.image.save(to_file)?;
+        if let Err(why) = self.image.save(to_file) {
+            return Err(anyhow!("File save failure: {:?}", why));
+        }
         info!("Writing image buffer to file at {}", to_file);
         if path::parent_exists_and_writable(to_file) {
             if self.metadata.history.is_empty() {

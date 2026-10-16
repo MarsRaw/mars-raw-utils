@@ -347,6 +347,71 @@ pub fn linearize_image_with_model(
     Ok(out)
 }
 
+/// Resample `src` (described by `src_model`) onto an arbitrary linear output
+/// model and canvas. This is the shared back end for linearizing, leveling,
+/// expanding and stereo rectification.
+pub fn resample_to_model(
+    src: &MarsImage,
+    src_model: &Cahvore,
+    out_model: Cahvore,
+    out_width: usize,
+    out_height: usize,
+) -> Result<MarsImage> {
+    if src.is_empty() || src.image.num_bands() == 0 {
+        return Err(anyhow!("resample_to_model: source image is empty"));
+    }
+
+    let src_w = src.image.width;
+    let src_h = src.image.height;
+    let num_bands = src.image.num_bands();
+
+    let map = build_map(src_model, &out_model, src_w, src_h, out_width, out_height);
+
+    // Alpha starts fully masked (false); only pixels that map into the source
+    // frame are switched on below. Pixels that never get written stay 0.
+    let mut out_img = Image::new_with_bands_masked(
+        out_width,
+        out_height,
+        num_bands,
+        src.image.get_mode(),
+        false,
+    )?;
+
+    for y in 0..out_height {
+        for x in 0..out_width {
+            let Some((s, l)) = map[y * out_width + x] else {
+                continue;
+            };
+
+            // Respect the source alpha at the nearest source pixel.
+            let nx = (s.round() as usize).min(src_w - 1);
+            let ny = (l.round() as usize).min(src_h - 1);
+            if !src.get_alpha_at(nx, ny) {
+                continue;
+            }
+
+            for band in 0..num_bands {
+                let v = bilinear(src.image.get_band(band), s, l);
+                out_img.put(x, y, v, band);
+            }
+            out_img.put_alpha(x, y, true);
+        }
+    }
+
+    let mut out = MarsImage::from_image(&out_img, src.instrument);
+    out.metadata = src.metadata.clone();
+
+    // The new model describes the *output* pixel grid, so the subframe offset
+    // and scale have already been folded in.
+    out.metadata.camera_model_component_list = out_model;
+    out.metadata.subframe_rect = None;
+    // Adjust to whatever your pipeline expects for a distortion-free model:
+    out.metadata.camera_model_type = Some("CAHV".to_string());
+    out.update_history();
+
+    Ok(out)
+}
+
 /// For each output pixel (row-major), the (sample, line) in the source image,
 /// or None if the ray can't be projected or lands outside the source frame.
 ///

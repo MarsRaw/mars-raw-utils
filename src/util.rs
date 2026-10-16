@@ -191,7 +191,11 @@ pub fn save_image_json_from_string(image_path: &str, item: &String) -> Result<()
         .replace(".jpg", "-metadata.json")
         .replace(".JPG", "-metadata.json")
         .replace(".png", "-metadata.json")
-        .replace(".PNG", "-metadata.json");
+        .replace(".PNG", "-metadata.json")
+        .replace(".tif", "-metadata.json")
+        .replace(".TIF", "-metadata.json")
+        .replace(".dng", "-metadata.json")
+        .replace(".DNG", "-metadata.json");
 
     let path = Path::new(out_file.as_str());
     info!("Writing metadata file to {}", path.to_str().unwrap());
