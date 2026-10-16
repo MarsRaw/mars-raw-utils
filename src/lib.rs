@@ -99,3 +99,6 @@ pub mod location;
 
 /// A collection of serde de/serializers for various types
 pub mod serializers;
+
+// Linearize lens distortion based on CAHVORE camera model
+pub mod linearize;
