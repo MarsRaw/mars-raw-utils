@@ -4,6 +4,7 @@ use crate::httpfetch;
 use crate::metadata::Metadata;
 use crate::util::{save_image_json, InstrumentMap};
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use cli_table::{Cell, Style, Table};
 use rayon::prelude::*;
 use sciimg::path;
@@ -27,6 +28,11 @@ pub struct RemoteQuery {
     pub only_new: bool,
     pub product_types: Vec<String>,
     pub output_path: String,
+    pub start_date: DateTime<Utc>,
+    pub end_date: DateTime<Utc>,
+    pub filter_num: Option<Vec<u32>>,
+    pub filter: Option<Vec<String>>,
+    pub filter_wavelenth: Option<Vec<String>>,
 }
 
 /// Generic all-mission api stats from query results
@@ -62,6 +68,7 @@ pub enum FetchError {
     MissionNotSupportedError(Mission),
     SkippingFile,
     ParseError(String),
+    NotImplemented,
 }
 
 impl Error for FetchError {}

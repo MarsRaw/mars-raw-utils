@@ -656,3 +656,35 @@ pub fn default_blank() -> String {
 pub fn default_vec<T>() -> Vec<T> {
     vec![]
 }
+
+//////////////////////////////////////////////////
+// chrono::DateTime<Utc>
+//////////////////////////////////////////////////
+
+pub mod as_utc_datetime {
+    use chrono::{DateTime, Utc};
+    use dateparser::DateTimeUtc;
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(dt: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&dt.to_rfc3339())
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() {
+            Ok(Utc::now()) // I don't like this
+        } else {
+            match s.parse::<DateTimeUtc>().map_err(serde::de::Error::custom) {
+                Err(why) => Err(why),
+                Ok(v) => Ok(v.0),
+            }
+        }
+    }
+}

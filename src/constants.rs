@@ -26,6 +26,9 @@ pub mod url {
         "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints_current.json";
     pub const M20_WAYPOINTS_URL: &str =
         "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json";
+
+    pub const PSYCHE_RAW_WEBSERVICE_URL: &str =
+        "https://solarsystem.nasa.gov/api/v1/raw_image_psyche_items/";
 }
 
 pub mod time {

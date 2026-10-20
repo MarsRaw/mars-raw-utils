@@ -30,6 +30,7 @@ pub struct Config {
     pub msl: MslCalData,
     pub m20: M20CalData,
     pub nsyt: NsytCalData,
+    pub psyche: PsycheCalData,
 }
 
 #[allow(non_snake_case)]
@@ -185,6 +186,17 @@ pub struct NsytCalData {
 
     #[serde(default = "default_instrument_properties")]
     pub icc: InstrumentProperties,
+}
+
+#[allow(non_snake_case)]
+#[allow(dead_code)]
+#[derive(Deserialize, Clone)]
+pub struct PsycheCalData {
+    #[serde(default = "default_instrument_properties")]
+    pub cameraA: InstrumentProperties,
+
+    #[serde(default = "default_instrument_properties")]
+    pub cameraB: InstrumentProperties,
 }
 
 pub fn parse_caldata_from_string(caldata_toml_str: &str) -> Result<Config> {
@@ -430,6 +442,14 @@ pub fn get_calibration_base_file_for_instrument(
         )),
         enums::Instrument::NsytIDC => Ok(get_calibration_file_for_type(
             &config.nsyt.idc,
+            cal_file_type,
+        )),
+        enums::Instrument::PsycheCameraA => Ok(get_calibration_file_for_type(
+            &config.psyche.cameraA,
+            cal_file_type,
+        )),
+        enums::Instrument::PsycheCameraB => Ok(get_calibration_file_for_type(
+            &config.psyche.cameraB,
             cal_file_type,
         )),
         enums::Instrument::None => Err(anyhow!(constants::status::UNSUPPORTED_INSTRUMENT)),

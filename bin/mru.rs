@@ -46,6 +46,7 @@ enum Mru {
     MerDate(mer::merdate::MerDate),
 
     Calibrate(calibrate::Calibrate),
+    Compose(compose::Compose),
     Anaglyph(anaglyph::Anaglyph),
     Range(range::Range),
     Composite(composite::Composite),
@@ -110,6 +111,7 @@ async fn main() -> Result<(), anyhow::Error> {
         Mru::Anaglyph(args) => args.run().await,
         Mru::Range(args) => args.run().await,
         Mru::Composite(args) => args.run().await,
+        Mru::Compose(args) => args.run().await,
         Mru::Linearize(args) => args.run().await,
         Mru::Crop(args) => args.run().await,
         Mru::Debayer(args) => args.run().await,

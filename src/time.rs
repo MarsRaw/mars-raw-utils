@@ -57,6 +57,7 @@ pub fn get_lmst(mission: Mission) -> Result<MissionTime> {
         Mission::InSight => nsyttime::get_lmst(),
         Mission::MerA => mertime::get_lmst_mer_a(),
         Mission::MerB => mertime::get_lmst_mer_b(),
+        Mission::Psyche => panic!("Psyche mission time not yet supported"),
     }
 }
 

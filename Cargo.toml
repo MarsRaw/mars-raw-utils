@@ -147,7 +147,7 @@ itertools = "0.15.0"
 futures = "0.3.28"
 dng = "1.5.0"
 clap_complete = "4.3.1"
-
+dateparser = "0.3.1"
 
 [patch.crates-io]
 jpeg-decoder = { git = "https://github.com/MarsRaw/jpeg-decoder.git", branch = "optional-zero-ac63" }

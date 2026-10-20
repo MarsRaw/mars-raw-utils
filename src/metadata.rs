@@ -1,8 +1,8 @@
 use crate::serializers;
+use chrono::{DateTime, Utc};
+use sciimg::prelude::*;
 use sciimg::quaternion::Quaternion;
 use serde::{Deserialize, Serialize};
-
-use sciimg::prelude::*;
 
 use anyhow::Result;
 use std::fs::File;
@@ -14,7 +14,7 @@ pub trait ImageMetadata {
     fn get_sol(&self) -> u32;
     fn get_imageid(&self) -> String;
     fn get_caption(&self) -> String;
-    fn get_date_taken_utc(&self) -> String;
+    fn get_date_taken_utc(&self) -> DateTime<Utc>;
     fn get_date_taken_mars(&self) -> Option<String>;
     fn get_subframe_rect(&self) -> Option<Vec<f64>>;
     fn get_scale_factor(&self) -> u32;
@@ -30,7 +30,7 @@ pub trait ImageMetadata {
     fn get_mast_el(&self) -> Option<f64>;
     fn get_sclk(&self) -> Option<f64>;
     fn is_thumbnail(&self) -> bool;
-    fn get_date_received(&self) -> String;
+    fn get_date_received(&self) -> DateTime<Utc>;
     fn get_xyz(&self) -> Option<Vec<f64>>;
     fn get_dimension(&self) -> Option<Vec<f64>>;
     fn get_sample_type(&self) -> String;
@@ -45,7 +45,10 @@ pub struct Metadata {
     pub sol: u32,
     pub imageid: String,
     pub caption: String,
-    pub date_taken_utc: String,
+
+    #[serde(with = "serializers::as_utc_datetime")]
+    pub date_taken_utc: DateTime<Utc>,
+
     pub date_taken_mars: Option<String>,
     pub subframe_rect: Option<Vec<f64>>,
     pub scale_factor: u32,
@@ -59,8 +62,8 @@ pub struct Metadata {
     #[serde(default = "serializers::default_false")]
     pub thumbnail: bool,
 
-    #[serde(default = "serializers::default_blank")]
-    pub date_received: String,
+    #[serde(with = "serializers::as_utc_datetime")]
+    pub date_received: DateTime<Utc>,
 
     #[serde(default = "serializers::default_blank")]
     pub sample_type: String,

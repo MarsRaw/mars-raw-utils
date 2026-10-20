@@ -14,6 +14,8 @@ pub use crate::metadata;
 pub use crate::min;
 pub use crate::msl;
 pub use crate::nsyt;
+pub use crate::psyche;
+pub use crate::psyche::fetch::PsycheFetch;
 pub use crate::remotequery;
 pub use crate::remotequery::FetchError;
 pub use crate::time;

@@ -1,9 +1,9 @@
-use crate::serializers::{as_cahvore, as_quaternion, as_tuple};
+use crate::serializers::{as_cahvore, as_quaternion, as_tuple, as_utc_datetime};
 use crate::{constants, metadata::*};
-use sciimg::prelude::*;
-
 use anyhow::anyhow;
 use anyhow::Result;
+use chrono::{DateTime, Utc};
+use sciimg::prelude::*;
 use sciimg::quaternion::Quaternion;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -70,13 +70,17 @@ pub struct ImageRecord {
     pub sample_type: String,
     pub date_taken_mars: String,
     pub credit: String,
-    pub date_taken_utc: String,
+
+    #[serde(with = "as_utc_datetime")]
+    pub date_taken_utc: DateTime<Utc>,
     pub json_link: String,
     pub link: String,
     pub drive: String,
     pub title: String,
     pub site: u32,
-    pub date_received: String,
+
+    #[serde(with = "as_utc_datetime")]
+    pub date_received: DateTime<Utc>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -93,8 +97,8 @@ pub struct M20ApiResults {
 }
 
 impl ImageMetadata for ImageRecord {
-    fn get_date_received(&self) -> String {
-        self.date_received.clone()
+    fn get_date_received(&self) -> DateTime<Utc> {
+        self.date_received
     }
 
     fn get_xyz(&self) -> Option<Vec<f64>> {
@@ -129,8 +133,8 @@ impl ImageMetadata for ImageRecord {
         self.caption.clone()
     }
 
-    fn get_date_taken_utc(&self) -> String {
-        self.date_taken_utc.clone()
+    fn get_date_taken_utc(&self) -> DateTime<Utc> {
+        self.date_taken_utc
     }
 
     fn get_date_taken_mars(&self) -> Option<String> {

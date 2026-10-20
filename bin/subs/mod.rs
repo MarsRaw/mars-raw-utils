@@ -137,6 +137,7 @@ pub mod nsyt;
 pub mod anaglyph;
 pub mod caldata;
 pub mod calibrate;
+pub mod compose;
 pub mod composite;
 pub mod crop;
 pub mod debayer;

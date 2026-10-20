@@ -74,6 +74,9 @@ pub mod msl;
 /// Routines for InSight image processing
 pub mod nsyt;
 
+/// Routines and data structures for Psyche image processing
+pub mod psyche;
+
 /// Single-point import for most utilized MRU API
 pub mod prelude;
 

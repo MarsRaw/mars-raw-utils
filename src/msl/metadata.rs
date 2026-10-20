@@ -1,8 +1,8 @@
-use crate::serializers::{as_cahvore, as_quaternion, as_tuple};
+use crate::serializers::{as_cahvore, as_quaternion, as_tuple, as_utc_datetime};
 use crate::{constants, metadata::*};
+use chrono::{DateTime, Utc};
 use sciimg::prelude::*;
 use sciimg::quaternion::Quaternion;
-
 use std::fs::File;
 use std::io::Read;
 
@@ -54,11 +54,19 @@ pub struct ImageRecord {
 
     #[serde(with = "as_tuple")]
     pub xyz: Option<Vec<f64>>,
-    pub created_at: String,
-    pub updated_at: String,
+
+    #[serde(with = "as_utc_datetime")]
+    pub created_at: DateTime<Utc>,
+
+    #[serde(with = "as_utc_datetime")]
+    pub updated_at: DateTime<Utc>,
     pub mission: String,
-    pub date_taken: String,
-    pub date_received: String,
+
+    #[serde(with = "as_utc_datetime")]
+    pub date_taken: DateTime<Utc>,
+
+    #[serde(with = "as_utc_datetime")]
+    pub date_received: DateTime<Utc>,
     pub instrument_sort: u32,
     pub sample_type_sort: u32,
     pub is_thumbnail: bool,
@@ -79,8 +87,8 @@ pub struct MslApiResults {
 }
 
 impl ImageMetadata for ImageRecord {
-    fn get_date_received(&self) -> String {
-        self.date_received.clone()
+    fn get_date_received(&self) -> DateTime<Utc> {
+        self.date_received
     }
 
     fn get_xyz(&self) -> Option<Vec<f64>> {
@@ -115,8 +123,8 @@ impl ImageMetadata for ImageRecord {
         self.description.clone()
     }
 
-    fn get_date_taken_utc(&self) -> String {
-        self.date_taken.clone()
+    fn get_date_taken_utc(&self) -> DateTime<Utc> {
+        self.date_taken
     }
 
     fn get_date_taken_mars(&self) -> Option<String> {

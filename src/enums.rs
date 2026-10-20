@@ -9,6 +9,7 @@ pub enum Mission {
     InSight,  // InSight Lander
     MerA,     // Mars Exploration Rovers - Spirit Rover
     MerB,     // Mars Exploration Rovers - Opportunity Rover
+    Psyche,   // Psyche mission to 16 Psyche
 }
 
 /// Representation of left/right side of a stereo image with an option to simply not care (or unknown).
@@ -52,6 +53,8 @@ pub enum Instrument {
     M20EdlRdcam,
     NsytICC,
     NsytIDC,
+    PsycheCameraA,
+    PsycheCameraB,
     #[default]
     None,
 }
@@ -89,7 +92,8 @@ impl FromStr for Instrument {
             "NAV_LEFT_A" | "NAV_LEFT_B" => Instrument::MslNavCamLeft,
             "NAV_RIGHT_A" | "NAV_RIGHT_B" => Instrument::MslNavCamRight,
             "CHEMCAM_RMI" => Instrument::MslChemCam,
-
+            "A" | "PSYCHE_A" => Instrument::PsycheCameraA,
+            "B" | "PSYCHE_B" => Instrument::PsycheCameraB,
             "IDC" => Instrument::NsytIDC,
             "ICC" => Instrument::NsytICC,
             _ => Instrument::None,
