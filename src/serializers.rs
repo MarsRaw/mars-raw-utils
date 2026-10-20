@@ -688,3 +688,41 @@ pub mod as_utc_datetime {
         }
     }
 }
+
+//////////////////////////////////////////////////
+// Option<chrono::DateTime<Utc>>
+//////////////////////////////////////////////////
+
+pub mod as_utc_datetime_opt {
+    use chrono::{DateTime, Utc};
+    use dateparser::DateTimeUtc;
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(dt: &Option<DateTime<Utc>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = if let Some(s) = dt {
+            format!("{}", s.to_rfc3339())
+        } else {
+            "".to_string()
+        };
+
+        serializer.serialize_str(&s)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<DateTime<Utc>>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() {
+            Ok(None)
+        } else {
+            match s.parse::<DateTimeUtc>().map_err(serde::de::Error::custom) {
+                Err(why) => Err(why),
+                Ok(v) => Ok(Some(v.0)),
+            }
+        }
+    }
+}

@@ -21,8 +21,24 @@ struct Cli {
     verbose: bool,
 }
 
-#[derive(Subcommand)]
-enum Mru {
+macro_rules! commands {
+    ($( $(#[$meta:meta])* $variant:ident($ty:ty) ),* $(,)?) => {
+        #[derive(Subcommand)]
+        pub enum Mru {
+            $( $(#[$meta])* $variant($ty), )*
+        }
+
+        impl Mru {
+            pub async fn run(self) -> anyhow::Result<()> {
+                match self {
+                    $( Mru::$variant(args) => args.run().await, )*
+                }
+            }
+        }
+    };
+}
+
+commands! {
     MslFetch(msl::mslfetch::MslFetch),
     MslDate(msl::msldate::MslDate),
     MslLatest(msl::msllatest::MslLatest),
@@ -42,6 +58,8 @@ enum Mru {
     NsytFetch(nsyt::nsytfetch::NsytFetch),
     NsytDate(nsyt::nsytdate::NsytDate),
     NsytLatest(nsyt::nsytlatest::NsytLatest),
+
+    PsycheFetch(psyche::psychefetch::PsycheFetch),
 
     MerDate(mer::merdate::MerDate),
 
@@ -88,50 +106,11 @@ async fn main() -> Result<(), anyhow::Error> {
         stump::set_verbose(true);
     }
 
-    if let Err(why) = match args.command {
-        Mru::MslFetch(args) => args.run().await,
-        Mru::M20Fetch(args) => args.run().await,
-        Mru::NsytFetch(args) => args.run().await,
-        Mru::Calibrate(args) => args.run().await,
-        Mru::MslDate(args) => args.run().await,
-        Mru::MslLatest(args) => args.run().await,
-        Mru::MslLocation(args) => args.run().await,
-        Mru::MslRunOn(args) => args.run().await,
-        Mru::MslWeather(args) => args.run().await,
-        Mru::M20Date(args) => args.run().await,
-        Mru::M20Latest(args) => args.run().await,
-        Mru::M20RunOn(args) => args.run().await,
-        Mru::M20Weather(args) => args.run().await,
-        Mru::NsytDate(args) => args.run().await,
-        Mru::M20EcamAssemble(args) => args.run().await,
-        Mru::M20SherlocColorizer(args) => args.run().await,
-        Mru::M20Location(args) => args.run().await,
-        Mru::NsytLatest(args) => args.run().await,
-        Mru::MerDate(args) => args.run().await,
-        Mru::Anaglyph(args) => args.run().await,
-        Mru::Range(args) => args.run().await,
-        Mru::Composite(args) => args.run().await,
-        Mru::Compose(args) => args.run().await,
-        Mru::Linearize(args) => args.run().await,
-        Mru::Crop(args) => args.run().await,
-        Mru::Debayer(args) => args.run().await,
-        Mru::DiffGif(args) => args.run().await,
-        Mru::FocusMerge(args) => args.run().await,
-        Mru::MeanStack(args) => args.run().await,
-        Mru::HpcFilter(args) => args.run().await,
-        Mru::Inpaint(args) => args.run().await,
-        Mru::Levels(args) => args.run().await,
-        Mru::Info(args) => args.run().await,
-        Mru::Xeye(args) => args.run().await,
-        Mru::Profile(args) => args.run().await,
-        Mru::Decorr(args) => args.run().await,
-        Mru::UpdateCalData(args) => args.run().await,
-        Mru::Pds2Png(args) => args.run().await,
-        Mru::Passes(args) => args.run().await,
-    } {
+    if let Err(why) = args.command.run().await {
         error!("{}", "Unhandled program error:".red());
         error!("{}", why);
-    };
+    }
+
     info!("Runtime: {}s", t1.elapsed().as_secs_f64());
     Ok(())
 }

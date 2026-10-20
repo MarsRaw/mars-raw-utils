@@ -1,8 +1,15 @@
 use crate::{
-    calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    marsimage::MarsImage, memcache::load_image, util,
+    calibfile,
+    calibrate::*,
+    calprofile::CalProfile,
+    decompanding,
+    enums::{self, Instrument},
+    marsimage::MarsImage,
+    memcache::load_image,
+    metadata::MissionMetadata,
+    util,
 };
-use anyhow::{Error, Result};
+use anyhow::{anyhow, Error, Result};
 use sciimg::{camera::cahvore::linearity, image::Image, path};
 
 #[derive(Copy, Clone)]
@@ -83,8 +90,33 @@ impl Calibration for M20EECam {
 
         let mut raw = MarsImage::open(input_file, instrument);
 
-        // Override CAHVORE linearity
-        raw.metadata.camera_model_component_list.linearity = linearity::LINEARITY_FISHEYE;
+        // Override default linearity
+        match &mut raw.metadata.mission {
+            MissionMetadata::Rover(md) => {
+                md.camera_model_component_list.linearity = linearity::LINEARITY_FISHEYE
+            }
+            _ => {
+                return Err(anyhow!(
+                    "Received nonsurface metadata when surface (rover) metadata was expected"
+                ))
+            }
+        };
+
+        let subframe_rect = if let Some(md) = raw.metadata.as_rover() {
+            md.subframe_rect.clone()
+        } else {
+            return Err(anyhow!(
+                "Received nonsurface metadata when surface (rover) metadata was expected"
+            ));
+        };
+
+        let scale_factor = if let Some(md) = raw.metadata.as_rover() {
+            md.scale_factor
+        } else {
+            return Err(anyhow!(
+                "Received nonsurface metadata when surface (rover) metadata was expected"
+            ));
+        };
 
         let data_max = if cal_context.apply_ilt {
             info!("Decompanding...");
@@ -106,11 +138,7 @@ impl Calibration for M20EECam {
         raw.image.apply_bias_subtraction(bias);
 
         info!("Flatfielding...");
-        let scale_factor = if raw.metadata.scale_factor >= 1 {
-            raw.metadata.scale_factor
-        } else {
-            1
-        };
+        let scale_factor = if scale_factor >= 1 { scale_factor } else { 1 };
         let scale_factor_str = format!("sf{}", scale_factor);
 
         let mut flat = match calibfile::get_calibration_file_for_instrument(
@@ -156,7 +184,7 @@ impl Calibration for M20EECam {
         //     }
         // };
 
-        if let Some(rect) = &raw.metadata.subframe_rect {
+        if let Some(rect) = &subframe_rect {
             flat.crop(
                 (rect[0] as usize - 1) / scale_factor as usize,
                 (rect[1] as usize - 1) / scale_factor as usize,
@@ -198,11 +226,18 @@ impl Calibration for M20EECam {
         // Trim off border pixels
 
         if cal_context.auto_subframing {
-            if raw.metadata.scale_factor == 1 {
-                if let Some(rect) = &raw.metadata.subframe_rect {
+            if scale_factor == 1 {
+                if let Some(rect) = &subframe_rect {
                     //rect[0] += 1.0;
                     let new_rect = vec![rect[0] + 2.0, rect[1] + 2.0, rect[2] - 2.0, rect[3] - 2.0];
-                    raw.metadata.subframe_rect = Some(new_rect);
+                    match &mut raw.metadata.mission {
+                        MissionMetadata::Rover(md) => md.subframe_rect = Some(new_rect),
+                        _ => {
+                                return Err(anyhow!(
+                                    "Received nonsurface metadata when surface (rover) metadata was expected"
+                                ))
+                            }
+                     }
                 }
             }
             let crop_to_width = raw.image.width - 4;

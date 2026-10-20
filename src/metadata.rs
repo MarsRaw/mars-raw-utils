@@ -1,4 +1,8 @@
-use crate::serializers;
+use crate::enums::Mission;
+use crate::serializers::{
+    as_cahvore, as_quaternion, as_tuple, as_utc_datetime, as_utc_datetime_opt, default_blank,
+    default_false, default_vec_f64_none,
+};
 use chrono::{DateTime, Utc};
 use sciimg::prelude::*;
 use sciimg::quaternion::Quaternion;
@@ -8,46 +12,39 @@ use anyhow::Result;
 use std::fs::File;
 use std::io::Read;
 
-pub trait ImageMetadata {
-    fn get_link(&self) -> String;
-    fn get_credit(&self) -> String;
-    fn get_sol(&self) -> u32;
-    fn get_imageid(&self) -> String;
-    fn get_caption(&self) -> String;
-    fn get_date_taken_utc(&self) -> DateTime<Utc>;
-    fn get_date_taken_mars(&self) -> Option<String>;
-    fn get_subframe_rect(&self) -> Option<Vec<f64>>;
-    fn get_scale_factor(&self) -> u32;
-    fn get_instrument(&self) -> String;
-    fn get_filter_name(&self) -> Option<String>;
-    fn get_camera_vector(&self) -> Option<Vec<f64>>;
-    fn get_camera_model_component_list(&self) -> Cahvore;
-    fn get_camera_position(&self) -> Option<Vec<f64>>;
-    fn get_camera_model_type(&self) -> Option<String>;
-    fn get_site(&self) -> Option<u32>;
-    fn get_drive(&self) -> Option<u32>;
-    fn get_mast_az(&self) -> Option<f64>;
-    fn get_mast_el(&self) -> Option<f64>;
-    fn get_sclk(&self) -> Option<f64>;
-    fn is_thumbnail(&self) -> bool;
-    fn get_date_received(&self) -> DateTime<Utc>;
-    fn get_xyz(&self) -> Option<Vec<f64>>;
-    fn get_dimension(&self) -> Option<Vec<f64>>;
-    fn get_sample_type(&self) -> String;
-    fn get_remote_image_url(&self) -> String;
-    fn get_attitude(&self) -> Option<Quaternion>;
+#[derive(Serialize, Deserialize, Clone, Default)]
+pub struct ProcessingState {
+    pub decompand: bool,
+    pub debayer: bool,
+    pub flatfield: bool,
+    pub radiometric: bool,
+    pub inpaint: bool,
+    pub cropped: bool,
+    pub history: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
-pub struct Metadata {
+pub struct ImageMetadata {
     pub link: String,
     pub credit: String,
-    pub sol: u32,
     pub imageid: String,
     pub caption: String,
-
-    #[serde(with = "serializers::as_utc_datetime")]
+    #[serde(with = "as_utc_datetime")]
     pub date_taken_utc: DateTime<Utc>,
+    #[serde(with = "as_utc_datetime")]
+    pub date_received: DateTime<Utc>,
+    #[serde(default = "default_blank")]
+    pub remote_image_url: String,
+    #[serde(with = "as_utc_datetime_opt")]
+    pub created_at: Option<DateTime<Utc>>,
+    #[serde(with = "as_utc_datetime_opt")]
+    pub updated_at: Option<DateTime<Utc>>,
+    pub derived_filename: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Default)]
+pub struct RoverMetadata {
+    pub sol: u32,
 
     pub date_taken_mars: Option<String>,
     pub subframe_rect: Option<Vec<f64>>,
@@ -59,102 +56,109 @@ pub struct Metadata {
     pub mast_el: Option<f64>,
     pub sclk: Option<f64>,
 
-    #[serde(default = "serializers::default_false")]
+    #[serde(default = "default_false")]
     pub thumbnail: bool,
 
-    #[serde(with = "serializers::as_utc_datetime")]
-    pub date_received: DateTime<Utc>,
-
-    #[serde(default = "serializers::default_blank")]
+    #[serde(default = "default_blank")]
     pub sample_type: String,
 
-    #[serde(
-        with = "serializers::as_tuple",
-        default = "serializers::default_vec_f64_none"
-    )]
+    #[serde(with = "as_tuple", default = "default_vec_f64_none")]
     pub dimension: Option<Vec<f64>>,
 
-    #[serde(with = "serializers::as_tuple")]
+    #[serde(with = "as_tuple")]
     pub camera_position: Option<Vec<f64>>,
 
-    #[serde(
-        with = "serializers::as_tuple",
-        default = "serializers::default_vec_f64_none"
-    )]
+    #[serde(with = "as_tuple", default = "default_vec_f64_none")]
     pub xyz: Option<Vec<f64>>,
 
     pub camera_model_type: Option<String>,
     pub site: Option<u32>,
     pub drive: Option<u32>,
 
-    #[serde(with = "serializers::as_cahvore")]
+    #[serde(with = "as_cahvore")]
     pub camera_model_component_list: Cahvore,
 
-    #[serde(default = "serializers::default_false")]
-    pub decompand: bool,
-
-    #[serde(default = "serializers::default_false")]
-    pub debayer: bool,
-
-    #[serde(default = "serializers::default_false")]
-    pub flatfield: bool,
-
-    #[serde(default = "serializers::default_false")]
-    pub radiometric: bool,
-
-    #[serde(default = "serializers::default_false")]
-    pub inpaint: bool,
-
-    #[serde(default = "serializers::default_false")]
-    pub cropped: bool,
-
-    #[serde(default = "serializers::default_blank")]
-    pub remote_image_url: String,
-
-    #[serde(default = "serializers::default_vec")]
-    pub history: Vec<String>,
-
-    #[serde(with = "serializers::as_quaternion")]
+    #[serde(with = "as_quaternion")]
     pub attitude: Option<Quaternion>,
 }
 
-pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {
-    Metadata {
-        link: im.get_link(),
-        credit: im.get_credit(),
-        sol: im.get_sol(),
-        imageid: im.get_imageid(),
-        caption: im.get_caption(),
-        date_taken_utc: im.get_date_taken_utc(),
-        date_taken_mars: im.get_date_taken_mars(),
-        subframe_rect: im.get_subframe_rect(),
-        scale_factor: im.get_scale_factor(),
-        instrument: im.get_instrument(),
-        filter_name: im.get_filter_name(),
-        decompand: serializers::default_false(),
-        debayer: serializers::default_false(),
-        flatfield: serializers::default_false(),
-        radiometric: serializers::default_false(),
-        inpaint: serializers::default_false(),
-        cropped: serializers::default_false(),
-        camera_vector: im.get_camera_vector(),
-        camera_model_component_list: im.get_camera_model_component_list(),
-        camera_position: im.get_camera_position(),
-        camera_model_type: im.get_camera_model_type(),
-        site: im.get_site(),
-        drive: im.get_drive(),
-        mast_el: im.get_mast_el(),
-        mast_az: im.get_mast_az(),
-        sclk: im.get_sclk(),
-        thumbnail: im.is_thumbnail(),
-        dimension: im.get_dimension(),
-        xyz: im.get_xyz(),
-        date_received: im.get_date_received(),
-        sample_type: im.get_sample_type(),
-        remote_image_url: im.get_remote_image_url(),
-        history: serializers::default_vec(),
-        attitude: im.get_attitude(),
+#[derive(Serialize, Deserialize, Clone, Default)]
+pub struct PsycheMetadata {
+    pub id: u32,
+    pub width: u32,
+    pub height: u32,
+    pub instrument: String,
+    pub camera_name: String,
+    pub camera_title: String,
+    pub filter: u32,
+    pub filter_name: String,
+    pub filter_wavelength: String,
+    pub target: Option<String>,
+    pub distance: Option<u32>,
+    pub orbit_number: Option<u32>,
+    pub spacecraft_clock: Option<f64>,
+    pub subframe_rect: Option<Vec<f64>>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub enum MissionMetadata {
+    Rover(RoverMetadata),
+    Psyche(PsycheMetadata),
+}
+
+impl Default for MissionMetadata {
+    fn default() -> Self {
+        MissionMetadata::Rover(RoverMetadata::default())
     }
+}
+
+#[derive(Serialize, Deserialize, Clone, Default)]
+pub struct Metadata {
+    pub flight_mission: Mission,
+    pub processing: ProcessingState,
+    pub image: ImageMetadata,
+    pub mission: MissionMetadata,
+}
+
+impl Metadata {
+    pub fn imageid(&self) -> &str {
+        &self.image.imageid
+    }
+
+    pub fn instrument(&self) -> String {
+        match &self.mission {
+            MissionMetadata::Rover(m) => m.instrument.clone(),
+            MissionMetadata::Psyche(m) => m.instrument.clone(),
+        }
+    }
+
+    pub fn from_rover(&mut self, rover_metadata: &RoverMetadata) {
+        self.mission = MissionMetadata::Rover(rover_metadata.clone())
+    }
+
+    pub fn from_psyche(&mut self, psyche_metadata: &PsycheMetadata) {
+        self.mission = MissionMetadata::Psyche(psyche_metadata.clone())
+    }
+
+    pub fn as_rover(&self) -> Option<&RoverMetadata> {
+        if let MissionMetadata::Rover(m) = &self.mission {
+            Some(m)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_psyche(&self) -> Option<&PsycheMetadata> {
+        if let MissionMetadata::Psyche(m) = &self.mission {
+            Some(m)
+        } else {
+            None
+        }
+    }
+}
+
+pub trait MetadataConvert {
+    fn to_mru_metadata(&self) -> Metadata;
 }
 
 pub fn load_image_metadata(json_path: &String) -> Result<Metadata> {

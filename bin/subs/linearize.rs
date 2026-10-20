@@ -36,7 +36,15 @@ fn linearize_mars_image(
 
     let nonlin_image = MarsImage::open(in_file, Instrument::M20MastcamZLeft);
 
-    let mast_el = if let Some(mast_el) = &nonlin_image.metadata.mast_el {
+    let rover_metadata = if let Some(md) = nonlin_image.metadata.as_rover() {
+        md
+    } else {
+        return Err(anyhow!(
+            "Linearization for nonsurface missions is not supported"
+        ));
+    };
+
+    let mast_el = if let Some(mast_el) = &rover_metadata.mast_el {
         *mast_el
     } else {
         0.0
@@ -51,7 +59,7 @@ fn linearize_mars_image(
 
         Some(&LevelOptions {
             boresight,
-            attitude: nonlin_image.metadata.attitude,
+            attitude: rover_metadata.attitude,
             invert_attitude,
         })
     } else {
@@ -77,13 +85,9 @@ fn linearize_mars_image(
         }
     };
 
-    let result = linearize::linearize_image_expanded(&nonlin_image, level_options, &extent);
-    let out_img = if let Ok(out_img) = result {
-        out_img
-    } else if let Err(why) = result {
-        return Err(anyhow!("Error linearizing image: {:?}", why));
-    } else {
-        return Err(anyhow!("Undetermined error linearizing image"));
+    let out_img = match linearize::linearize_image_expanded(&nonlin_image, level_options, &extent) {
+        Ok(out_img) => out_img,
+        Err(why) => return Err(anyhow!("Error linearizing image: {:?}", why)),
     };
 
     if let Err(why) = out_img.save(&out_file) {

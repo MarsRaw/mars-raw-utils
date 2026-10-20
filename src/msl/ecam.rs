@@ -1,12 +1,18 @@
 use crate::{
-    calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument, inpaintmask,
-    marsimage::MarsImage, util,
+    calibfile,
+    calibrate::*,
+    calprofile::CalProfile,
+    enums::{self, Instrument},
+    inpaintmask,
+    marsimage::MarsImage,
+    metadata::MissionMetadata,
+    util,
 };
 
 use sciimg::camera::cahvore::linearity;
 use sciimg::path;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 // Doesn't support subframed images yet since we won't know what part of the sensor was
 // used from the raws alone. If it's in the JSON response from the raw image site, then
@@ -111,7 +117,16 @@ impl Calibration for MslEcam {
         let mut raw = MarsImage::open(input_file, instrument);
 
         // Override default linearity
-        raw.metadata.camera_model_component_list.linearity = linearity::LINEARITY_PERSPECTIVE;
+        match &mut raw.metadata.mission {
+            MissionMetadata::Rover(md) => {
+                md.camera_model_component_list.linearity = linearity::LINEARITY_PERSPECTIVE
+            }
+            _ => {
+                return Err(anyhow!(
+                    "Received nonsurface metadata when surface (rover) metadata was expected"
+                ))
+            }
+        };
 
         // Exclude subframed images for now...
         if inpaintmask::inpaint_supported_for_instrument(instrument) && raw.image.height >= 1022 {
@@ -143,13 +158,15 @@ impl Calibration for MslEcam {
         if path::file_exists(&flat_file_path) {
             let mut flat = MarsImage::open(&flat_file_path, instrument);
 
-            if let Some(rect) = &raw.metadata.subframe_rect {
-                flat.crop(
-                    rect[0] as usize - 1,
-                    rect[1] as usize - 1,
-                    rect[2] as usize,
-                    rect[3] as usize,
-                );
+            if let Some(md) = raw.metadata.as_rover() {
+                if let Some(rect) = &md.subframe_rect {
+                    flat.crop(
+                        rect[0] as usize - 1,
+                        rect[1] as usize - 1,
+                        rect[2] as usize,
+                        rect[3] as usize,
+                    );
+                }
             }
 
             raw.flatfield_with_flat(&flat);

@@ -34,7 +34,7 @@ pub struct NsytFetch {
     thumbnails: bool,
 
     #[arg(long, short = 'N', help = "Max number of results")]
-    num: Option<u32>,
+    num: Option<usize>,
 
     #[arg(long, short = 'p', help = "Results page (starts at 1)")]
     page: Option<u8>,
@@ -152,9 +152,15 @@ impl RunnableSubcommand for NsytFetch {
                 only_new: self.new,
                 product_types: vec![],
                 output_path: output,
+                start_date: None,
+                end_date: None,
+                filter: None,
+                filter_num: None,
+                filter_wavelenth: None,
             },
             cb_on_total_known,
             cb_on_image_downloaded,
+            self.num,
         )
         .await
         {

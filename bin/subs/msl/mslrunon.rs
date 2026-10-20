@@ -45,9 +45,9 @@ impl SequenceStats {
 
     pub fn add(&mut self, md: &Metadata) {
         self.count += 1;
-        if md.instrument.to_uppercase().contains("LEFT") {
+        if md.instrument().to_uppercase().contains("LEFT") {
             self.left += 1;
-        } else if md.instrument.to_uppercase().contains("RIGHT") {
+        } else if md.instrument().to_uppercase().contains("RIGHT") {
             // Some cameras are mono. They won't use left/right counts
             self.right += 1;
         }
@@ -85,6 +85,11 @@ impl RunnableSubcommand for MslRunOn {
             only_new: false,
             product_types: vec![],
             output_path: "".to_string(),
+            start_date: None,
+            end_date: None,
+            filter: None,
+            filter_num: None,
+            filter_wavelenth: None,
         };
 
         let mut sequences: HashMap<String, SequenceStats> = HashMap::new();
@@ -92,9 +97,9 @@ impl RunnableSubcommand for MslRunOn {
 
         available
             .into_iter()
-            .filter(|md| md.imageid.len() >= 36)
+            .filter(|md| md.imageid().len() >= 36)
             .for_each(|md| {
-                let seqid = md.imageid[25..34].to_string();
+                let seqid = md.imageid()[25..34].to_string();
 
                 if let Some(ss) = sequences.get_mut(&seqid) {
                     ss.add(&md)

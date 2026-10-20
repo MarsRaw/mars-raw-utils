@@ -1,3 +1,5 @@
+use crate::enums::Mission;
+use crate::metadata::MissionMetadata::Psyche;
 use crate::serializers::as_utc_datetime;
 use crate::{constants, metadata::*};
 use chrono::DateTime;
@@ -46,82 +48,53 @@ pub struct PsycheApiResults {
     pub more: bool,
 }
 
-impl ImageMetadata for ImageRecord {
-    fn get_date_received(&self) -> DateTime<Utc> {
-        self.date_received
+impl MetadataConvert for ImageRecord {
+    fn to_mru_metadata(&self) -> Metadata {
+        Metadata {
+            flight_mission: Mission::Psyche,
+            processing: ProcessingState::default(),
+            image: ImageMetadata {
+                link: self.url.clone(),
+                credit: constants::credit::PSYCHE_IMAGER_DEFAULT_CREDIT.to_owned(),
+                imageid: self.image_id.clone(),
+                caption: "".to_owned(),
+                date_taken_utc: self.date,
+                date_received: self.date_received,
+                remote_image_url: self.url.clone(),
+                created_at: Some(self.created_at),
+                updated_at: Some(self.updated_at),
+                derived_filename: assemble_output_file_base_name(self),
+            },
+            mission: Psyche(PsycheMetadata {
+                id: self.id,
+                width: self.width,
+                height: self.height,
+                instrument: self.camera.clone(),
+                camera_name: self.camera_name.clone(),
+                camera_title: self.camera_title.clone(),
+                filter: self.filter,
+                filter_name: self.filter_name.clone(),
+                filter_wavelength: self.filter_wavelength.clone(),
+                target: self.target.clone(),
+                distance: self.distance,
+                orbit_number: self.orbit_number,
+                spacecraft_clock: self.spacecraft_clock,
+                subframe_rect: None,
+            }),
+        }
     }
+}
 
-    fn get_id(&self) -> u32 {
-        self.id
-    }
-
-    fn get_imageid(&self) -> String {
-        self.image_id.clone()
-    }
-
-    fn get_url(&self) -> String {
-        self.url.clone()
-    }
-
-    fn get_date_taken_utc(&self) -> DateTime<Utc> {
-        self.date
-    }
-
-    fn get_width(&self) -> u32 {
-        self.width
-    }
-
-    fn get_height(&self) -> u32 {
-        self.height
-    }
-
-    fn get_instrument(&self) -> String {
-        self.camera.clone()
-    }
-
-    fn get_camera_name(&self) -> String {
-        self.camera_name.clone()
-    }
-
-    fn get_camera_title(&self) -> String {
-        self.camera_title.clone()
-    }
-
-    fn get_filter(&self) -> u32 {
-        self.filter
-    }
-
-    fn get_filter_name(&self) -> String {
-        self.filter_name.clone()
-    }
-
-    fn get_filter_wavelength(&self) -> String {
-        self.filter_wavelength.clone()
-    }
-
-    fn get_target(&self) -> Option<String> {
-        self.target.clone()
-    }
-
-    fn get_distance(&self) -> Option<u32> {
-        self.distance
-    }
-
-    fn get_orbit_number(&self) -> Option<u32> {
-        self.orbit_number
-    }
-
-    fn get_spacecraft_clock(&self) -> Option<f64> {
-        self.spacecraft_clock
-    }
-
-    fn get_created_at(&self) -> DateTime<Utc> {
-        self.created_at
-    }
-
-    fn get_updated_at(&self) -> DateTime<Utc> {
-        self.updated_at
-    }
+fn assemble_output_file_base_name(image_rec: &ImageRecord) -> String {
+    format!(
+        "PSY_{}_{}_{}.png",
+        match image_rec.spacecraft_clock {
+            Some(sc) => ((sc * 100.0).round() / 100.0).to_string().replace(".", "-"),
+            None => image_rec.image_id.clone(),
+        },
+        image_rec.camera,
+        image_rec.filter_name.to_uppercase().replace(" ", "_"),
+    )
 }
 
 pub fn load_metadata_file(file_path: String) -> Result<Metadata> {
@@ -142,5 +115,5 @@ pub fn load_metadata_file(file_path: String) -> Result<Metadata> {
 
     let res: ImageRecord = serde_json::from_str(s.as_str()).unwrap();
 
-    Ok(convert_to_std_metadata(&res))
+    Ok(res.to_mru_metadata())
 }

@@ -132,6 +132,7 @@ pub mod m20;
 pub mod mer;
 pub mod msl;
 pub mod nsyt;
+pub mod psyche;
 
 // Multimission subcommands:
 pub mod anaglyph;

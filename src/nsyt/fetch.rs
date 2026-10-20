@@ -1,6 +1,7 @@
 use crate::constants;
 use crate::jsonfetch;
-use crate::metadata::{convert_to_std_metadata, Metadata};
+use crate::metadata::Metadata;
+use crate::metadata::MetadataConvert;
 use crate::nsyt::metadata::*;
 use crate::remotequery;
 use crate::remotequery::FetchError;
@@ -116,7 +117,7 @@ fn api_results_to_image_vec(
             || !query.search.is_empty() && !query.search.iter().any(|i| image.imageid.contains(i)))
     });
 
-    image_records.map(convert_to_std_metadata).collect()
+    image_records.map(|f| f.to_mru_metadata()).collect()
 }
 
 /// Fetches a page via `fetch_page` and filters the results through `api_results_to_image_vec`.

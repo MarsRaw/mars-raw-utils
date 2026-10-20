@@ -58,8 +58,7 @@ impl Calibration for PsycheCameraA {
             } // else, don't bother
 
             info!("Applying inpainting repair of blemishes...");
-            let mut inpaint_mask =
-                inpaintmask::load_mask(enums::Instrument::PsycheCameraA).unwrap();
+            let inpaint_mask = inpaintmask::load_mask(enums::Instrument::PsycheCameraA).unwrap();
             raw.apply_inpaint_fix_with_mask(&inpaint_mask);
 
             if raw.image.width == 1648 && raw.image.height == 1200 {

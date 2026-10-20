@@ -8,7 +8,13 @@ pub mod env {
     pub const HTTP_TIMEOUT_VAR: &str = "MRU_HTTP_TIMEOUT";
 }
 
+pub mod credit {
+    pub const PSYCHE_IMAGER_DEFAULT_CREDIT: &str = "NASA/JPL-Caltech/ASU";
+}
+
 pub mod url {
+    pub const NASA_RAW_HOST_URL: &str = "https://solarsystem.nasa.gov";
+
     pub const MSL_RAW_WEBSERVICE_URL: &str = "https://mars.nasa.gov/api/v1/raw_image_items/";
     pub const MSL_LATEST_WEBSERVICE_URL: &str =
         "https://mars.nasa.gov/api/v1/raw_image_items/msl/latest/";

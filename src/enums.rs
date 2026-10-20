@@ -1,15 +1,31 @@
-use std::num::ParseIntError;
 use std::str::FromStr;
+use std::{fmt, num::ParseIntError};
+
+use serde::{Deserialize, Serialize};
 
 // Supported missions
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 pub enum Mission {
-    MSL,      // Mars Science Laboratory - Curiosity Rover
+    MSL, // Mars Science Laboratory - Curiosity Rover
+    #[default]
     Mars2020, // Perseverance Rover
-    InSight,  // InSight Lander
-    MerA,     // Mars Exploration Rovers - Spirit Rover
-    MerB,     // Mars Exploration Rovers - Opportunity Rover
-    Psyche,   // Psyche mission to 16 Psyche
+    InSight, // InSight Lander
+    MerA, // Mars Exploration Rovers - Spirit Rover
+    MerB, // Mars Exploration Rovers - Opportunity Rover
+    Psyche, // Psyche mission to 16 Psyche
+}
+
+impl fmt::Display for Mission {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Mission::InSight => write!(f, "InSight"),
+            Mission::Mars2020 => write!(f, "Mars2020"),
+            Mission::MSL => write!(f, "Mars Science Laboratory"),
+            Mission::MerA => write!(f, "Mars Exploration Rover A"),
+            Mission::MerB => write!(f, "Mars Exploration Rover B"),
+            Mission::Psyche => write!(f, "Psyche"),
+        }
+    }
 }
 
 /// Representation of left/right side of a stereo image with an option to simply not care (or unknown).

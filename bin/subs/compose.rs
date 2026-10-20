@@ -2,14 +2,11 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use clap::Parser;
-use sciimg::enums::ImageMode;
 use sciimg::image::Image;
 
 use anyhow::anyhow;
 
-use crate::marsimage::MarsImage;
 use crate::subs::runnable::RunnableSubcommand;
-use crate::{caldata, pb_create, pb_inc, pb_set_length, pb_set_print};
 
 pb_create!();
 

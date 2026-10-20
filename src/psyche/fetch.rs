@@ -1,14 +1,14 @@
 use crate::constants;
 use crate::jsonfetch;
-use crate::metadata::{convert_to_std_metadata, Metadata};
+use crate::metadata::Metadata;
+use crate::metadata::MetadataConvert;
 use crate::psyche::metadata::*;
 use crate::remotequery;
 use crate::remotequery::FetchError;
 use crate::util::{stringvec, stringvec_b, InstrumentMap};
 use crate::{f, t};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use futures::future;
-use sciimg::not_implemented;
 use tokio;
 
 /// Submits a query to the M20 api endpoint
@@ -18,6 +18,19 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
     //https://solarsystem.nasa.gov/api/v1/raw_image_psyche_items/?order=date_received+desc&per_page=60&page=0&search=(A)%3Acamera
     //https://solarsystem.nasa.gov/api/v1/raw_image_psyche_items/?order=date_received+desc&per_page=60&page=0&condition_1=2025%2F12%2F01%3Adate_received%3Agte&condition_2=2025-12-6%3Adate_received%3Alt&search=(A)%3Acamera
     //https://solarsystem.nasa.gov/api/v1/raw_image_psyche_items/?order=date_received+desc&per_page=60&page=0&condition_1=2025%2F12%2F01%3Adate_received%3Agte&condition_2=2025-12-6%3Adate_received%3Alt&search=(A%7CB)%3Acamera
+
+    let start_date = if let Some(start_date) = &query.start_date {
+        start_date
+    } else {
+        return Err(anyhow!("Start date is required for Psyche queries"));
+    };
+
+    let end_date = if let Some(end_date) = &query.end_date {
+        end_date
+    } else {
+        return Err(anyhow!("End date is required for Psyche queries"));
+    };
+
     let mut params = vec![
         stringvec("feedtype", "json"),
         stringvec_b("per_page", format!("{}", query.num_per_page)),
@@ -25,11 +38,11 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
         stringvec_b("search", format!("({}):camera", joined_cameras)),
         stringvec_b(
             "condition_1",
-            format!("{}:date_received:gte", query.start_date.format("%Y-%m-%d")),
+            format!("{}:date_received:gte", start_date.format("%Y-%m-%d")),
         ),
         stringvec_b(
             "condition_2",
-            format!("{}:date_received:lte", query.end_date.format("%Y-%m-%d")),
+            format!("{}:date_received:lte", end_date.format("%Y-%m-%d")),
         ),
     ];
 
@@ -93,7 +106,7 @@ fn api_results_to_image_vec(
             }
         });
 
-    image_records.map(convert_to_std_metadata).collect()
+    image_records.map(|f| f.to_mru_metadata()).collect()
 }
 
 /// Fetches a page via `fetch_page` and filters the results through `api_results_to_image_vec`.

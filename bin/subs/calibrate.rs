@@ -79,12 +79,13 @@ impl Calibrate {
         info!("Checking for metadata file at {}", metadata_file);
         if path::file_exists(metadata_file.as_str()) {
             vprintln!("Metadata file exists for loaded image: {}", metadata_file);
+
             match metadata::load_image_metadata(&metadata_file) {
                 Err(_) => {
                     warn!("Could not load metadata file!");
                     None
                 } // Error loading the metadata file
-                Ok(md) => calibrator_for_instrument_from_str(&md.instrument),
+                Ok(md) => calibrator_for_instrument_from_str(&md.instrument()),
             }
         } else {
             // metadata file is missing

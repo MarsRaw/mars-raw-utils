@@ -116,6 +116,7 @@ impl MarsImage {
 
     pub fn update_history(&mut self) {
         self.metadata
+            .processing
             .history
             .push(env::args().collect::<Vec<String>>().join(" "));
     }
@@ -126,7 +127,7 @@ impl MarsImage {
         }
         info!("Writing image buffer to file at {}", to_file);
         if path::parent_exists_and_writable(to_file) {
-            if self.metadata.history.is_empty() {
+            if self.metadata.processing.history.is_empty() {
                 warn!("Saving MarsImage without history");
             }
             util::save_image_json(to_file, &self.metadata, None).unwrap();
@@ -144,35 +145,35 @@ impl MarsImage {
         self.image.apply_weight_on_band(r_scalar, 0);
         self.image.apply_weight_on_band(g_scalar, 1);
         self.image.apply_weight_on_band(b_scalar, 2);
-        self.metadata.radiometric = true;
+        self.metadata.processing.radiometric = true;
     }
 
     pub fn debayer(&mut self) {
         self.image.debayer();
 
-        self.metadata.debayer = true;
+        self.metadata.processing.debayer = true;
     }
 
     pub fn debayer_with_method(&mut self, method: DebayerMethod) {
         vprintln!("Debayering with method: {:?}", method);
         self.image.debayer_with_method(method);
 
-        self.metadata.debayer = true;
+        self.metadata.processing.debayer = true;
     }
 
     pub fn decompand(&mut self, ilt: &LookUpTable) {
         self.image.decompand(&ilt.to_array());
-        self.metadata.decompand = true;
+        self.metadata.processing.decompand = true;
     }
 
     pub fn compand(&mut self, ilt: &LookUpTable) {
         self.image.compand(&ilt.to_array());
-        self.metadata.decompand = false;
+        self.metadata.processing.decompand = false;
     }
 
     pub fn apply_flat(&mut self, flat: &Image) {
         self.image.apply_flat(flat);
-        self.metadata.flatfield = true;
+        self.metadata.processing.flatfield = true;
     }
 
     pub fn flatfield_with_flat(&mut self, flat: &MarsImage) {
@@ -191,7 +192,10 @@ impl MarsImage {
             return;
         };
 
-        let subframe_opt = self.metadata.subframe_rect.clone();
+        let subframe_opt = match &self.metadata.mission {
+            MissionMetadata::Rover(md) => md.subframe_rect.clone(),
+            MissionMetadata::Psyche(md) => md.subframe_rect.clone(),
+        };
 
         if let Some(sf) = subframe_opt {
             info!(
@@ -250,7 +254,7 @@ impl MarsImage {
         fixed.set_mode(self.image.get_mode());
         self.image = fixed;
 
-        self.metadata.inpaint = true;
+        self.metadata.processing.inpaint = true;
     }
 
     pub fn hot_pixel_correction(&mut self, window_size: i32, threshold: f32) {

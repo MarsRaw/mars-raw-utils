@@ -113,11 +113,26 @@ impl StereoRange {
         }
 
         let mut out = MarsImage::from_image(&img, template.instrument);
+
+        let mut out_rover_metadata = if let Some(rover_metadata) = template.metadata.as_rover() {
+            rover_metadata.clone()
+        } else {
+            return Err(anyhow!(
+                "Non surface metadata constructed when a surface (rover) metadata was expected"
+            ));
+        };
+
         out.metadata = template.metadata.clone();
-        out.metadata.camera_model_component_list = self.model.clone();
-        out.metadata.subframe_rect = None;
-        out.metadata.camera_model_type = Some("CAHV".to_string());
+
+        // The new model describes the *output* pixel grid, so the subframe offset
+        // and scale have already been folded in.
+        out_rover_metadata.camera_model_component_list = self.model.clone();
+        out_rover_metadata.subframe_rect = None;
+        // Adjust to whatever your pipeline expects for a distortion-free model:
+        out_rover_metadata.camera_model_type = Some("CAHV".to_string());
         out.update_history();
+        out.metadata.from_rover(&out_rover_metadata);
+
         Ok(out)
     }
 }
@@ -198,8 +213,16 @@ pub fn compute_stereo_range(
         return Err(anyhow!("compute_stereo_range: bad range limits"));
     }
 
-    let model_l = model_for_image(left);
-    let model_r = model_for_image(right);
+    let model_l = if let Some(model) = model_for_image(left) {
+        model
+    } else {
+        return Err(anyhow!("Camera model not available for image"));
+    };
+    let model_r = if let Some(model) = model_for_image(right) {
+        model
+    } else {
+        return Err(anyhow!("Camera model not available for image"));
+    };
     let pair = rectify_models(&model_l, &model_r, w, h)?;
 
     // Rectify both images onto the shared geometry.

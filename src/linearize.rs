@@ -12,22 +12,28 @@ use crate::marsimage::MarsImage;
 /// pixels (the same convention `MarsImage::flatfield` uses to crop the flat).
 /// If your metadata models are already adjusted, skip this and call
 /// `linearize_image_with_model` directly.
-pub fn model_for_image(img: &MarsImage) -> Cahvore {
-    let mut model = img.metadata.camera_model_component_list.clone();
+pub fn model_for_image(img: &MarsImage) -> Option<Cahvore> {
+    let rover_metadata = if let Some(rover_metadata) = img.metadata.as_rover() {
+        rover_metadata
+    } else {
+        return None;
+    };
 
-    if let Some(sf) = &img.metadata.subframe_rect {
+    let mut model = rover_metadata.camera_model_component_list.clone();
+
+    if let Some(sf) = &rover_metadata.subframe_rect {
         if sf.len() >= 2 {
             // source pixel in the loaded image = full-frame pixel - (origin - 1)
             model = model.shift(-(sf[0] - 1.0), -(sf[1] - 1.0));
         }
     }
 
-    if img.metadata.scale_factor > 1 {
-        let s = 1.0 / img.metadata.scale_factor as f64;
+    if rover_metadata.scale_factor > 1 {
+        let s = 1.0 / rover_metadata.scale_factor as f64;
         model = model.scale(s, s);
     }
 
-    model
+    Some(model)
 }
 
 /// What to do with the boresight when leveling.
@@ -86,8 +92,13 @@ pub fn linearize_image_expanded(
     level: Option<&LevelOptions>,
     extent: &Extent,
 ) -> Result<MarsImage> {
-    let model = model_for_image(src);
-    linearize_image_with_model(src, &model, *extent, level)
+    if let Some(model) = model_for_image(src) {
+        linearize_image_with_model(src, &model, *extent, level)
+    } else {
+        Err(anyhow!(
+            "Linearization with CAHVORE camera model not supported for nonsurface missions"
+        ))
+    }
 }
 
 /// Re-orient a linear (CAHV) model so its image "right" axis is horizontal.
@@ -264,6 +275,14 @@ pub fn linearize_image_with_model(
         return Err(anyhow!("linearize_image: source image is empty"));
     }
 
+    let rover_metadata = if let Some(rover_metadata) = src.metadata.as_rover() {
+        rover_metadata
+    } else {
+        return Err(anyhow!(
+            "Linearization with CAHVORE camera model not supported for nonsurface missions"
+        ));
+    };
+
     let src_w = src.image.width;
     let src_h = src.image.height;
     let num_bands = src.image.num_bands();
@@ -287,7 +306,7 @@ pub fn linearize_image_with_model(
     if let Some(opts) = level {
         let attitude = opts
             .attitude
-            .or(src.metadata.attitude)
+            .or(rover_metadata.attitude)
             .ok_or_else(|| anyhow!("linearize_image: leveling requested but no attitude"))?;
         out_model = level_model(&out_model, &attitude, opts.invert_attitude, opts.boresight)?;
     }
@@ -334,15 +353,25 @@ pub fn linearize_image_with_model(
     }
 
     let mut out = MarsImage::from_image(&out_img, src.instrument);
+
+    let mut out_rover_metadata = if let Some(rover_metadata) = src.metadata.as_rover() {
+        rover_metadata.clone()
+    } else {
+        return Err(anyhow!(
+            "Non surface metadata constructed when a surface (rover) metadata was expected"
+        ));
+    };
+
     out.metadata = src.metadata.clone();
 
     // The new model describes the *output* pixel grid, so the subframe offset
     // and scale have already been folded in.
-    out.metadata.camera_model_component_list = out_model;
-    out.metadata.subframe_rect = None;
+    out_rover_metadata.camera_model_component_list = out_model;
+    out_rover_metadata.subframe_rect = None;
     // Adjust to whatever your pipeline expects for a distortion-free model:
-    out.metadata.camera_model_type = Some("CAHV".to_string());
+    out_rover_metadata.camera_model_type = Some("CAHV".to_string());
     out.update_history();
+    out.metadata.from_rover(&out_rover_metadata);
 
     Ok(out)
 }
@@ -399,15 +428,24 @@ pub fn resample_to_model(
     }
 
     let mut out = MarsImage::from_image(&out_img, src.instrument);
+    let mut out_rover_metadata = if let Some(rover_metadata) = src.metadata.as_rover() {
+        rover_metadata.clone()
+    } else {
+        return Err(anyhow!(
+            "Non surface metadata constructed when a surface (rover) metadata was expected"
+        ));
+    };
+
     out.metadata = src.metadata.clone();
 
     // The new model describes the *output* pixel grid, so the subframe offset
     // and scale have already been folded in.
-    out.metadata.camera_model_component_list = out_model;
-    out.metadata.subframe_rect = None;
+    out_rover_metadata.camera_model_component_list = out_model;
+    out_rover_metadata.subframe_rect = None;
     // Adjust to whatever your pipeline expects for a distortion-free model:
-    out.metadata.camera_model_type = Some("CAHV".to_string());
+    out_rover_metadata.camera_model_type = Some("CAHV".to_string());
     out.update_history();
+    out.metadata.from_rover(&out_rover_metadata);
 
     Ok(out)
 }

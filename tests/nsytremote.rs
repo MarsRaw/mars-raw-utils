@@ -29,9 +29,15 @@ async fn test_nsyt_instrument_fetches() {
                 only_new: false,
                 product_types: vec![],
                 output_path: String::from(""),
+                start_date: None,
+                end_date: None,
+                filter: None,
+                filter_num: None,
+                filter_wavelenth: None,
             },
             |_| {},
             |_| {},
+            None,
         )
         .await;
     }

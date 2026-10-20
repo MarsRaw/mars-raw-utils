@@ -4,11 +4,11 @@ use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::
 use std::str::FromStr;
 
 pub fn get_cahvor(img: &MarsImage) -> Option<Cahvore> {
-    //if img.metadata.camera_model_component_list.is_valid() {
-    Some(img.metadata.camera_model_component_list.clone())
-    //} else {
-    //    None
-    //}
+    if let Some(rover_metadata) = img.metadata.as_rover() {
+        Some(rover_metadata.camera_model_component_list.clone())
+    } else {
+        None
+    }
 }
 
 pub struct Extent {
@@ -241,7 +241,12 @@ pub fn process_file<D: Drawable>(
     initial_origin: &Vector,
 ) {
     let mut img = MarsImage::open(input_file, Instrument::M20MastcamZLeft);
-    img.instrument = Instrument::from_str(img.metadata.instrument.as_str()).unwrap();
+
+    img.instrument = if let Some(rover_metadata) = img.metadata.as_rover() {
+        Instrument::from_str(rover_metadata.instrument.as_str()).unwrap()
+    } else {
+        panic!("Composite via CAHVORE camera model not supported for non-surface missions")
+    };
 
     let eye = if anaglyph {
         match util::filename_char_at_pos(input_file, 1) {
