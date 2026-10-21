@@ -5,9 +5,9 @@ use crate::mer::missiontime as mertime;
 use crate::msl::missiontime as msltime;
 use crate::nsyt::missiontime as nsyttime;
 use anyhow::Result;
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, FixedOffset};
+use chrono::{TimeZone, Utc};
 use std::time::{SystemTime, UNIX_EPOCH};
-
 pub enum TimeSystem {
     LMST,
     HLST,
@@ -50,13 +50,13 @@ pub struct MissionTime {
 }
 
 /// Perform a time calculation for the provided mission
-pub fn get_lmst(mission: Mission) -> Result<MissionTime> {
+pub fn get_lmst(mission: Mission, on_date: Option<DateTime<FixedOffset>>) -> Result<MissionTime> {
     match mission {
-        Mission::Mars2020 => m20time::get_lmst(),
-        Mission::MSL => msltime::get_lmst(),
-        Mission::InSight => nsyttime::get_lmst(),
-        Mission::MerA => mertime::get_lmst_mer_a(),
-        Mission::MerB => mertime::get_lmst_mer_b(),
+        Mission::Mars2020 => m20time::get_lmst(on_date),
+        Mission::MSL => msltime::get_lmst(on_date),
+        Mission::InSight => nsyttime::get_lmst(on_date),
+        Mission::MerA => mertime::get_lmst_mer_a(on_date),
+        Mission::MerB => mertime::get_lmst_mer_b(on_date),
         Mission::Psyche => panic!("Psyche mission time not yet supported"),
     }
 }
@@ -71,13 +71,17 @@ pub fn get_seconds_since_epoch() -> f64 {
 }
 
 // NOTE: This isn't accurate.
-pub fn get_lmst_from_epoch_secs(epoch: f64, longitude: f64) -> Result<MissionTime> {
+pub fn get_lmst_from_epoch_secs(
+    epoch: f64,
+    longitude: f64,
+    on_date: Option<DateTime<FixedOffset>>,
+) -> Result<MissionTime> {
     let jd_land = 2440587.5 + (epoch * 1000.0 / 8.64E7);
     let jd_tt_land = jd_land + (constants::time::TAI_OFFSET) / 86400.0;
     let j2000_land = jd_tt_land - 2451545.0 + 0.00014;
     let sol_offset = ((j2000_land - 4.5) / 1.027491252) + 44796.0 - 0.00096;
 
-    get_time(-sol_offset, longitude, TimeSystem::LMST)
+    get_time(-sol_offset, longitude, TimeSystem::LMST, on_date)
 }
 
 fn cos(v: f64) -> f64 {
@@ -103,8 +107,16 @@ fn t_to_hms(t: f64) -> Hms {
 
 // Based on m2020-bitbar which in turn is based on James Tauber's Mars Clock
 // See http://marsclock.com/
-pub fn get_time(sol_offset: f64, longitude: f64, time_system: TimeSystem) -> Result<MissionTime> {
-    let seconds_since_epoch = get_seconds_since_epoch();
+pub fn get_time(
+    sol_offset: f64,
+    longitude: f64,
+    time_system: TimeSystem,
+    on_date: Option<DateTime<FixedOffset>>,
+) -> Result<MissionTime> {
+    let seconds_since_epoch = match on_date {
+        Some(dt) => dt.timestamp() as f64,
+        None => get_seconds_since_epoch(),
+    };
 
     let millis = seconds_since_epoch * 1000.0;
 

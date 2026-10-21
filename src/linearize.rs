@@ -13,11 +13,7 @@ use crate::marsimage::MarsImage;
 /// If your metadata models are already adjusted, skip this and call
 /// `linearize_image_with_model` directly.
 pub fn model_for_image(img: &MarsImage) -> Option<Cahvore> {
-    let rover_metadata = if let Some(rover_metadata) = img.metadata.as_rover() {
-        rover_metadata
-    } else {
-        return None;
-    };
+    let rover_metadata = img.metadata.as_rover()?;
 
     let mut model = rover_metadata.camera_model_component_list.clone();
 

@@ -9,7 +9,7 @@ pub struct MerDate {}
 
 impl RunnableSubcommand for MerDate {
     async fn run(&self) -> Result<()> {
-        match time::get_lmst(Mission::MerA) {
+        match time::get_lmst(Mission::MerA, None) {
             Ok(mtime) => {
                 println!("MER-A / Spirit:");
                 println!(
@@ -32,7 +32,7 @@ impl RunnableSubcommand for MerDate {
             }
         };
         println!("-----------------------------------------------");
-        match time::get_lmst(Mission::MerB) {
+        match time::get_lmst(Mission::MerB, None) {
             Ok(mtime) => {
                 println!("MER-B / Opportunity:");
                 println!(

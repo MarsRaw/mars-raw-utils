@@ -118,7 +118,7 @@ impl Calibration for MslEcam {
 
         // Override default linearity
         match &mut raw.metadata.mission {
-            MissionMetadata::Rover(md) => {
+            MissionMetadata::Surface(md) => {
                 md.camera_model_component_list.linearity = linearity::LINEARITY_PERSPECTIVE
             }
             _ => {

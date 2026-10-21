@@ -144,6 +144,7 @@ pub mod crop;
 pub mod debayer;
 pub mod decorr;
 pub mod diffgif;
+pub mod dsnevents;
 pub mod focusmerge;
 pub mod hpcfilter;
 pub mod info;

@@ -173,7 +173,7 @@ fn print_table_rover(images: &[Metadata], query: &RemoteQuery) {
                 md.image.imageid.clone().cell(),
                 mission_metadata.instrument.clone().cell(),
                 mission_metadata.sol.cell(),
-                md.image.date_taken_utc.clone().cell(),
+                md.image.date_taken_utc.cell(),
                 nulltostr!(mission_metadata.date_taken_mars).cell(),
                 nulltostr!(mission_metadata.site).cell(),
                 nulltostr!(mission_metadata.drive).cell(),
@@ -253,8 +253,8 @@ fn print_table_psyche(images: &[Metadata], query: &RemoteQuery) {
 fn print_table(images: &[Metadata], query: &RemoteQuery) {
     if !images.is_empty() {
         match images.first().unwrap().mission {
-            MissionMetadata::Rover(_) => print_table_rover(images, query),
-            MissionMetadata::Psyche(_) => print_table_psyche(images, query),
+            MissionMetadata::Surface(_) => print_table_rover(images, query),
+            MissionMetadata::Flight(_) => print_table_psyche(images, query),
         }
     }
 }

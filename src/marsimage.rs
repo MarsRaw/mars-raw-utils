@@ -193,8 +193,8 @@ impl MarsImage {
         };
 
         let subframe_opt = match &self.metadata.mission {
-            MissionMetadata::Rover(md) => md.subframe_rect.clone(),
-            MissionMetadata::Psyche(md) => md.subframe_rect.clone(),
+            MissionMetadata::Surface(md) => md.subframe_rect.clone(),
+            MissionMetadata::Flight(md) => md.subframe_rect.clone(),
         };
 
         if let Some(sf) = subframe_opt {

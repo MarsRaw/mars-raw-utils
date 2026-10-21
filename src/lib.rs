@@ -98,6 +98,8 @@ pub mod caldata;
 /// Retrieval of orbiter overpasses
 pub mod passes;
 
+pub mod dsnevents;
+
 pub mod location;
 
 /// A collection of serde de/serializers for various types

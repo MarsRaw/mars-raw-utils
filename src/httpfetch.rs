@@ -99,10 +99,7 @@ impl HttpFetcher {
         let status = res.status().as_u16();
         let bytes = res.bytes().await?.to_vec();
 
-        Ok(SimpleHttpResponse {
-            bytes: bytes,
-            status: status,
-        })
+        Ok(SimpleHttpResponse { bytes, status })
     }
 
     async fn fetch_monitored<F: Fn(u64, u64, f32)>(

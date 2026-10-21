@@ -35,6 +35,14 @@ pub mod url {
 
     pub const PSYCHE_RAW_WEBSERVICE_URL: &str =
         "https://solarsystem.nasa.gov/api/v1/raw_image_psyche_items/";
+
+    pub const MARS_RELAY_PASSES: &str =
+        "https://eyes.nasa.gov/assets/dynamic/maros/overflights.json";
+
+    pub const MARS_RELAY_DSN_EVENTS: &str =
+        "https://eyes.nasa.gov/assets/dynamic/maros/dsn-event.json";
+
+    pub const MARS_RELAY_BUFFERS: &str = "https://eyes.nasa.gov/assets/dynamic/maros/buffers.json";
 }
 
 pub mod time {

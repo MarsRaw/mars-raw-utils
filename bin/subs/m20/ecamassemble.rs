@@ -96,7 +96,7 @@ impl RunnableSubcommand for M20EcamAssemble {
 
         // Update 'scale_factor' in the metadata and save to disk
         match &mut tiles[0].image.metadata.mission {
-            MissionMetadata::Rover(md) => {
+            MissionMetadata::Surface(md) => {
                 md.subframe_rect = Some(vec![1.0, 1.0, 5120.0, 3840.0]);
             }
             _ => {

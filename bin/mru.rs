@@ -89,6 +89,7 @@ commands! {
     Pds2Png(pds2png::Pds2Png),
 
     Passes(passes::Passes),
+    DsnEvents(dsnevents::DsnEvents)
 }
 
 #[tokio::main]

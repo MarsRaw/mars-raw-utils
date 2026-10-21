@@ -4,11 +4,9 @@ use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::
 use std::str::FromStr;
 
 pub fn get_cahvor(img: &MarsImage) -> Option<Cahvore> {
-    if let Some(rover_metadata) = img.metadata.as_rover() {
-        Some(rover_metadata.camera_model_component_list.clone())
-    } else {
-        None
-    }
+    img.metadata
+        .as_rover()
+        .map(|rover_metadata| rover_metadata.camera_model_component_list.clone())
 }
 
 pub struct Extent {

@@ -220,7 +220,7 @@ impl Calibration for M20MastcamZ {
                 ];
 
                 match &mut raw.metadata.mission {
-                    MissionMetadata::Rover(md) => md.subframe_rect = Some(new_rect),
+                    MissionMetadata::Surface(md) => md.subframe_rect = Some(new_rect),
                     _ => {
                         return Err(anyhow!(
                         "Received nonsurface metadata when surface (rover) metadata was expected"

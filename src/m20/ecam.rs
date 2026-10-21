@@ -92,7 +92,7 @@ impl Calibration for M20EECam {
 
         // Override default linearity
         match &mut raw.metadata.mission {
-            MissionMetadata::Rover(md) => {
+            MissionMetadata::Surface(md) => {
                 md.camera_model_component_list.linearity = linearity::LINEARITY_FISHEYE
             }
             _ => {
@@ -231,7 +231,7 @@ impl Calibration for M20EECam {
                     //rect[0] += 1.0;
                     let new_rect = vec![rect[0] + 2.0, rect[1] + 2.0, rect[2] - 2.0, rect[3] - 2.0];
                     match &mut raw.metadata.mission {
-                        MissionMetadata::Rover(md) => md.subframe_rect = Some(new_rect),
+                        MissionMetadata::Surface(md) => md.subframe_rect = Some(new_rect),
                         _ => {
                                 return Err(anyhow!(
                                     "Received nonsurface metadata when surface (rover) metadata was expected"

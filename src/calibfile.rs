@@ -202,7 +202,7 @@ pub struct PsycheCalData {
 pub fn parse_caldata_from_string(caldata_toml_str: &str) -> Result<Config> {
     match toml::from_str(caldata_toml_str) {
         Ok(c) => Ok(c),
-        Err(_) => Err(anyhow!("Failed to parse calibration manifest")),
+        Err(why) => Err(anyhow!("Failed to parse calibration manifest: {:?}", why)),
     }
 }
 

@@ -2,7 +2,7 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::{
-    metadata::{MissionMetadata, PsycheMetadata, RoverMetadata},
+    metadata::{FlightMetadata, MissionMetadata, SurfaceMetadata},
     prelude::*,
 };
 
@@ -27,7 +27,7 @@ impl YesNo for bool {
     }
 }
 
-fn print_surface_properties(metadata: &RoverMetadata) {
+fn print_surface_properties(metadata: &SurfaceMetadata) {
     println!("Sol:                         {}", metadata.sol);
     if let Some(sclk) = metadata.sclk {
         println!("SCLK:                        {}", sclk);
@@ -72,7 +72,7 @@ fn print_surface_properties(metadata: &RoverMetadata) {
     println!("Sample Type:                 {}", metadata.sample_type);
 }
 
-fn print_nonsurface_properties(metadata: &PsycheMetadata) {
+fn print_nonsurface_properties(metadata: &FlightMetadata) {
     println!("Camera Name:                 {}", metadata.camera_name);
     println!("Camera Title:                {}", metadata.camera_title);
 
@@ -120,8 +120,8 @@ impl RunnableSubcommand for Info {
                 println!("Image Id:                    {}", img.metadata.imageid());
 
                 match &img.metadata.mission {
-                    MissionMetadata::Rover(m) => print_surface_properties(m),
-                    MissionMetadata::Psyche(m) => print_nonsurface_properties(m),
+                    MissionMetadata::Surface(m) => print_surface_properties(m),
+                    MissionMetadata::Flight(m) => print_nonsurface_properties(m),
                 };
 
                 println!(

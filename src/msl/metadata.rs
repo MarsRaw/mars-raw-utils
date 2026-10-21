@@ -1,5 +1,5 @@
 use crate::enums::Mission;
-use crate::metadata::MissionMetadata::Rover;
+use crate::metadata::MissionMetadata::Surface;
 use crate::serializers::{as_cahvore, as_quaternion, as_tuple, as_utc_datetime};
 use crate::{constants, metadata::*};
 use chrono::{DateTime, Utc};
@@ -91,7 +91,7 @@ pub struct MslApiResults {
 impl MetadataConvert for ImageRecord {
     fn to_mru_metadata(&self) -> Metadata {
         Metadata {
-            flight_mission: Mission::InSight,
+            flight_mission: Mission::MSL,
             processing: ProcessingState::default(),
             image: ImageMetadata {
                 link: self.link.clone(),
@@ -105,7 +105,7 @@ impl MetadataConvert for ImageRecord {
                 updated_at: Some(self.updated_at),
                 derived_filename: path::basename(self.url.as_str()),
             },
-            mission: Rover(RoverMetadata {
+            mission: Surface(SurfaceMetadata {
                 sol: self.sol,
                 date_taken_mars: self.extended.lmst.clone(),
                 subframe_rect: self.subframe_rect.as_ref().cloned(),

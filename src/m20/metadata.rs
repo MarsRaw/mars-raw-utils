@@ -1,5 +1,5 @@
 use crate::enums::Mission;
-use crate::metadata::MissionMetadata::Rover;
+use crate::metadata::MissionMetadata::Surface;
 use crate::serializers::{as_cahvore, as_quaternion, as_tuple, as_utc_datetime};
 use crate::{constants, metadata::*};
 use anyhow::anyhow;
@@ -101,7 +101,7 @@ pub struct M20ApiResults {
 impl MetadataConvert for ImageRecord {
     fn to_mru_metadata(&self) -> Metadata {
         Metadata {
-            flight_mission: Mission::InSight,
+            flight_mission: Mission::Mars2020,
             processing: ProcessingState::default(),
             image: ImageMetadata {
                 link: self.link.clone(),
@@ -115,7 +115,7 @@ impl MetadataConvert for ImageRecord {
                 updated_at: None,
                 derived_filename: path::basename(self.image_files.full_res.as_str()),
             },
-            mission: Rover(RoverMetadata {
+            mission: Surface(SurfaceMetadata {
                 sol: self.sol,
                 date_taken_mars: Some(self.date_taken_mars.clone()),
                 subframe_rect: self.extended.subframe_rect.as_ref().cloned(),

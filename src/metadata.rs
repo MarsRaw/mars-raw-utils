@@ -43,7 +43,7 @@ pub struct ImageMetadata {
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
-pub struct RoverMetadata {
+pub struct SurfaceMetadata {
     pub sol: u32,
 
     pub date_taken_mars: Option<String>,
@@ -83,7 +83,7 @@ pub struct RoverMetadata {
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
-pub struct PsycheMetadata {
+pub struct FlightMetadata {
     pub id: u32,
     pub width: u32,
     pub height: u32,
@@ -101,14 +101,15 @@ pub struct PsycheMetadata {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[allow(clippy::large_enum_variant)]
 pub enum MissionMetadata {
-    Rover(RoverMetadata),
-    Psyche(PsycheMetadata),
+    Surface(SurfaceMetadata),
+    Flight(FlightMetadata),
 }
 
 impl Default for MissionMetadata {
     fn default() -> Self {
-        MissionMetadata::Rover(RoverMetadata::default())
+        MissionMetadata::Surface(SurfaceMetadata::default())
     }
 }
 
@@ -127,29 +128,29 @@ impl Metadata {
 
     pub fn instrument(&self) -> String {
         match &self.mission {
-            MissionMetadata::Rover(m) => m.instrument.clone(),
-            MissionMetadata::Psyche(m) => m.instrument.clone(),
+            MissionMetadata::Surface(m) => m.instrument.clone(),
+            MissionMetadata::Flight(m) => m.instrument.clone(),
         }
     }
 
-    pub fn from_rover(&mut self, rover_metadata: &RoverMetadata) {
-        self.mission = MissionMetadata::Rover(rover_metadata.clone())
+    pub fn from_rover(&mut self, rover_metadata: &SurfaceMetadata) {
+        self.mission = MissionMetadata::Surface(rover_metadata.clone())
     }
 
-    pub fn from_psyche(&mut self, psyche_metadata: &PsycheMetadata) {
-        self.mission = MissionMetadata::Psyche(psyche_metadata.clone())
+    pub fn from_psyche(&mut self, psyche_metadata: &FlightMetadata) {
+        self.mission = MissionMetadata::Flight(psyche_metadata.clone())
     }
 
-    pub fn as_rover(&self) -> Option<&RoverMetadata> {
-        if let MissionMetadata::Rover(m) = &self.mission {
+    pub fn as_rover(&self) -> Option<&SurfaceMetadata> {
+        if let MissionMetadata::Surface(m) = &self.mission {
             Some(m)
         } else {
             None
         }
     }
 
-    pub fn as_psyche(&self) -> Option<&PsycheMetadata> {
-        if let MissionMetadata::Psyche(m) = &self.mission {
+    pub fn as_psyche(&self) -> Option<&FlightMetadata> {
+        if let MissionMetadata::Flight(m) = &self.mission {
             Some(m)
         } else {
             None

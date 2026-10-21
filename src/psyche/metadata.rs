@@ -1,5 +1,5 @@
 use crate::enums::Mission;
-use crate::metadata::MissionMetadata::Psyche;
+use crate::metadata::MissionMetadata::Flight;
 use crate::serializers::as_utc_datetime;
 use crate::{constants, metadata::*};
 use chrono::DateTime;
@@ -65,7 +65,7 @@ impl MetadataConvert for ImageRecord {
                 updated_at: Some(self.updated_at),
                 derived_filename: assemble_output_file_base_name(self),
             },
-            mission: Psyche(PsycheMetadata {
+            mission: Flight(FlightMetadata {
                 id: self.id,
                 width: self.width,
                 height: self.height,
