@@ -731,7 +731,13 @@ pub fn default_vec<T>() -> Vec<T> {
 pub mod as_utc_datetime {
     use chrono::{DateTime, Utc};
     use dateparser::DateTimeUtc;
+    use regex::Regex;
     use serde::{self, Deserialize, Deserializer, Serializer};
+
+    lazy_static! {
+        static ref m20_date_format: Regex =
+            Regex::new(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})$").unwrap();
+    }
 
     pub fn serialize<S>(dt: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -745,11 +751,12 @@ pub mod as_utc_datetime {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
+
         if s.is_empty() {
             Ok(Utc::now()) // I don't like this
         } else {
             // Append a missing 'Z' on non timezone naive dates
-            let f = if !s.contains("+") && s.chars().nth(s.len() - 1) != Some('Z') {
+            let f = if m20_date_format.is_match(&s) {
                 format!("{}Z", s)
             } else {
                 s
@@ -769,7 +776,13 @@ pub mod as_utc_datetime {
 pub mod as_utc_datetime_opt {
     use chrono::{DateTime, Utc};
     use dateparser::DateTimeUtc;
+    use regex::Regex;
     use serde::{self, Deserialize, Deserializer, Serializer};
+
+    lazy_static! {
+        static ref m20_date_format: Regex =
+            Regex::new(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})$").unwrap();
+    }
 
     pub fn serialize<S>(dt: &Option<DateTime<Utc>>, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -789,11 +802,12 @@ pub mod as_utc_datetime_opt {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
+
         if s.is_empty() {
             Ok(None)
         } else {
             // Append a missing 'Z' on non timezone naive dates
-            let f = if !s.contains("+") && s.chars().nth(s.len() - 1) != Some('Z') {
+            let f = if m20_date_format.is_match(&s) {
                 format!("{}Z", s)
             } else {
                 s
