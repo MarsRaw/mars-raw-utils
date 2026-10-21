@@ -85,6 +85,12 @@ lazy_static! {
         CalContainer {
             calibrator: Box::new(nsyt::idc::NsytIdc {})
         },
+        CalContainer {
+            calibrator: Box::new(psyche::camera_a::PsycheCameraA {})
+        },
+        CalContainer {
+            calibrator: Box::new(psyche::camera_b::PsycheCameraB {})
+        }
     ];
 }
 
