@@ -190,7 +190,7 @@ fn print_table(images: &[Metadata], query: &RemoteQuery) {
             "Present".cell().bold(true),
         ]);
 
-    println!("{}", &table.display().unwrap());
+    println!("{}", table.display().unwrap());
 }
 
 async fn download_remote_image(

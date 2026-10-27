@@ -1,6 +1,8 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::anyhow;
 use anyhow::Result;
 use clap::Parser;
+use mars_raw_utils::composite;
 use mars_raw_utils::prelude::*;
 use sciimg::{drawable::*, prelude::*, vector::Vector};
 use std::process;
@@ -62,32 +64,32 @@ impl RunnableSubcommand for Anaglyph {
             left_img.to_mono();
             right_img.to_mono();
         }
+        let left_cahv = left_img.metadata.camera_model_component_list.clone();
 
-        let left_cahv = if left_img.metadata.camera_model_component_list.is_valid() {
-            left_img.metadata.camera_model_component_list.clone()
-        } else {
-            pb_done_with_error!();
-            process::exit(2);
-        };
-
-        let right_cahv = if right_img.metadata.camera_model_component_list.is_valid() {
-            right_img.metadata.camera_model_component_list.clone()
-        } else {
-            pb_done_with_error!();
-            process::exit(2);
-        };
+        let right_cahv = right_img.metadata.camera_model_component_list.clone();
 
         let ground = Vector::new(0.0, 0.0, 1.84566);
 
-        let mut map = Image::create(left_img.image.width, left_img.image.height);
-        let output_model = left_cahv
-            .linearize(
-                left_img.image.width,
-                left_img.image.height,
-                left_img.image.width,
-                left_img.image.height,
-            )
-            .unwrap();
+        let output_model = left_cahv.linearize(
+            left_img.image.width,
+            left_img.image.height,
+            left_img.image.width,
+            left_img.image.height,
+        )?;
+
+        let ext = composite::map_extent(
+            &[
+                (&left_cahv, left_img.image.width, left_img.image.height),
+                (&right_cahv, right_img.image.width, right_img.image.height),
+            ],
+            &output_model,
+            &ground,
+            64,
+            left_img.image.width * 3, // sanity cap; pick something that suits your data
+        )
+        .ok_or_else(|| anyhow!("anaglyph: no footprint"))?;
+        let output_model = output_model.shift(-ext.min_x, -ext.min_y);
+        let mut map = Image::create(ext.width, ext.height);
 
         anaglyph::process_image(
             &right_img,

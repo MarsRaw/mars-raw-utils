@@ -1,4 +1,5 @@
 use crate::serializers;
+use sciimg::quaternion::Quaternion;
 use serde::{Deserialize, Serialize};
 
 use sciimg::prelude::*;
@@ -20,7 +21,7 @@ pub trait ImageMetadata {
     fn get_instrument(&self) -> String;
     fn get_filter_name(&self) -> Option<String>;
     fn get_camera_vector(&self) -> Option<Vec<f64>>;
-    fn get_camera_model_component_list(&self) -> CameraModel;
+    fn get_camera_model_component_list(&self) -> Cahvore;
     fn get_camera_position(&self) -> Option<Vec<f64>>;
     fn get_camera_model_type(&self) -> Option<String>;
     fn get_site(&self) -> Option<u32>;
@@ -34,7 +35,7 @@ pub trait ImageMetadata {
     fn get_dimension(&self) -> Option<Vec<f64>>;
     fn get_sample_type(&self) -> String;
     fn get_remote_image_url(&self) -> String;
-    fn get_attitude(&self) -> Option<Vec<f64>>;
+    fn get_attitude(&self) -> Option<Quaternion>;
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]
@@ -84,7 +85,7 @@ pub struct Metadata {
     pub drive: Option<u32>,
 
     #[serde(with = "serializers::as_cahvore")]
-    pub camera_model_component_list: CameraModel,
+    pub camera_model_component_list: Cahvore,
 
     #[serde(default = "serializers::default_false")]
     pub decompand: bool,
@@ -110,11 +111,8 @@ pub struct Metadata {
     #[serde(default = "serializers::default_vec")]
     pub history: Vec<String>,
 
-    #[serde(
-        with = "serializers::as_tuple",
-        default = "serializers::default_vec_f64_none"
-    )]
-    pub attitude: Option<Vec<f64>>,
+    #[serde(with = "serializers::as_quaternion")]
+    pub attitude: Option<Quaternion>,
 }
 
 pub fn convert_to_std_metadata<T: ImageMetadata>(im: &T) -> Metadata {

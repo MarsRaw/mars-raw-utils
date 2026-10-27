@@ -72,7 +72,7 @@ fn print_table(rems_list: &[&RemsSol]) {
             "Season".cell().bold(true),
         ]);
 
-    println!("{}", &table.display().unwrap());
+    println!("{}", table.display().unwrap());
 }
 
 impl RunnableSubcommand for MslWeather {

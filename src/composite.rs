@@ -3,12 +3,79 @@ use anyhow::Result;
 use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::Vector};
 use std::str::FromStr;
 
-pub fn get_cahvor(img: &MarsImage) -> Option<CameraModel> {
-    if img.metadata.camera_model_component_list.is_valid() {
-        Some(img.metadata.camera_model_component_list.clone())
-    } else {
-        None
+pub fn get_cahvor(img: &MarsImage) -> Option<Cahvore> {
+    //if img.metadata.camera_model_component_list.is_valid() {
+    Some(img.metadata.camera_model_component_list.clone())
+    //} else {
+    //    None
+    //}
+}
+
+pub struct Extent {
+    pub min_x: f64,
+    pub min_y: f64,
+    pub width: usize,
+    pub height: usize,
+}
+
+fn project_to_output(
+    in_model: &Cahvore,
+    out_model: &Cahvore,
+    ground: &Vector,
+    sample: f64,
+    line: f64,
+) -> Option<ImageCoordinate> {
+    let lv = in_model
+        .ls_to_look_vector(&ImageCoordinate { line, sample })
+        .ok()?;
+    match lv.intersect_to_plane(ground) {
+        Some(pt) => out_model.xyz_to_ls(&pt, false).ok(),
+        None => out_model.xyz_to_ls(&lv.look_direction, true).ok(),
     }
+}
+
+/// Bounding box, in the output camera, of all input images' footprints.
+/// `max_dim` caps the result: rays near the horizon project very far away.
+pub fn map_extent(
+    inputs: &[(&Cahvore, usize, usize)], // (model, width, height) for each eye
+    out_model: &Cahvore,
+    ground: &Vector,
+    samples_per_edge: usize,
+    max_dim: usize,
+) -> Option<Extent> {
+    let (mut min_x, mut min_y) = (f64::MAX, f64::MAX);
+    let (mut max_x, mut max_y) = (f64::MIN, f64::MIN);
+    let n = samples_per_edge.max(2);
+
+    for &(model, w, h) in inputs {
+        let (wm, hm) = (w as f64 - 1.0, h as f64 - 1.0);
+        for i in 0..=n {
+            let t = i as f64 / n as f64;
+            for &(s, l) in &[(t * wm, 0.0), (t * wm, hm), (0.0, t * hm), (wm, t * hm)] {
+                if let Some(p) = project_to_output(model, out_model, ground, s, l) {
+                    if p.sample.is_finite() && p.line.is_finite() {
+                        min_x = min_x.min(p.sample);
+                        max_x = max_x.max(p.sample);
+                        min_y = min_y.min(p.line);
+                        max_y = max_y.max(p.line);
+                    }
+                }
+            }
+        }
+    }
+
+    if min_x > max_x || min_y > max_y {
+        return None;
+    }
+
+    let min_x = min_x.floor();
+    let min_y = min_y.floor();
+    Some(Extent {
+        min_x,
+        min_y,
+        width: (((max_x - min_x).ceil() as usize) + 1).min(max_dim),
+        height: (((max_y - min_y).ceil() as usize) + 1).min(max_dim),
+    })
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -51,7 +118,7 @@ fn lookvector_to_cylindrical(
 
 static SPHERE_RADIUS: f64 = 100.0;
 
-fn get_lat_lon(c: &CameraModel, x: usize, y: usize, _quat: &Quaternion) -> Result<LatLon> {
+fn get_lat_lon(c: &Cahvore, x: usize, y: usize, _quat: &Quaternion) -> Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate {
         line: y as f64,
         sample: x as f64,
@@ -135,7 +202,7 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> MapCo
 }
 
 fn get_ls_from_map_xy(
-    model: &CameraModel,
+    model: &Cahvore,
     map_context: &MapContext,
     x: usize,
     y: usize,
@@ -207,6 +274,8 @@ pub fn process_file<D: Drawable>(
             debug!("Input Model O: {:?}", input_model.o());
             debug!("Input Model R: {:?}", input_model.r());
             debug!("Input Model E: {:?}", input_model.e());
+            debug!("Input Model Pupil Type: {:?}", input_model.pupil_type);
+            debug!("Input Model Linearity: {:?}", input_model.linearity);
             debug!("");
 
             let band_0 = img.image.get_band(0);

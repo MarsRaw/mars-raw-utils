@@ -66,7 +66,7 @@ impl RunnableSubcommand for Passes {
                 "Range".cell().bold(true),
                 "Data Vol".cell().bold(true),
             ]);
-        println!("{}", &table.display().unwrap());
+        println!("{}", table.display().unwrap());
 
         Ok(())
     }

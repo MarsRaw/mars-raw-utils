@@ -1,9 +1,10 @@
-use crate::serializers::{as_cahvore, as_tuple};
+use crate::serializers::{as_cahvore, as_quaternion, as_tuple};
 use crate::{constants, metadata::*};
 use sciimg::prelude::*;
 
 use anyhow::anyhow;
 use anyhow::Result;
+use sciimg::quaternion::Quaternion;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
@@ -47,7 +48,7 @@ pub struct Camera {
     pub camera_vector: Option<Vec<f64>>,
 
     #[serde(with = "as_cahvore")]
-    pub camera_model_component_list: CameraModel,
+    pub camera_model_component_list: Cahvore,
 
     #[serde(with = "as_tuple")]
     pub camera_position: Option<Vec<f64>>,
@@ -60,8 +61,8 @@ pub struct ImageRecord {
     pub extended: Extended,
     pub sol: u32,
 
-    #[serde(with = "as_tuple")]
-    pub attitude: Option<Vec<f64>>,
+    #[serde(with = "as_quaternion")]
+    pub attitude: Option<Quaternion>,
     pub image_files: ImageFiles,
     pub imageid: String,
     pub camera: Camera,
@@ -161,7 +162,7 @@ impl ImageMetadata for ImageRecord {
         self.camera.camera_vector.clone()
     }
 
-    fn get_camera_model_component_list(&self) -> CameraModel {
+    fn get_camera_model_component_list(&self) -> Cahvore {
         self.camera.camera_model_component_list.clone()
     }
 
@@ -201,8 +202,8 @@ impl ImageMetadata for ImageRecord {
         self.image_files.full_res.clone()
     }
 
-    fn get_attitude(&self) -> Option<Vec<f64>> {
-        self.attitude.clone()
+    fn get_attitude(&self) -> Option<Quaternion> {
+        self.attitude
     }
 }
 

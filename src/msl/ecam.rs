@@ -3,6 +3,7 @@ use crate::{
     marsimage::MarsImage, util,
 };
 
+use sciimg::camera::cahvore::linearity;
 use sciimg::path;
 
 use anyhow::Result;
@@ -109,6 +110,9 @@ impl Calibration for MslEcam {
 
         let mut raw = MarsImage::open(input_file, instrument);
 
+        // Override default linearity
+        raw.metadata.camera_model_component_list.linearity = linearity::LINEARITY_PERSPECTIVE;
+
         // Exclude subframed images for now...
         if inpaintmask::inpaint_supported_for_instrument(instrument) && raw.image.height >= 1022 {
             vprintln!("Inpainting...");
@@ -173,6 +177,7 @@ impl Calibration for MslEcam {
 
         vprintln!("Writing to disk...");
         raw.update_history();
+
         match raw.save(&out_file) {
             Ok(_) => cal_ok(cal_context, &out_file),
             Err(why) => {

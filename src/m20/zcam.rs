@@ -28,12 +28,12 @@ pub fn focal_length_from_file_name(filename: &str) -> Result<f32> {
     }
 }
 
-fn focal_length_from_cahvor(cahvor: &CameraModel) -> Result<f32> {
-    if cahvor.is_valid() {
-        Ok(cahvor.f() as f32) // Reconcile the type difference.
-    } else {
-        Err(anyhow!("No CAHVOR data"))
-    }
+fn focal_length_from_cahvor(cahvor: &Cahvore) -> Result<f32> {
+    //if cahvor.is_valid() {
+    Ok(cahvor.f() as f32) // Reconcile the type difference.
+                          //} else {
+                          //    Err(anyhow!("No CAHVOR data"))
+                          //}
 }
 
 fn close_enough(a: f32, b: f32) -> bool {
@@ -166,7 +166,7 @@ impl Calibration for M20MastcamZ {
             }
         } else if let Err(e) = focal_length {
             warn = true;
-            warn!("Could not determine focal length: {}", e)
+            warn!("Could not determine focal length: {}", e);
         }
 
         info!("Inpainting...");

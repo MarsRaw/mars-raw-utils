@@ -484,24 +484,20 @@ pub mod as_cahvore {
     use sciimg::vector::Vector;
     use serde::{self, Deserialize, Deserializer, Serializer};
 
-    pub fn serialize<S>(model_opt: &CameraModel, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(model_opt: &Cahvore, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        if !model_opt.is_valid() {
-            serializer.serialize_unit()
-        } else {
-            serializer.serialize_str(&model_opt.serialize())
-        }
+        serializer.serialize_str(&model_opt.serialize())
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<CameraModel, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Cahvore, D::Error>
     where
         D: Deserializer<'de>,
     {
         let r: Result<&str, D::Error> = Deserialize::deserialize(deserializer);
         match r {
-            Err(_) => Ok(CameraModel::default()),
+            Err(_) => Ok(Cahvore::default()),
             Ok(s) => {
                 let s0 = String::from(s);
 
@@ -520,117 +516,83 @@ pub mod as_cahvore {
                         }
                     }
                 }
-
                 match parts.len() {
-                    4 => {
-                        // CAHV
-                        Ok(CameraModel::new(Box::new(Cahv {
-                            c: if !parts.is_empty() {
-                                Vector::from_vec(&parts[0]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            a: if parts.len() >= 2 {
-                                Vector::from_vec(&parts[1]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            h: if parts.len() >= 3 {
-                                Vector::from_vec(&parts[2]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            v: if parts.len() >= 4 {
-                                Vector::from_vec(&parts[3]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                        })))
-                    }
-                    6 => {
-                        // CAHVOR
-                        Ok(CameraModel::new(Box::new(Cahvor {
-                            c: if !parts.is_empty() {
-                                Vector::from_vec(&parts[0]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            a: if parts.len() >= 2 {
-                                Vector::from_vec(&parts[1]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            h: if parts.len() >= 3 {
-                                Vector::from_vec(&parts[2]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            v: if parts.len() >= 4 {
-                                Vector::from_vec(&parts[3]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            o: if parts.len() >= 5 {
-                                Vector::from_vec(&parts[4]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            r: if parts.len() >= 6 {
-                                Vector::from_vec(&parts[5]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                        })))
-                    }
-                    9 => {
-                        // CAHVORE
-                        Ok(CameraModel::new(Box::new(Cahvore {
-                            c: if !parts.is_empty() {
-                                Vector::from_vec(&parts[0]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            a: if parts.len() >= 2 {
-                                Vector::from_vec(&parts[1]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            h: if parts.len() >= 3 {
-                                Vector::from_vec(&parts[2]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            v: if parts.len() >= 4 {
-                                Vector::from_vec(&parts[3]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            o: if parts.len() >= 5 {
-                                Vector::from_vec(&parts[4]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            r: if parts.len() >= 6 {
-                                Vector::from_vec(&parts[5]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            e: if parts.len() >= 7 {
-                                Vector::from_vec(&parts[6]).unwrap()
-                            } else {
-                                Vector::default()
-                            },
-                            linearity: if parts.len() >= 8 {
-                                parts[7][0]
-                            } else {
-                                LINEARITY_PERSPECTIVE
-                            },
-                            pupil_type: PupilType::General,
-                        })))
-                    }
-                    _ => Ok(CameraModel::default()),
+                    4 => Ok(Cahvore::new_cahv(
+                        Vector::from_vec(&parts[cahvore_components::CENTER]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::AXIS]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::HORIZONTAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::VERTICAL]).unwrap(),
+                    )),
+                    6 => Ok(Cahvore::new_cahvor(
+                        Vector::from_vec(&parts[cahvore_components::CENTER]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::AXIS]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::HORIZONTAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::VERTICAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::OPTICAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::RADIAL]).unwrap(),
+                    )),
+                    9 => Ok(Cahvore::new(
+                        Vector::from_vec(&parts[cahvore_components::CENTER]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::AXIS]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::HORIZONTAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::VERTICAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::OPTICAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::RADIAL]).unwrap(),
+                        Vector::from_vec(&parts[cahvore_components::ENTRANCE]).unwrap(),
+                        match parts[cahvore_components::PUPIL_TYPE][0] {
+                            0.0 => PupilType::Perspective,
+                            1.0 => PupilType::Fisheye,
+                            _ => PupilType::General,
+                            /*_ => panic!(
+                                "Unrecognized pupil type code in CAHVORE model: {}",
+                                parts[cahvore_components::PUPIL_TYPE][0]
+                            ),*/
+                        },
+                        parts[cahvore_components::LINEARITY][0],
+                    )),
+                    _ => Ok(Cahvore::default()),
                 }
             }
+        }
+    }
+}
+
+/////////////////////////////////////////////////
+// Quaternion as tuples
+/////////////////////////////////////////////////
+pub mod as_quaternion {
+    use super::{str_to_vec, vec_to_str};
+    use anyhow::Result;
+    use sciimg::quaternion::Quaternion;
+    use serde::{self, de::Error, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(quat_opt: &Option<Quaternion>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match quat_opt {
+            None => serializer.serialize_unit(),
+            Some(q) => serializer.serialize_str(vec_to_str(&q.to_vec()).as_ref()),
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Quaternion>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let r: Result<&str, D::Error> = Deserialize::deserialize(deserializer);
+        match r {
+            Err(_) => Ok(None),
+            Ok(s) => match s {
+                "UNK" => Ok(None),
+                _ => match Quaternion::from_vec(&str_to_vec(s).unwrap()) {
+                    Err(why) => Err(D::Error::custom(format!(
+                        "Deserialization error: {:?}",
+                        why
+                    ))),
+                    Ok(q) => Ok(Some(q)),
+                },
+            },
         }
     }
 }

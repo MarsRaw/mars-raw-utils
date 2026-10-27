@@ -4,6 +4,7 @@ pub use crate::calprofile::CalProfile;
 pub use crate::constants;
 pub use crate::decorr;
 pub use crate::enums::*;
+pub use crate::linearize;
 pub use crate::m20;
 pub use crate::m20::fetch::M20Fetch;
 pub use crate::marsimage::MarsImage;

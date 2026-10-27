@@ -77,7 +77,7 @@ fn print_table(meda_list: &[MedaSol]) {
             "Season".cell().bold(true),
         ]);
 
-    println!("{}", &table.display().unwrap());
+    println!("{}", table.display().unwrap());
 }
 
 impl RunnableSubcommand for M20Weather {

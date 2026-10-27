@@ -3,7 +3,7 @@ use crate::{
     marsimage::MarsImage, memcache::load_image, util,
 };
 use anyhow::{Error, Result};
-use sciimg::{image::Image, path};
+use sciimg::{camera::cahvore::linearity, image::Image, path};
 
 #[derive(Copy, Clone)]
 pub struct M20EECam {}
@@ -82,6 +82,9 @@ impl Calibration for M20EECam {
         }
 
         let mut raw = MarsImage::open(input_file, instrument);
+
+        // Override CAHVORE linearity
+        raw.metadata.camera_model_component_list.linearity = linearity::LINEARITY_FISHEYE;
 
         let data_max = if cal_context.apply_ilt {
             info!("Decompanding...");
