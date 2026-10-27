@@ -116,7 +116,7 @@ lab = "0.11.0"
 toml = "1.0.6"
 serde = { version = "1.0.125", features = ["derive"] }
 string-builder = "0.2.0"
-sciimg = { git = "https://github.com/MarsRaw/sciimg.git", branch = "cahvore_simplification", features = [
+sciimg = { git = "https://github.com/MarsRaw/sciimg.git", branch = "main", features = [
     "rayon",
 ] }
 #sciimg = { path = "../sciimg", features = ["rayon"] }
