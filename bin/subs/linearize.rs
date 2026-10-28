@@ -11,6 +11,7 @@ use stump;
 
 pb_create_spinner!();
 
+#[allow(clippy::too_many_arguments)]
 fn linearize_mars_image(
     in_file: &str,
     rotate_to_level: bool,

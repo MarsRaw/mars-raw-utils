@@ -100,6 +100,8 @@ pub mod passes;
 
 pub mod dsnevents;
 
+pub mod dsnstatus;
+
 pub mod location;
 
 /// A collection of serde de/serializers for various types

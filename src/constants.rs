@@ -43,6 +43,10 @@ pub mod url {
         "https://eyes.nasa.gov/assets/dynamic/maros/dsn-event.json";
 
     pub const MARS_RELAY_BUFFERS: &str = "https://eyes.nasa.gov/assets/dynamic/maros/buffers.json";
+
+    pub const DSN_STATUS: &str = "https://eyes.nasa.gov/dsn/data/dsn.xml";
+
+    pub const DSN_CONFIG: &str = "https://eyes.nasa.gov/apps/dsn-now/config.xml";
 }
 
 pub mod time {

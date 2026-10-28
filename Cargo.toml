@@ -125,7 +125,7 @@ vicar = { git = "https://github.com/MarsRaw/vicar-rs.git" }
 weezl = "0.2.1"
 gif = "0.14.1"
 rayon = "1.7.0"
-chrono = "0.4.19"
+chrono = { version = "0.4.19", features = ["serde"] }
 dirs = "7.0.0"
 wild = "2.0.4"
 colored = "3.1.1"
@@ -148,6 +148,8 @@ futures = "0.3.28"
 dng = "1.5.0"
 clap_complete = "4.3.1"
 dateparser = "0.3.1"
+quick-xml = { version = "0.42", features = ["serialize", "overlapped-lists"] }
+num-format = "0.4"
 
 [patch.crates-io]
 jpeg-decoder = { git = "https://github.com/MarsRaw/jpeg-decoder.git", branch = "optional-zero-ac63" }
