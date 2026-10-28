@@ -204,6 +204,7 @@ pub fn compute_stereo_range(
     left: &MarsImage,
     right: &MarsImage,
     params: &StereoParams,
+    apply_scaling: bool,
 ) -> Result<StereoRange> {
     let (w, h) = (left.image.width, left.image.height);
     if (right.image.width, right.image.height) != (w, h) {
@@ -213,12 +214,12 @@ pub fn compute_stereo_range(
         return Err(anyhow!("compute_stereo_range: bad range limits"));
     }
 
-    let model_l = if let Some(model) = model_for_image(left) {
+    let model_l = if let Some(model) = model_for_image(left, apply_scaling) {
         model
     } else {
         return Err(anyhow!("Camera model not available for image"));
     };
-    let model_r = if let Some(model) = model_for_image(right) {
+    let model_r = if let Some(model) = model_for_image(right, apply_scaling) {
         model
     } else {
         return Err(anyhow!("Camera model not available for image"));

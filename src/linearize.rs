@@ -12,7 +12,7 @@ use crate::marsimage::MarsImage;
 /// pixels (the same convention `MarsImage::flatfield` uses to crop the flat).
 /// If your metadata models are already adjusted, skip this and call
 /// `linearize_image_with_model` directly.
-pub fn model_for_image(img: &MarsImage) -> Option<Cahvore> {
+pub fn model_for_image(img: &MarsImage, apply_scaling: bool) -> Option<Cahvore> {
     let rover_metadata = img.metadata.as_rover()?;
 
     let mut model = rover_metadata.camera_model_component_list.clone();
@@ -24,7 +24,9 @@ pub fn model_for_image(img: &MarsImage) -> Option<Cahvore> {
         }
     }
 
-    if rover_metadata.scale_factor > 1 {
+    // This tends to lead to weird results in M20 NavCam images, so I'm going
+    // to hide it behind a user option.
+    if apply_scaling && rover_metadata.scale_factor > 1 {
         let s = 1.0 / rover_metadata.scale_factor as f64;
         model = model.scale(s, s);
     }
@@ -87,8 +89,9 @@ pub fn linearize_image_expanded(
     src: &MarsImage,
     level: Option<&LevelOptions>,
     extent: &Extent,
+    apply_scaling: bool,
 ) -> Result<MarsImage> {
-    if let Some(model) = model_for_image(src) {
+    if let Some(model) = model_for_image(src, apply_scaling) {
         linearize_image_with_model(src, &model, *extent, level)
     } else {
         Err(anyhow!(

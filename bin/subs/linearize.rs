@@ -19,6 +19,7 @@ fn linearize_mars_image(
     max_scale: f64,
     max_width: usize,
     max_height: usize,
+    apply_scaling: bool,
 ) -> Result<()> {
     if !path::file_exists(in_file) {
         return Err(anyhow!("File error: File not found: {}", in_file));
@@ -85,7 +86,12 @@ fn linearize_mars_image(
         }
     };
 
-    let out_img = match linearize::linearize_image_expanded(&nonlin_image, level_options, &extent) {
+    let out_img = match linearize::linearize_image_expanded(
+        &nonlin_image,
+        level_options,
+        &extent,
+        apply_scaling,
+    ) {
         Ok(out_img) => out_img,
         Err(why) => return Err(anyhow!("Error linearizing image: {:?}", why)),
     };
@@ -124,6 +130,13 @@ pub struct Linearize {
 
     #[arg(long, short = 'H', help = "Maximum canvas height in pixels")]
     max_height: Option<usize>,
+
+    #[arg(
+        long,
+        short = 'S',
+        help = "Apply camera model scaling according to image scale factor"
+    )]
+    apply_scaling: bool,
 }
 
 impl RunnableSubcommand for Linearize {
@@ -143,6 +156,7 @@ impl RunnableSubcommand for Linearize {
                 self.max_scale.unwrap_or(1.0),
                 self.max_width.unwrap_or(0),
                 self.max_height.unwrap_or(0),
+                self.apply_scaling,
             ) {
                 Ok(_) => info!("File completed"),
                 Err(why) => error!("Processing error: {:?}", why),

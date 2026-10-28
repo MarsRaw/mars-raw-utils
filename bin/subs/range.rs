@@ -32,6 +32,13 @@ pub struct Range {
 
     #[arg(long, short = 's', help = "Stretch to full value range")]
     stretch: bool,
+
+    #[arg(
+        long,
+        short = 'S',
+        help = "Apply camera model scaling according to image scale factor"
+    )]
+    apply_scaling: bool,
 }
 
 impl RunnableSubcommand for Range {
@@ -79,6 +86,7 @@ impl RunnableSubcommand for Range {
                 lr_tolerance: 1,
                 range_kind: RangeKind::Distance,
             },
+            self.apply_scaling,
         ) {
             Ok(range_model) => range_model,
             Err(why) => return Err(anyhow!("Error generating range: {}", why)),
