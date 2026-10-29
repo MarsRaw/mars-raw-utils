@@ -1,6 +1,6 @@
 #![allow(clippy::too_many_arguments)]
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use gif;
 use sciimg::{enums::ImageMode, image, imagebuffer, lowpass, path};
 use std::fs::File;
@@ -31,6 +31,58 @@ impl ProductType {
             "diff" => Some(ProductType::DIFFERENTIAL),
             "stacked" => Some(ProductType::STACKED),
             _ => None,
+        }
+    }
+}
+
+fn image_mono_to_rgb(img: &image::Image) -> Result<image::Image> {
+    let mut rgb_image = match image::Image::new_with_bands(img.width, img.height, 3, img.get_mode())
+    {
+        Ok(rgb_image) => rgb_image,
+        Err(why) => return Err(anyhow!("Failed to create RGB image: {:?}", why)),
+    };
+
+    rgb_image.set_band(img.get_band(0), 0);
+    rgb_image.set_band(img.get_band(0), 1);
+    rgb_image.set_band(img.get_band(0), 2);
+
+    Ok(rgb_image)
+}
+
+fn image_to_mono(img: &image::Image) -> Result<image::Image> {
+    if img.num_bands() == 1 {
+        return Err(anyhow!("Cannot convert image to mono: Already mono"));
+    } else if img.num_bands() != 3 {
+        return Err(anyhow!(
+            "Cannot convert image to mono: Needs a three band RGB image"
+        ));
+    }
+
+    let mut band_0_scaled = match img.get_band(0).scale(0.2125) {
+        Ok(b) => b,
+        Err(why) => return Err(anyhow!("Failed to scale band values: {:?}", why)),
+    };
+
+    let band_1_scaled = match img.get_band(1).scale(0.7154) {
+        Ok(b) => b,
+        Err(why) => return Err(anyhow!("Failed to scale band values: {:?}", why)),
+    };
+
+    let band_2_scaled = match img.get_band(2).scale(0.0721) {
+        Ok(b) => b,
+        Err(why) => return Err(anyhow!("Failed to scale band values: {:?}", why)),
+    };
+
+    band_0_scaled.add_mut(&band_1_scaled);
+    band_0_scaled.add_mut(&band_2_scaled);
+
+    match image::Image::new_from_buffer_mono(&band_0_scaled) {
+        Ok(mono) => Ok(mono),
+        Err(why) => {
+            return Err(anyhow!(
+                "Failed to create single band mono image: {:?}",
+                why
+            ))
         }
     }
 }
@@ -69,7 +121,7 @@ fn generate_mean_stack(input_files: &[String]) -> Result<image::Image> {
         if path::file_exists(in_file) {
             info!("Adding file to stack: {}", in_file);
 
-            let mut raw = image::Image::open(in_file).unwrap();
+            let mut raw = image::Image::open(in_file)?;
             raw.normalize_between(0.0, 65535.0);
 
             if mean.is_none() {
@@ -115,8 +167,9 @@ fn process_band(
     lowpass_window_size: u8,
     add_back_to_mean: bool,
     light_only: bool,
-) -> imagebuffer::ImageBuffer {
-    let diff = band.subtract(mean_band).unwrap();
+) -> Result<imagebuffer::ImageBuffer> {
+    let diff = band.subtract(mean_band)?;
+
     let mut d = diff.clone();
 
     // Convert for absolute value difference
@@ -129,7 +182,7 @@ fn process_band(
 
     let mm = mean_band.get_min_max();
     d.levels_with_gamma_mut(black_level, white_level, gamma);
-    let mut n = d.normalize(mm.min, mm.max).unwrap();
+    let mut n = d.normalize(mm.min, mm.max)?;
 
     for y in 0..d.height {
         for x in 0..d.width {
@@ -147,7 +200,7 @@ fn process_band(
         }
     }
 
-    let mut blurred = match lowpass_window_size == 0 {
+    let blurred = match lowpass_window_size == 0 {
         true => n.clone(),
         false => {
             // This method is lossy. Get over it.
@@ -179,24 +232,41 @@ fn process_band(
     };
     match add_back_to_mean {
         true => {
-            let mut merged = mean_band.add(&blurred).unwrap();
+            let mut merged = mean_band.add(&blurred)?;
             merged.clip_mut(0.0, 65355.0);
-            merged
+            Ok(merged)
         }
-        false => {
-            let mnmx = blurred.get_min_max();
-
-            if mnmx.min.abs() < mnmx.max.abs() {
-                blurred.clip_mut(mnmx.min, mnmx.min.abs());
-            } else {
-                blurred.clip_mut(-mnmx.max, mnmx.max);
-            }
-
-            blurred.add_across_mut(mean_band.mean());
-            blurred.clip_mut(0.0, 65355.0);
-            blurred
-        }
+        false => blurred.normalize(0.0, 65535.0),
     }
+}
+
+fn process_frame_mono(
+    raw: &image::Image,
+    mean_stack: &image::Image,
+    black_level: f32,
+    white_level: f32,
+    gamma: f32,
+    lowpass_window_size: u8,
+    product_type: ProductType,
+    light_only: bool,
+) -> Result<image::Image> {
+    let mono_raw = image_to_mono(&raw)?;
+    let mono_mean = image_to_mono(&mean_stack)?;
+
+    let mut processed_band = process_band(
+        mono_raw.get_band(0),
+        mono_mean.get_band(0),
+        black_level,
+        white_level,
+        gamma,
+        lowpass_window_size,
+        product_type == ProductType::STANDARD,
+        light_only,
+    )?;
+
+    processed_band.normalize_force_minmax_mut(0.0, 255.0, 0.0, 65535.0);
+
+    image::Image::new_from_buffer_mono(&processed_band)
 }
 
 fn process_frame_3channel(
@@ -207,9 +277,8 @@ fn process_frame_3channel(
     gamma: f32,
     lowpass_window_size: u8,
     product_type: ProductType,
-    convert_to_mono: bool,
     light_only: bool,
-) -> image::Image {
+) -> Result<image::Image> {
     let mut processed_band_0 = process_band(
         raw.get_band(0),
         mean_stack.get_band(0),
@@ -219,7 +288,7 @@ fn process_frame_3channel(
         lowpass_window_size,
         product_type == ProductType::STANDARD,
         light_only,
-    );
+    )?;
     let mut processed_band_1 = process_band(
         raw.get_band(1),
         mean_stack.get_band(1),
@@ -229,7 +298,7 @@ fn process_frame_3channel(
         lowpass_window_size,
         product_type == ProductType::STANDARD,
         light_only,
-    );
+    )?;
     let mut processed_band_2 = process_band(
         raw.get_band(2),
         mean_stack.get_band(2),
@@ -239,24 +308,11 @@ fn process_frame_3channel(
         lowpass_window_size,
         product_type == ProductType::STANDARD,
         light_only,
-    );
+    )?;
 
     processed_band_0.normalize_force_minmax_mut(0.0, 255.0, 0.0, 65535.0);
     processed_band_1.normalize_force_minmax_mut(0.0, 255.0, 0.0, 65535.0);
     processed_band_2.normalize_force_minmax_mut(0.0, 255.0, 0.0, 65535.0);
-
-    if convert_to_mono {
-        processed_band_0.scale_mut(0.2125);
-        processed_band_1.scale_mut(0.7154);
-        processed_band_2.scale_mut(0.0721);
-        processed_band_0 = processed_band_0
-            .add(&processed_band_1)
-            .unwrap()
-            .add(&processed_band_2)
-            .unwrap();
-        processed_band_1 = processed_band_0.clone();
-        processed_band_2 = processed_band_0.clone();
-    }
 
     image::Image::new_from_buffers_rgb(
         &processed_band_0,
@@ -264,29 +320,61 @@ fn process_frame_3channel(
         &processed_band_2,
         ImageMode::U16BIT,
     )
-    .unwrap()
+}
+
+fn process_frame(
+    raw: &image::Image,
+    mean_stack: &image::Image,
+    black_level: f32,
+    white_level: f32,
+    gamma: f32,
+    lowpass_window_size: u8,
+    product_type: ProductType,
+    convert_to_mono: bool,
+    light_only: bool,
+) -> Result<image::Image> {
+    match convert_to_mono {
+        true => process_frame_mono(
+            raw,
+            mean_stack,
+            black_level,
+            white_level,
+            gamma,
+            lowpass_window_size,
+            product_type,
+            light_only,
+        ),
+        false => process_frame_3channel(
+            raw,
+            mean_stack,
+            black_level,
+            white_level,
+            gamma,
+            lowpass_window_size,
+            product_type,
+            light_only,
+        ),
+    }
 }
 
 fn process_file(
-    encoder: &mut gif::Encoder<&mut std::fs::File>,
     in_file: &String,
     mean_stack: &image::Image,
     black_level: f32,
     white_level: f32,
     gamma: f32,
     lowpass_window_size: u8,
-    delay: u16,
     product_type: ProductType,
     convert_to_mono: bool,
     light_only: bool,
-) {
+) -> Result<image::Image> {
     info!("Processing frame differential on file: {}", in_file);
 
-    let mut raw = image::Image::open(in_file).unwrap();
+    let mut raw = image::Image::open(in_file)?;
     raw.normalize_between(0.0, 65535.0);
-    let (pixels, height) = match product_type {
+    match product_type {
         ProductType::STACKED => {
-            let img_std = process_frame_3channel(
+            let img_std = process_frame(
                 &raw,
                 mean_stack,
                 black_level,
@@ -296,8 +384,8 @@ fn process_file(
                 ProductType::STANDARD,
                 convert_to_mono,
                 light_only,
-            );
-            let img_diff = process_frame_3channel(
+            )?;
+            let img_diff = process_frame(
                 &raw,
                 mean_stack,
                 black_level,
@@ -307,38 +395,33 @@ fn process_file(
                 ProductType::DIFFERENTIAL,
                 convert_to_mono,
                 light_only,
-            );
+            )?;
             let mut stacked = image::Image::new_with_bands(
                 img_std.width,
                 img_std.height * 2,
-                3,
+                match convert_to_mono {
+                    true => 1,
+                    false => 3,
+                },
                 ImageMode::U16BIT,
-            )
-            .unwrap();
+            )?;
             stacked.paste(&img_diff, 0, 0);
             stacked.paste(&img_std, 0, img_std.height);
-            (rgbimage_to_vec_v8(&stacked), img_std.height * 2)
-        }
-        _ => {
-            let img = process_frame_3channel(
-                &raw,
-                mean_stack,
-                black_level,
-                white_level,
-                gamma,
-                lowpass_window_size,
-                product_type,
-                convert_to_mono,
-                light_only,
-            );
-            (rgbimage_to_vec_v8(&img), img.height)
-        }
-    };
 
-    let mut frame = gif::Frame::from_rgb(raw.width as u16, height as u16, &pixels);
-
-    frame.delay = delay;
-    encoder.write_frame(&frame).unwrap();
+            Ok(stacked)
+        }
+        _ => process_frame(
+            &raw,
+            mean_stack,
+            black_level,
+            white_level,
+            gamma,
+            lowpass_window_size,
+            product_type,
+            convert_to_mono,
+            light_only,
+        ),
+    }
 }
 
 pub struct DiffGif {
@@ -357,45 +440,66 @@ pub struct DiffGif {
 pub fn process(params: &DiffGif) -> Result<()> {
     let mean_stack = generate_mean_stack(&params.input_files)?;
 
-    let height = match params.product_type {
+    let gif_height = match params.product_type {
         ProductType::STACKED => mean_stack.height * 2,
         _ => mean_stack.height,
     };
+
+    let gif_width = mean_stack.width;
 
     let mut image_output = match File::create(&params.output) {
         Ok(image_output) => image_output,
         Err(why) => return Err(anyhow!("{:?}", why)),
     };
 
-    let mut encoder = gif::Encoder::new(
-        &mut image_output,
-        mean_stack.width as u16,
-        height as u16,
-        &[],
-    )
-    .unwrap();
-    encoder.set_repeat(gif::Repeat::Infinite).unwrap();
+    let mut encoder =
+        match gif::Encoder::new(&mut image_output, gif_width as u16, gif_height as u16, &[]) {
+            Ok(encoder) => encoder,
+            Err(why) => return Err(anyhow!("Error creating gif encoder: {:?}", why)),
+        };
 
-    for in_file in params.input_files.iter() {
-        if path::file_exists(in_file) {
-            process_file(
-                &mut encoder,
-                in_file,
-                &mean_stack,
-                params.black_level,
-                params.white_level,
-                params.gamma,
-                params.lowpass_window_size,
-                params.delay,
-                params.product_type,
-                params.convert_to_mono,
-                params.light_only,
-            );
-        } else {
-            error!("File not found: {}", in_file);
-            return Err(anyhow!("File not found: {}", in_file));
-        }
+    if let Err(why) = encoder.set_repeat(gif::Repeat::Infinite) {
+        return Err(anyhow!("Failed to set gif repeat option: {:?}", why));
     }
+
+    // Process each frame...
+    params.input_files.iter().try_for_each(|file_path| {
+        if !(path::file_exists(file_path) && path::file_readable(file_path)) {
+            bail!("Input file not found: {:?}", file_path);
+        }
+
+        let processed_frame = match process_file(
+            file_path,
+            &mean_stack,
+            params.black_level,
+            params.white_level,
+            params.gamma,
+            params.lowpass_window_size,
+            params.product_type,
+            params.convert_to_mono,
+            params.light_only,
+        ) {
+            Ok(frame) => frame,
+            Err(why) => {
+                bail!("Failed to process file {} with error: {:?}", file_path, why);
+            }
+        };
+
+        let final_img = match params.convert_to_mono && processed_frame.num_bands() != 3 {
+            true => image_mono_to_rgb(&processed_frame)?,
+            false => processed_frame,
+        };
+
+        let pixels = rgbimage_to_vec_v8(&final_img);
+
+        let mut frame = gif::Frame::from_rgb(gif_width as u16, gif_height as u16, &pixels);
+
+        frame.delay = params.delay;
+        if let Err(why) = encoder.write_frame(&frame) {
+            bail!("Failed to write gif frame: {:?}", why);
+        }
+        Ok(())
+    })?;
 
     Ok(())
 }
