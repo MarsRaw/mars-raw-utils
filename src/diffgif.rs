@@ -78,12 +78,10 @@ fn image_to_mono(img: &image::Image) -> Result<image::Image> {
 
     match image::Image::new_from_buffer_mono(&band_0_scaled) {
         Ok(mono) => Ok(mono),
-        Err(why) => {
-            return Err(anyhow!(
-                "Failed to create single band mono image: {:?}",
-                why
-            ))
-        }
+        Err(why) => Err(anyhow!(
+            "Failed to create single band mono image: {:?}",
+            why
+        )),
     }
 }
 
@@ -250,8 +248,8 @@ fn process_frame_mono(
     product_type: ProductType,
     light_only: bool,
 ) -> Result<image::Image> {
-    let mono_raw = image_to_mono(&raw)?;
-    let mono_mean = image_to_mono(&mean_stack)?;
+    let mono_raw = image_to_mono(raw)?;
+    let mono_mean = image_to_mono(mean_stack)?;
 
     let mut processed_band = process_band(
         mono_raw.get_band(0),
