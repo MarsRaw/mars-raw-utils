@@ -130,10 +130,7 @@ fn cross_file_decorrelation(input_files: &[PathBuf], ignore_black: bool) {
     info!("Computing value ranges...");
     input_files.par_iter().for_each(|in_file| {
         if in_file.exists() {
-            let image = MarsImage::open(
-                &String::from(in_file.as_os_str().to_str().unwrap()),
-                Instrument::None,
-            );
+            let image = MarsImage::open(&String::from(in_file.as_os_str().to_str().unwrap()));
 
             let prepped = color_range_determine_prep(&image.image);
 
@@ -165,10 +162,7 @@ fn cross_file_decorrelation(input_files: &[PathBuf], ignore_black: bool) {
         if in_file.exists() {
             info!("Processing File: {:?}", in_file);
 
-            let mut image = MarsImage::open(
-                &String::from(in_file.as_os_str().to_str().unwrap()),
-                Instrument::None,
-            );
+            let mut image = MarsImage::open(&String::from(in_file.as_os_str().to_str().unwrap()));
 
             for b in 0..image.image.num_bands() {
                 image.image.normalize_band_to_with_min_max(
@@ -204,10 +198,7 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
         if in_file.exists() {
             info!("Processing File: {:?}", in_file);
 
-            let mut image = MarsImage::open(
-                &String::from(in_file.as_os_str().to_str().unwrap()),
-                Instrument::None,
-            );
+            let mut image = MarsImage::open(&String::from(in_file.as_os_str().to_str().unwrap()));
 
             let prepped = color_range_determine_prep(&image.image);
             for b in 0..3 {

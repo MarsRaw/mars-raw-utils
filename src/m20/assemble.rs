@@ -74,9 +74,9 @@ impl NavcamTile {
     ///
     /// NavcamTile::new_from_file(&String::from("tests/testdata/NLF_0670_0726421423_362ECM_N0320604NCAM08111_01_095J01.png"), Instrument::M20NavcamRight);
     /// ```
-    pub fn new_from_file(file_path: &str, instrument: Instrument) -> Self {
+    pub fn new_from_file(file_path: &str) -> Self {
         NavcamTile {
-            image: MarsImage::open(file_path, instrument),
+            image: MarsImage::open(file_path),
         }
     }
 

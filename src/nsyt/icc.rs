@@ -1,6 +1,6 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    marsimage::MarsImage, util,
+    calibrate::*, calprofile::CalProfile, decompanding, enums::Instrument, marsimage::MarsImage,
+    util,
 };
 
 use sciimg::prelude::*;
@@ -26,7 +26,7 @@ impl Calibration for NsytIcc {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(input_file, enums::Instrument::NsytICC);
+        let mut raw = MarsImage::open(input_file);
 
         let data_max = if cal_context.apply_ilt {
             info!("Decompanding...");

@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, str::FromStr};
 
 use anyhow::{anyhow, Error, Result};
 use sciimg::{
@@ -6,7 +6,13 @@ use sciimg::{
     imagebuffer::ImageBuffer, inpaint, path, DnVec, VecMath,
 };
 
-use crate::{decompanding::LookUpTable, enums, flatfield, inpaintmask, metadata::*, util};
+use crate::{
+    decompanding::LookUpTable,
+    enums::{self, Instrument},
+    flatfield, inpaintmask,
+    metadata::*,
+    util,
+};
 use image::ImageReader;
 
 #[derive(Clone)]
@@ -53,17 +59,29 @@ impl MarsImage {
         self.empty
     }
 
-    pub fn open(file_path: &str, instrument: enums::Instrument) -> Self {
+    pub fn open(file_path: &str) -> Self {
         if !path::file_exists(file_path) {
             panic!("File not found: {}", file_path);
         }
 
         vprintln!("Loading image from {}", file_path);
 
+        let metadata = MarsImage::load_image_metadata(file_path);
+
+        let instrument_str = match &metadata.mission {
+            MissionMetadata::Surface(surface_metadata) => surface_metadata.instrument.clone(),
+            MissionMetadata::Flight(flight_metadata) => flight_metadata.instrument.clone(),
+        };
+
+        let instrument = match Instrument::from_str(&instrument_str) {
+            Ok(instrument) => instrument,
+            Err(_) => Instrument::None,
+        };
+
         MarsImage {
             image: Image::open(file_path).unwrap(),
             instrument,
-            metadata: MarsImage::load_image_metadata(file_path),
+            metadata,
             empty: false,
             file_path: Some(file_path.to_owned()),
         }
@@ -75,7 +93,7 @@ impl MarsImage {
         Ok(matches!(reader.format(), Some(image::ImageFormat::Jpeg)))
     }
 
-    pub fn open_dct_coefficient_fix(file_path: &str, instrument: enums::Instrument) -> Self {
+    pub fn open_dct_coefficient_fix(file_path: &str) -> Self {
         if !path::file_exists(file_path) {
             panic!("File not found: {}", file_path);
         }
@@ -87,16 +105,22 @@ impl MarsImage {
             Ok(d) => d,
         } {
             // Load the jpeg
+            let metadata = MarsImage::load_image_metadata(file_path);
+
+            let instrument_str = match &metadata.mission {
+                MissionMetadata::Surface(surface_metadata) => surface_metadata.instrument.clone(),
+                MissionMetadata::Flight(flight_metadata) => flight_metadata.instrument.clone(),
+            };
             MarsImage {
                 image: Image::open_bayer_jpeg(file_path, true).unwrap(),
-                instrument,
+                instrument: Instrument::from_str(&instrument_str).unwrap(),
                 metadata: MarsImage::load_image_metadata(file_path),
                 empty: false,
                 file_path: Some(file_path.to_owned()),
             }
         } else {
             // Otherwise fall back on the standard loading
-            MarsImage::open(file_path, instrument)
+            MarsImage::open(file_path)
         }
     }
 

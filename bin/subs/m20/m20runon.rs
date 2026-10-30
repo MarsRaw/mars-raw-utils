@@ -45,9 +45,9 @@ impl SequenceStats {
 
     pub fn add(&mut self, md: &Metadata) {
         self.count += 1;
-        if md.instrument().to_uppercase().contains("LEFT") {
+        if md.instrument_string().to_uppercase().contains("LEFT") {
             self.left += 1;
-        } else if md.instrument().to_uppercase().contains("RIGHT") {
+        } else if md.instrument_string().to_uppercase().contains("RIGHT") {
             // Some cameras are mono. They won't use left/right counts
             self.right += 1;
         }

@@ -29,7 +29,7 @@ impl Calibration for PsycheCameraB {
             warn!("Output file exists, skipping. ({})", out_file);
             cal_warn(cal_context, &out_file)
         } else {
-            let mut raw = MarsImage::open(input_file, enums::Instrument::PsycheCameraB);
+            let mut raw = MarsImage::open(input_file);
 
             let data_max = if cal_context.apply_ilt {
                 info!("Decompanding...");

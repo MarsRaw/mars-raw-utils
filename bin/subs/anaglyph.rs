@@ -56,8 +56,8 @@ impl RunnableSubcommand for Anaglyph {
             process::exit(1);
         }
 
-        let mut left_img = MarsImage::open(&left_image_path, Instrument::M20MastcamZLeft);
-        let mut right_img = MarsImage::open(&right_image_path, Instrument::M20MastcamZRight);
+        let mut left_img = MarsImage::open(&left_image_path);
+        let mut right_img = MarsImage::open(&right_image_path);
 
         if self.mono {
             info!("Converting input images to monochrome...");

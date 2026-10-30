@@ -85,7 +85,17 @@ impl Calibrate {
                     warn!("Could not load metadata file!");
                     None
                 } // Error loading the metadata file
-                Ok(md) => calibrator_for_instrument_from_str(&md.instrument()),
+                Ok(md) => {
+                    let instrument_str = match &md.mission {
+                        metadata::MissionMetadata::Surface(surface_metadata) => {
+                            surface_metadata.instrument.clone()
+                        }
+                        metadata::MissionMetadata::Flight(flight_metadata) => {
+                            flight_metadata.instrument.clone()
+                        }
+                    };
+                    calibrator_for_instrument_from_str(&instrument_str)
+                }
             }
         } else {
             // metadata file is missing

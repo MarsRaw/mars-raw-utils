@@ -1,4 +1,4 @@
-use crate::enums::Mission;
+use crate::enums::{Instrument, Mission};
 use crate::serializers::{
     as_cahvore, as_quaternion, as_tuple, as_utc_datetime, as_utc_datetime_opt, default_blank,
     default_false, default_vec_f64_none,
@@ -8,9 +8,10 @@ use sciimg::prelude::*;
 use sciimg::quaternion::Quaternion;
 use serde::{Deserialize, Serialize};
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use std::fs::File;
 use std::io::Read;
+use std::str::FromStr;
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct ProcessingState {
@@ -126,10 +127,17 @@ impl Metadata {
         &self.image.imageid
     }
 
-    pub fn instrument(&self) -> String {
+    pub fn instrument_string(&self) -> String {
         match &self.mission {
             MissionMetadata::Surface(m) => m.instrument.clone(),
             MissionMetadata::Flight(m) => m.instrument.clone(),
+        }
+    }
+
+    pub fn instrument(&self) -> Result<Instrument> {
+        match Instrument::from_str(&self.instrument_string()) {
+            Ok(ins) => Ok(ins),
+            Err(why) => Err(anyhow!("Error parsing instrument string: {:?}", why)),
         }
     }
 

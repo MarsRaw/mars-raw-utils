@@ -56,39 +56,16 @@ impl Calibration for M20EECam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut instrument = enums::Instrument::M20NavcamRight;
-
-        // Attempt to figure out camera from file name
-        if util::filename_char_at_pos(input_file, 0) == 'N' {
-            // NAVCAMS
-            if util::filename_char_at_pos(input_file, 1) == 'L' {
-                // Left
-                instrument = enums::Instrument::M20NavcamLeft;
-            } else {
-                // Assume Right
-                instrument = enums::Instrument::M20NavcamRight;
+        let mut raw = MarsImage::open(input_file);
+        let instrument = match raw.metadata.instrument() {
+            Ok(instrument) => instrument,
+            Err(why) => {
+                return Err(anyhow!(
+                    "Unable to determine camera instrument from metadata: {:?}",
+                    why
+                ))
             }
-        } else if util::filename_char_at_pos(input_file, 0) == 'F' {
-            // FHAZ
-            if util::filename_char_at_pos(input_file, 1) == 'L' {
-                // Left
-                instrument = enums::Instrument::M20FrontHazLeft;
-            } else {
-                // Assume Right
-                instrument = enums::Instrument::M20FrontHazRight;
-            }
-        } else if util::filename_char_at_pos(input_file, 0) == 'R' {
-            // RHAZ
-            if util::filename_char_at_pos(input_file, 1) == 'L' {
-                // Left
-                instrument = enums::Instrument::M20RearHazLeft;
-            } else {
-                // Assume Right
-                instrument = enums::Instrument::M20RearHazRight;
-            }
-        }
-
-        let mut raw = MarsImage::open(input_file, instrument);
+        };
 
         // Override default linearity
         match &mut raw.metadata.mission {

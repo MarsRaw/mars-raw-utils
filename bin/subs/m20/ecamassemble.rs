@@ -1,5 +1,4 @@
 use mars_raw_utils::metadata::MissionMetadata;
-use mars_raw_utils::prelude::*;
 
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::{anyhow, Result};
@@ -45,8 +44,7 @@ impl RunnableSubcommand for M20EcamAssemble {
                 pb_done_with_error!();
                 process::exit(1);
             }
-            let image =
-                NavcamTile::new_from_file(&String::from(in_file), Instrument::M20NavcamRight);
+            let image = NavcamTile::new_from_file(&String::from(in_file));
 
             // Disabling destretch for now as the tool will just restretch it anyway
             // when the image is reencoded for 16 bit.

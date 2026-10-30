@@ -1,4 +1,3 @@
-use mars_raw_utils::enums::Instrument;
 use mars_raw_utils::m20::assemble::{
     NavcamTile, FRAME_MATCH_PAIRS_SCALEFACTOR_1, FRAME_MATCH_PAIRS_SCALEFACTOR_2,
 };
@@ -9,7 +8,6 @@ use mars_raw_utils::marsimage::MarsImage;
 fn load_test_image_navright_sf_2() -> MarsImage {
     let raw = MarsImage::open(
         "tests/testdata/NRF_0731_0731848568_991ECM_N0361610NCAM12731_04_195J01.png",
-        Instrument::M20NavcamRight,
     );
     let expected_width = 1288;
     let expected_height = 968;
@@ -21,7 +19,6 @@ fn load_test_image_navright_sf_2() -> MarsImage {
 fn load_test_image_navright_sf_1() -> MarsImage {
     let raw = MarsImage::open(
         "tests/testdata/NLF_0670_0726421423_362ECM_N0320604NCAM08111_01_095J01.png",
-        Instrument::M20NavcamLeft,
     );
     let expected_width = 1288;
     let expected_height = 968;

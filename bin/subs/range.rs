@@ -71,8 +71,8 @@ impl RunnableSubcommand for Range {
             process::exit(1);
         }
 
-        let left_img = MarsImage::open(&left_image_path, Instrument::M20MastcamZLeft);
-        let right_img = MarsImage::open(&right_image_path, Instrument::M20MastcamZRight);
+        let left_img = MarsImage::open(&left_image_path);
+        let right_img = MarsImage::open(&right_image_path);
 
         let range_model = match range::compute_stereo_range(
             &left_img,

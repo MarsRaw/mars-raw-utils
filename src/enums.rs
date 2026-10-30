@@ -3,6 +3,8 @@ use std::{fmt, num::ParseIntError};
 
 use serde::{Deserialize, Serialize};
 
+use anyhow::Result;
+
 // Supported missions
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 pub enum Mission {

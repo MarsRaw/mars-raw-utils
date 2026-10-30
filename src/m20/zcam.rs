@@ -74,18 +74,17 @@ impl Calibration for M20MastcamZ {
         }
 
         let mut warn = false;
-        let instrument;
 
-        let bn = path::basename(input_file);
-        if bn.chars().nth(1).unwrap() == 'R' {
-            instrument = Instrument::M20MastcamZRight;
-            info!("Processing for Mastcam-Z Right");
-        } else {
-            instrument = Instrument::M20MastcamZLeft;
-            info!("Processing for Mastcam-Z Left");
-        }
-
-        let mut raw = MarsImage::open(input_file, instrument);
+        let mut raw = MarsImage::open(input_file);
+        let instrument = match raw.metadata.instrument() {
+            Ok(instrument) => instrument,
+            Err(why) => {
+                return Err(anyhow!(
+                    "Unable to determine camera instrument from metadata: {:?}",
+                    why
+                ))
+            }
+        };
 
         let data_max = if cal_context.apply_ilt {
             info!("Decompanding...");
@@ -159,7 +158,7 @@ impl Calibration for M20MastcamZ {
             info!("Using flat file: {}", file_path);
 
             if path::file_exists(&file_path) {
-                let mut flat = MarsImage::open(&file_path, instrument);
+                let mut flat = MarsImage::open(&file_path);
 
                 if let Some(rect) = &subframe_rect {
                     flat.crop(

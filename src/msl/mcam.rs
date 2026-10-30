@@ -1,11 +1,16 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument, flatfield,
-    inpaintmask, marsimage::MarsImage, util,
+    calibrate::*,
+    calprofile::CalProfile,
+    decompanding,
+    enums::{self, Instrument},
+    flatfield, inpaintmask,
+    marsimage::MarsImage,
+    util,
 };
 
 use sciimg::prelude::*;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 #[derive(Copy, Clone)]
 pub struct MslMastcam {}
@@ -30,16 +35,26 @@ impl Calibration for MslMastcam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut instrument = enums::Instrument::MslMastcamLeft;
+        // let mut instrument = enums::Instrument::MslMastcamLeft;
 
-        if util::filename_char_at_pos(input_file, 5) == 'R' {
-            instrument = enums::Instrument::MslMastcamRight;
-            vprintln!("Processing for Mastcam Right");
-        } else {
-            vprintln!("Processing for Mastcam Left");
-        }
+        // if util::filename_char_at_pos(input_file, 5) == 'R' {
+        //     instrument = enums::Instrument::MslMastcamRight;
+        //     vprintln!("Processing for Mastcam Right");
+        // } else {
+        //     vprintln!("Processing for Mastcam Left");
+        // }
 
-        let mut raw = MarsImage::open_dct_coefficient_fix(input_file, instrument);
+        let mut raw = MarsImage::open_dct_coefficient_fix(input_file);
+
+        let instrument = match raw.metadata.instrument() {
+            Ok(instrument) => instrument,
+            Err(why) => {
+                return Err(anyhow!(
+                    "Unable to determine camera instrument from metadata: {:?}",
+                    why
+                ))
+            }
+        };
 
         let lut = decompanding::get_ilt_for_instrument(instrument).unwrap();
         let data_max = if cal_context.apply_ilt {
