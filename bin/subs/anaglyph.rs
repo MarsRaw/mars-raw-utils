@@ -56,17 +56,26 @@ impl RunnableSubcommand for Anaglyph {
             process::exit(1);
         }
 
-        let mut left_img = MarsImage::open(&left_image_path, Instrument::M20MastcamZLeft);
-        let mut right_img = MarsImage::open(&right_image_path, Instrument::M20MastcamZRight);
+        let mut left_img = MarsImage::open(&left_image_path)?;
+        let mut right_img = MarsImage::open(&right_image_path)?;
 
         if self.mono {
             info!("Converting input images to monochrome...");
             left_img.to_mono();
             right_img.to_mono();
         }
-        let left_cahv = left_img.metadata.camera_model_component_list.clone();
 
-        let right_cahv = right_img.metadata.camera_model_component_list.clone();
+        let left_cahv = if let Some(md) = left_img.metadata.as_rover() {
+            md.camera_model_component_list.clone()
+        } else {
+            return Err(anyhow!("Anaglyph for nonsurface missions is not supported"));
+        };
+
+        let right_cahv = if let Some(md) = right_img.metadata.as_rover() {
+            md.camera_model_component_list.clone()
+        } else {
+            return Err(anyhow!("Anaglyph for nonsurface missions is not supported"));
+        };
 
         let ground = Vector::new(0.0, 0.0, 1.84566);
 

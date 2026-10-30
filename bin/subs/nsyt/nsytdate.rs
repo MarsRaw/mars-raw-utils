@@ -10,7 +10,7 @@ pub struct NsytDate {}
 
 impl RunnableSubcommand for NsytDate {
     async fn run(&self) -> Result<()> {
-        match time::get_lmst(Mission::InSight) {
+        match time::get_lmst(Mission::InSight, None) {
             Ok(mtime) => {
                 println!(
                     "Earth Time (UTC):       {}",

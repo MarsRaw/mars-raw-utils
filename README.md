@@ -13,12 +13,14 @@ Supported Missions and Data Sources:
 * Curiosity's Location: https://mars.nasa.gov/maps/location/?mission=MSL
 * Explore with Perseverance: https://mars.nasa.gov/mars2020/surface-experience/
 * Perseverance's Location: https://mars.nasa.gov/maps/location/?mission=M20
+* Psyche Mission: https://solarsystem.nasa.gov/psyche-raw-images/
 
 Supported Mission and Camera SIS documents
 * MSL: https://pds-imaging.jpl.nasa.gov/data/msl/MSLHAZ_0XXX/DOCUMENT/MSL_CAMERA_SIS_latest.PDF
 * Mars2020: https://pds-geosciences.wustl.edu/m2020/urn-nasa-pds-mars2020_mission/document_camera/Mars2020_Camera_SIS.pdf
 * InSight: https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/insight_cameras_sis.pdf
 * MSAM: https://pds-imaging.jpl.nasa.gov/data/individual_investigation/deen_pdart16_msl_msam/document/MSAM_sis.pdf
+* Psyche: https://sbnarchive.psi.edu/pds4/psyche/psyche.mission_v3.0/document/psyche_multispectral_imager_investigation.pdf
 
 Though not comprehensive, MRU aims to provide image calibration with the goal of achieving an output as close as possible to the full science data. The primary limitation being that prior to becoming available online, most images are converted to web-friendly formats that involve downscaling, lossy compression, and other changes that result in a loss of data precision. 
 
@@ -46,6 +48,8 @@ Currently supported camera instruments and primary calibration functions:
 | Ingenuity  | Color       |           |         |              | &#9745;|        |
 | InSight    | IDC         | &#9745;   |         |              | &#9745;|        |
 | InSight    | ICC         | &#9745;   |         |              | &#9745;|        |
+| Psyche     | A           | &#9745;   |         | &#9745;      |        |        |
+| Psyche     | B           | &#9745;   |         | &#9745;      |        |        |
 
 
 \* Hot pixel detection and correction
@@ -73,7 +77,8 @@ For developers, the primary project structure is as follows:
    │   ├── m20                  - Code specific to Mars2020 mission
    │   ├── mer                  - Code specific to the MER mission
    │   ├── msl                  - Code specific to the MSL mission
-   │   ╰── nsyt                 - Code specific to the InSight mission
+   │   ├── nsyt                 - Code specific to the InSight mission
+   │   ╰── psyche               - Code specific to the Psyche mission
    ╰── tests                    - Tests
 ```
 
@@ -110,14 +115,14 @@ NOTE: You can set `$MARS_RAW_DATA` in `~/.bash_profile` if a custom data directo
 Download the pre-built deb file from the project page.
 
 ```bash
-sudo apt install ./mars_raw_utils_0.7.0_amd64.deb
+sudo apt install ./mars_raw_utils_0.10.0_amd64.deb
 ```
 NOTE: Adjust the output debian package filename to what is output by the build.
 
 ### Install via rpm (RHEL, CentOS, Fedora, ...)
 Download the pre-built rpm file from the project page.
 ```bash
-rpm -ivh mars_raw_utils-0.7.0-1.x86_64.rpm
+rpm -ivh mars_raw_utils-0.10.0-1.x86_64.rpm
 ```
 NOTE: Adjust the output rpm package filename to what is created by build.
 
@@ -478,6 +483,52 @@ OPTIONS:
 * ICC
 * IDC
 
+
+## Fetch Raws for Psyche
+This tool fetches images from the public raw image website at https://solarsystem.nasa.gov/psyche-raw-images/
+
+*NOTE*: The Psyche mission is still en route to the asteroid 16 Psyche. Aside from occasional planetary flybys (e.g. Mars), data will not be regularly available until orbital insertion. 
+
+
+### Usage
+```
+Usage: mru psyche-fetch [OPTIONS]
+
+Options:
+  -c, --camera <CAMERA>...                        Psyche Camera Instrument(s)
+  -d, --date <DATE>                               Image Date
+  -s, --startdate <STARTDATE>                     Starting Image Date
+  -e, --enddate <ENDDATE>                         Ending Image Date
+  -l, --list                                      Don't download, only list results
+  -N, --num <NUM>                                 Max number of results
+  -p, --page <PAGE>                               Results page (starts at 1)
+  -f, --filter-num <FILTER_NUM>...                Camera filter number
+  -F, --filter-name <FILTER_NAME>...              Camera filter name
+  -w, --filter-wavelength <FILTER_WAVELENGTH>...  Camera filter wavelength
+  -i, --filter <FILTER>...                        filter on image id
+  -I, --instruments                               List instruments
+  -o, --output <OUTPUT>                           Output directory
+  -n, --new                                       Only new images. Skipped processed images.
+  -h, --help                                      Print help
+  -V, --version                                   Print version
+```
+
+### Instrument Identifiers
+* A
+* B
+
+## Filter Indentifiers
+* BLUE
+* CLEAR
+* GREEN
+* INFRARED_1
+* INFRARED_2
+* INFRARED_3
+* INFRARED_4
+* VIOLET
+* SUN_BLOCKER
+
+
 ## Anaglyph
 Generate a red/blue anaglyph from a matching stereo pair.
 ```
@@ -811,30 +862,68 @@ Retrieve overflight and downlink information from the Mars Relay Network. Inform
 Usage: mru passes [OPTIONS]
 
 Options:
-  -o, --orbiter <ORBITER>...  Limit to orbiter(s)
-  -l, --lander <LANDER>...    Limit to lander(s)
-  -f, --future                Limit to future overflights
-  -h, --help                  Print help
-  -V, --version               Print version
+  -o, --orbiter <ORBITER>...       Limit to orbiter(s)
+  -l, --lander <LANDER>...         Limit to lander(s)
+  -f, --future                     Limit to future overflights
+  -p, --predict                    Has predicted data
+  -a, --actual                     Has actual data
+  -m, --max-results <MAX_RESULTS>  Maximum result rows
+  -h, --help                       Print help
+  -V, --version                    Print version
 ```
 
 ### Example:
 
 Retrieve upcoming passes for Curiosity:
 ```bash
-mru passes -l MSL -f
-+---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
-| ID                  | Orbiter | Lander | Max El Time             | Max El (deg) | Duration | Range   | Data Vol |
-+---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
-| TGO_MSL_2023_242_03 | TGO     | MSL    | 2023-08-30 18:20:01 UTC | 33.448813    | 16.566   | 635.226 | 710      |
-+---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
-| MRO_MSL_2023_242_02 | MRO     | MSL    | 2023-08-30 20:40:32 UTC | 72.00407     | 13.5     | 277.561 | 397      |
-+---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
-| ODY_MSL_2023_243_02 | ODY     | MSL    | 2023-08-31 12:13:00 UTC | 70.262318    | 17.316   | 426.163 | 114      |
-+---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
-| MRO_MSL_2023_243_03 | MRO     | MSL    | 2023-08-31 20:59:15 UTC | 30.584128    | 12.933   | 474.955 | 211      |
-+---------------------+---------+--------+-------------------------+--------------+----------+---------+----------+
-...
+mru passes -l MSL -f -m 5
++---------------------+---------+--------+---------------------+-----------------------+---------------------+-----------------------+--------------+--------------+--------------+
+| ID                  | Orbiter | Lander | Start Time          | Start LTST            | End Time            | End LTST              | Max El (deg) | Pre Vol (MB) | Act Vol (MB) |
++---------------------+---------+--------+---------------------+-----------------------+---------------------+-----------------------+--------------+--------------+--------------+
+| TGO_MSL_2026_294_04 | TGO     | MSL    | 2026-10-21 21:12:09 | SOL-5051T09:54:24.497 | 2026-10-21 21:17:01 | SOL-5051T09:59:08.752 | 1.004452     |              |              |
++---------------------+---------+--------+---------------------+-----------------------+---------------------+-----------------------+--------------+--------------+--------------+
+| MRO_MSL_2026_295_01 | MRO     | MSL    | 2026-10-22 01:07:32 | SOL-5051T13:43:32.923 | 2026-10-22 01:19:02 | SOL-5051T13:54:44.622 | 14.172583    |              |              |
++---------------------+---------+--------+---------------------+-----------------------+---------------------+-----------------------+--------------+--------------+--------------+
+| MRO_MSL_2026_295_02 | MRO     | MSL    | 2026-10-22 02:59:38 | SOL-5051T15:32:40.535 | 2026-10-22 03:09:19 | SOL-5051T15:42:06.126 | 7.899451     |              |              |
++---------------------+---------+--------+---------------------+-----------------------+---------------------+-----------------------+--------------+--------------+--------------+
+| ODY_MSL_2026_295_01 | ODY     | MSL    | 2026-10-22 03:22:43 | SOL-5051T15:55:08.802 | 2026-10-22 03:31:54 | SOL-5051T16:04:05.188 | 4.222731     |              |              |
++---------------------+---------+--------+---------------------+-----------------------+---------------------+-----------------------+--------------+--------------+--------------+
+| MVN_MSL_2026_295_01 | MVN     | MSL    | 2026-10-22 04:44:08 | SOL-5051T17:14:24.242 | 2026-10-22 04:49:02 | SOL-5051T17:19:10.444 | 0.891492     |              |              |
++---------------------+---------+--------+---------------------+-----------------------+---------------------+-----------------------+--------------+--------------+--------------+
+
+```
+
+## Mars Relay Network DSN Event Information
+Retrieve DSN track information from the Mars Relay Network. Information can be filtered by orbiter (`MRO`, `ODY`, `TGO`, `MVN`) or dish.
+
+```
+Usage: mru dsn-events [OPTIONS]
+
+Options:
+  -o, --orbiter <ORBITER>...       Limit to orbiter(s)
+  -d, --dss <DSS>...               Limit to dss(s)
+  -f, --future                     Limit to future events
+  -m, --max-results <MAX_RESULTS>  Maximum result rows
+  -h, --help                       Print help
+  -V, --version                    Print version
+```
+
+### Example:
+```
+mru dsn-events -m 5
++---------+-------------+---------------------+---------------------+-----+
+| Orbiter | Event Type  | Start Time          | End Time            | DSS |
++---------+-------------+---------------------+---------------------+-----+
+| MRO     | DSNTrack    | 2026-08-26 19:15:00 | 2026-08-26 21:45:00 | 36  |
++---------+-------------+---------------------+---------------------+-----+
+| ODY     | DSNTrack    | 2026-08-26 19:20:00 | 2026-08-26 21:55:00 | 34  |
++---------+-------------+---------------------+---------------------+-----+
+| ODY     | DSNDownlink | 2026-08-26 19:46:36 | 2026-08-26 20:07:28 |     |
++---------+-------------+---------------------+---------------------+-----+
+| MRO     | DSNUplink   | 2026-08-26 20:09:11 | 2026-08-26 21:15:51 | 36  |
++---------+-------------+---------------------+---------------------+-----+
+| TGO     | DSNDownlink | 2026-08-26 20:22:53 | 2026-08-26 20:50:05 |     |
++---------+-------------+---------------------+---------------------+-----+
 ```
 
 ## Rover Surface Location and Waypoint Information
@@ -1116,3 +1205,9 @@ arXiv:2103.07001 (2021). https://arxiv.org/abs/2103.07001
 Gennery, D.B. Generalized Camera Calibration Including Fish-Eye Lenses. Int J Comput Vision 68, 239–266 (2006). https://doi.org/10.1007/s11263-006-5168-1
 
 Fries, M.D., Lee, C., Bhartia, R. et al. The SHERLOC Calibration Target on the Mars 2020 Perseverance Rover: Design, Operations, Outreach, and Future Human Exploration Functions. Space Sci Rev 218, 46 (2022). https://doi.org/10.1007/s11214-022-00907-1
+
+Bell, J.F., Ravine, M.A., Caplinger, M.A. et al. The Psyche Multispectral Imager Investigation: Characterizing the Geology, Topography, and Multispectral Properties of a Metal-Rich World. Space Sci Rev 221, 47 (2025). https://doi.org/10.1007/s11214-025-01169-3 https://doi.org/10.1007/s11214-025-01169-3
+
+H. Bates-Tarasewicz et al., "The Psyche Multispectral Imager Flight Software Interface," 2025 IEEE Aerospace Conference, Big Sky, MT, USA, 2025, pp. 1-11, doi: 10.1109/AERO63441.2025.11068470. https://doi.org/10.1109/AERO63441.2025.11068470
+
+Jaumann, R., Bell, J.F., Polanskey, C.A. et al. The Psyche Topography and Geomorphology Investigation. Space Sci Rev 218, 7 (2022). https://doi.org/10.1007/s11214-022-00874-7

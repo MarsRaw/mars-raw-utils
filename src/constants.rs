@@ -8,7 +8,13 @@ pub mod env {
     pub const HTTP_TIMEOUT_VAR: &str = "MRU_HTTP_TIMEOUT";
 }
 
+pub mod credit {
+    pub const PSYCHE_IMAGER_DEFAULT_CREDIT: &str = "NASA/JPL-Caltech/ASU";
+}
+
 pub mod url {
+    pub const NASA_RAW_HOST_URL: &str = "https://solarsystem.nasa.gov";
+
     pub const MSL_RAW_WEBSERVICE_URL: &str = "https://mars.nasa.gov/api/v1/raw_image_items/";
     pub const MSL_LATEST_WEBSERVICE_URL: &str =
         "https://mars.nasa.gov/api/v1/raw_image_items/msl/latest/";
@@ -26,6 +32,21 @@ pub mod url {
         "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints_current.json";
     pub const M20_WAYPOINTS_URL: &str =
         "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json";
+
+    pub const PSYCHE_RAW_WEBSERVICE_URL: &str =
+        "https://solarsystem.nasa.gov/api/v1/raw_image_psyche_items/";
+
+    pub const MARS_RELAY_PASSES: &str =
+        "https://eyes.nasa.gov/assets/dynamic/maros/overflights.json";
+
+    pub const MARS_RELAY_DSN_EVENTS: &str =
+        "https://eyes.nasa.gov/assets/dynamic/maros/dsn-event.json";
+
+    pub const MARS_RELAY_BUFFERS: &str = "https://eyes.nasa.gov/assets/dynamic/maros/buffers.json";
+
+    pub const DSN_STATUS: &str = "https://eyes.nasa.gov/dsn/data/dsn.xml";
+
+    pub const DSN_CONFIG: &str = "https://eyes.nasa.gov/apps/dsn-now/config.xml";
 }
 
 pub mod time {

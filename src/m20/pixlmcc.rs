@@ -1,6 +1,4 @@
-use crate::{
-    calibrate::*, calprofile::CalProfile, enums, enums::Instrument, marsimage::MarsImage, util,
-};
+use crate::{calibrate::*, calprofile::CalProfile, enums::Instrument, marsimage::MarsImage, util};
 
 use sciimg::path;
 
@@ -26,7 +24,7 @@ impl Calibration for M20Pixl {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(input_file, enums::Instrument::M20Pixl);
+        let mut raw = MarsImage::open(input_file)?;
 
         vprintln!("Flatfielding...");
         raw.flatfield();

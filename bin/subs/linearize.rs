@@ -11,6 +11,7 @@ use stump;
 
 pb_create_spinner!();
 
+#[allow(clippy::too_many_arguments)]
 fn linearize_mars_image(
     in_file: &str,
     rotate_to_level: bool,
@@ -19,6 +20,7 @@ fn linearize_mars_image(
     max_scale: f64,
     max_width: usize,
     max_height: usize,
+    apply_scaling: bool,
 ) -> Result<()> {
     if !path::file_exists(in_file) {
         return Err(anyhow!("File error: File not found: {}", in_file));
@@ -34,9 +36,17 @@ fn linearize_mars_image(
         ));
     }
 
-    let nonlin_image = MarsImage::open(in_file, Instrument::M20MastcamZLeft);
+    let nonlin_image = MarsImage::open(in_file)?;
 
-    let mast_el = if let Some(mast_el) = &nonlin_image.metadata.mast_el {
+    let rover_metadata = if let Some(md) = nonlin_image.metadata.as_rover() {
+        md
+    } else {
+        return Err(anyhow!(
+            "Linearization for nonsurface missions is not supported"
+        ));
+    };
+
+    let mast_el = if let Some(mast_el) = &rover_metadata.mast_el {
         *mast_el
     } else {
         0.0
@@ -51,7 +61,7 @@ fn linearize_mars_image(
 
         Some(&LevelOptions {
             boresight,
-            attitude: nonlin_image.metadata.attitude,
+            attitude: rover_metadata.attitude,
             invert_attitude,
         })
     } else {
@@ -77,13 +87,14 @@ fn linearize_mars_image(
         }
     };
 
-    let result = linearize::linearize_image_expanded(&nonlin_image, level_options, &extent);
-    let out_img = if let Ok(out_img) = result {
-        out_img
-    } else if let Err(why) = result {
-        return Err(anyhow!("Error linearizing image: {:?}", why));
-    } else {
-        return Err(anyhow!("Undetermined error linearizing image"));
+    let out_img = match linearize::linearize_image_expanded(
+        &nonlin_image,
+        level_options,
+        &extent,
+        apply_scaling,
+    ) {
+        Ok(out_img) => out_img,
+        Err(why) => return Err(anyhow!("Error linearizing image: {:?}", why)),
     };
 
     if let Err(why) = out_img.save(&out_file) {
@@ -120,6 +131,13 @@ pub struct Linearize {
 
     #[arg(long, short = 'H', help = "Maximum canvas height in pixels")]
     max_height: Option<usize>,
+
+    #[arg(
+        long,
+        short = 'S',
+        help = "Apply camera model scaling according to image scale factor"
+    )]
+    apply_scaling: bool,
 }
 
 impl RunnableSubcommand for Linearize {
@@ -139,6 +157,7 @@ impl RunnableSubcommand for Linearize {
                 self.max_scale.unwrap_or(1.0),
                 self.max_width.unwrap_or(0),
                 self.max_height.unwrap_or(0),
+                self.apply_scaling,
             ) {
                 Ok(_) => info!("File completed"),
                 Err(why) => error!("Processing error: {:?}", why),

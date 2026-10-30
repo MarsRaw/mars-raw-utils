@@ -33,7 +33,7 @@ pub struct MslFetch {
     thumbnails: bool,
 
     #[arg(long, short = 'N', help = "Max number of results")]
-    num: Option<u32>,
+    num: Option<usize>,
 
     #[arg(long, short = 'p', help = "Results page (starts at 1)")]
     page: Option<u8>,
@@ -143,9 +143,15 @@ impl RunnableSubcommand for MslFetch {
                 only_new: self.new,
                 product_types: vec![],
                 output_path: output,
+                start_date: None,
+                end_date: None,
+                filter: None,
+                filter_num: None,
+                filter_wavelenth: None,
             },
             |total| pb_set_length!(total),
             |_| pb_inc!(),
+            self.num,
         )
         .await
         {

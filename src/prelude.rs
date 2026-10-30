@@ -14,6 +14,8 @@ pub use crate::metadata;
 pub use crate::min;
 pub use crate::msl;
 pub use crate::nsyt;
+pub use crate::psyche;
+pub use crate::psyche::fetch::PsycheFetch;
 pub use crate::remotequery;
 pub use crate::remotequery::FetchError;
 pub use crate::time;
@@ -83,6 +85,12 @@ lazy_static! {
         CalContainer {
             calibrator: Box::new(nsyt::idc::NsytIdc {})
         },
+        CalContainer {
+            calibrator: Box::new(psyche::camera_a::PsycheCameraA {})
+        },
+        CalContainer {
+            calibrator: Box::new(psyche::camera_b::PsycheCameraB {})
+        }
     ];
 }
 

@@ -1,7 +1,7 @@
-use mars_raw_utils::prelude::*;
+use mars_raw_utils::metadata::MissionMetadata;
 
 use crate::subs::runnable::RunnableSubcommand;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::Parser;
 use colored::{self, Colorize};
 use mars_raw_utils::m20::assemble::{Composite, NavcamTile};
@@ -44,8 +44,7 @@ impl RunnableSubcommand for M20EcamAssemble {
                 pb_done_with_error!();
                 process::exit(1);
             }
-            let image =
-                NavcamTile::new_from_file(&String::from(in_file), Instrument::M20NavcamRight);
+            let image = NavcamTile::new_from_file(&String::from(in_file))?;
 
             // Disabling destretch for now as the tool will just restretch it anyway
             // when the image is reencoded for 16 bit.
@@ -94,10 +93,21 @@ impl RunnableSubcommand for M20EcamAssemble {
         composite.finalize_and_save(output);
 
         // Update 'scale_factor' in the metadata and save to disk
-        tiles[0].image.metadata.subframe_rect = Some(vec![1.0, 1.0, 5120.0, 3840.0]);
+        match &mut tiles[0].image.metadata.mission {
+            MissionMetadata::Surface(md) => {
+                md.subframe_rect = Some(vec![1.0, 1.0, 5120.0, 3840.0]);
+            }
+            _ => {
+                return Err(anyhow!(
+                    "Received nonsurface metadata when surface (rover) metadata was expected"
+                ))
+            }
+        };
+
         tiles[0]
             .image
             .metadata
+            .processing
             .history
             .push(env::args().collect::<Vec<String>>().join(" "));
         util::save_image_json(output, &tiles[0].image.metadata, None).unwrap();

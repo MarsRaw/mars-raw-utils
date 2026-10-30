@@ -1,7 +1,8 @@
 use crate::constants;
 use crate::jsonfetch;
 use crate::m20::metadata::*;
-use crate::metadata::{convert_to_std_metadata, Metadata};
+use crate::metadata::Metadata;
+use crate::metadata::MetadataConvert;
 use crate::remotequery;
 use crate::remotequery::FetchError;
 use crate::util::{stringvec, stringvec_b, InstrumentMap};
@@ -131,7 +132,7 @@ fn api_results_to_image_vec(
             || !query.search.is_empty() && !query.search.iter().any(|i| image.imageid.contains(i)))
     });
 
-    image_records.map(convert_to_std_metadata).collect()
+    image_records.map(|f| f.to_mru_metadata()).collect()
 }
 
 /// Fetches a page via `fetch_page` and filters the results through `api_results_to_image_vec`.
@@ -192,36 +193,47 @@ impl remotequery::Fetch for M20Fetch {
                 )))
             }
         };
-        match req.fetch_str().await {
-            Ok(v) => {
-                let res: M20LatestData = serde_json::from_str(v.as_str()).unwrap();
-                Ok(Box::new(res))
+
+        let results_string = match req.fetch_str().await {
+            Ok(results_string) => results_string,
+            Err(why) => return Err(FetchError::RemoteError(f!("Remote error: {:?}", why))),
+        };
+
+        let res: M20LatestData = match serde_json::from_str(&results_string) {
+            Ok(res) => res,
+            Err(why) => {
+                return Err(FetchError::ParseError(f!(
+                    "Serde parsing from_str failed. {}",
+                    why
+                )))
             }
-            Err(e) => Err(FetchError::ParseError(f!(
-                "Serde parsing from_str failed. {}",
-                e
-            ))),
-        }
+        };
+
+        Ok(Box::new(res))
     }
 
     async fn fetch_stats(
         &self,
         query: &remotequery::RemoteQuery,
     ) -> Result<remotequery::RemoteStats, FetchError> {
-        match submit_query(query).await {
-            Ok(v) => {
-                let res: M20ApiResults = serde_json::from_str(v.as_str()).unwrap();
-                let pages = (res.total_results as f32 / query.num_per_page as f32).ceil() as i32;
-                Ok(remotequery::RemoteStats {
-                    more: (res.page as i32) < pages - 1, // Assuming a zero-indexed page number
-                    error_message: String::from(""),
-                    total_results: res.total_results as i32,
-                    page: res.page as i32,
-                    total_images: res.total_images as i32,
-                })
-            }
-            Err(e) => Err(FetchError::RemoteError(f!("Remote error: {:?}", e))),
-        }
+        let results_string = match submit_query(query).await {
+            Ok(results_strings) => results_strings,
+            Err(why) => return Err(FetchError::RemoteError(f!("Remote error: {:?}", why))),
+        };
+
+        let res: M20ApiResults = match serde_json::from_str(results_string.as_str()) {
+            Ok(res) => res,
+            Err(why) => return Err(FetchError::RemoteError(f!("JSON fetch error: {:?}", why))),
+        };
+
+        let pages = (res.total_results as f32 / query.num_per_page as f32).ceil() as i32;
+        Ok(remotequery::RemoteStats {
+            more: (res.page as i32) < pages - 1, // Assuming a zero-indexed page number
+            error_message: String::from(""),
+            total_results: res.total_results as i32,
+            page: res.page as i32,
+            total_images: res.total_images as i32,
+        })
     }
 
     fn make_instrument_map(&self) -> InstrumentMap {

@@ -1,6 +1,7 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::bail;
 use anyhow::Result;
 use clap::Parser;
 use mars_raw_utils::prelude::*;
@@ -9,7 +10,6 @@ use sciimg::lowpass;
 use sciimg::prelude::*;
 use sciimg::MinMax;
 use std::path::PathBuf;
-use std::process;
 use std::sync::{Arc, Mutex};
 
 pb_create!();
@@ -111,7 +111,7 @@ fn color_range_determine_prep(image: &Image) -> Image {
     cloned
 }
 
-fn cross_file_decorrelation(input_files: &[PathBuf], ignore_black: bool) {
+fn cross_file_decorrelation(input_files: &[PathBuf], ignore_black: bool) -> Result<()> {
     let ranges_mtx = Arc::new(Mutex::new(vec![
         MinMax {
             min: f32::MAX,
@@ -128,12 +128,13 @@ fn cross_file_decorrelation(input_files: &[PathBuf], ignore_black: bool) {
     ]));
 
     info!("Computing value ranges...");
-    input_files.par_iter().for_each(|in_file| {
+    input_files.par_iter().try_for_each(|in_file| {
         if in_file.exists() {
-            let image = MarsImage::open(
-                &String::from(in_file.as_os_str().to_str().unwrap()),
-                Instrument::None,
-            );
+            let image = match MarsImage::open(&String::from(in_file.as_os_str().to_str().unwrap()))
+            {
+                Ok(img) => img,
+                Err(why) => bail!("Failed to open image: {:?}", why),
+            };
 
             let prepped = color_range_determine_prep(&image.image);
 
@@ -149,26 +150,27 @@ fn cross_file_decorrelation(input_files: &[PathBuf], ignore_black: bool) {
                 }
             });
         } else {
-            error!("File not found: {:?}", in_file);
             pb_done_with_error!();
-            process::exit(1);
+            bail!("File not found: {:?}", in_file);
         }
         pb_inc!();
-    });
+        Ok(())
+    })?;
 
     pb_set_zero!();
 
     // Mutex no longer needed
     let ranges = ranges_mtx.lock().unwrap();
 
-    input_files.par_iter().for_each(|in_file| {
+    input_files.par_iter().try_for_each(|in_file| {
         if in_file.exists() {
             info!("Processing File: {:?}", in_file);
 
-            let mut image = MarsImage::open(
-                &String::from(in_file.as_os_str().to_str().unwrap()),
-                Instrument::None,
-            );
+            let mut image =
+                match MarsImage::open(&String::from(in_file.as_os_str().to_str().unwrap())) {
+                    Ok(img) => img,
+                    Err(why) => bail!("Failed to open file: {:?}", why),
+                };
 
             for b in 0..image.image.num_bands() {
                 image.image.normalize_band_to_with_min_max(
@@ -191,23 +193,25 @@ fn cross_file_decorrelation(input_files: &[PathBuf], ignore_black: bool) {
                 ))
                 .expect("Failed to save image");
         } else {
-            error!("File not found: {:?}", in_file);
             pb_done_with_error!();
-            process::exit(1);
+            bail!("File not found: {:?}", in_file);
         }
         pb_inc!();
-    });
+        Ok(())
+    })?;
+    Ok(())
 }
 
-fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) {
-    input_files.par_iter().for_each(|in_file| {
+fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool) -> Result<()> {
+    input_files.par_iter().try_for_each(|in_file| {
         if in_file.exists() {
             info!("Processing File: {:?}", in_file);
 
-            let mut image = MarsImage::open(
-                &String::from(in_file.as_os_str().to_str().unwrap()),
-                Instrument::None,
-            );
+            let mut image =
+                match MarsImage::open(&String::from(in_file.as_os_str().to_str().unwrap())) {
+                    Ok(img) => img,
+                    Err(why) => bail!("Failed to open file: {:?}", why),
+                };
 
             let prepped = color_range_determine_prep(&image.image);
             for b in 0..3 {
@@ -231,10 +235,13 @@ fn individual_file_decorrelation(input_files: &Vec<PathBuf>, ignore_black: bool)
                 ))
                 .expect("Failed to save image");
         } else {
-            error!("File not found: {:?}", in_file);
+            // error!("File not found: {:?}", in_file);
+            bail!("File not found: {:?}", in_file);
         }
         pb_inc!();
-    });
+        Ok(())
+    })?;
+    Ok(())
 }
 
 impl RunnableSubcommand for DecorrelationStretch {
@@ -243,7 +250,6 @@ impl RunnableSubcommand for DecorrelationStretch {
         match self.cross_file {
             true => cross_file_decorrelation(&self.input_files, self.ignore_black),
             false => individual_file_decorrelation(&self.input_files, self.ignore_black),
-        };
-        Ok(())
+        }
     }
 }

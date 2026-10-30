@@ -1,8 +1,10 @@
-use crate::serializers::{as_cahvore, as_quaternion, as_tuple};
+use crate::enums::Mission;
+use crate::metadata::MissionMetadata::Surface;
+use crate::serializers::{as_cahvore, as_quaternion, as_tuple, as_utc_datetime};
 use crate::{constants, metadata::*};
+use chrono::{DateTime, Utc};
 use sciimg::prelude::*;
 use sciimg::quaternion::Quaternion;
-
 use std::fs::File;
 use std::io::Read;
 
@@ -54,11 +56,19 @@ pub struct ImageRecord {
 
     #[serde(with = "as_tuple")]
     pub xyz: Option<Vec<f64>>,
-    pub created_at: String,
-    pub updated_at: String,
+
+    #[serde(with = "as_utc_datetime")]
+    pub created_at: DateTime<Utc>,
+
+    #[serde(with = "as_utc_datetime")]
+    pub updated_at: DateTime<Utc>,
     pub mission: String,
-    pub date_taken: String,
-    pub date_received: String,
+
+    #[serde(with = "as_utc_datetime")]
+    pub date_taken: DateTime<Utc>,
+
+    #[serde(with = "as_utc_datetime")]
+    pub date_received: DateTime<Utc>,
     pub instrument_sort: u32,
     pub sample_type_sort: u32,
     pub is_thumbnail: bool,
@@ -78,126 +88,46 @@ pub struct MslApiResults {
     pub per_page: u32,
 }
 
-impl ImageMetadata for ImageRecord {
-    fn get_date_received(&self) -> String {
-        self.date_received.clone()
-    }
-
-    fn get_xyz(&self) -> Option<Vec<f64>> {
-        self.xyz.as_ref().cloned()
-    }
-
-    fn get_dimension(&self) -> Option<Vec<f64>> {
-        None
-    }
-
-    fn get_sample_type(&self) -> String {
-        self.extended.sample_type.clone()
-    }
-
-    fn get_link(&self) -> String {
-        self.url.clone()
-    }
-
-    fn get_credit(&self) -> String {
-        self.image_credit.clone()
-    }
-
-    fn get_sol(&self) -> u32 {
-        self.sol
-    }
-
-    fn get_imageid(&self) -> String {
-        self.imageid.clone()
-    }
-
-    fn get_caption(&self) -> String {
-        self.description.clone()
-    }
-
-    fn get_date_taken_utc(&self) -> String {
-        self.date_taken.clone()
-    }
-
-    fn get_date_taken_mars(&self) -> Option<String> {
-        self.extended.lmst.clone()
-    }
-
-    fn get_subframe_rect(&self) -> Option<Vec<f64>> {
-        self.subframe_rect.as_ref().cloned()
-    }
-
-    fn get_instrument(&self) -> String {
-        self.instrument.clone()
-    }
-
-    fn get_filter_name(&self) -> Option<String> {
-        self.extended.filter_name.clone()
-    }
-
-    // Sigh, MastCam....
-    // fn get_dimension(&self) -> Option<&[f64]> {
-    //     self.extended.dimension
-    // }
-
-    fn get_scale_factor(&self) -> u32 {
-        self.scale_factor.unwrap_or(1)
-    }
-
-    fn get_camera_vector(&self) -> Option<Vec<f64>> {
-        self.camera_vector.clone()
-    }
-
-    fn get_camera_model_component_list(&self) -> Cahvore {
-        self.camera_model_component_list.clone()
-    }
-
-    fn get_camera_position(&self) -> Option<Vec<f64>> {
-        self.camera_position.clone()
-    }
-
-    fn get_camera_model_type(&self) -> Option<String> {
-        self.camera_model_type.clone()
-    }
-
-    fn get_site(&self) -> Option<u32> {
-        self.site
-    }
-
-    fn get_drive(&self) -> Option<u32> {
-        self.drive
-    }
-
-    fn get_mast_az(&self) -> Option<f64> {
-        if let Some(ref mast_az_string) = self.extended.mast_az {
-            mast_az_string.parse::<f64>().ok()
-        } else {
-            None
+impl MetadataConvert for ImageRecord {
+    fn to_mru_metadata(&self) -> Metadata {
+        Metadata {
+            flight_mission: Mission::MSL,
+            processing: ProcessingState::default(),
+            image: ImageMetadata {
+                link: self.link.clone(),
+                credit: self.image_credit.clone(),
+                imageid: self.imageid.clone(),
+                caption: "".to_owned(),
+                date_taken_utc: self.date_taken,
+                date_received: self.date_received,
+                remote_image_url: self.url.clone(),
+                created_at: Some(self.created_at),
+                updated_at: Some(self.updated_at),
+                derived_filename: path::basename(self.url.as_str()),
+            },
+            mission: Surface(SurfaceMetadata {
+                sol: self.sol,
+                date_taken_mars: self.extended.lmst.clone(),
+                subframe_rect: self.subframe_rect.as_ref().cloned(),
+                scale_factor: self.scale_factor.unwrap_or(1),
+                instrument: self.instrument.clone(),
+                filter_name: None,
+                camera_vector: self.camera_vector.clone(),
+                mast_az: None,
+                mast_el: None,
+                sclk: self.spacecraft_clock,
+                thumbnail: self.is_thumbnail,
+                sample_type: String::new(),
+                dimension: None,
+                camera_position: self.camera_position.clone(),
+                xyz: self.xyz.as_ref().cloned(),
+                camera_model_type: self.camera_model_type.clone(),
+                site: self.site,
+                drive: self.drive,
+                camera_model_component_list: self.camera_model_component_list.clone(),
+                attitude: self.attitude,
+            }),
         }
-    }
-
-    fn get_mast_el(&self) -> Option<f64> {
-        if let Some(ref mast_el_string) = self.extended.mast_el {
-            mast_el_string.parse::<f64>().ok()
-        } else {
-            None
-        }
-    }
-
-    fn get_sclk(&self) -> Option<f64> {
-        self.spacecraft_clock
-    }
-
-    fn is_thumbnail(&self) -> bool {
-        self.is_thumbnail
-    }
-
-    fn get_remote_image_url(&self) -> String {
-        self.url.clone()
-    }
-
-    fn get_attitude(&self) -> Option<Quaternion> {
-        self.attitude
     }
 }
 
@@ -219,5 +149,5 @@ pub fn load_metadata_file(file_path: String) -> Result<Metadata> {
 
     let res: ImageRecord = serde_json::from_str(s.as_str()).unwrap();
 
-    Ok(convert_to_std_metadata(&res))
+    Ok(res.to_mru_metadata())
 }

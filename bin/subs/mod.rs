@@ -132,16 +132,20 @@ pub mod m20;
 pub mod mer;
 pub mod msl;
 pub mod nsyt;
+pub mod psyche;
 
 // Multimission subcommands:
 pub mod anaglyph;
 pub mod caldata;
 pub mod calibrate;
+pub mod compose;
 pub mod composite;
 pub mod crop;
 pub mod debayer;
 pub mod decorr;
 pub mod diffgif;
+pub mod dsnevents;
+pub mod dsnstatus;
 pub mod focusmerge;
 pub mod hpcfilter;
 pub mod info;
@@ -153,4 +157,5 @@ pub mod passes;
 pub mod pds2png;
 pub mod profile;
 pub mod range;
+pub mod stereomesh;
 pub mod xeye;

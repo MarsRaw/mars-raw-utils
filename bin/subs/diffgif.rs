@@ -1,5 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::Parser;
 use mars_raw_utils::diffgif;
 use std::process;
@@ -111,7 +111,7 @@ impl RunnableSubcommand for DiffGif {
             convert_to_mono: self.mono,
             light_only: self.lightonly,
         }) {
-            eprintln!("Failed to generate diffgif: {:?}", why);
+            return Err(anyhow!("Failed to generate diffgif: {:?}", why));
         }
         pb_done!();
         Ok(())

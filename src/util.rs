@@ -8,6 +8,8 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use url::Host;
+use url::Url;
 
 #[macro_export]
 macro_rules! f {
@@ -231,4 +233,17 @@ pub fn replace_image_extension(input_file: &str, append: &str) -> String {
         .replace(".TIF", append)
         .replace(".dng", append)
         .replace(".DNG", append)
+}
+
+pub fn url_has_full_hostname(input: &str) -> bool {
+    let parsed_url = match Url::parse(input) {
+        Ok(url) => url,
+        Err(_) => return false,
+    };
+
+    match parsed_url.host() {
+        Some(Host::Domain(domain)) => !domain.is_empty() && domain.contains('.'),
+        Some(Host::Ipv4(_)) | Some(Host::Ipv6(_)) => true, // Or false if you strictly require a DNS hostname rather than an IP
+        None => false,
+    }
 }

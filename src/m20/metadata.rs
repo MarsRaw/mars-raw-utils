@@ -1,9 +1,11 @@
-use crate::serializers::{as_cahvore, as_quaternion, as_tuple};
+use crate::enums::Mission;
+use crate::metadata::MissionMetadata::Surface;
+use crate::serializers::{as_cahvore, as_quaternion, as_tuple, as_utc_datetime};
 use crate::{constants, metadata::*};
-use sciimg::prelude::*;
-
 use anyhow::anyhow;
 use anyhow::Result;
+use chrono::{DateTime, Utc};
+use sciimg::prelude::*;
 use sciimg::quaternion::Quaternion;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -70,13 +72,17 @@ pub struct ImageRecord {
     pub sample_type: String,
     pub date_taken_mars: String,
     pub credit: String,
-    pub date_taken_utc: String,
+
+    #[serde(with = "as_utc_datetime")]
+    pub date_taken_utc: DateTime<Utc>,
     pub json_link: String,
     pub link: String,
     pub drive: String,
     pub title: String,
     pub site: u32,
-    pub date_received: String,
+
+    #[serde(with = "as_utc_datetime")]
+    pub date_received: DateTime<Utc>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -92,9 +98,57 @@ pub struct M20ApiResults {
     pub total_images: u32,
 }
 
+impl MetadataConvert for ImageRecord {
+    fn to_mru_metadata(&self) -> Metadata {
+        Metadata {
+            flight_mission: Mission::Mars2020,
+            processing: ProcessingState::default(),
+            image: ImageMetadata {
+                link: self.link.clone(),
+                credit: self.credit.clone(),
+                imageid: self.imageid.clone(),
+                caption: "".to_owned(),
+                date_taken_utc: self.date_taken_utc,
+                date_received: self.date_received,
+                remote_image_url: self.image_files.full_res.clone(),
+                created_at: None,
+                updated_at: None,
+                derived_filename: path::basename(self.image_files.full_res.as_str()),
+            },
+            mission: Surface(SurfaceMetadata {
+                sol: self.sol,
+                date_taken_mars: Some(self.date_taken_mars.clone()),
+                subframe_rect: self.extended.subframe_rect.as_ref().cloned(),
+                scale_factor: if self.extended.scale_factor == "UNK" {
+                    1
+                } else {
+                    self.extended.scale_factor.parse::<u32>().unwrap_or(1)
+                },
+                instrument: self.camera.instrument.clone(),
+                filter_name: None,
+                camera_vector: self.camera.camera_vector.clone(),
+                mast_az: None,
+                mast_el: None,
+                sclk: self.extended.sclk.parse::<f64>().ok(),
+                thumbnail: self.sample_type == "Thumbnail",
+                sample_type: String::new(),
+                dimension: None,
+                camera_position: self.camera.camera_position.clone(),
+                xyz: self.extended.xyz.as_ref().cloned(),
+                camera_model_type: Some(self.camera.camera_model_type.clone()),
+                site: Some(self.site),
+                drive: self.drive.parse::<u32>().ok(),
+                camera_model_component_list: self.camera.camera_model_component_list.clone(),
+                attitude: self.attitude,
+            }),
+        }
+    }
+}
+
+/*
 impl ImageMetadata for ImageRecord {
-    fn get_date_received(&self) -> String {
-        self.date_received.clone()
+    fn get_date_received(&self) -> DateTime<Utc> {
+        self.date_received
     }
 
     fn get_xyz(&self) -> Option<Vec<f64>> {
@@ -129,8 +183,8 @@ impl ImageMetadata for ImageRecord {
         self.caption.clone()
     }
 
-    fn get_date_taken_utc(&self) -> String {
-        self.date_taken_utc.clone()
+    fn get_date_taken_utc(&self) -> DateTime<Utc> {
+        self.date_taken_utc
     }
 
     fn get_date_taken_mars(&self) -> Option<String> {
@@ -206,6 +260,7 @@ impl ImageMetadata for ImageRecord {
         self.attitude
     }
 }
+     */
 
 pub fn load_metadata_file(file_path: String) -> Result<Metadata> {
     vprintln!("Loading metadata file from {}", file_path);
@@ -225,5 +280,5 @@ pub fn load_metadata_file(file_path: String) -> Result<Metadata> {
 
     let res: ImageRecord = serde_json::from_str(s.as_str()).unwrap();
 
-    Ok(convert_to_std_metadata(&res))
+    Ok(res.to_mru_metadata())
 }

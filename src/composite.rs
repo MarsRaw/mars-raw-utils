@@ -1,14 +1,12 @@
 use crate::prelude::*;
-use anyhow::Result;
+use anyhow::{bail, Result};
 use sciimg::{drawable::*, max, min, prelude::*, quaternion::Quaternion, vector::Vector};
 use std::str::FromStr;
 
 pub fn get_cahvor(img: &MarsImage) -> Option<Cahvore> {
-    //if img.metadata.camera_model_component_list.is_valid() {
-    Some(img.metadata.camera_model_component_list.clone())
-    //} else {
-    //    None
-    //}
+    img.metadata
+        .as_rover()
+        .map(|rover_metadata| rover_metadata.camera_model_component_list.clone())
 }
 
 pub struct Extent {
@@ -128,7 +126,7 @@ fn get_lat_lon(c: &Cahvore, x: usize, y: usize, _quat: &Quaternion) -> Result<La
     }
 }
 
-pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> MapContext {
+pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> Result<MapContext> {
     let mut context = MapContext {
         top_lat: -90.0,
         bottom_lat: 90.0,
@@ -139,8 +137,11 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> MapCo
         degrees_per_pixel: 0.0,
     };
 
-    input_files.iter().for_each(|input_file| {
-        let img = MarsImage::open(input_file, Instrument::M20MastcamZLeft);
+    input_files.iter().try_for_each(|input_file| {
+        let img = match MarsImage::open(input_file) {
+            Ok(img) => img,
+            Err(why) => bail!("Failed to open file {}: {:?}", input_file, why),
+        };
         if let Some(c) = get_cahvor(&img) {
             if let Ok(ll) = get_lat_lon(&c, 0, 0, quat) {
                 context.bottom_lat = min!(context.bottom_lat, ll.lat);
@@ -187,7 +188,8 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> MapCo
             let ang_horiz = c.pixel_angle_horiz().to_degrees();
             context.degrees_per_pixel = max!(context.degrees_per_pixel, ang_horiz);
         };
-    });
+        Ok(())
+    })?;
 
     context.top_lat = min!(context.top_lat, 90.0);
     context.bottom_lat = max!(context.bottom_lat, -90.0);
@@ -198,7 +200,7 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> MapCo
     context.width =
         ((context.right_lon - context.left_lon) / context.degrees_per_pixel).floor() as usize;
 
-    context
+    Ok(context)
 }
 
 fn get_ls_from_map_xy(
@@ -239,9 +241,14 @@ pub fn process_file<D: Drawable>(
     anaglyph: bool,
     quat: &Quaternion,
     initial_origin: &Vector,
-) {
-    let mut img = MarsImage::open(input_file, Instrument::M20MastcamZLeft);
-    img.instrument = Instrument::from_str(img.metadata.instrument.as_str()).unwrap();
+) -> Result<()> {
+    let mut img = MarsImage::open(input_file)?;
+
+    img.instrument = if let Some(rover_metadata) = img.metadata.as_rover() {
+        Instrument::from_str(rover_metadata.instrument.as_str()).unwrap()
+    } else {
+        panic!("Composite via CAHVORE camera model not supported for non-surface missions")
+    };
 
     let eye = if anaglyph {
         match util::filename_char_at_pos(input_file, 1) {
@@ -349,4 +356,6 @@ pub fn process_file<D: Drawable>(
             panic!("CAHVOR not found for image, cannot continue");
         }
     }
+
+    Ok(())
 }

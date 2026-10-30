@@ -74,6 +74,9 @@ pub mod msl;
 /// Routines for InSight image processing
 pub mod nsyt;
 
+/// Routines and data structures for Psyche image processing
+pub mod psyche;
+
 /// Single-point import for most utilized MRU API
 pub mod prelude;
 
@@ -95,6 +98,10 @@ pub mod caldata;
 /// Retrieval of orbiter overpasses
 pub mod passes;
 
+pub mod dsnevents;
+
+pub mod dsnstatus;
+
 pub mod location;
 
 /// A collection of serde de/serializers for various types
@@ -105,3 +112,5 @@ pub mod linearize;
 
 // Stereo range from a left/right pair of CAHVORE-modeled images.
 pub mod range;
+
+pub mod stereomesh;

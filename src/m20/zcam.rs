@@ -1,3 +1,4 @@
+use crate::metadata::MissionMetadata;
 use crate::{
     calibfile, calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
     inpaintmask, marsimage::MarsImage, util,
@@ -73,18 +74,17 @@ impl Calibration for M20MastcamZ {
         }
 
         let mut warn = false;
-        let instrument;
 
-        let bn = path::basename(input_file);
-        if bn.chars().nth(1).unwrap() == 'R' {
-            instrument = Instrument::M20MastcamZRight;
-            info!("Processing for Mastcam-Z Right");
-        } else {
-            instrument = Instrument::M20MastcamZLeft;
-            info!("Processing for Mastcam-Z Left");
-        }
-
-        let mut raw = MarsImage::open(input_file, instrument);
+        let mut raw = MarsImage::open(input_file)?;
+        let instrument = match raw.metadata.instrument() {
+            Ok(instrument) => instrument,
+            Err(why) => {
+                return Err(anyhow!(
+                    "Unable to determine camera instrument from metadata: {:?}",
+                    why
+                ))
+            }
+        };
 
         let data_max = if cal_context.apply_ilt {
             info!("Decompanding...");
@@ -115,12 +115,23 @@ impl Calibration for M20MastcamZ {
             raw.desmear_ccd_image(cal_context.desmear_epsilon);
         } // else, don't bother
 
+        let subframe_rect = if let Some(md) = raw.metadata.as_rover() {
+            md.subframe_rect.clone()
+        } else {
+            None
+        };
+
+        let camera_model_component_list = if let Some(md) = raw.metadata.as_rover() {
+            md.camera_model_component_list.clone()
+        } else {
+            Cahvore::default()
+        };
+
         // I'm not wild about this
         let focal_length: Result<f32> = match focal_length_from_file_name(input_file) {
             Ok(fl) => Ok(fl),
             Err(_) => {
-                if let Ok(fl) = focal_length_from_cahvor(&raw.metadata.camera_model_component_list)
-                {
+                if let Ok(fl) = focal_length_from_cahvor(&camera_model_component_list) {
                     Ok(fl)
                 } else {
                     //print_fail(&format!("{} ({})", path::basename(input_file), &cal_context.filename_suffix.to_str()));
@@ -147,9 +158,9 @@ impl Calibration for M20MastcamZ {
             info!("Using flat file: {}", file_path);
 
             if path::file_exists(&file_path) {
-                let mut flat = MarsImage::open(&file_path, instrument);
+                let mut flat = MarsImage::open(&file_path)?;
 
-                if let Some(rect) = &raw.metadata.subframe_rect {
+                if let Some(rect) = &subframe_rect {
                     flat.crop(
                         rect[0] as usize - 1,
                         rect[1] as usize - 1,
@@ -171,7 +182,7 @@ impl Calibration for M20MastcamZ {
 
         info!("Inpainting...");
         let mut inpaint_mask = inpaintmask::load_mask(instrument).unwrap();
-        if let Some(rect) = &raw.metadata.subframe_rect {
+        if let Some(rect) = &subframe_rect {
             inpaint_mask = inpaint_mask
                 .get_subframe(
                     rect[0] as usize - 1,
@@ -199,14 +210,22 @@ impl Calibration for M20MastcamZ {
         info!("Cropping...");
 
         if cal_context.auto_subframing {
-            if let Some(rect) = &raw.metadata.subframe_rect {
+            if let Some(rect) = &subframe_rect {
                 let new_rect = vec![
                     rect[0] + 29.0,
                     rect[1] + 9.0,
                     rect[2] - 58.0,
                     rect[3] - 18.0,
                 ];
-                raw.metadata.subframe_rect = Some(new_rect);
+
+                match &mut raw.metadata.mission {
+                    MissionMetadata::Surface(md) => md.subframe_rect = Some(new_rect),
+                    _ => {
+                        return Err(anyhow!(
+                        "Received nonsurface metadata when surface (rover) metadata was expected"
+                    ))
+                    }
+                }
             }
 
             raw.image

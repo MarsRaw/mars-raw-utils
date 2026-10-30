@@ -1,11 +1,11 @@
 use crate::{
-    calibrate::*, calprofile::CalProfile, decompanding, enums, enums::Instrument,
-    marsimage::MarsImage, util,
+    calibrate::*, calprofile::CalProfile, decompanding, enums::Instrument, marsimage::MarsImage,
+    util,
 };
 
 use sciimg::path;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 #[derive(Copy, Clone)]
 pub struct MslMardi {}
@@ -27,11 +27,21 @@ impl Calibration for MslMardi {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(input_file, enums::Instrument::MslMARDI);
+        let mut raw = MarsImage::open(input_file)?;
+
+        let instrument = match raw.metadata.instrument() {
+            Ok(instrument) => instrument,
+            Err(why) => {
+                return Err(anyhow!(
+                    "Unable to determine camera instrument from metadata: {:?}",
+                    why
+                ))
+            }
+        };
 
         let data_max = if cal_context.apply_ilt {
             vprintln!("Decompanding...");
-            let lut = decompanding::get_ilt_for_instrument(enums::Instrument::MslMARDI).unwrap();
+            let lut = decompanding::get_ilt_for_instrument(instrument).unwrap();
             raw.decompand(&lut);
             lut.max() as f32
         } else {

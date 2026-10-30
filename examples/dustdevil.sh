@@ -15,6 +15,8 @@ MAGICK="`which magick`"
 while [ $# -gt 0 ]; do
     if [ $1 == "-e" ]; then
         open_file_manager=1
+    elif [ $1 == "-l" ]; then
+        lights_only="-L"
     fi
     shift
 done
@@ -57,23 +59,23 @@ if [ $num_parts_ncam00594 -gt 0 ]; then
     p=1
     n=3
     while [ $p -le $num_parts_ncam00594 ]; do
-        mru -v diffgif -i `ls *NCAM00594*-rjcal.tif | head -n $n | tail -n 3` -o DustDevil_${sol}_NCAM00594_part${p}_rjcal.gif -b 0 -w 2.0 -g 0.4 -l 5 -d 40 -p stacked
+        mru -v diffgif -i `ls *NCAM00594*-rjcal.tif | head -n $n | tail -n 3` -o DustDevil_${sol}_NCAM00594_part${p}_rjcal.gif ${lights_only} -b 0 -w 2.0 -g 0.4 -l 5 -d 40 -m -p stacked
         let p=$p+1
         let n=$n+3
     done
     if [ -f $MAGICK ]; then
-        $MAGICK convert DustDevil_${sol}_NCAM00594_part*_rjcal.gif  DustDevil_${sol}_NCAM00594_rjcal.gif
+        $MAGICK DustDevil_${sol}_NCAM00594_part*_rjcal.gif  DustDevil_${sol}_NCAM00594_rjcal.gif
         rm DustDevil_${sol}_NCAM00594_part*_rjcal.gif 
     fi
 fi
 
 if [ `ls *NCAM00545*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 0'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_1.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
-    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 1'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_2.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
-    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 2'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_3.gif  -b 0 -w 100.0 -g 0.5 -l 5 -d 20
+    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 0'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_1.gif ${lights_only} -b 0 -w 100.0 -g 0.5 -l 5 -d 20 -m
+    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 1'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_2.gif ${lights_only} -b 0 -w 100.0 -g 0.5 -l 5 -d 20 -m
+    mru -v diffgif -i `ls *NCAM00545*tif | awk 'NR % 3 == 2'` -o TwilightCloudSearch_${sol}_NCAM00545_rjcal_3.gif ${lights_only} -b 0 -w 100.0 -g 0.5 -l 5 -d 20 -m
 
     if [ -f $MAGICK ]; then
-        $MAGICK convert TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif   TwilightCloudSearch_${sol}_NCAM00545_rjcal.gif
+        $MAGICK TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif   TwilightCloudSearch_${sol}_NCAM00545_rjcal.gif
         rm TwilightCloudSearch_${sol}_NCAM00545_rjcal_?.gif 
     fi
 fi
@@ -82,12 +84,12 @@ if [ `ls *NCAM00590*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
     p=1
     n=12
     while [ $p -le 3 ]; do
-        mru -v diffgif -i `ls *NCAM00590*-rjcal.tif | head -n $n | tail -n 12` -o DustDevil_${sol}_NCAM00590_part${p}_rjcal.gif -b 0 -w 2.0 -g 0.4 -l 5 -d 40 -p stacked
+        mru -v diffgif -i `ls *NCAM00590*-rjcal.tif | head -n $n | tail -n 12` -o DustDevil_${sol}_NCAM00590_part${p}_rjcal.gif ${lights_only} -b 0 -w 2.0 -g 0.4 -l 5 -d 40 -m -p stacked
         let p=$p+1
         let n=$n+12
     done
     if [ -f $MAGICK ]; then
-        $MAGICK convert DustDevil_${sol}_NCAM00590_part*_rjcal.gif  DustDevil_${sol}_NCAM00590_rjcal.gif
+        $MAGICK DustDevil_${sol}_NCAM00590_part*_rjcal.gif  DustDevil_${sol}_NCAM00590_rjcal.gif
         rm DustDevil_${sol}_NCAM00590_part*_rjcal.gif
     fi
 fi
@@ -96,77 +98,77 @@ if [ `ls *NCAM00592*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
     p=1
     n=8
     while [ $p -le 8 ]; do
-        mru -v diffgif -i `ls *NCAM00592*-rjcal.tif | head -n $n | tail -n 8` -o DustDevil_${sol}_NCAM00592_part${p}_rjcal.gif -b 0 -w 2.0 -g 0.4 -l 5 -d 40 -p stacked
+        mru -v diffgif -i `ls *NCAM00592*-rjcal.tif | head -n $n | tail -n 8` -o DustDevil_${sol}_NCAM00592_part${p}_rjcal.gif ${lights_only} -b 0 -w 2.0 -g 0.4 -l 5 -d 40 -m -p stacked
         let p=$p+1
         let n=$n+8
     done
     if [ -f $MAGICK ]; then
-        $MAGICK convert DustDevil_${sol}_NCAM00592_part*_rjcal.gif  DustDevil_${sol}_NCAM00592_rjcal.gif
+        $MAGICK DustDevil_${sol}_NCAM00592_part*_rjcal.gif  DustDevil_${sol}_NCAM00592_rjcal.gif
         rm DustDevil_${sol}_NCAM00592_part*_rjcal.gif
     fi
 fi
 
 if [ `ls *NCAM00593*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i NRB*NCAM00593*-rjcal.tif -o DustDevil_${sol}_NCAM00593_rjcal.gif -b 0 -w 2.0 -g 1.0 -l 5 -d 20 -p stacked
+    mru -v diffgif -i NRB*NCAM00593*-rjcal.tif -o DustDevil_${sol}_NCAM00593_rjcal.gif ${lights_only} -b 0 -w 2.0 -g 1.0 -l 5 -d 20 -m -p stacked
 fi
 
 if [ `ls *${seqid}*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *${seqid}*-rjcal.tif -o DustDevil_${sol}_${seqid}_rjcal.gif -b 0 -w 2.0 -g 0.4 -l 5 -d 20 -p stacked
+    mru -v diffgif -i *${seqid}*-rjcal.tif -o DustDevil_${sol}_${seqid}_rjcal.gif ${lights_only} -b 0 -w 2.0 -g 0.4 -l 5 -d 20 -m -p stacked
 fi
 
 if [ `ls *FHAZ00595*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *FHAZ00595*-rjcal.tif -o DustDevil_FHAZ_${sol}_FHAZ00595_rjcal.gif -b 0 -w 2.0 -g 1.0 -l 5 -d 20 -p stacked
+    mru -v diffgif -i *FHAZ00595*-rjcal.tif -o DustDevil_FHAZ_${sol}_FHAZ00595_rjcal.gif ${lights_only} -b 0 -w 2.0 -g 1.0 -l 5 -d 20 -m -p stacked
 fi
 
 if [ `ls *RHAZ00595*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *RHAZ00595*-rjcal.tif -o DustDevil_RHAZ_${sol}_RHAZ00595_rjcal.gif -b 0 -w 2.0 -g 0.4 -l 5 -d 20 -p stacked
+    mru -v diffgif -i *RHAZ00595*-rjcal.tif -o DustDevil_RHAZ_${sol}_RHAZ00595_rjcal.gif ${lights_only} -b 0 -w 2.0 -g 0.4 -l 5 -d 20 -m -p stacked
 fi
 
 if [ `ls *NCAM00556*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *NCAM00556*-rjcal.tif -o CloudShadow_${sol}.gif -b 0 -w 1.0 -g 0.4 -l 5 -d 20
+    mru -v diffgif -i *NCAM00556*-rjcal.tif -o CloudShadow_${sol}.gif ${lights_only} -b 0 -w 1.0 -g 0.4 -l 5 -d 20 -m
 fi
 
 if [ `ls *NCAM00551*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *NCAM00551*-rjcal.tif -o ZenithMovie_${sol}.gif -b 0 -w 1.0 -g 0.4 -l 5 -d 20
+    mru -v diffgif -i *NCAM00551*-rjcal.tif -o ZenithMovie_${sol}.gif ${lights_only} -b 0 -w 1.0 -g 0.4 -l 5 -d 20 -m
 fi
 
 if [ `ls *NCAM00536*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *NCAM00536*-rjcal.tif -o ZenithMovie_${sol}.gif -b 0 -w 1.0 -g 0.4 -l 5 -d 20
+    mru -v diffgif -i *NCAM00536*-rjcal.tif -o ZenithMovie_${sol}.gif ${lights_only} -b 0 -w 1.0 -g 0.4 -l 5 -d 20 -m
 fi
 
 if [ `ls *NCAM00543*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *NCAM00543*-rjcal.tif -o ZenithMovie_EnvNorth_${sol}.gif -b 0 -w 1.0 -g 0.4 -l 5 -d 20
+    mru -v diffgif -i *NCAM00543*-rjcal.tif -o ZenithMovie_EnvNorth_${sol}.gif ${lights_only} -b 0 -w 1.0 -g 0.4 -l 5 -d 20 -m
 fi
 
 if [ `ls *NCAM00547*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *NCAM00547*-rjcal.tif -o TwilightCloudMovie_EnvSouth_${sol}.gif -b 0 -w 100.0 -g 0.5 -l 5 -d 20
+    mru -v diffgif -i *NCAM00547*-rjcal.tif -o TwilightCloudMovie_EnvSouth_${sol}.gif ${lights_only} -b 0 -w 100.0 -g 0.5 -l 5 -d 20 -m
 fi
 
 if [ `ls *NCAM00567*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *NCAM00567*-rjcal.tif -o SupraHorizonMovie_${sol}.gif -b 0 -w 1.0 -g 0.4 -l 5 -d 20
+    mru -v diffgif -i *NCAM00567*-rjcal.tif -o SupraHorizonMovie_${sol}.gif ${lights_only} -b 0 -w 1.0 -g 0.4 -l 5 -d 20 -m
 fi
 
 if [ `ls *NCAM00560*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *NCAM00560*-rjcal.tif -o SupraHorizonMovie_EnvNorth_${sol}.gif -b 0 -w 1.0 -g 0.4 -l 5 -d 20
+    mru -v diffgif -i *NCAM00560*-rjcal.tif -o SupraHorizonMovie_EnvNorth_${sol}.gif ${lights_only} -b 0 -w 1.0 -g 0.4 -l 5 -d 20 -m
 fi
 
 if [ `ls *NCAM00596*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i *_S*NCAM00596*rjcal.tif -o DustDevil596_${sol}.gif -b 0 -w 5.0 -g 0.667 -l 5 -d 40
+    mru -v diffgif -i *_S*NCAM00596*rjcal.tif -o DustDevil596_${sol}.gif ${lights_only} -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m
 fi
 
 if [ `ls *NCAM00597*-rjcal.tif 2> /dev/null | wc -l` -gt 0 ]; then
-    mru -v diffgif -i `ls *NCAM00597*-rjcal.tif | head -n 16` -o SPENDI_NCAM00597_Set1_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
-    mru -v diffgif -i *_F*NCAM00597*rjcal.tif -o SPENDI_NCAM00597_Set2_${sol}.gif -b 0 -w 3.0 -g 1.5 -l 5 -d 40
-    mru -v diffgif -i `ls *NCAM00597*-rjcal.tif | tail -n 23` -o SPENDI_NCAM00597_Set3_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00597*-rjcal.tif | head -n 16` -o SPENDI_NCAM00597_Set1_${sol}.gif ${lights_only}  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m -p stacked
+    mru -v diffgif -i *_F*NCAM00597*rjcal.tif -o SPENDI_NCAM00597_Set2_${sol}.gif ${lights_only} -b 0 -w 3.0 -g 1.5 -l 5 -d 40 -m
+    mru -v diffgif -i `ls *NCAM00597*-rjcal.tif | tail -n 23` -o SPENDI_NCAM00597_Set3_${sol}.gif ${lights_only}  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m -p stacked
 fi
 
 if [ `ls *NCAM00599*-rjcal.tif 2> /dev/null | wc -l` -eq 48 ]; then
-    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 8` -o SPENDI_NCAM00599_Set1_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
-    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 16 | tail -n 8` -o SPENDI_NCAM00599_Set2_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
-    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 24 | tail -n 8` -o SPENDI_NCAM00599_Set3_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
-    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 32 | tail -n 8` -o SPENDI_NCAM00599_Set4_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
-    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 40 | tail -n 8` -o SPENDI_NCAM00599_Set5_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
-    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | tail -n 8` -o SPENDI_NCAM00599_Set6_${sol}.gif  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 8` -o SPENDI_NCAM00599_Set1_${sol}.gif ${lights_only}  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 16 | tail -n 8` -o SPENDI_NCAM00599_Set2_${sol}.gif ${lights_only}  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 24 | tail -n 8` -o SPENDI_NCAM00599_Set3_${sol}.gif ${lights_only}  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 32 | tail -n 8` -o SPENDI_NCAM00599_Set4_${sol}.gif ${lights_only}  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | head -n 40 | tail -n 8` -o SPENDI_NCAM00599_Set5_${sol}.gif ${lights_only}  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m -p stacked
+    mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | tail -n 8` -o SPENDI_NCAM00599_Set6_${sol}.gif ${lights_only}  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m -p stacked
 fi
 
 if [ $open_file_manager -eq 1 ]; then 

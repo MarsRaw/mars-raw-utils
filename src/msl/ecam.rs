@@ -1,12 +1,18 @@
 use crate::{
-    calibfile, calibrate::*, calprofile::CalProfile, enums, enums::Instrument, inpaintmask,
-    marsimage::MarsImage, util,
+    calibfile,
+    calibrate::*,
+    calprofile::CalProfile,
+    enums::{self, Instrument},
+    inpaintmask,
+    marsimage::MarsImage,
+    metadata::MissionMetadata,
+    util,
 };
 
 use sciimg::camera::cahvore::linearity;
 use sciimg::path;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 // Doesn't support subframed images yet since we won't know what part of the sensor was
 // used from the raws alone. If it's in the JSON response from the raw image site, then
@@ -45,73 +51,28 @@ impl Calibration for MslEcam {
             return cal_warn(cal_context, &out_file);
         }
 
-        let instrument;
-        match util::filename_char_at_pos(input_file, 0) {
-            'N' => {
-                // NAVCAMS
-                match util::filename_char_at_pos(input_file, 1) == 'L' {
-                    // Left
-                    true => instrument = enums::Instrument::MslNavCamLeft,
-                    // Assume Right
-                    false => instrument = enums::Instrument::MslNavCamRight,
-                }
+        let mut raw = MarsImage::open(input_file)?;
+        let instrument = match raw.metadata.instrument() {
+            Ok(instrument) => instrument,
+            Err(why) => {
+                return Err(anyhow!(
+                    "Unable to determine camera instrument from metadata: {:?}",
+                    why
+                ))
             }
-            'F' => {
-                // FHAZ
-                match util::filename_char_at_pos(input_file, 1) == 'L' {
-                    // Left
-                    true => instrument = enums::Instrument::MslFrontHazLeft,
-                    // Assume Right
-                    false => instrument = enums::Instrument::MslFrontHazRight,
-                }
-            }
-            'R' => {
-                // RHAZ
-                match util::filename_char_at_pos(input_file, 1) == 'L' {
-                    // Left
-                    true => instrument = enums::Instrument::MslRearHazLeft,
-                    // Assume Right
-                    false => instrument = enums::Instrument::MslRearHazRight,
-                }
-            }
-            // TODO should never panic?
-            _ => panic!("Unrecognized camera option"),
-        }
-
-        // // Attempt to figure out camera from file name
-        // if util::filename_char_at_pos(input_file, 0) == 'N' {
-        //     // NAVCAMS
-        //     if util::filename_char_at_pos(input_file, 1) == 'L' {
-        //         // Left
-        //         instrument = enums::Instrument::MslNavCamLeft;
-        //     } else {
-        //         // Assume Right
-        //         instrument = enums::Instrument::MslNavCamRight;
-        //     }
-        // } else if util::filename_char_at_pos(input_file, 0) == 'F' {
-        //     // FHAZ
-        //     if util::filename_char_at_pos(input_file, 1) == 'L' {
-        //         // Left
-        //         instrument = enums::Instrument::MslFrontHazLeft;
-        //     } else {
-        //         // Assume Right
-        //         instrument = enums::Instrument::MslFrontHazRight;
-        //     }
-        // } else if util::filename_char_at_pos(input_file, 0) == 'R' {
-        //     // RHAZ
-        //     if util::filename_char_at_pos(input_file, 1) == 'L' {
-        //         // Left
-        //         instrument = enums::Instrument::MslRearHazLeft;
-        //     } else {
-        //         // Assume Right
-        //         instrument = enums::Instrument::MslRearHazRight;
-        //     }
-        // }
-
-        let mut raw = MarsImage::open(input_file, instrument);
+        };
 
         // Override default linearity
-        raw.metadata.camera_model_component_list.linearity = linearity::LINEARITY_PERSPECTIVE;
+        match &mut raw.metadata.mission {
+            MissionMetadata::Surface(md) => {
+                md.camera_model_component_list.linearity = linearity::LINEARITY_PERSPECTIVE
+            }
+            _ => {
+                return Err(anyhow!(
+                    "Received nonsurface metadata when surface (rover) metadata was expected"
+                ))
+            }
+        };
 
         // Exclude subframed images for now...
         if inpaintmask::inpaint_supported_for_instrument(instrument) && raw.image.height >= 1022 {
@@ -141,15 +102,17 @@ impl Calibration for MslEcam {
         vprintln!("Using flat file: {}", flat_file_path);
 
         if path::file_exists(&flat_file_path) {
-            let mut flat = MarsImage::open(&flat_file_path, instrument);
+            let mut flat = MarsImage::open(&flat_file_path)?;
 
-            if let Some(rect) = &raw.metadata.subframe_rect {
-                flat.crop(
-                    rect[0] as usize - 1,
-                    rect[1] as usize - 1,
-                    rect[2] as usize,
-                    rect[3] as usize,
-                );
+            if let Some(md) = raw.metadata.as_rover() {
+                if let Some(rect) = &md.subframe_rect {
+                    flat.crop(
+                        rect[0] as usize - 1,
+                        rect[1] as usize - 1,
+                        rect[2] as usize,
+                        rect[3] as usize,
+                    );
+                }
             }
 
             raw.flatfield_with_flat(&flat);

@@ -9,7 +9,7 @@ pub struct M20Date {}
 
 impl RunnableSubcommand for M20Date {
     async fn run(&self) -> Result<()> {
-        match time::get_lmst(Mission::Mars2020) {
+        match time::get_lmst(Mission::Mars2020, None) {
             Ok(mtime) => {
                 println!(
                     "Earth Time (UTC):       {}",

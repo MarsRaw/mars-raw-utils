@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, str::FromStr};
 
 use anyhow::{anyhow, Error, Result};
 use sciimg::{
@@ -6,7 +6,13 @@ use sciimg::{
     imagebuffer::ImageBuffer, inpaint, path, DnVec, VecMath,
 };
 
-use crate::{decompanding::LookUpTable, enums, flatfield, inpaintmask, metadata::*, util};
+use crate::{
+    decompanding::LookUpTable,
+    enums::{self, Instrument},
+    flatfield, inpaintmask,
+    metadata::*,
+    util,
+};
 use image::ImageReader;
 
 #[derive(Clone)]
@@ -53,20 +59,37 @@ impl MarsImage {
         self.empty
     }
 
-    pub fn open(file_path: &str, instrument: enums::Instrument) -> Self {
+    pub fn open(file_path: &str) -> Result<Self> {
         if !path::file_exists(file_path) {
-            panic!("File not found: {}", file_path);
+            return Err(anyhow!("File not found: {}", file_path));
         }
 
         vprintln!("Loading image from {}", file_path);
 
-        MarsImage {
-            image: Image::open(file_path).unwrap(),
+        let metadata = MarsImage::load_image_metadata(file_path);
+
+        let instrument_str = match &metadata.mission {
+            MissionMetadata::Surface(surface_metadata) => surface_metadata.instrument.clone(),
+            MissionMetadata::Flight(flight_metadata) => flight_metadata.instrument.clone(),
+        };
+
+        let instrument = match Instrument::from_str(&instrument_str) {
+            Ok(instrument) => instrument,
+            Err(_) => Instrument::None,
+        };
+
+        let image = match Image::open(file_path) {
+            Ok(image) => image,
+            Err(why) => return Err(anyhow!("Failed to open file {}: {:?}", file_path, why)),
+        };
+
+        Ok(MarsImage {
+            image,
             instrument,
-            metadata: MarsImage::load_image_metadata(file_path),
+            metadata,
             empty: false,
             file_path: Some(file_path.to_owned()),
-        }
+        })
     }
 
     fn is_jpeg(file_path: &str) -> Result<bool, Box<dyn std::error::Error>> {
@@ -75,9 +98,9 @@ impl MarsImage {
         Ok(matches!(reader.format(), Some(image::ImageFormat::Jpeg)))
     }
 
-    pub fn open_dct_coefficient_fix(file_path: &str, instrument: enums::Instrument) -> Self {
+    pub fn open_dct_coefficient_fix(file_path: &str) -> Result<Self> {
         if !path::file_exists(file_path) {
-            panic!("File not found: {}", file_path);
+            return Err(anyhow!("File not found: {}", file_path));
         }
 
         // We can only use this method if the input file is a jpeg. We use the image create to determine
@@ -87,16 +110,33 @@ impl MarsImage {
             Ok(d) => d,
         } {
             // Load the jpeg
-            MarsImage {
-                image: Image::open_bayer_jpeg(file_path, true).unwrap(),
+            let metadata = MarsImage::load_image_metadata(file_path);
+
+            let instrument_str = match &metadata.mission {
+                MissionMetadata::Surface(surface_metadata) => surface_metadata.instrument.clone(),
+                MissionMetadata::Flight(flight_metadata) => flight_metadata.instrument.clone(),
+            };
+
+            let image = match Image::open_bayer_jpeg(file_path, true) {
+                Ok(image) => image,
+                Err(why) => return Err(anyhow!("Failed to open file: {:?}", why)),
+            };
+
+            let instrument = match Instrument::from_str(&instrument_str) {
+                Ok(instrument) => instrument,
+                Err(_) => Instrument::None,
+            };
+
+            Ok(MarsImage {
+                image,
                 instrument,
                 metadata: MarsImage::load_image_metadata(file_path),
                 empty: false,
                 file_path: Some(file_path.to_owned()),
-            }
+            })
         } else {
             // Otherwise fall back on the standard loading
-            MarsImage::open(file_path, instrument)
+            MarsImage::open(file_path)
         }
     }
 
@@ -116,6 +156,7 @@ impl MarsImage {
 
     pub fn update_history(&mut self) {
         self.metadata
+            .processing
             .history
             .push(env::args().collect::<Vec<String>>().join(" "));
     }
@@ -126,7 +167,7 @@ impl MarsImage {
         }
         info!("Writing image buffer to file at {}", to_file);
         if path::parent_exists_and_writable(to_file) {
-            if self.metadata.history.is_empty() {
+            if self.metadata.processing.history.is_empty() {
                 warn!("Saving MarsImage without history");
             }
             util::save_image_json(to_file, &self.metadata, None).unwrap();
@@ -144,35 +185,35 @@ impl MarsImage {
         self.image.apply_weight_on_band(r_scalar, 0);
         self.image.apply_weight_on_band(g_scalar, 1);
         self.image.apply_weight_on_band(b_scalar, 2);
-        self.metadata.radiometric = true;
+        self.metadata.processing.radiometric = true;
     }
 
     pub fn debayer(&mut self) {
         self.image.debayer();
 
-        self.metadata.debayer = true;
+        self.metadata.processing.debayer = true;
     }
 
     pub fn debayer_with_method(&mut self, method: DebayerMethod) {
         vprintln!("Debayering with method: {:?}", method);
         self.image.debayer_with_method(method);
 
-        self.metadata.debayer = true;
+        self.metadata.processing.debayer = true;
     }
 
     pub fn decompand(&mut self, ilt: &LookUpTable) {
         self.image.decompand(&ilt.to_array());
-        self.metadata.decompand = true;
+        self.metadata.processing.decompand = true;
     }
 
     pub fn compand(&mut self, ilt: &LookUpTable) {
         self.image.compand(&ilt.to_array());
-        self.metadata.decompand = false;
+        self.metadata.processing.decompand = false;
     }
 
     pub fn apply_flat(&mut self, flat: &Image) {
         self.image.apply_flat(flat);
-        self.metadata.flatfield = true;
+        self.metadata.processing.flatfield = true;
     }
 
     pub fn flatfield_with_flat(&mut self, flat: &MarsImage) {
@@ -191,7 +232,10 @@ impl MarsImage {
             return;
         };
 
-        let subframe_opt = self.metadata.subframe_rect.clone();
+        let subframe_opt = match &self.metadata.mission {
+            MissionMetadata::Surface(md) => md.subframe_rect.clone(),
+            MissionMetadata::Flight(md) => md.subframe_rect.clone(),
+        };
 
         if let Some(sf) = subframe_opt {
             info!(
@@ -250,7 +294,7 @@ impl MarsImage {
         fixed.set_mode(self.image.get_mode());
         self.image = fixed;
 
-        self.metadata.inpaint = true;
+        self.metadata.processing.inpaint = true;
     }
 
     pub fn hot_pixel_correction(&mut self, window_size: i32, threshold: f32) {

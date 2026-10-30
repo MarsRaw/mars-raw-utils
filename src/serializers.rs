@@ -328,6 +328,73 @@ pub mod as_i32_opt {
 }
 
 //////////////////////////////////////////////////
+// u32
+//////////////////////////////////////////////////
+
+pub mod as_u32 {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(num: &u32, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(num.to_string().as_str())
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<u32, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() {
+            Ok(0)
+        } else {
+            s.replace(',', "")
+                .parse::<u32>()
+                .map_err(serde::de::Error::custom)
+        }
+    }
+}
+
+//////////////////////////////////////////////////
+// u32 (Option)
+//////////////////////////////////////////////////
+
+pub mod as_u32_opt {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(num: &Option<u32>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if let Some(v) = num {
+            serializer.serialize_str(v.to_string().as_str())
+        } else {
+            serializer.serialize_str("")
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<u32>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        if s.is_empty() || s == "--" {
+            Ok(None)
+        } else {
+            match s
+                .replace(',', "")
+                .parse::<u32>()
+                .map_err(serde::de::Error::custom)
+            {
+                Ok(v) => Ok(Some(v)),
+                Err(why) => Err(why),
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////
 // Day of Year, e.g. 2023-335T13:53:20.000
 //////////////////////////////////////////////////
 
@@ -655,4 +722,100 @@ pub fn default_blank() -> String {
 
 pub fn default_vec<T>() -> Vec<T> {
     vec![]
+}
+
+//////////////////////////////////////////////////
+// chrono::DateTime<Utc>
+//////////////////////////////////////////////////
+
+pub mod as_utc_datetime {
+    use chrono::{DateTime, Utc};
+    use dateparser::DateTimeUtc;
+    use regex::Regex;
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    lazy_static! {
+        static ref m20_date_format: Regex =
+            Regex::new(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})$").unwrap();
+    }
+
+    pub fn serialize<S>(dt: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&dt.to_rfc3339())
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+
+        if s.is_empty() {
+            Ok(Utc::now()) // I don't like this
+        } else {
+            // Append a missing 'Z' on non timezone naive dates
+            let f = if m20_date_format.is_match(&s) {
+                format!("{}Z", s)
+            } else {
+                s
+            };
+            match f.parse::<DateTimeUtc>().map_err(serde::de::Error::custom) {
+                Err(why) => Err(why),
+                Ok(v) => Ok(v.0),
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////
+// Option<chrono::DateTime<Utc>>
+//////////////////////////////////////////////////
+
+pub mod as_utc_datetime_opt {
+    use chrono::{DateTime, Utc};
+    use dateparser::DateTimeUtc;
+    use regex::Regex;
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    lazy_static! {
+        static ref m20_date_format: Regex =
+            Regex::new(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})$").unwrap();
+    }
+
+    pub fn serialize<S>(dt: &Option<DateTime<Utc>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = if let Some(s) = dt {
+            s.to_rfc3339().to_string()
+        } else {
+            "".to_string()
+        };
+
+        serializer.serialize_str(&s)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<DateTime<Utc>>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+
+        if s.is_empty() {
+            Ok(None)
+        } else {
+            // Append a missing 'Z' on non timezone naive dates
+            let f = if m20_date_format.is_match(&s) {
+                format!("{}Z", s)
+            } else {
+                s
+            };
+            match f.parse::<DateTimeUtc>().map_err(serde::de::Error::custom) {
+                Err(why) => Err(why),
+                Ok(v) => Ok(Some(v.0)),
+            }
+        }
+    }
 }

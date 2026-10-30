@@ -32,6 +32,13 @@ pub struct Range {
 
     #[arg(long, short = 's', help = "Stretch to full value range")]
     stretch: bool,
+
+    #[arg(
+        long,
+        short = 'S',
+        help = "Apply camera model scaling according to image scale factor"
+    )]
+    apply_scaling: bool,
 }
 
 impl RunnableSubcommand for Range {
@@ -64,10 +71,10 @@ impl RunnableSubcommand for Range {
             process::exit(1);
         }
 
-        let left_img = MarsImage::open(&left_image_path, Instrument::M20MastcamZLeft);
-        let right_img = MarsImage::open(&right_image_path, Instrument::M20MastcamZRight);
+        let left_img = MarsImage::open(&left_image_path)?;
+        let right_img = MarsImage::open(&right_image_path)?;
 
-        let result = range::compute_stereo_range(
+        let range_model = match range::compute_stereo_range(
             &left_img,
             &right_img,
             &StereoParams {
@@ -79,23 +86,15 @@ impl RunnableSubcommand for Range {
                 lr_tolerance: 1,
                 range_kind: RangeKind::Distance,
             },
-        );
-
-        let range_model = if let Ok(range_model) = result {
-            range_model
-        } else if let Err(why) = result {
-            return Err(anyhow!("Error generating range: {}", why));
-        } else {
-            return Err(anyhow!("Undetermined error"));
+            self.apply_scaling,
+        ) {
+            Ok(range_model) => range_model,
+            Err(why) => return Err(anyhow!("Error generating range: {}", why)),
         };
 
-        let range_img_result = range_model.to_mars_image(&left_img, 1.0);
-        let mut range_img = if let Ok(range_img) = range_img_result {
-            range_img
-        } else if let Err(why) = range_img_result {
-            return Err(anyhow!("Error converting range map to image: {}", why));
-        } else {
-            return Err(anyhow!("Undetermined error"));
+        let mut range_img = match range_model.to_mars_image(&left_img, 1.0) {
+            Ok(range_img) => range_img,
+            Err(why) => return Err(anyhow!("Error converting range map to image: {}", why)),
         };
 
         if self.stretch {

@@ -34,15 +34,9 @@ impl RunnableSubcommand for M20SherlocColorizer {
             process::exit(1);
         }
 
-        let red = MarsImage::open(
-            self.red.as_os_str().to_string_lossy().as_ref(),
-            Instrument::M20SherlocAci,
-        );
+        let red = MarsImage::open(self.red.as_os_str().to_string_lossy().as_ref())?;
 
-        let blue = MarsImage::open(
-            self.blue.as_os_str().to_string_lossy().as_ref(),
-            Instrument::M20SherlocAci,
-        );
+        let blue = MarsImage::open(self.blue.as_os_str().to_string_lossy().as_ref())?;
 
         if red.image.width != blue.image.width || red.image.height != blue.image.height {
             eprintln!("Error: Input image dimension mismatch.");

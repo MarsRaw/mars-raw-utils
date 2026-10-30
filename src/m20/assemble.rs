@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use anyhow::Result;
 use sciimg::{enums::ImageMode, image};
 
 lazy_static! {
@@ -74,10 +75,10 @@ impl NavcamTile {
     ///
     /// NavcamTile::new_from_file(&String::from("tests/testdata/NLF_0670_0726421423_362ECM_N0320604NCAM08111_01_095J01.png"), Instrument::M20NavcamRight);
     /// ```
-    pub fn new_from_file(file_path: &str, instrument: Instrument) -> Self {
-        NavcamTile {
-            image: MarsImage::open(file_path, instrument),
-        }
+    pub fn new_from_file(file_path: &str) -> Result<Self> {
+        Ok(NavcamTile {
+            image: MarsImage::open(file_path)?,
+        })
     }
 
     /// Constructs a new `NavcamTile` with an existing instance of `MarsImage`.
@@ -150,8 +151,12 @@ impl NavcamTile {
 
     /// Returns the scale factor in the metadata `scale_factor` field
     pub fn get_scale_factor(&self) -> u32 {
-        if self.image.metadata.scale_factor >= 1 {
-            self.image.metadata.scale_factor
+        if let Some(md) = self.image.metadata.as_rover() {
+            if md.scale_factor >= 1 {
+                md.scale_factor
+            } else {
+                1
+            }
         } else {
             1
         }
@@ -159,8 +164,8 @@ impl NavcamTile {
 
     // Returns the subframe coordinates from the metadata `subframe_rect` field
     pub fn get_subframe_region(&self) -> Vec<f64> {
-        if let Some(sf) = &self.image.metadata.subframe_rect {
-            sf.clone()
+        if let Some(md) = self.image.metadata.as_rover() {
+            md.subframe_rect.clone().unwrap_or(vec![0.0])
         } else {
             vec![0.0]
         }

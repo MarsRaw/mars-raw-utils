@@ -90,12 +90,16 @@ impl HttpFetcher {
     // The reqwest::Client is wrapped in an Arc, so you can clone it cheaply, it's designed for reuse --not so much to be instantiated for every single request you want to make.
     async fn fetch(&self) -> Result<SimpleHttpResponse> {
         info!("Request URI: {}", self.uri);
-        let res = self.client.get(self.uri.as_str()).send().await?;
-        let status = res.status();
-        Ok(SimpleHttpResponse {
-            bytes: res.bytes().await?.to_vec(),
-            status: status.as_u16(),
-        })
+
+        let res = match self.client.get(self.uri.as_str()).send().await {
+            Ok(res) => res,
+            Err(why) => return Err(anyhow!("HTTP remote error: {:?}", why)),
+        };
+
+        let status = res.status().as_u16();
+        let bytes = res.bytes().await?.to_vec();
+
+        Ok(SimpleHttpResponse { bytes, status })
     }
 
     async fn fetch_monitored<F: Fn(u64, u64, f32)>(
@@ -103,7 +107,11 @@ impl HttpFetcher {
         monitor_callback: F,
     ) -> Result<SimpleHttpResponse> {
         info!("Request URI: {}", self.uri);
-        let res = self.client.get(self.uri.as_str()).send().await?;
+
+        let res = match self.client.get(self.uri.as_str()).send().await {
+            Ok(res) => res,
+            Err(why) => return Err(anyhow!("HTTP remote error (monitored): {:?}", why)),
+        };
 
         let data_len = res.content_length().ok_or(anyhow!(format!(
             "Unknown content length for remote uri {}",

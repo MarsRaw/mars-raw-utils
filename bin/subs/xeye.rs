@@ -70,11 +70,11 @@ trait GetCameraModel {
 
 impl GetCameraModel for MarsImage {
     fn get_camera_model(&self) -> Option<Cahvore> {
-        //if self.metadata.camera_model_component_list.is_valid() {
-        Some(self.metadata.camera_model_component_list.clone())
-        //} else {
-        //    None
-        //}
+        if let Some(md) = self.metadata.as_rover() {
+            Some(md.camera_model_component_list.clone())
+        } else {
+            Some(Cahvore::default())
+        }
     }
 
     fn has_camera_model(&self) -> bool {
@@ -268,10 +268,10 @@ impl RunnableSubcommand for CrossEye {
         }
 
         info!("Left image: {}", left_image_path);
-        let left_img = MarsImage::open(&left_image_path, Instrument::M20MastcamZLeft);
+        let left_img = MarsImage::open(&left_image_path)?;
 
         info!("Right image: {}", right_image_path);
-        let right_img = MarsImage::open(&right_image_path, Instrument::M20MastcamZRight);
+        let right_img = MarsImage::open(&right_image_path)?;
 
         if left_img.image.width != right_img.image.width
             || left_img.image.height != right_img.image.height

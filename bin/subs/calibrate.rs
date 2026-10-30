@@ -79,12 +79,23 @@ impl Calibrate {
         info!("Checking for metadata file at {}", metadata_file);
         if path::file_exists(metadata_file.as_str()) {
             vprintln!("Metadata file exists for loaded image: {}", metadata_file);
+
             match metadata::load_image_metadata(&metadata_file) {
                 Err(_) => {
                     warn!("Could not load metadata file!");
                     None
                 } // Error loading the metadata file
-                Ok(md) => calibrator_for_instrument_from_str(&md.instrument),
+                Ok(md) => {
+                    let instrument_str = match &md.mission {
+                        metadata::MissionMetadata::Surface(surface_metadata) => {
+                            surface_metadata.instrument.clone()
+                        }
+                        metadata::MissionMetadata::Flight(flight_metadata) => {
+                            flight_metadata.instrument.clone()
+                        }
+                    };
+                    calibrator_for_instrument_from_str(&instrument_str)
+                }
             }
         } else {
             // metadata file is missing

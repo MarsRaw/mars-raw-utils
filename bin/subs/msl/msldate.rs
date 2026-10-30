@@ -9,7 +9,7 @@ pub struct MslDate {}
 
 impl RunnableSubcommand for MslDate {
     async fn run(&self) -> Result<()> {
-        match time::get_lmst(Mission::MSL) {
+        match time::get_lmst(Mission::MSL, None) {
             Ok(mtime) => {
                 println!(
                     "Earth Time (UTC):       {}",
