@@ -24,7 +24,7 @@ impl Calibration for M20SherlocAci {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(input_file);
+        let mut raw = MarsImage::open(input_file)?;
 
         vprintln!("Flatfielding...");
         raw.flatfield();

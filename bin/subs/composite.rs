@@ -42,7 +42,7 @@ impl RunnableSubcommand for Composite {
 
         let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 
-        let map_context = composite::determine_map_context(&in_files, &quat);
+        let map_context = composite::determine_map_context(&in_files, &quat)?;
         debug!("Map Context: {:?}", map_context);
         debug!(
             "FOV Vertical: {}",
@@ -65,7 +65,7 @@ impl RunnableSubcommand for Composite {
 
         let mut map = Image::create_masked(map_context.width, map_context.height, true);
 
-        let first_image = MarsImage::open(&in_files[0]);
+        let first_image = MarsImage::open(&in_files[0])?;
         let initial_origin = if let Some(model) = composite::get_cahvor(&first_image) {
             model.c()
         } else {
@@ -84,7 +84,7 @@ impl RunnableSubcommand for Composite {
                     self.anaglyph,
                     &quat,
                     &initial_origin,
-                );
+                )?;
             } else {
                 error!("File not found: {}", in_file);
                 pb_done_with_error!();

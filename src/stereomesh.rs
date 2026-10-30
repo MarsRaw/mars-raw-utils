@@ -213,8 +213,20 @@ pub fn find_xyz_points(
         ));
     }
 
-    let m0 = MarsImage::open(left_file_path);
-    let m1 = MarsImage::open(right_file_path);
+    let m0 = match MarsImage::open(left_file_path) {
+        Ok(img) => img,
+        Err(why) => return Err(anyhow!("Failed to open file {}: {:?}", left_file_path, why)),
+    };
+    let m1 = match MarsImage::open(right_file_path) {
+        Ok(img) => img,
+        Err(why) => {
+            return Err(anyhow!(
+                "Failed to open file {}: {:?}",
+                right_file_path,
+                why
+            ))
+        }
+    };
 
     let options = match options_opt {
         Some(options) => options,

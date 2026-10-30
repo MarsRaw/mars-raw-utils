@@ -51,70 +51,7 @@ impl Calibration for MslEcam {
             return cal_warn(cal_context, &out_file);
         }
 
-        // let instrument;
-        // match util::filename_char_at_pos(input_file, 0) {
-        //     'N' => {
-        //         // NAVCAMS
-        //         match util::filename_char_at_pos(input_file, 1) == 'L' {
-        //             // Left
-        //             true => instrument = enums::Instrument::MslNavCamLeft,
-        //             // Assume Right
-        //             false => instrument = enums::Instrument::MslNavCamRight,
-        //         }
-        //     }
-        //     'F' => {
-        //         // FHAZ
-        //         match util::filename_char_at_pos(input_file, 1) == 'L' {
-        //             // Left
-        //             true => instrument = enums::Instrument::MslFrontHazLeft,
-        //             // Assume Right
-        //             false => instrument = enums::Instrument::MslFrontHazRight,
-        //         }
-        //     }
-        //     'R' => {
-        //         // RHAZ
-        //         match util::filename_char_at_pos(input_file, 1) == 'L' {
-        //             // Left
-        //             true => instrument = enums::Instrument::MslRearHazLeft,
-        //             // Assume Right
-        //             false => instrument = enums::Instrument::MslRearHazRight,
-        //         }
-        //     }
-        //     // TODO should never panic?
-        //     _ => panic!("Unrecognized camera option"),
-        // }
-
-        // // Attempt to figure out camera from file name
-        // if util::filename_char_at_pos(input_file, 0) == 'N' {
-        //     // NAVCAMS
-        //     if util::filename_char_at_pos(input_file, 1) == 'L' {
-        //         // Left
-        //         instrument = enums::Instrument::MslNavCamLeft;
-        //     } else {
-        //         // Assume Right
-        //         instrument = enums::Instrument::MslNavCamRight;
-        //     }
-        // } else if util::filename_char_at_pos(input_file, 0) == 'F' {
-        //     // FHAZ
-        //     if util::filename_char_at_pos(input_file, 1) == 'L' {
-        //         // Left
-        //         instrument = enums::Instrument::MslFrontHazLeft;
-        //     } else {
-        //         // Assume Right
-        //         instrument = enums::Instrument::MslFrontHazRight;
-        //     }
-        // } else if util::filename_char_at_pos(input_file, 0) == 'R' {
-        //     // RHAZ
-        //     if util::filename_char_at_pos(input_file, 1) == 'L' {
-        //         // Left
-        //         instrument = enums::Instrument::MslRearHazLeft;
-        //     } else {
-        //         // Assume Right
-        //         instrument = enums::Instrument::MslRearHazRight;
-        //     }
-        // }
-
-        let mut raw = MarsImage::open(input_file);
+        let mut raw = MarsImage::open(input_file)?;
         let instrument = match raw.metadata.instrument() {
             Ok(instrument) => instrument,
             Err(why) => {
@@ -165,7 +102,7 @@ impl Calibration for MslEcam {
         vprintln!("Using flat file: {}", flat_file_path);
 
         if path::file_exists(&flat_file_path) {
-            let mut flat = MarsImage::open(&flat_file_path);
+            let mut flat = MarsImage::open(&flat_file_path)?;
 
             if let Some(md) = raw.metadata.as_rover() {
                 if let Some(rect) = &md.subframe_rect {

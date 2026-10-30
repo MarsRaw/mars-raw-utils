@@ -75,7 +75,7 @@ impl Calibration for M20MastcamZ {
 
         let mut warn = false;
 
-        let mut raw = MarsImage::open(input_file);
+        let mut raw = MarsImage::open(input_file)?;
         let instrument = match raw.metadata.instrument() {
             Ok(instrument) => instrument,
             Err(why) => {
@@ -158,7 +158,7 @@ impl Calibration for M20MastcamZ {
             info!("Using flat file: {}", file_path);
 
             if path::file_exists(&file_path) {
-                let mut flat = MarsImage::open(&file_path);
+                let mut flat = MarsImage::open(&file_path)?;
 
                 if let Some(rect) = &subframe_rect {
                     flat.crop(

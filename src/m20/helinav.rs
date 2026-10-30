@@ -24,7 +24,7 @@ impl Calibration for M20HeliNav {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(input_file);
+        let mut raw = MarsImage::open(input_file)?;
 
         let data_max = 255.0;
 

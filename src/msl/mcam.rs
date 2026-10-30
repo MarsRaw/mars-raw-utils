@@ -35,16 +35,7 @@ impl Calibration for MslMastcam {
             return cal_warn(cal_context, &out_file);
         }
 
-        // let mut instrument = enums::Instrument::MslMastcamLeft;
-
-        // if util::filename_char_at_pos(input_file, 5) == 'R' {
-        //     instrument = enums::Instrument::MslMastcamRight;
-        //     vprintln!("Processing for Mastcam Right");
-        // } else {
-        //     vprintln!("Processing for Mastcam Left");
-        // }
-
-        let mut raw = MarsImage::open_dct_coefficient_fix(input_file);
+        let mut raw = MarsImage::open_dct_coefficient_fix(input_file)?;
 
         let instrument = match raw.metadata.instrument() {
             Ok(instrument) => instrument,

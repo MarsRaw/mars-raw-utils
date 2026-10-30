@@ -40,7 +40,7 @@ impl RunnableSubcommand for Crop {
             if in_file.exists() {
                 info!("Processing File: {:?}", in_file);
 
-                let mut raw = MarsImage::open(in_file.as_os_str().to_str().unwrap());
+                let mut raw = MarsImage::open(in_file.as_os_str().to_str().unwrap())?;
 
                 if x >= raw.image.width {
                     error!(

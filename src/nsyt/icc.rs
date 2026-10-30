@@ -26,7 +26,7 @@ impl Calibration for NsytIcc {
             return cal_warn(cal_context, &out_file);
         }
 
-        let mut raw = MarsImage::open(input_file);
+        let mut raw = MarsImage::open(input_file)?;
 
         let data_max = if cal_context.apply_ilt {
             info!("Decompanding...");

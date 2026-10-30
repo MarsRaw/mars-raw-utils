@@ -59,9 +59,9 @@ impl MarsImage {
         self.empty
     }
 
-    pub fn open(file_path: &str) -> Self {
+    pub fn open(file_path: &str) -> Result<Self> {
         if !path::file_exists(file_path) {
-            panic!("File not found: {}", file_path);
+            return Err(anyhow!("File not found: {}", file_path));
         }
 
         vprintln!("Loading image from {}", file_path);
@@ -78,13 +78,18 @@ impl MarsImage {
             Err(_) => Instrument::None,
         };
 
-        MarsImage {
-            image: Image::open(file_path).unwrap(),
+        let image = match Image::open(file_path) {
+            Ok(image) => image,
+            Err(why) => return Err(anyhow!("Failed to open file {}: {:?}", file_path, why)),
+        };
+
+        Ok(MarsImage {
+            image,
             instrument,
             metadata,
             empty: false,
             file_path: Some(file_path.to_owned()),
-        }
+        })
     }
 
     fn is_jpeg(file_path: &str) -> Result<bool, Box<dyn std::error::Error>> {
@@ -93,9 +98,9 @@ impl MarsImage {
         Ok(matches!(reader.format(), Some(image::ImageFormat::Jpeg)))
     }
 
-    pub fn open_dct_coefficient_fix(file_path: &str) -> Self {
+    pub fn open_dct_coefficient_fix(file_path: &str) -> Result<Self> {
         if !path::file_exists(file_path) {
-            panic!("File not found: {}", file_path);
+            return Err(anyhow!("File not found: {}", file_path));
         }
 
         // We can only use this method if the input file is a jpeg. We use the image create to determine
@@ -111,13 +116,24 @@ impl MarsImage {
                 MissionMetadata::Surface(surface_metadata) => surface_metadata.instrument.clone(),
                 MissionMetadata::Flight(flight_metadata) => flight_metadata.instrument.clone(),
             };
-            MarsImage {
-                image: Image::open_bayer_jpeg(file_path, true).unwrap(),
-                instrument: Instrument::from_str(&instrument_str).unwrap(),
+
+            let image = match Image::open_bayer_jpeg(file_path, true) {
+                Ok(image) => image,
+                Err(why) => return Err(anyhow!("Failed to open file: {:?}", why)),
+            };
+
+            let instrument = match Instrument::from_str(&instrument_str) {
+                Ok(instrument) => instrument,
+                Err(_) => Instrument::None,
+            };
+
+            Ok(MarsImage {
+                image,
+                instrument,
                 metadata: MarsImage::load_image_metadata(file_path),
                 empty: false,
                 file_path: Some(file_path.to_owned()),
-            }
+            })
         } else {
             // Otherwise fall back on the standard loading
             MarsImage::open(file_path)
