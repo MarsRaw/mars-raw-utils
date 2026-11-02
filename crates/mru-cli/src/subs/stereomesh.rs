@@ -24,6 +24,27 @@ pub struct StereoMesh {
 
     #[arg(long, short, help = "Output mesh (.obj)")]
     output: std::path::PathBuf,
+
+    #[arg(long, short = 'm', help = "Minimum range (meters)")]
+    min_range: Option<f64>,
+
+    #[arg(long, short = 'M', help = "Maximum range (meters)")]
+    max_range: Option<f64>,
+
+    #[arg(long, short = 'd', help = "Point density")]
+    density: Option<usize>,
+
+    #[arg(long, short = 'k', help = "Kernel size")]
+    kernel_size: Option<usize>,
+
+    #[arg(long, short = 'e', help = "Maximum left/right consistency tolerance")]
+    max_lr_error_px: Option<i64>,
+
+    #[arg(long, short = 'x', help = "Maximum convergent ray miss distance")]
+    max_miss_distance: Option<f64>,
+
+    #[arg(long, short = 'c', help = "Minimum point correlation coefficient")]
+    min_correlation: Option<f64>,
 }
 
 impl RunnableSubcommand for StereoMesh {
@@ -56,7 +77,21 @@ impl RunnableSubcommand for StereoMesh {
             process::exit(1);
         }
 
-        let xyz_points = match find_xyz_points(&p0, &p1, &Some(StereoMeshOptions::default())) {
+        let defaults = StereoMeshOptions::default();
+
+        let xyz_points = match find_xyz_points(
+            &p0,
+            &p1,
+            &Some(StereoMeshOptions {
+                kernel_size: self.kernel_size.unwrap_or(defaults.kernel_size),
+                point_density: self.density.unwrap_or(defaults.point_density),
+                near: self.min_range.unwrap_or(defaults.near),
+                far: self.max_range.unwrap_or(defaults.far),
+                max_lr_error_px: self.max_lr_error_px.unwrap_or(defaults.max_lr_error_px),
+                max_miss_distance: self.max_miss_distance.unwrap_or(defaults.max_miss_distance),
+                min_correlation: self.min_correlation.unwrap_or(defaults.min_correlation),
+            }),
+        ) {
             Ok(xyz_points) => xyz_points,
             Err(why) => return Err(anyhow!("Error generating points: {:?}", why)),
         };
