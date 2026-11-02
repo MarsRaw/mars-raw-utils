@@ -1,6 +1,6 @@
 use crate::jsonfetch;
 use crate::serializers::{as_df_date, as_f32, as_f32_opt, as_i32};
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 

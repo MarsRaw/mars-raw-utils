@@ -12,8 +12,8 @@ use sciimg::quaternion::Quaternion;
 use std::fs::File;
 use std::io::Read;
 
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]

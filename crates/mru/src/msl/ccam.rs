@@ -1,6 +1,6 @@
 use crate::{
     calibfile,
-    calibrate::{cal_fail, cal_ok, cal_warn, Calibration, CompleteContext},
+    calibrate::{Calibration, CompleteContext, cal_fail, cal_ok, cal_warn},
     calprofile::CalProfile,
     enums,
     enums::Instrument,

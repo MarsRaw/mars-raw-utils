@@ -1,6 +1,6 @@
 use crate::subs::runnable::RunnableSubcommand;
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 use clap::Parser;
 use mru::linearize::Boresight;
 use mru::linearize::Extent;

@@ -9,8 +9,8 @@ use std::time::Duration;
 
 // Convention is to seperate your stuff from stuff another viewer is likely to know, there's a new
 // style team in rust who'll eventaully decide on what is/isn't correct.
-use anyhow::anyhow;
 use anyhow::Result; // you'll find a lot, if not most these days of CLI apps or bins in general are running anyhow::Results in their return types.
+use anyhow::anyhow;
 use futures_util::StreamExt;
 use std::string::String;
 
@@ -199,25 +199,25 @@ pub async fn simple_fetch_text_monitored<F: Fn(u64, u64, f32)>(uri: &str, f: F) 
 
 #[test]
 fn test_get_timeout_seconds() {
-    env::remove_var("MRU_HTTP_TIMEOUT");
+    unsafe { env::remove_var("MRU_HTTP_TIMEOUT") };
 
     assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
 
-    env::set_var("MRU_HTTP_TIMEOUT", "FOO");
+    unsafe { env::set_var("MRU_HTTP_TIMEOUT", "FOO") };
     assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
 
-    env::set_var("MRU_HTTP_TIMEOUT", "-34");
+    unsafe { env::set_var("MRU_HTTP_TIMEOUT", "-34") };
     assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
 
-    env::set_var("MRU_HTTP_TIMEOUT", "34.45");
+    unsafe { env::set_var("MRU_HTTP_TIMEOUT", "34.45") };
     assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
 
-    env::set_var("MRU_HTTP_TIMEOUT", "-34.45");
+    unsafe { env::set_var("MRU_HTTP_TIMEOUT", "-34.45") };
     assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
 
-    env::set_var("MRU_HTTP_TIMEOUT", "120");
+    unsafe { env::set_var("MRU_HTTP_TIMEOUT", "120") };
     assert_eq!(get_timeout_seconds().unwrap(), 120);
 
-    env::set_var("MRU_HTTP_TIMEOUT", "120_u64");
+    unsafe { env::set_var("MRU_HTTP_TIMEOUT", "120_u64") };
     assert_eq!(get_timeout_seconds().unwrap(), DEFAULT_TIMEOUT);
 }

@@ -1,6 +1,6 @@
 use crate::{
     calibfile,
-    calibrate::{cal_fail, cal_ok, cal_warn, Calibration, CompleteContext},
+    calibrate::{Calibration, CompleteContext, cal_fail, cal_ok, cal_warn},
     calprofile::CalProfile,
     decompanding,
     enums::{self, Instrument},
@@ -9,7 +9,7 @@ use crate::{
     metadata::MissionMetadata,
     util,
 };
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result, anyhow};
 use sciimg::{camera::cahvore::linearity, image::Image, path};
 
 #[derive(Copy, Clone)]
@@ -63,7 +63,7 @@ impl Calibration for M20EECam {
                 return Err(anyhow!(
                     "Unable to determine camera instrument from metadata: {:?}",
                     why
-                ))
+                ));
             }
         };
 
@@ -75,7 +75,7 @@ impl Calibration for M20EECam {
             _ => {
                 return Err(anyhow!(
                     "Received nonsurface metadata when surface (rover) metadata was expected"
-                ))
+                ));
             }
         };
 
@@ -203,18 +203,18 @@ impl Calibration for M20EECam {
         // Trim off border pixels
 
         if cal_context.auto_subframing {
-            if scale_factor == 1 {
-                if let Some(rect) = &subframe_rect {
-                    //rect[0] += 1.0;
-                    let new_rect = vec![rect[0] + 2.0, rect[1] + 2.0, rect[2] - 2.0, rect[3] - 2.0];
-                    match &mut raw.metadata.mission {
-                        MissionMetadata::Surface(md) => md.subframe_rect = Some(new_rect),
-                        _ => {
-                                return Err(anyhow!(
-                                    "Received nonsurface metadata when surface (rover) metadata was expected"
-                                ))
-                            }
-                     }
+            if scale_factor == 1
+                && let Some(rect) = &subframe_rect
+            {
+                //rect[0] += 1.0;
+                let new_rect = vec![rect[0] + 2.0, rect[1] + 2.0, rect[2] - 2.0, rect[3] - 2.0];
+                match &mut raw.metadata.mission {
+                    MissionMetadata::Surface(md) => md.subframe_rect = Some(new_rect),
+                    _ => {
+                        return Err(anyhow!(
+                            "Received nonsurface metadata when surface (rover) metadata was expected"
+                        ));
+                    }
                 }
             }
             let crop_to_width = raw.image.width - 4;

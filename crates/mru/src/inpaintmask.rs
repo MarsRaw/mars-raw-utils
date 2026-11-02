@@ -4,8 +4,8 @@ use crate::{calibfile, constants, enums, memcache};
 
 use sciimg::{imagebuffer::ImageBuffer, path};
 
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 
 fn determine_mask_file(instrument: enums::Instrument) -> Result<String> {
     calibfile::get_calibration_file_for_instrument(instrument, enums::CalFileType::InpaintMask)

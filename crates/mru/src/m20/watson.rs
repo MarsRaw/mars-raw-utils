@@ -1,5 +1,5 @@
 use crate::{
-    calibrate::{cal_fail, cal_ok, cal_warn, Calibration, CompleteContext},
+    calibrate::{Calibration, CompleteContext, cal_fail, cal_ok, cal_warn},
     calprofile::CalProfile,
     decompanding, enums,
     enums::Instrument,
@@ -47,7 +47,9 @@ impl Calibration for M20Watson {
             info!("Applying Dark Signal Correction. Reference column is 15");
             raw.dark_signal_correction_with_ref_cols(15);
         } else {
-            info!("Reference columns may have been cropped due to subframing. Skipping dark signal correction.");
+            info!(
+                "Reference columns may have been cropped due to subframing. Skipping dark signal correction."
+            );
         }
 
         if input_file.contains("ECM") && raw.image.is_grayscale() {

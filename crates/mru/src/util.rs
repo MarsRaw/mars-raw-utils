@@ -1,5 +1,5 @@
 use crate::constants;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use sciimg::path;
 use sciimg::util as sciutil;
 use serde::Serialize;

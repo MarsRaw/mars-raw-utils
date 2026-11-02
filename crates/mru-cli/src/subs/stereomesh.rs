@@ -1,9 +1,9 @@
 use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
 use anyhow::anyhow;
 use anyhow::bail;
-use anyhow::Result;
 use clap::Parser;
-use mru::stereomesh::{find_xyz_points, StereoMeshOptions};
+use mru::stereomesh::{StereoMeshOptions, find_xyz_points};
 
 use sciimg::prelude::*;
 use std::fs::File;

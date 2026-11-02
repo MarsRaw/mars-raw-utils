@@ -13,26 +13,26 @@ const CALIBRATION_FILE_REMOTE_ROOT: &str =
 #[test]
 fn test_get_calibration_remote_root_functions() {
     // Default root
-    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") };
     assert_eq!(
         caldata::get_calibration_file_remote_root(),
         CALIBRATION_FILE_REMOTE_ROOT
     );
 
     // ENV value as root
-    env::set_var("CALIBRATION_FILE_REMOTE_ROOT", "http://foo.com/bar");
+    unsafe { env::set_var("CALIBRATION_FILE_REMOTE_ROOT", "http://foo.com/bar") };
     assert_eq!(
         caldata::get_calibration_file_remote_root(),
         "http://foo.com/bar"
     );
 
     // Default root
-    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") };
     let toml = format!("{}foo.toml", CALIBRATION_FILE_REMOTE_ROOT);
     assert_eq!(caldata::get_calibration_file_remote_url("foo.toml"), toml);
 
     // ENV value as root
-    env::set_var("CALIBRATION_FILE_REMOTE_ROOT", "http://foo.com/bar/");
+    unsafe { env::set_var("CALIBRATION_FILE_REMOTE_ROOT", "http://foo.com/bar/") };
     assert_eq!(
         caldata::get_calibration_file_remote_url("foo.toml"),
         "http://foo.com/bar/foo.toml"
@@ -41,21 +41,23 @@ fn test_get_calibration_remote_root_functions() {
 
 #[tokio::test]
 async fn test_fetch_remote_calibration_manifest() {
-    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") };
     assert!(caldata::fetch_remote_calibration_manifest().await.is_ok())
 }
 
 #[tokio::test]
 async fn test_fetch_remote_calibration_manifest_from() {
     let toml = format!("{}/caldata.manifest", CALIBRATION_FILE_REMOTE_ROOT);
-    assert!(caldata::fetch_remote_calibration_manifest_from(&toml)
-        .await
-        .is_ok());
+    assert!(
+        caldata::fetch_remote_calibration_manifest_from(&toml)
+            .await
+            .is_ok()
+    );
 }
 
 #[tokio::test]
 async fn test_fetch_remote_calibration_resource() {
-    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") };
     if let Ok(c) = caldata::fetch_remote_calibration_manifest().await {
         // The file list should not be zero length.
         assert!(!c.is_empty());
@@ -70,8 +72,8 @@ async fn test_fetch_remote_calibration_resource() {
         assert!(test_image.ends_with(".png"));
         println!("File: {}", test_image);
 
-        env::remove_var("CALIBRATION_FILE_REMOTE_ROOT"); // Another call in case tests are run concurrently and the env
-                                                         // var gets set since the last remove_var was called.
+        unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") }; // Another call in case tests are run concurrently and the env
+        // var gets set since the last remove_var was called.
         let remote_url = caldata::get_calibration_file_remote_url(test_image);
         let remote_url_expected = format!("{}{}", CALIBRATION_FILE_REMOTE_ROOT, test_image);
 
@@ -108,7 +110,7 @@ async fn test_fetch_remote_calibration_resource() {
 
 #[tokio::test]
 async fn test_fetch_and_save_file() {
-    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") };
 
     // Delete this file
     let local_file = "tests/testdata/caltesting/m20/ilut/M20_LUT2_v2a.txt";
@@ -119,7 +121,7 @@ async fn test_fetch_and_save_file() {
 
     // Ask to download the file. It should not exist (because we just deleted it) and setting
     // 'replace' to false shouldn't matter. Result should be that it consideres it a new file.
-    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") };
     let res = caldata::fetch_and_save_file(
         "m20/ilut/M20_LUT2_v2a.txt",
         false,
@@ -131,7 +133,7 @@ async fn test_fetch_and_save_file() {
 
     // Ask to download the file. The file exists (becuase we just downloaded it in the previous step) and
     // with 'replace' set to false, the result should be that it was not replaced
-    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") };
     let res = caldata::fetch_and_save_file(
         "m20/ilut/M20_LUT2_v2a.txt",
         false,
@@ -143,7 +145,7 @@ async fn test_fetch_and_save_file() {
 
     // Ask to download the file. The file exists (because we downloaded it two steps ago) and with
     // 'replace' set to true, the result should be that it was replaced.
-    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") };
     let res = caldata::fetch_and_save_file(
         "m20/ilut/M20_LUT2_v2a.txt",
         true,
@@ -156,15 +158,17 @@ async fn test_fetch_and_save_file() {
 
 #[tokio::test]
 async fn test_update_calibration_data() {
-    env::remove_var("CALIBRATION_FILE_REMOTE_ROOT");
+    unsafe { env::remove_var("CALIBRATION_FILE_REMOTE_ROOT") };
 
     // Perform a full data download
-    assert!(caldata::update_calibration_data(
-        false,
-        &Some("tests/testdata/caltesting".to_string()),
-        |_| {},
-        || {}
-    )
-    .await
-    .is_ok());
+    assert!(
+        caldata::update_calibration_data(
+            false,
+            &Some("tests/testdata/caltesting".to_string()),
+            |_| {},
+            || {}
+        )
+        .await
+        .is_ok()
+    );
 }

@@ -1,7 +1,7 @@
 use crate::enums::CalFileType;
 use crate::{constants, enums};
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 use dirs;
 use sciimg::path;
 use std::env;
@@ -252,17 +252,17 @@ pub fn locate_calibration_file(file_path: &str) -> Result<String> {
         String::from("/usr/share/mars_raw_utils/data/"), // Linux, installed via apt or rpm
     ];
 
-    if let Ok(exe_path) = std::env::current_exe() {
-        if cfg!(windows) {
-            // I'm not even a little comfortable with this...
-            // So, to figure out the installation path, we get the path to the running executable, then get the path, and then
-            // append 'data' to it to get to the calibration files. We also have to get rid of those quotation marks.
-            if let Some(filename) = exe_path.parent() {
-                locations.insert(
-                    0,
-                    format!("{:?}", filename.with_file_name("data").as_os_str()).replace('\"', ""),
-                );
-            }
+    if let Ok(exe_path) = std::env::current_exe()
+        && cfg!(windows)
+    {
+        // I'm not even a little comfortable with this...
+        // So, to figure out the installation path, we get the path to the running executable, then get the path, and then
+        // append 'data' to it to get to the calibration files. We also have to get rid of those quotation marks.
+        if let Some(filename) = exe_path.parent() {
+            locations.insert(
+                0,
+                format!("{:?}", filename.with_file_name("data").as_os_str()).replace('\"', ""),
+            );
         }
     }
 
@@ -273,11 +273,11 @@ pub fn locate_calibration_file(file_path: &str) -> Result<String> {
 
     // Add a path based on the location of the running executable
     // Intended for Windows installations
-    if let Ok(exe_path) = std::env::current_exe() {
-        if cfg!(windows) {
-            let bn = format!("{:?}/../data/", exe_path.file_name());
-            locations.insert(0, bn);
-        }
+    if let Ok(exe_path) = std::env::current_exe()
+        && cfg!(windows)
+    {
+        let bn = format!("{:?}/../data/", exe_path.file_name());
+        locations.insert(0, bn);
     }
 
     // Prepend a home directory if known

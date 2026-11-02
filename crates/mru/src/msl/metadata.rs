@@ -13,8 +13,8 @@ use std::io::Read;
 
 use serde::{Deserialize, Serialize};
 
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Extended {

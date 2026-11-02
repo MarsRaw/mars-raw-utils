@@ -1,7 +1,7 @@
 use crate::metadata::MissionMetadata;
 use crate::{
     calibfile,
-    calibrate::{cal_fail, cal_ok, cal_warn, Calibration, CompleteContext},
+    calibrate::{Calibration, CompleteContext, cal_fail, cal_ok, cal_warn},
     calprofile::CalProfile,
     decompanding, enums,
     enums::Instrument,
@@ -12,8 +12,8 @@ use crate::{
 
 use sciimg::prelude::*;
 
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 
 pub const MASTCAMZ_PIXEL_SIZE_MM: f32 = 0.0074;
 pub const FOCAL_STOPS: [f32; 7] = [26.0, 34.0, 48.0, 63.0, 79.0, 100.0, 110.0];
@@ -36,11 +36,7 @@ pub fn focal_length_from_file_name(filename: &str) -> Result<f32> {
 }
 
 fn focal_length_from_cahvor(cahvor: &Cahvore) -> Result<f32> {
-    //if cahvor.is_valid() {
     Ok(cahvor.f() as f32) // Reconcile the type difference.
-                          //} else {
-                          //    Err(anyhow!("No CAHVOR data"))
-                          //}
 }
 
 fn close_enough(a: f32, b: f32) -> bool {
@@ -88,7 +84,7 @@ impl Calibration for M20MastcamZ {
                 return Err(anyhow!(
                     "Unable to determine camera instrument from metadata: {:?}",
                     why
-                ))
+                ));
             }
         };
 
@@ -105,7 +101,9 @@ impl Calibration for M20MastcamZ {
             info!("Applying Dark Signal Correction. Reference column is 15");
             raw.dark_signal_correction_with_ref_cols(15);
         } else {
-            info!("Reference columns may have been cropped due to subframing. Skipping dark signal correction.");
+            info!(
+                "Reference columns may have been cropped due to subframing. Skipping dark signal correction."
+            );
         }
 
         // Looks like 'ECM' in the name seems to indicate that it still have the bayer pattern
@@ -228,8 +226,8 @@ impl Calibration for M20MastcamZ {
                     MissionMetadata::Surface(md) => md.subframe_rect = Some(new_rect),
                     _ => {
                         return Err(anyhow!(
-                        "Received nonsurface metadata when surface (rover) metadata was expected"
-                    ))
+                            "Received nonsurface metadata when surface (rover) metadata was expected"
+                        ));
                     }
                 }
             }

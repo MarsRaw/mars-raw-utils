@@ -1,7 +1,7 @@
 use mru::metadata::MissionMetadata;
 
 use crate::subs::runnable::RunnableSubcommand;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use colored::{self, Colorize};
 use mru::m20::assemble::{Composite, NavcamTile};
@@ -100,7 +100,7 @@ impl RunnableSubcommand for M20EcamAssemble {
             _ => {
                 return Err(anyhow!(
                     "Received nonsurface metadata when surface (rover) metadata was expected"
-                ))
+                ));
             }
         };
 

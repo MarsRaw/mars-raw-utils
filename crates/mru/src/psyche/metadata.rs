@@ -9,8 +9,8 @@ use chrono::DateTime;
 use chrono::Utc;
 use sciimg::prelude::*;
 
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;

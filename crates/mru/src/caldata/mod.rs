@@ -126,10 +126,10 @@ pub async fn fetch_and_save_file(
             Ok(bytes_array) => {
                 vprintln!("Saving to {:?}", save_to);
 
-                if let Some(parent) = save_to.parent() {
-                    if !parent.exists() {
-                        fs::create_dir_all(parent).unwrap();
-                    }
+                if let Some(parent) = save_to.parent()
+                    && !parent.exists()
+                {
+                    fs::create_dir_all(parent).unwrap();
                 }
 
                 let mut file = File::create(save_to).unwrap();

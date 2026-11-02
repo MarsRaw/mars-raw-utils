@@ -5,8 +5,8 @@ use crate::{
     constants,
     metadata::{ImageMetadata, Metadata, MetadataConvert, ProcessingState, SurfaceMetadata},
 };
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use sciimg::prelude::*;
 use sciimg::quaternion::Quaternion;

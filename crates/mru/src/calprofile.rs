@@ -1,6 +1,6 @@
 use crate::{calibfile, constants};
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 use regex::Regex;
 use sciimg::prelude::*;
 use serde::{Deserialize, Serialize};

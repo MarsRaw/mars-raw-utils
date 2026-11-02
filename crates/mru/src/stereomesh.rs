@@ -1,7 +1,7 @@
 use crate::prelude::*;
+use anyhow::Result;
 use anyhow::anyhow;
 use anyhow::bail;
-use anyhow::Result;
 use sciimg::{prelude::*, vector::Vector};
 
 struct Triangulated {
@@ -224,7 +224,7 @@ pub fn find_xyz_points(
                 "Failed to open file {}: {:?}",
                 right_file_path,
                 why
-            ))
+            ));
         }
     };
 
@@ -338,16 +338,9 @@ pub fn find_xyz_points(
                     &lv0.look_direction,
                     &lv1.origin,
                     &lv1.look_direction,
-                ) {
-                    if pt.miss_distance < max_miss_distance {
-                        xyz_points.push(Vector::new(pt.point.x, pt.point.y, pt.point.z));
-                        // reject bad matches
-                        // writeln!(
-                        //     obj_file_ptr,
-                        //     "v {} {} {}",
-                        //     pt.point.x, pt.point.y, pt.point.z
-                        // )?;
-                    }
+                ) && pt.miss_distance < max_miss_distance
+                {
+                    xyz_points.push(Vector::new(pt.point.x, pt.point.y, pt.point.z));
                 }
             }
         }

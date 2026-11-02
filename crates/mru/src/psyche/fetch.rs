@@ -5,9 +5,9 @@ use crate::metadata::MetadataConvert;
 use crate::psyche::metadata::PsycheApiResults;
 use crate::remotequery;
 use crate::remotequery::FetchError;
-use crate::util::{stringvec, stringvec_b, InstrumentMap};
+use crate::util::{InstrumentMap, stringvec, stringvec_b};
 use crate::{f, t};
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use futures::future;
 use tokio;
 

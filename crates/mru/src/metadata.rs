@@ -8,7 +8,7 @@ use sciimg::prelude::*;
 use sciimg::quaternion::Quaternion;
 use serde::{Deserialize, Serialize};
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use std::fs::File;
 use std::io::Read;
 use std::str::FromStr;

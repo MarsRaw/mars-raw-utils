@@ -1,7 +1,7 @@
 use crate::enums::Mission;
 use crate::httpfetch;
 use crate::metadata::{Metadata, MissionMetadata};
-use crate::util::{save_image_json, InstrumentMap};
+use crate::util::{InstrumentMap, save_image_json};
 use crate::{constants, util};
 use anyhow::Result;
 use chrono::{DateTime, Utc};
@@ -351,7 +351,7 @@ pub async fn perform_fetch<T: Fetch>(
                     return Err(FetchError::RemoteError(f!(
                         "Remote error fetching image: {:?}",
                         why
-                    )))
+                    )));
                 }
             };
         }

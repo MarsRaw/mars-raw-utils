@@ -4,7 +4,7 @@ members = ["crates/mru", "crates/mru-cli"]
 
 [workspace.package]
 version = "0.10.0"
-edition = "2021"
+edition = "2024"
 license = "MIT"
 authors = ["Kevin M. Gill <apoapsys@gmail.com>"]
 description = "Utilities for working with publicly available raw NASA robotic flight mission data"
@@ -67,9 +67,6 @@ dateparser = "0.3.1"
 quick-xml = { version = "0.42", features = ["serialize", "overlapped-lists"] }
 num-format = "0.4"
 
-[workspace.lints.rust]
-unsafe_code = "forbid"
-
 [workspace.lints.clippy]
 too_many_arguments = "deny"
 wildcard_imports = "deny"
@@ -81,5 +78,3 @@ strip = true # Automatically strip symbols from the binary.
 
 [patch.crates-io]
 jpeg-decoder = { git = "https://github.com/MarsRaw/jpeg-decoder.git", branch = "optional-zero-ac63" }
-
-

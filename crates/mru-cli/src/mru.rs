@@ -100,8 +100,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
     stump::set_min_log_level(stump::LogEntryLevel::WARN);
     info!("Initialized logging"); // INFO, which means that this won't be seen
-                                  // unless the user overrides via environment
-                                  // variable.
+    // unless the user overrides via environment
+    // variable.
 
     let args = Cli::parse_from(wild::args());
 

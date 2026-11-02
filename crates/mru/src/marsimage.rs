@@ -1,16 +1,16 @@
 use std::{env, str::FromStr};
 
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result, anyhow};
 use sciimg::{
-    debayer::DebayerMethod, drawable::Drawable, enums::ImageMode, image::Image,
-    imagebuffer::ImageBuffer, inpaint, path, DnVec, VecMath,
+    DnVec, VecMath, debayer::DebayerMethod, drawable::Drawable, enums::ImageMode, image::Image,
+    imagebuffer::ImageBuffer, inpaint, path,
 };
 
 use crate::{
     decompanding::LookUpTable,
     enums::{self, Instrument},
     flatfield, inpaintmask,
-    metadata::{load_image_metadata, Metadata, MissionMetadata},
+    metadata::{Metadata, MissionMetadata, load_image_metadata},
     util,
 };
 use image::ImageReader;

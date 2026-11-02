@@ -1,6 +1,6 @@
 use anyhow::Result;
 use mru::m20::assemble::{
-    NavcamTile, FRAME_MATCH_PAIRS_SCALEFACTOR_1, FRAME_MATCH_PAIRS_SCALEFACTOR_2,
+    FRAME_MATCH_PAIRS_SCALEFACTOR_1, FRAME_MATCH_PAIRS_SCALEFACTOR_2, NavcamTile,
 };
 use mru::m20::ncamlevels;
 use mru::m20::ncamlevels::BufferGetBorderOverLap;

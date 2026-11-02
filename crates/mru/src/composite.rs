@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use sciimg::{
     drawable::{Drawable, Point},
     max, min,
@@ -56,13 +56,14 @@ pub fn map_extent(
         for i in 0..=n {
             let t = i as f64 / n as f64;
             for &(s, l) in &[(t * wm, 0.0), (t * wm, hm), (0.0, t * hm), (wm, t * hm)] {
-                if let Some(p) = project_to_output(model, out_model, ground, s, l) {
-                    if p.sample.is_finite() && p.line.is_finite() {
-                        min_x = min_x.min(p.sample);
-                        max_x = max_x.max(p.sample);
-                        min_y = min_y.min(p.line);
-                        max_y = max_y.max(p.line);
-                    }
+                if let Some(p) = project_to_output(model, out_model, ground, s, l)
+                    && p.sample.is_finite()
+                    && p.line.is_finite()
+                {
+                    min_x = min_x.min(p.sample);
+                    max_x = max_x.max(p.sample);
+                    min_y = min_y.min(p.line);
+                    max_y = max_y.max(p.line);
                 }
             }
         }

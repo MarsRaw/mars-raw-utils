@@ -1,5 +1,5 @@
 use crate::{
-    calibrate::{cal_fail, cal_ok, cal_warn, Calibration, CompleteContext},
+    calibrate::{Calibration, CompleteContext, cal_fail, cal_ok, cal_warn},
     calprofile::CalProfile,
     decompanding,
     enums::{self, Instrument},
@@ -46,7 +46,9 @@ impl Calibration for PsycheCameraA {
                 info!("Applying Dark Signal Correction. Reference column is 15");
                 raw.dark_signal_correction_with_ref_cols(15);
             } else {
-                info!("Reference columns may have been cropped due to subframing. Skipping dark signal correction.");
+                info!(
+                    "Reference columns may have been cropped due to subframing. Skipping dark signal correction."
+                );
             }
 
             if (cal_context.desmear_epsilon - 0.0).abs() > f32::EPSILON {

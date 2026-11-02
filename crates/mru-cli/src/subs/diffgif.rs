@@ -1,5 +1,5 @@
 use crate::subs::runnable::RunnableSubcommand;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use mru::diffgif;
 use std::process;

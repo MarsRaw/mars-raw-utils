@@ -5,8 +5,8 @@ use regex::Regex;
 use sciimg::path;
 use std::convert::TryInto;
 
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 
 pub const ILT: [u32; 256] = [
     0, 2, 3, 3, 4, 5, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 18, 19, 20, 22, 24, 25, 27, 29, 31,

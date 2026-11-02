@@ -13,7 +13,7 @@
 //! NOTE: written against the files provided, not compiled. Adjust `use` paths
 //! to your crate layout.
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use sciimg::camera::cahvore::Cahvore;
 use sciimg::enums::ImageMode;
 use sciimg::image::Image;

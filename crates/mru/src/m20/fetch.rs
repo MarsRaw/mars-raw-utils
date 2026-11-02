@@ -5,7 +5,7 @@ use crate::metadata::Metadata;
 use crate::metadata::MetadataConvert;
 use crate::remotequery;
 use crate::remotequery::FetchError;
-use crate::util::{stringvec, stringvec_b, InstrumentMap};
+use crate::util::{InstrumentMap, stringvec, stringvec_b};
 use crate::{f, t};
 use anyhow::Result;
 use futures::future;
@@ -190,7 +190,7 @@ impl remotequery::Fetch for M20Fetch {
                 return Err(FetchError::ProgrammingError(f!(
                     "Failed to create json fetch object {:?}",
                     why
-                )))
+                )));
             }
         };
 
@@ -205,7 +205,7 @@ impl remotequery::Fetch for M20Fetch {
                 return Err(FetchError::ParseError(f!(
                     "Serde parsing from_str failed. {}",
                     why
-                )))
+                )));
             }
         };
 

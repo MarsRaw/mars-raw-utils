@@ -1,5 +1,5 @@
 use crate::jsonfetch;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -75,7 +75,9 @@ pub async fn print_all(url: &str) -> Result<()> {
         return Err(anyhow!("No waypoints found"));
     };
 
-    println!("Site  Drive   Sol     Easting    Northing  Elevation   Climb       Lon       Lat Dist(m) Total (km)");
+    println!(
+        "Site  Drive   Sol     Easting    Northing  Elevation   Climb       Lon       Lat Dist(m) Total (km)"
+    );
     waypoints.into_iter().for_each(|wp| {
         let elev_change = wp.elev_geoid - first_evel;
         first_evel = wp.elev_geoid;

@@ -1,5 +1,5 @@
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 use sciimg::vector::Vector;
 use sciimg::{prelude::*, quaternion::Quaternion};
 
@@ -17,11 +17,11 @@ pub fn model_for_image(img: &MarsImage, apply_scaling: bool) -> Option<Cahvore> 
 
     let mut model = rover_metadata.camera_model_component_list.clone();
 
-    if let Some(sf) = &rover_metadata.subframe_rect {
-        if sf.len() >= 2 {
-            // source pixel in the loaded image = full-frame pixel - (origin - 1)
-            model = model.shift(-(sf[0] - 1.0), -(sf[1] - 1.0));
-        }
+    if let Some(sf) = &rover_metadata.subframe_rect
+        && sf.len() >= 2
+    {
+        // source pixel in the loaded image = full-frame pixel - (origin - 1)
+        model = model.shift(-(sf[0] - 1.0), -(sf[1] - 1.0));
     }
 
     // This tends to lead to weird results in M20 NavCam images, so I'm going

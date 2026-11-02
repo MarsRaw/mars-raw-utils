@@ -1,4 +1,4 @@
-// #![feature(associated_type_bounds)]
+#![cfg_attr(not(test), forbid(unsafe_code))]
 
 extern crate clap;
 

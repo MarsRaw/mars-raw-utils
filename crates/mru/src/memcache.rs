@@ -4,8 +4,8 @@ use std::fs;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 
 lazy_static! {
     static ref IMAGE_CACHE: Arc<Mutex<ImageCache<Image>>> =

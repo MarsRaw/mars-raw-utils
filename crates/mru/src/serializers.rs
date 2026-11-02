@@ -1,5 +1,5 @@
 use crate::{constants, util::string_is_valid_f64};
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use serde::{Deserialize, Deserializer};
 use string_builder::Builder;
 
@@ -631,7 +631,7 @@ pub mod as_quaternion {
     use super::{str_to_vec, vec_to_str};
     use anyhow::Result;
     use sciimg::quaternion::Quaternion;
-    use serde::{self, de::Error, Deserialize, Deserializer, Serializer};
+    use serde::{self, Deserialize, Deserializer, Serializer, de::Error};
 
     pub fn serialize<S>(quat_opt: &Option<Quaternion>, serializer: S) -> Result<S::Ok, S::Error>
     where

@@ -1,5 +1,5 @@
 use crate::{
-    calibrate::{cal_fail, cal_ok, cal_warn, Calibration, CompleteContext},
+    calibrate::{Calibration, CompleteContext, cal_fail, cal_ok, cal_warn},
     calprofile::CalProfile,
     decompanding,
     enums::{self, Instrument},
@@ -10,7 +10,7 @@ use crate::{
 
 use sciimg::prelude::*;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
 #[derive(Copy, Clone)]
 pub struct MslMastcam {}
@@ -43,7 +43,7 @@ impl Calibration for MslMastcam {
                 return Err(anyhow!(
                     "Unable to determine camera instrument from metadata: {:?}",
                     why
-                ))
+                ));
             }
         };
 

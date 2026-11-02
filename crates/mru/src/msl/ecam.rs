@@ -1,6 +1,6 @@
 use crate::{
     calibfile,
-    calibrate::{cal_fail, cal_ok, cal_warn, Calibration, CompleteContext},
+    calibrate::{Calibration, CompleteContext, cal_fail, cal_ok, cal_warn},
     calprofile::CalProfile,
     enums::{self, Instrument},
     inpaintmask,
@@ -12,7 +12,7 @@ use crate::{
 use sciimg::camera::cahvore::linearity;
 use sciimg::path;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
 // Doesn't support subframed images yet since we won't know what part of the sensor was
 // used from the raws alone. If it's in the JSON response from the raw image site, then
@@ -58,7 +58,7 @@ impl Calibration for MslEcam {
                 return Err(anyhow!(
                     "Unable to determine camera instrument from metadata: {:?}",
                     why
-                ))
+                ));
             }
         };
 
@@ -70,7 +70,7 @@ impl Calibration for MslEcam {
             _ => {
                 return Err(anyhow!(
                     "Received nonsurface metadata when surface (rover) metadata was expected"
-                ))
+                ));
             }
         };
 
@@ -104,15 +104,15 @@ impl Calibration for MslEcam {
         if path::file_exists(&flat_file_path) {
             let mut flat = MarsImage::open(&flat_file_path)?;
 
-            if let Some(md) = raw.metadata.as_rover() {
-                if let Some(rect) = &md.subframe_rect {
-                    flat.crop(
-                        rect[0] as usize - 1,
-                        rect[1] as usize - 1,
-                        rect[2] as usize,
-                        rect[3] as usize,
-                    );
-                }
+            if let Some(md) = raw.metadata.as_rover()
+                && let Some(rect) = &md.subframe_rect
+            {
+                flat.crop(
+                    rect[0] as usize - 1,
+                    rect[1] as usize - 1,
+                    rect[2] as usize,
+                    rect[3] as usize,
+                );
             }
 
             raw.flatfield_with_flat(&flat);

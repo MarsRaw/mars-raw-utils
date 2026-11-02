@@ -5,10 +5,10 @@ use crate::metadata::MetadataConvert;
 use crate::nsyt::metadata::NsytApiResults;
 use crate::remotequery;
 use crate::remotequery::FetchError;
-use crate::util::{stringvec, stringvec_b, InstrumentMap};
+use crate::util::{InstrumentMap, stringvec, stringvec_b};
 use crate::{f, t};
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 use futures::future;
 use serde::{Deserialize, Serialize};
 use tokio;
@@ -175,7 +175,7 @@ impl remotequery::Fetch for NsytFetch {
                 return Err(FetchError::ProgrammingError(f!(
                     "Failed to create json fetch object {:?}",
                     why
-                )))
+                )));
             }
         };
         match req.fetch_str().await {

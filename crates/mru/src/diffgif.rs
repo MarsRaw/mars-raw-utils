@@ -1,6 +1,6 @@
 #![allow(clippy::too_many_arguments)]
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{Result, anyhow, bail};
 use gif;
 use sciimg::{enums::ImageMode, image, imagebuffer, lowpass, path};
 use std::fs::File;

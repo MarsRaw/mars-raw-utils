@@ -1,14 +1,14 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::subs::runnable::RunnableSubcommand;
-use anyhow::bail;
 use anyhow::Result;
+use anyhow::bail;
 use clap::Parser;
 use mru::prelude::*;
 use rayon::prelude::*;
+use sciimg::MinMax;
 use sciimg::lowpass;
 use sciimg::prelude::*;
-use sciimg::MinMax;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
