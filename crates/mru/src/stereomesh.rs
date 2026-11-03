@@ -169,6 +169,128 @@ struct PointMatch {
     ry: usize,
 }
 
+#[derive(Clone, Default)]
+pub struct Vertex {
+    pub raster_x: usize,
+    pub raster_y: usize,
+    pub index: usize,
+    pub xyz: Option<Vector>,
+}
+
+impl Vertex {
+    pub fn has_xyz(&self) -> bool {
+        self.xyz.is_some()
+    }
+}
+
+pub struct XyzRaster {
+    pub cols: usize,
+    pub rows: usize,
+    pub image_width: usize, // left image size, for UV generation
+    pub image_height: usize,
+    pub xyz_grid: Vec<Vec<Vertex>>,
+}
+
+macro_rules! check_xyz_in_bounds_xyz_raster {
+    ($self:ident, $y:expr, $x:expr) => {
+        if $y >= $self.rows {
+            return Err(anyhow!("Row index out of bounds: {}", $y));
+        } else if $x >= $self.cols {
+            return Err(anyhow!("Column index out of bounds: {}", $x));
+        }
+    };
+}
+
+impl XyzRaster {
+    pub fn new(rows: usize, cols: usize, image_width: usize, image_height: usize) -> Result<Self> {
+        if rows == 0 || cols == 0 {
+            return Err(anyhow!(
+                "Error: Cannot create raster with zero length dimension"
+            ));
+        }
+
+        Ok(Self {
+            cols,
+            rows,
+            image_width,
+            image_height,
+
+            // Defaults with x/y values of zero are technically inconsistent and invalid in this contxt, but no-one's gonna come to arrest me....
+            xyz_grid: vec![vec![Vertex::default(); cols]; rows],
+        })
+    }
+
+    pub fn put(&mut self, row: usize, col: usize, vtx: Vertex) -> Result<()> {
+        check_xyz_in_bounds_xyz_raster!(self, row, col);
+
+        self.xyz_grid[row][col] = vtx;
+        Ok(())
+    }
+
+    pub fn get(&self, row: usize, col: usize) -> Result<&Vertex> {
+        check_xyz_in_bounds_xyz_raster!(self, row, col);
+        Ok(&self.xyz_grid[row][col])
+    }
+
+    pub fn point_has_xyz(&self, row: usize, col: usize) -> Result<bool> {
+        check_xyz_in_bounds_xyz_raster!(self, row, col);
+        Ok(self.xyz_grid[row][col].has_xyz())
+    }
+
+    pub fn xyz_for_point(&self, row: usize, col: usize) -> Result<&Option<Vector>> {
+        check_xyz_in_bounds_xyz_raster!(self, row, col);
+        Ok(&self.xyz_grid[row][col].xyz)
+    }
+
+    pub fn reject_height_outliers(&mut self, max_dev: f64) -> usize {
+        let mut zs: Vec<f64> = self
+            .xyz_grid
+            .iter()
+            .flatten()
+            .filter_map(|v| v.xyz.as_ref().map(|p| p.z))
+            .collect();
+        if zs.is_empty() {
+            return 0;
+        }
+        zs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let med = zs[zs.len() / 2];
+
+        let mut removed = 0;
+        for vtx in self.xyz_grid.iter_mut().flatten() {
+            if let Some(p) = &vtx.xyz
+                && (p.z - med).abs() > max_dev
+            {
+                vtx.xyz = None;
+                removed += 1;
+            }
+        }
+        removed
+    }
+
+    pub fn provide_mesh_indexes(&mut self) {
+        self.xyz_grid
+            .iter_mut()
+            .flatten()
+            .filter(|vtx| vtx.has_xyz())
+            .enumerate()
+            .for_each(|(idx, vtx)| {
+                vtx.index = idx;
+            });
+    }
+
+    pub fn as_flat_array(&self) -> Vec<&Vertex> {
+        self.xyz_grid.iter().flatten().collect()
+    }
+
+    pub fn as_flat_array_only_valids(&self) -> Vec<&Vertex> {
+        self.xyz_grid
+            .iter()
+            .flatten()
+            .filter(|vtx| vtx.has_xyz())
+            .collect()
+    }
+}
+
 #[derive(Clone)]
 pub struct StereoMeshOptions {
     pub kernel_size: usize,
@@ -178,6 +300,7 @@ pub struct StereoMeshOptions {
     pub max_lr_error_px: i64, // Left/right consistency tolerance
     pub max_miss_distance: f64,
     pub min_correlation: f64,
+    pub max_height_deviations: f64,
 }
 
 impl Default for StereoMeshOptions {
@@ -186,10 +309,11 @@ impl Default for StereoMeshOptions {
             kernel_size: 17,
             point_density: 5,
             near: 1.0,
-            far: 5.0,
-            max_lr_error_px: 2,
-            max_miss_distance: 0.05,
-            min_correlation: 0.7,
+            far: 10.0,
+            max_lr_error_px: 5,
+            max_miss_distance: 0.1,
+            min_correlation: 0.4,
+            max_height_deviations: 0.3,
         }
     }
 }
@@ -198,7 +322,7 @@ pub fn find_xyz_points(
     left_file_path: &str,
     right_file_path: &str,
     options_opt: &Option<StereoMeshOptions>,
-) -> Result<Vec<Vector>> {
+) -> Result<XyzRaster> {
     if !path::file_exists(left_file_path) {
         return Err(anyhow!(
             "Error: File not found (left eye): {}",
@@ -241,6 +365,7 @@ pub fn find_xyz_points(
     let max_lr_error_px = options.max_lr_error_px;
     let max_miss_distance = options.max_miss_distance;
     let min_correlation = options.min_correlation;
+    let max_height_deviations = options.max_height_deviations;
 
     let cahv0 = match get_cahvor(&m0) {
         Some(cahv) => cahv,
@@ -270,7 +395,13 @@ pub fn find_xyz_points(
     let y0_lo = k_half;
     let y0_hi = m0.image.height - k_half;
 
-    let mut xyz_points: Vec<Vector> = Vec::new();
+    let grid_width = (x0_hi - x0_lo).div_ceil(point_density);
+    let grid_height = (y0_hi - y0_lo).div_ceil(point_density);
+
+    let mut grid = match XyzRaster::new(grid_height, grid_width, m0.image.width, m0.image.height) {
+        Ok(grid) => grid,
+        Err(why) => return Err(anyhow!("Error creating XYZ container grid: {:?}", why)),
+    };
 
     for x0 in (x0_lo..x0_hi).step_by(point_density) {
         for y0 in (y0_lo..y0_hi).step_by(point_density) {
@@ -333,18 +464,37 @@ pub fn find_xyz_points(
                     })
                     .unwrap();
 
-                if let Some(pt) = triangulate(
-                    &lv0.origin,
-                    &lv0.look_direction,
-                    &lv1.origin,
-                    &lv1.look_direction,
-                ) && pt.miss_distance < max_miss_distance
-                {
-                    xyz_points.push(Vector::new(pt.point.x, pt.point.y, pt.point.z));
-                }
+                let grid_x = (x0 - x0_lo) / point_density;
+                let grid_y = (y0 - y0_lo) / point_density;
+
+                grid.put(
+                    grid_y,
+                    grid_x,
+                    Vertex {
+                        raster_x: x0,
+                        raster_y: y0,
+                        xyz: if let Some(pt) = triangulate(
+                            &lv0.origin,
+                            &lv0.look_direction,
+                            &lv1.origin,
+                            &lv1.look_direction,
+                        ) && pt.miss_distance < max_miss_distance
+                            && (pt.point - lv0.origin).len() >= limit_near
+                            && (pt.point - lv0.origin).len() <= limit_far
+                        {
+                            Some(Vector::new(pt.point.x, pt.point.y, -pt.point.z))
+                        } else {
+                            None
+                        },
+                        index: Default::default(),
+                    },
+                )?;
             }
         }
     }
 
-    Ok(xyz_points)
+    grid.reject_height_outliers(max_height_deviations);
+    grid.provide_mesh_indexes();
+
+    Ok(grid)
 }
