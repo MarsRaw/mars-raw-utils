@@ -156,6 +156,7 @@ pub mod meanstack;
 pub mod passes;
 pub mod pds2png;
 pub mod profile;
+pub mod project;
 pub mod range;
 pub mod stereomesh;
 pub mod xeye;

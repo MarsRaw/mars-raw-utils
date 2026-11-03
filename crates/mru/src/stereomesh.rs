@@ -482,7 +482,7 @@ pub fn find_xyz_points(
                             && (pt.point - lv0.origin).len() >= limit_near
                             && (pt.point - lv0.origin).len() <= limit_far
                         {
-                            Some(Vector::new(pt.point.x, pt.point.y, -pt.point.z))
+                            Some(Vector::new(pt.point.x, pt.point.y, pt.point.z))
                         } else {
                             None
                         },

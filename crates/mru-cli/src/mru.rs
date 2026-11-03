@@ -91,7 +91,8 @@ commands! {
     Passes(passes::Passes),
     DsnEvents(dsnevents::DsnEvents),
     DsnStatus(dsnstatus::DsnStatus),
-    StereoMesh(stereomesh::StereoMesh)
+    StereoMesh(stereomesh::StereoMesh),
+    Project(project::Project)
 }
 
 #[tokio::main]
