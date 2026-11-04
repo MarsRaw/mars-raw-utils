@@ -414,6 +414,11 @@ pub fn find_xyz_points(
         let cands = epipolar_candidates(&cahv0, &cahv1, x0, y0, limit_near, limit_far);
         let lstats = left_int.window(lx, ly, kernel_size);
 
+        // If these are zero then the window is black and likely missing data. Good idea to skip it
+        if lstats.0 == 0.0 && lstats.1 == 0.0 {
+            return vtx;
+        }
+
         let mut best = PointMatch::default();
         for (cx, cy) in cands {
             for dy in -max_lr_error_px..=max_lr_error_px {
