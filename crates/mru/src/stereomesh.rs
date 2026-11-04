@@ -2,6 +2,7 @@ use crate::prelude::*;
 use anyhow::Result;
 use anyhow::anyhow;
 use anyhow::bail;
+use rayon::prelude::*;
 use sciimg::{prelude::*, vector::Vector};
 
 struct Triangulated {
@@ -398,101 +399,91 @@ pub fn find_xyz_points(
     let grid_width = (x0_hi - x0_lo).div_ceil(point_density);
     let grid_height = (y0_hi - y0_lo).div_ceil(point_density);
 
-    let mut grid = match XyzRaster::new(grid_height, grid_width, m0.image.width, m0.image.height) {
-        Ok(grid) => grid,
-        Err(why) => return Err(anyhow!("Error creating XYZ container grid: {:?}", why)),
-    };
+    let match_point = |x0: usize, y0: usize| -> Vertex {
+        let mut vtx = Vertex {
+            raster_x: x0,
+            raster_y: y0,
+            ..Default::default()
+        };
 
-    for x0 in (x0_lo..x0_hi).step_by(point_density) {
-        for y0 in (y0_lo..y0_hi).step_by(point_density) {
-            let (lx, ly) = (x0 - k_half, y0 - k_half);
-            if lx + kernel_size > lw || ly + kernel_size > lh {
-                continue;
-            }
+        let (lx, ly) = (x0 - k_half, y0 - k_half);
+        if lx + kernel_size > lw || ly + kernel_size > lh {
+            return vtx;
+        }
 
-            let cands = epipolar_candidates(&cahv0, &cahv1, x0, y0, limit_near, limit_far);
+        let cands = epipolar_candidates(&cahv0, &cahv1, x0, y0, limit_near, limit_far);
+        let lstats = left_int.window(lx, ly, kernel_size);
 
-            let lstats = left_int.window(lx, ly, kernel_size);
-
-            let mut best = PointMatch::default();
-
-            for (cx, cy) in cands {
-                for dy in -max_lr_error_px..=max_lr_error_px {
-                    let (ccx, ccy) = (cx, cy + dy);
-                    let (rx, ry) = (ccx - k_half as i64, ccy - k_half as i64); // top-left
-                    if rx < 0
-                        || ry < 0
-                        || rx as usize + kernel_size > rw
-                        || ry as usize + kernel_size > rh
-                    {
-                        continue;
-                    }
-                    let (rx, ry) = (rx as usize, ry as usize);
-
-                    let c = ncc(
-                        &left_px,
-                        lw,
-                        lx,
-                        ly,
-                        lstats,
-                        &right_px,
-                        rw,
-                        rx,
-                        ry,
-                        &right_int,
-                        kernel_size,
-                    );
-                    if c > best.score {
-                        best.score = c;
-                        best.rx = rx;
-                        best.ry = ry;
-                    }
+        let mut best = PointMatch::default();
+        for (cx, cy) in cands {
+            for dy in -max_lr_error_px..=max_lr_error_px {
+                let (rx, ry) = (cx - k_half as i64, cy + dy - k_half as i64);
+                if rx < 0
+                    || ry < 0
+                    || rx as usize + kernel_size > rw
+                    || ry as usize + kernel_size > rh
+                {
+                    continue;
+                }
+                let (rx, ry) = (rx as usize, ry as usize);
+                let c = ncc(
+                    &left_px,
+                    lw,
+                    lx,
+                    ly,
+                    lstats,
+                    &right_px,
+                    rw,
+                    rx,
+                    ry,
+                    &right_int,
+                    kernel_size,
+                );
+                if c > best.score {
+                    best = PointMatch { score: c, rx, ry };
                 }
             }
-
-            if best.score >= min_correlation {
-                let lv0 = cahv0
-                    .ls_to_look_vector(&ImageCoordinate {
-                        line: y0 as f64,
-                        sample: x0 as f64,
-                    })
-                    .unwrap();
-                let lv1 = cahv1
-                    .ls_to_look_vector(&ImageCoordinate {
-                        line: (best.ry + k_half) as f64,
-                        sample: (best.rx + k_half) as f64,
-                    })
-                    .unwrap();
-
-                let grid_x = (x0 - x0_lo) / point_density;
-                let grid_y = (y0 - y0_lo) / point_density;
-
-                grid.put(
-                    grid_y,
-                    grid_x,
-                    Vertex {
-                        raster_x: x0,
-                        raster_y: y0,
-                        xyz: if let Some(pt) = triangulate(
-                            &lv0.origin,
-                            &lv0.look_direction,
-                            &lv1.origin,
-                            &lv1.look_direction,
-                        ) && pt.miss_distance < max_miss_distance
-                            && (pt.point - lv0.origin).len() >= limit_near
-                            && (pt.point - lv0.origin).len() <= limit_far
-                        {
-                            Some(Vector::new(pt.point.x, pt.point.y, pt.point.z))
-                        } else {
-                            None
-                        },
-                        index: Default::default(),
-                    },
-                )?;
-            }
         }
-    }
+        if best.score < min_correlation {
+            return vtx;
+        }
 
+        let (Ok(lv0), Ok(lv1)) = (
+            cahv0.ls_to_look_vector(&ImageCoordinate {
+                line: y0 as f64,
+                sample: x0 as f64,
+            }),
+            cahv1.ls_to_look_vector(&ImageCoordinate {
+                line: (best.ry + k_half) as f64,
+                sample: (best.rx + k_half) as f64,
+            }),
+        ) else {
+            return vtx;
+        };
+
+        vtx.xyz = triangulate(
+            &lv0.origin,
+            &lv0.look_direction,
+            &lv1.origin,
+            &lv1.look_direction,
+        )
+        .filter(|t| t.miss_distance < max_miss_distance)
+        .map(|t| Vector::new(t.point.x, t.point.y, t.point.z));
+        vtx
+    };
+
+    // Parallel over grid rows, results come back in order
+    let xyz_grid: Vec<Vec<Vertex>> = (0..grid_height)
+        .into_par_iter()
+        .map(|gy| {
+            let y0 = y0_lo + gy * point_density;
+            (0..grid_width)
+                .map(|gx| match_point(x0_lo + gx * point_density, y0))
+                .collect()
+        })
+        .collect();
+    let mut grid = XyzRaster::new(grid_height, grid_width, m0.image.width, m0.image.height)?;
+    grid.xyz_grid = xyz_grid;
     grid.reject_height_outliers(max_height_deviations);
     grid.provide_mesh_indexes();
 
