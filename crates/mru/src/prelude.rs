@@ -20,6 +20,8 @@ pub use crate::remotequery;
 pub use crate::remotequery::FetchError;
 pub use crate::time;
 pub use crate::util;
+
+use std::f64::consts::{PI, TAU};
 use std::str::FromStr;
 
 pub use stump::{
@@ -113,4 +115,29 @@ pub fn init_panic_handler() {
             println!("{:?}", Backtrace::new());
         }
     }));
+}
+
+// Wrap elevation/azimuth, latitude/longitude into 0-90, 0-360 deg
+pub trait WrapCylindrical<T> {
+    fn wrap_pi(&self) -> T;
+    fn wrap_pi_degrees(&self) -> T;
+    fn wrap_tau(&self) -> T;
+    fn wrap_tau_degrees(&self) -> T;
+}
+
+impl WrapCylindrical<f64> for f64 {
+    fn wrap_pi(&self) -> f64 {
+        (self + PI).rem_euclid(TAU) - PI
+    }
+    fn wrap_pi_degrees(&self) -> f64 {
+        self.to_radians().wrap_pi().to_degrees()
+    }
+
+    fn wrap_tau(&self) -> f64 {
+        (self + TAU).rem_euclid(TAU * 2.0) - TAU
+    }
+
+    fn wrap_tau_degrees(&self) -> f64 {
+        self.to_radians().wrap_tau().to_degrees()
+    }
 }

@@ -20,7 +20,12 @@ pub struct Composite {
     #[arg(long, short, help = "Anaglyph mode")]
     anaglyph: bool,
 
-    #[arg(long, short = 'r', help = "Azimuth rotation")]
+    #[arg(
+        long,
+        short = 'r',
+        help = "Azimuth rotation",
+        allow_negative_numbers = true
+    )]
     azimuth: Option<f64>,
 }
 

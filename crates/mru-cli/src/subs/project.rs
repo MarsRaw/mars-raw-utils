@@ -16,7 +16,12 @@ pub struct Project {
     #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
-    #[arg(long, short = 'r', help = "Azimuth rotation")]
+    #[arg(
+        long,
+        short = 'r',
+        help = "Azimuth rotation",
+        allow_negative_numbers = true
+    )]
     azimuth: Option<f64>,
 }
 
@@ -68,11 +73,8 @@ fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
     debug!("Azimuth from camera model: {}", look_azimuth.to_degrees());
 
     // Add an additional 90 degrees to center the image in frame
-    let quat = Quaternion::from_pitch_roll_yaw(
-        0.0,
-        0.0,
-        /*look_azimuth + (90.0_f64).to_radians() +*/ azimuth_rotation.to_radians(),
-    );
+    let quat =
+        Quaternion::from_pitch_roll_yaw(0.0, 0.0, -look_azimuth + azimuth_rotation.to_radians());
 
     let map_context = composite::determine_map_context(&[in_file.to_string()], &quat)?;
     debug!("Map Context: {:?}", map_context);

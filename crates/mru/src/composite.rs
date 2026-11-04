@@ -2,7 +2,6 @@ use crate::prelude::*;
 use anyhow::{Result, bail};
 use sciimg::{
     drawable::{Drawable, Point},
-    max, min,
     prelude::*,
     quaternion::Quaternion,
     vector::Vector,
@@ -100,20 +99,22 @@ pub struct LatLon {
 }
 
 fn vector_to_cylindrical(v: &Vector) -> LatLon {
+    let az = v.y.atan2(v.x).wrap_tau();
+    let el = (v.z).atan2(v.x.hypot(v.y)).wrap_pi();
     LatLon {
-        lat: v.z.atan2((v.x * v.x + v.y * v.y).sqrt()).to_degrees(),
-        lon: v.y.atan2(v.x).to_degrees() + 180.0,
+        lat: el.to_degrees(),
+        lon: az.to_degrees(),
     }
 }
 
 fn lookvector_to_cylindrical(
     lv: &LookVector,
-    quat_o: Option<&Quaternion>,
+    quat: Option<&Quaternion>,
     origin_diff: &Vector,
 ) -> LatLon {
     let ray = lv.intersect_to_sphere(SPHERE_RADIUS);
     let ray_moved = ray.subtract(origin_diff);
-    let rotated = if let Some(quat) = quat_o {
+    let rotated = if let Some(quat) = quat {
         quat.rotate_vector(&ray_moved)
     } else {
         ray
@@ -123,22 +124,23 @@ fn lookvector_to_cylindrical(
 
 static SPHERE_RADIUS: f64 = 100.0;
 
-fn get_lat_lon(c: &Cahvore, x: usize, y: usize, _quat: &Quaternion) -> Result<LatLon> {
-    match c.ls_to_look_vector(&ImageCoordinate {
-        line: y as f64,
-        sample: x as f64,
-    }) {
-        Ok(lv) => Ok(lookvector_to_cylindrical(&lv, None, &Vector::default())),
+fn get_lat_lon(c: &Cahvore, x: f64, y: f64, _quat: &Quaternion) -> Result<LatLon> {
+    match c.ls_to_look_vector(&ImageCoordinate { line: y, sample: x }) {
+        Ok(lv) => Ok(lookvector_to_cylindrical(
+            &lv,
+            Some(_quat),
+            &Vector::default(),
+        )),
         Err(e) => Err(e),
     }
 }
 
 pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> Result<MapContext> {
     let mut context = MapContext {
-        top_lat: -90.0,
-        bottom_lat: 90.0,
-        left_lon: 360.0,
-        right_lon: -360.0,
+        top_lat: f64::MIN,
+        bottom_lat: f64::MAX,
+        left_lon: f64::MAX,
+        right_lon: f64::MIN,
         width: 0,
         height: 0,
         degrees_per_pixel: 0.0,
@@ -149,59 +151,56 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> Resul
             Ok(img) => img,
             Err(why) => bail!("Failed to open file {}: {:?}", input_file, why),
         };
-        if let Some(c) = get_cahvor(&img) {
-            if let Ok(ll) = get_lat_lon(&c, 0, 0, quat) {
-                context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                context.top_lat = max!(context.top_lat, ll.lat);
-                context.left_lon = min!(context.left_lon, ll.lon);
-                context.right_lon = max!(context.right_lon, ll.lon);
-            }
 
-            if let Ok(ll) = get_lat_lon(&c, img.image.width, 0, quat) {
-                context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                context.top_lat = max!(context.top_lat, ll.lat);
-                context.left_lon = min!(context.left_lon, ll.lon);
-                context.right_lon = max!(context.right_lon, ll.lon);
-            }
-
-            if let Ok(ll) = get_lat_lon(&c, 0, img.image.height, quat) {
-                context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                context.top_lat = max!(context.top_lat, ll.lat);
-                context.left_lon = min!(context.left_lon, ll.lon);
-                context.right_lon = max!(context.right_lon, ll.lon);
-            }
-
-            if let Ok(ll) = get_lat_lon(&c, img.image.width, img.image.height, quat) {
-                context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                context.top_lat = max!(context.top_lat, ll.lat);
-                context.left_lon = min!(context.left_lon, ll.lon);
-                context.right_lon = max!(context.right_lon, ll.lon);
-            }
-
-            if let Ok(ll) = get_lat_lon(&c, img.image.width / 2, 0, quat) {
-                context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                context.top_lat = max!(context.top_lat, ll.lat);
-                context.left_lon = min!(context.left_lon, ll.lon);
-                context.right_lon = max!(context.right_lon, ll.lon);
-            }
-
-            if let Ok(ll) = get_lat_lon(&c, img.image.width / 2, img.image.height, quat) {
-                context.bottom_lat = min!(context.bottom_lat, ll.lat);
-                context.top_lat = max!(context.top_lat, ll.lat);
-                context.left_lon = min!(context.left_lon, ll.lon);
-                context.right_lon = max!(context.right_lon, ll.lon);
-            }
-
-            let ang_horiz = c.pixel_angle_horiz().to_degrees();
-            context.degrees_per_pixel = max!(context.degrees_per_pixel, ang_horiz);
+        let model = match get_cahvor(&img) {
+            Some(model) => model,
+            None => bail!("Error: Invalid or missing camera model"),
         };
+
+        let (x0, xh, x1) = (
+            -0.5,
+            img.image.width as f64 / 2.0 - 0.5,
+            img.image.width as f64 - 0.5,
+        );
+        let (y0, yh, y1) = (
+            -0.5,
+            img.image.height as f64 / 2.0 - 0.5,
+            img.image.height as f64 - 0.5,
+        );
+
+        // Here we check the four corners and the middle point of each four sides
+        [
+            (x0, y0),
+            (x1, y0),
+            (x0, y1),
+            (x1, y1),
+            (xh, y0),
+            (xh, y1),
+            (x0, yh),
+            (x1, yh),
+        ]
+        .iter()
+        .for_each(|(x, y)| {
+            if let Ok(ll) = get_lat_lon(&model, *x, *y, quat) {
+                context.bottom_lat = context.bottom_lat.min(ll.lat);
+                context.top_lat = context.top_lat.max(ll.lat);
+                context.left_lon = context.left_lon.min(ll.lon);
+                context.right_lon = context.right_lon.max(ll.lon);
+            }
+        });
+
+        let ang_horiz = model.pixel_angle_horiz().to_degrees();
+        context.degrees_per_pixel = context.degrees_per_pixel.max(ang_horiz);
+
         Ok(())
     })?;
 
-    context.top_lat = min!(context.top_lat, 90.0);
-    context.bottom_lat = max!(context.bottom_lat, -90.0);
-    context.left_lon = max!(context.left_lon, 0.0);
-    context.right_lon = min!(context.right_lon, 360.0);
+    context.top_lat = context.top_lat.wrap_pi_degrees();
+    context.bottom_lat = context.bottom_lat.wrap_pi_degrees();
+
+    context.left_lon = context.left_lon.wrap_tau_degrees();
+    context.right_lon = context.right_lon.wrap_tau_degrees();
+
     context.height =
         ((context.top_lat - context.bottom_lat) / context.degrees_per_pixel).floor() as usize;
     context.width =
@@ -280,17 +279,17 @@ pub fn process_file<D: Drawable>(
             //     _ => input_model_nonlinear
             // };
 
-            debug!("");
-            debug!("Input Model C: {:?}", input_model.c());
-            debug!("Input Model A: {:?}", input_model.a());
-            debug!("Input Model H: {:?}", input_model.h());
-            debug!("Input Model V: {:?}", input_model.v());
-            debug!("Input Model O: {:?}", input_model.o());
-            debug!("Input Model R: {:?}", input_model.r());
-            debug!("Input Model E: {:?}", input_model.e());
-            debug!("Input Model Pupil Type: {:?}", input_model.pupil_type);
-            debug!("Input Model Linearity: {:?}", input_model.linearity);
-            debug!("");
+            // debug!("");
+            // debug!("Input Model C: {:?}", input_model.c());
+            // debug!("Input Model A: {:?}", input_model.a());
+            // debug!("Input Model H: {:?}", input_model.h());
+            // debug!("Input Model V: {:?}", input_model.v());
+            // debug!("Input Model O: {:?}", input_model.o());
+            // debug!("Input Model R: {:?}", input_model.r());
+            // debug!("Input Model E: {:?}", input_model.e());
+            // debug!("Input Model Pupil Type: {:?}", input_model.pupil_type);
+            // debug!("Input Model Linearity: {:?}", input_model.linearity);
+            // debug!("");
 
             let band_0 = img.image.get_band(0);
             let band_1 = img.image.get_band(1);
