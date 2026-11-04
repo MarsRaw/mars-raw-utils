@@ -105,7 +105,7 @@ cd mars-raw-utils/
 This is the easiest installation method for *nix-based systems, though it does require a working installation of the Rust toolchain. While the software does build and run natively on Windows, it is recommended to be used within a Ubuntu container on the Windows Subsystem for Linux.
 
 ```bash
-cargo install --path .
+cargo install --path crates/mru-cli
 mkdir ~/.marsdata
 cp mars-raw-utils-data/caldata/* ~/.marsdata
 ```
