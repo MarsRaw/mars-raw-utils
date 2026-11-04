@@ -171,6 +171,104 @@ if [ `ls *NCAM00599*-rjcal.tif 2> /dev/null | wc -l` -eq 48 ]; then
     mru -v diffgif -i `ls *NCAM00599*-rjcal.tif | tail -n 8` -o SPENDI_NCAM00599_Set6_${sol}.gif ${lights_only}  -b 0 -w 5.0 -g 0.667 -l 5 -d 40 -m -p stacked
 fi
 
+if [ `ls *NCAM00598*-rjcal.tif 2> /dev/null | wc -l` -eq 48 ]; then
+
+    # Doug's awesome Twilight SPENDI:
+    # 1 3x1 Mosaic
+    # 2 3x movie
+    # 3 3x movie
+    # 4 3x movie
+    # 5 3x1 mosaic
+    # 6 3x movie
+    # 7 3x movie
+    # 8 3x movie
+
+    # 9 3x1 mosaic
+    # 10 3x1 mosaic
+    # 11 3x1 mosaic
+    # 12 3x1 mosaic
+    # 13 3x1 mosaic
+    # 14 3x1 mosaic
+    # 15 3x1 mosaic
+    # 16 3x1 mosaic
+
+    export MARS_OUTPUT_FORMAT=png
+
+    # There's a bug in either my MRU or the image or tiff crates (probably mine) that is causing
+    # tiffs to glitch when cropped by ImageMagick (see crop operation below). Switching output
+    # format to png seems to alleviate that.
+    extension=png
+
+    movie_black=0
+    movie_white=100.0
+    movie_gamma=0.7
+    movie_lowpass=5
+    movie_delay=40
+
+    set_head=3
+    set_tail=3
+
+    set_no=1
+
+    # Set 1, 3x1 Mosaic:
+    mru composite -i `ls *NCAM00598*.tif | head -n ${set_head} | tail -n ${set_tail}` -o TwilightSpendi_NCAM00598_set`printf "%02d" $set_no`.${extension} -r 90
+    let set_head=$set_head+3
+    let set_no=$set_no+1
+
+    for _ in `seq 2 4`; do
+        # Set 2-4, 3x Movie:
+        mru -v diffgif -i `ls *NCAM00598*.tif | head -n ${set_head} | tail -n ${set_tail}` -o TwilightSpendi_NCAM00598_set`printf "%02d" $set_no`.gif ${lights_only} -b ${movie_black} -w ${movie_white} -g ${movie_gamma} -l ${movie_lowpass} -d ${movie_delay} -m
+        let set_head=$set_head+3
+        let set_no=$set_no+1
+    done
+
+
+    # Set 5, 3x1 Mosaic:
+    mru composite -i `ls *NCAM00598*.tif | head -n ${set_head} | tail -n ${set_tail}` -o TwilightSpendi_NCAM00598_set`printf "%02d" $set_no`.${extension}
+    let set_head=$set_head+3
+    let set_no=$set_no+1
+
+
+    for _ in `seq 6 8`; do
+        # Set 2-4, 3x Movie:
+        mru -v diffgif -i `ls *NCAM00598*.tif | head -n ${set_head} | tail -n ${set_tail}` -o TwilightSpendi_NCAM00598_set`printf "%02d" $set_no`.gif ${lights_only} -b ${movie_black} -w ${movie_white} -g ${movie_gamma} -l ${movie_lowpass} -d ${movie_delay} -m
+        let set_head=$set_head+3
+        let set_no=$set_no+1
+    done
+
+
+    for _ in `seq 9 16`; do
+        # Set 9-16, 3x1 Mosaic:
+        out_image=TwilightSpendi_NCAM00598_set`printf "%02d" $set_no`.${extension} 
+        mru composite -i `ls *NCAM00598*.tif | head -n ${set_head} | tail -n ${set_tail}` -o ${out_image} -r -90
+        
+        # Given slight error in RSM motion, the mosaics will have a slight different in pixel dimensions, so
+        # we can center-crop to a smaller size to assure they are all the same when passed into diffgif
+        magick ${out_image} -gravity center -crop 3815x1348+0+0 +repage tmp_image.${extension} 
+        rm ${out_image}
+        mv tmp_image.${extension} ${out_image}
+
+        let set_head=$set_head+3
+        let set_no=$set_no+1
+    done
+
+    mru diffgif -i TwilightSpendi_NCAM00598_set09.${extension} \
+        TwilightSpendi_NCAM00598_set10.${extension} \
+        TwilightSpendi_NCAM00598_set11.${extension} \
+        TwilightSpendi_NCAM00598_set12.${extension} \
+        TwilightSpendi_NCAM00598_set13.${extension} \
+        TwilightSpendi_NCAM00598_set14.${extension} \
+        TwilightSpendi_NCAM00598_set15.${extension} \
+        TwilightSpendi_NCAM00598_set16.${extension} \
+        -o TwilightSpendi_NCAM00598_set09-16.gif ${lights_only} -b ${movie_black} -w ${movie_white} -g ${movie_gamma} -l ${movie_lowpass} -d ${movie_delay} -m
+
+    # Gonna leave behind the individual mosaics as they might be individually useful outside of the gif.
+    
+    unset MARS_OUTPUT_FORMAT
+fi
+
+
+
 if [ $open_file_manager -eq 1 ]; then 
     if [ `which xdg-open | wc -l` -eq 1 ]; then          # Linux generic
         xdg-open . 2> /dev/null &                        

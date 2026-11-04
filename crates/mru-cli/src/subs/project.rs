@@ -130,8 +130,6 @@ impl RunnableSubcommand for Project {
     async fn run(&self) -> Result<()> {
         pb_set_print!();
 
-        stump::print_experimental();
-
         let in_files: Vec<String> = self
             .input_files
             .iter()
