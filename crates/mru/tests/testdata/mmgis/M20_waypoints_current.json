@@ -1,0 +1,7 @@
+{
+"type": "FeatureCollection",
+"name": "M20_waypoints_sol2022_all",
+"features": [
+{ "type": "Feature", "properties": { "RMC": "93_0", "site": 93, "drive": 0, "sol": 2022, "easting": 4342256.503, "northing": 1092764.278, "elev_geoid": -1936.366943, "elev_radii": -9999.0, "radius": -9999.0, "lon": 77.23322287000001, "lat": 18.43559434, "roll": 5.58323465, "pitch": 4.693770891, "yaw": 93.9657952, "yaw_rad": 1.640012511, "tilt": 7.289319877, "dist_m": 22.061, "dist_total_m": 45245.71, "dist_km": 45.25, "dist_mi": 28.11, "final": "y", "Note": "End-of-drive localization", "images": [{ "name": "Panorama", "isPanoramic":true, "url": "Layers/mosaics/N_LRGB_2022_RZS_0930000_CYL_L_AUTOGENJ04.jpg", "rows": "2180", "columns": "4101", "azmin": "11.45", "azmax": "170.354", "elmin": "-69.1358", "elmax": "15.3408", "elzero": "396.973" }]}, "geometry": { "type": "Point", "coordinates": [ 77.23322287, 18.43559434, -1936.366943 ] } }
+]
+}

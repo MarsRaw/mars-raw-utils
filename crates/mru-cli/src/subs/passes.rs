@@ -101,13 +101,17 @@ impl RunnableSubcommand for Passes {
                         _ => "".cell(),
                     },
                     overflight.maximum_elevation.cell(),
-                    if let Some(pre) = &overflight.predict {
-                        format!("{:.3}", pre.return_volume).cell()
+                    if let Some(pre) = &overflight.predict
+                        && let Some(rv) = pre.return_volume
+                    {
+                        format!("{:.3}", rv).cell()
                     } else {
                         "".cell()
                     },
-                    if let Some(act) = &overflight.actual {
-                        format!("{:.3}", act.return_volume).cell()
+                    if let Some(act) = &overflight.actual
+                        && let Some(rv) = &act.return_volume
+                    {
+                        format!("{:.3}", rv).cell()
                     } else {
                         "".cell()
                     },

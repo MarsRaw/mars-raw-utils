@@ -284,6 +284,13 @@ impl DsnConfig {
     }
 }
 
+fn parse_dsn_status_xml(raw_xml: &str) -> Result<Dsn> {
+    match from_str(raw_xml) {
+        Ok(res) => Ok(res),
+        Err(why) => Err(anyhow!("Error parsing DSN status XML: {:?}", why)),
+    }
+}
+
 pub async fn fetch_dsn_status() -> Result<Dsn> {
     let req = httpfetch::HttpFetcher::new(constants::url::DSN_STATUS)?;
 
@@ -292,12 +299,14 @@ pub async fn fetch_dsn_status() -> Result<Dsn> {
         Err(why) => return Err(anyhow!("Remote error fetching dsn status: {:?}", why)),
     };
 
-    let status: Dsn = match from_str(&response_string) {
-        Ok(res) => res,
-        Err(why) => return Err(anyhow!("Error parsing DSN status XML: {:?}", why)),
-    };
+    parse_dsn_status_xml(&response_string)
+}
 
-    Ok(status)
+fn parse_dsn_config_xml(raw_xml: &str) -> Result<DsnConfig> {
+    match from_str(&raw_xml) {
+        Ok(res) => Ok(res),
+        Err(why) => Err(anyhow!("Error parsing DSN config XML: {:?}", why)),
+    }
 }
 
 pub async fn fetch_dsn_config() -> Result<DsnConfig> {
@@ -308,10 +317,31 @@ pub async fn fetch_dsn_config() -> Result<DsnConfig> {
         Err(why) => return Err(anyhow!("Remote error fetching dsn config: {:?}", why)),
     };
 
-    let dsn_config: DsnConfig = match from_str(&response_string) {
-        Ok(res) => res,
-        Err(why) => return Err(anyhow!("Error parsing DSN config XML: {:?}", why)),
-    };
+    parse_dsn_config_xml(&response_string)
+}
 
-    Ok(dsn_config)
+#[test]
+fn test_parse_dsn_status_xml() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/dsnnow")
+        .join("dsn.xml");
+
+    let raw_xml = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_dsn_status_xml(&raw_xml).expect("Failed to parse json");
+}
+
+#[test]
+fn test_parse_dsn_config_xml() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/dsnnow")
+        .join("config.xml");
+
+    let raw_xml = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_dsn_status_xml(&raw_xml).expect("Failed to parse json");
 }

@@ -40,30 +40,43 @@ struct WaypointsCurrent {
     pub features: Vec<Feature>,
 }
 
-pub async fn fetch_location(url: &str) -> Result<Location> {
-    let req = jsonfetch::JsonFetcher::new(url)?;
-    match req.fetch_str().await {
-        Ok(v) => {
-            let res: WaypointsCurrent = serde_json::from_str(v.as_str())?;
-            if !res.features.is_empty() {
-                Ok(res.features[0].properties.to_owned())
-            } else {
-                Err(anyhow!("Error: No location found in response"))
-            }
-        }
-        Err(e) => Err(anyhow!("Error: {:?}", e)),
+fn parse_waypoints(raw_json: &str) -> Result<WaypointsCurrent> {
+    match serde_json::from_str(raw_json) {
+        Ok(res) => Ok(res),
+        Err(why) => Err(anyhow!("Error: failed to parse waypoints json: {:?}", why)),
     }
 }
 
 pub async fn fetch_waypoints(url: &str) -> Result<Vec<Location>> {
-    let req = jsonfetch::JsonFetcher::new(url)?;
-    match req.fetch_str().await {
-        Ok(v) => {
-            let res: WaypointsCurrent = serde_json::from_str(v.as_str())?;
-            let locations: Vec<Location> = res.features.into_iter().map(|f| f.properties).collect();
-            Ok(locations)
+    let req = jsonfetch::JsonFetcher::new(url)
+        .map_err(|why| anyhow!("Error: Failed to create json fetch container: {:?}", why))?;
+
+    let raw_json = match req.fetch_str().await {
+        Ok(raw_json) => raw_json,
+        Err(why) => {
+            return Err(anyhow!(
+                "Error fetching remote json from {}: {:?}",
+                url,
+                why
+            ));
         }
-        Err(e) => Err(anyhow!("Error: {:?}", e)),
+    };
+
+    let waypoints = parse_waypoints(&raw_json)?;
+    let locations: Vec<Location> = waypoints
+        .features
+        .into_iter()
+        .map(|f| f.properties)
+        .collect();
+    Ok(locations)
+}
+
+pub async fn fetch_location(url: &str) -> Result<Location> {
+    let locations = fetch_waypoints(url).await?;
+
+    match locations.first() {
+        Some(loc) => Ok(loc.to_owned()),
+        None => Err(anyhow!("Error: No location found in response")),
     }
 }
 
@@ -151,4 +164,56 @@ pub async fn print_single(url: &str) -> Result<()> {
     println!("Total Traverse Distance (kilometers): {}", loc.dist_km);
 
     Ok(())
+}
+
+#[test]
+fn test_parse_waypoints_current_msl() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/mmgis")
+        .join("MSL_waypoints_current.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_waypoints(&raw_json).expect("Failed to parse JSON");
+}
+
+#[test]
+fn test_parse_waypoints_msl() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/mmgis")
+        .join("MSL_waypoints.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_waypoints(&raw_json).expect("Failed to parse JSON");
+}
+
+#[test]
+fn test_parse_waypoints_current_m20() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/mmgis")
+        .join("M20_waypoints_current.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_waypoints(&raw_json).expect("Failed to parse JSON");
+}
+
+#[test]
+fn test_parse_waypoints_m20() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/mmgis")
+        .join("M20_waypoints.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_waypoints(&raw_json).expect("Failed to parse JSON");
 }

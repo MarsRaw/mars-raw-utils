@@ -1,4 +1,4 @@
-use crate::serializers::{as_df_doy, as_f32, as_u32};
+use crate::serializers::{as_df_doy, as_f32, as_f32_opt, as_u32};
 use crate::{constants, jsonfetch};
 use anyhow::{Result, anyhow};
 use chrono::{DateTime, FixedOffset};
@@ -12,8 +12,8 @@ pub struct PreAct {
     #[serde(alias = "HAILEND", with = "as_df_doy")]
     pub hail_end: DateTime<FixedOffset>,
 
-    #[serde(alias = "RETURNVOL", with = "as_f32")]
-    pub return_volume: f32,
+    #[serde(alias = "RETURNVOL", with = "as_f32_opt", default)]
+    pub return_volume: Option<f32>,
 
     #[serde(alias = "RETURNRATE", with = "as_u32")]
     pub return_rate: u32,
@@ -58,6 +58,13 @@ pub struct Overflight {
     pub actual: Option<PreAct>,
 }
 
+fn parse_json(raw_json: &str) -> Result<Vec<Overflight>> {
+    match serde_json::from_str(raw_json) {
+        Ok(res) => Ok(res),
+        Err(why) => Err(anyhow!("Failed to parse overpass json: {:?}", why)),
+    }
+}
+
 pub async fn fetch_passes() -> Result<Vec<Overflight>> {
     let req = jsonfetch::JsonFetcher::new(constants::url::MARS_RELAY_PASSES)?;
 
@@ -66,8 +73,18 @@ pub async fn fetch_passes() -> Result<Vec<Overflight>> {
         Err(why) => return Err(anyhow!("Remote error fetching overpasses: {:?}", why)),
     };
 
-    match serde_json::from_str(response_string.as_str()) {
-        Ok(res) => Ok(res),
-        Err(why) => Err(anyhow!("Failed to parse overpass json: {:?}", why)),
-    }
+    parse_json(&response_string)
+}
+
+#[test]
+fn test_parse_json() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/maros")
+        .join("overflights.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_json(&raw_json).expect("Failed to parse json");
 }
