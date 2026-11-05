@@ -303,7 +303,7 @@ pub async fn fetch_dsn_status() -> Result<Dsn> {
 }
 
 fn parse_dsn_config_xml(raw_xml: &str) -> Result<DsnConfig> {
-    match from_str(&raw_xml) {
+    match from_str(raw_xml) {
         Ok(res) => Ok(res),
         Err(why) => Err(anyhow!("Error parsing DSN config XML: {:?}", why)),
     }
