@@ -33,6 +33,11 @@ pub mod url {
     pub const M20_WAYPOINTS_URL: &str =
         "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json";
 
+    pub const M20_WEATHER_URL: &str =
+        "https://mars.nasa.gov/rss/api/?feed=weather&category=mars2020&feedtype=json";
+    pub const MSL_WEATHER_URL: &str =
+        "https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json";
+
     pub const PSYCHE_RAW_WEBSERVICE_URL: &str =
         "https://solarsystem.nasa.gov/api/v1/raw_image_psyche_items/";
 

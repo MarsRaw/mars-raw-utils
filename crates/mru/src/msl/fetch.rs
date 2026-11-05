@@ -95,16 +95,26 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
     Err(anyhow!("Unable to submit query."))
 }
 
+fn parse_api_results_json(raw_json: &str) -> Result<MslApiResults> {
+    match serde_json::from_str(raw_json) {
+        Ok(api_results) => Ok(api_results),
+        Err(why) => Err(anyhow!("Error parsing MSL API results JSON: {:?}", why)),
+    }
+}
+
+fn parse_msl_latest_json(raw_json: &str) -> Result<MslLatest> {
+    match serde_json::from_str(raw_json) {
+        Ok(api_results) => Ok(api_results),
+        Err(why) => Err(anyhow!(
+            "Error parsing MSL Lastest Images API results JSON: {:?}",
+            why
+        )),
+    }
+}
+
 /// Submits the query via `submit_query` then deserializes it through serde to a `M20ApiResults` object
 async fn fetch_page(query: &remotequery::RemoteQuery) -> Result<MslApiResults> {
-    match submit_query(query).await {
-        Ok(v) => {
-            let res: MslApiResults = serde_json::from_str(v.as_str())?;
-
-            Ok(res)
-        }
-        Err(e) => Err(e),
-    }
+    parse_api_results_json(&submit_query(query).await?)
 }
 
 /// Converts the M20-specific api results to a generic list of image metadata records
@@ -167,9 +177,7 @@ impl remotequery::Fetch for MslFetch {
     }
 
     async fn fetch_latest(&self) -> Result<Box<dyn remotequery::LatestData>, FetchError> {
-        let uri = constants::url::MSL_LATEST_WEBSERVICE_URL;
-
-        let req = match jsonfetch::JsonFetcher::new(uri) {
+        let req = match jsonfetch::JsonFetcher::new(constants::url::MSL_LATEST_WEBSERVICE_URL) {
             Ok(req) => req,
             Err(why) => {
                 return Err(FetchError::ProgrammingError(f!(
@@ -178,15 +186,25 @@ impl remotequery::Fetch for MslFetch {
                 )));
             }
         };
-        match req.fetch_str().await {
-            Ok(v) => {
-                let res: MslLatest = serde_json::from_str(v.as_str()).unwrap();
-                Ok(Box::new(res))
+
+        let json = match req.fetch_str().await {
+            Ok(json) => json,
+            Err(why) => {
+                return Err(FetchError::RemoteError(f!(
+                    "Error fetching from remote MSL API: {:?}",
+                    why
+                )));
             }
-            Err(e) => Err(FetchError::ParseError(f!(
-                "Serde parsing from_str failed. {}",
-                e
-            ))),
+        };
+
+        match parse_msl_latest_json(&json) {
+            Ok(res) => Ok(Box::new(res)),
+            Err(why) => {
+                return Err(FetchError::ParseError(f!(
+                    "Error parsing remote JSON from MSL API {:?}",
+                    why
+                )));
+            }
         }
     }
 
@@ -247,4 +265,30 @@ impl remotequery::Fetch for MslFetch {
             .collect(),
         }
     }
+}
+
+#[test]
+fn test_parse_api_results_json() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/marsapi")
+        .join("msl_fetch.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_api_results_json(&raw_json).expect("Failed to parse json");
+}
+
+#[test]
+fn test_parse_msl_latest_json() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/marsapi")
+        .join("msl_latest.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_msl_latest_json(&raw_json).expect("Failed to parse json");
 }

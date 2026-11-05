@@ -61,6 +61,13 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
     req.fetch_str().await
 }
 
+fn parse_api_results_json(raw_json: &str) -> Result<PsycheApiResults> {
+    match serde_json::from_str(raw_json) {
+        Ok(api_results) => Ok(api_results),
+        Err(why) => Err(anyhow!("Error parsing Psyche API results JSON: {:?}", why)),
+    }
+}
+
 /// Submits the query via `submit_query` then deserializes it through serde to a `PsycheApiResults` object
 async fn fetch_page(query: &remotequery::RemoteQuery) -> Result<PsycheApiResults> {
     match submit_query(query).await {
@@ -169,7 +176,7 @@ impl remotequery::Fetch for PsycheFetch {
             }
         };
 
-        let api_results: PsycheApiResults = match serde_json::from_str(&raw_json) {
+        let api_results: PsycheApiResults = match parse_api_results_json(&raw_json) {
             Ok(api_results) => api_results,
             Err(why) => {
                 return Err(FetchError::ParseError(f!(
@@ -206,4 +213,17 @@ impl remotequery::Fetch for PsycheFetch {
                 .collect(),
         }
     }
+}
+
+#[test]
+fn test_parse_api_results_json() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/marsapi")
+        .join("psyche_fetch.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_api_results_json(&raw_json).expect("Failed to parse json");
 }

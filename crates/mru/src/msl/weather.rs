@@ -1,5 +1,5 @@
-use crate::jsonfetch;
 use crate::serializers::{as_df_date, as_f32, as_f32_opt, as_i32};
+use crate::{constants, jsonfetch};
 use anyhow::{Result, anyhow};
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
@@ -55,21 +55,34 @@ pub struct RemsSol {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RemsSols {
-    pub soles: Vec<RemsSol>,
+    #[serde(alias = "soles")]
+    pub sols: Vec<RemsSol>,
+}
+
+fn parse_json_data(raw_json: &str) -> Result<Vec<RemsSol>> {
+    let res: RemsSols = match serde_json::from_str(raw_json) {
+        Ok(res) => res,
+        Err(why) => return Err(anyhow!("Failed to parse M20 weather json data: {:?}", why)),
+    };
+    Ok(res.sols)
 }
 
 pub async fn fetch_weather() -> Result<Vec<RemsSol>> {
-    let req = jsonfetch::JsonFetcher::new(
-        "https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json",
-    )?;
+    let req = jsonfetch::JsonFetcher::new(constants::url::MSL_WEATHER_URL)?;
+    let raw_json = req.fetch_str().await?;
 
-    let response: Vec<RemsSol> = match req.fetch_str().await {
-        Ok(v) => {
-            let res: RemsSols = serde_json::from_str(v.as_str())?;
-            res.soles
-        }
-        Err(e) => return Err(anyhow!("Error: {:?}", e)),
-    };
+    parse_json_data(&raw_json)
+}
 
-    Ok(response)
+#[test]
+fn test_parse_json() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/marsapi")
+        .join("msl_weather.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_json_data(&raw_json).expect("Failed to parse json");
 }

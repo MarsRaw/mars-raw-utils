@@ -95,6 +95,23 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
     Err(anyhow!("Unable to submit query."))
 }
 
+fn parse_api_results_json(raw_json: &str) -> Result<NsytApiResults> {
+    match serde_json::from_str(raw_json) {
+        Ok(api_results) => Ok(api_results),
+        Err(why) => Err(anyhow!("Error parsing InSight API results JSON: {:?}", why)),
+    }
+}
+
+fn parse_msl_latest_json(raw_json: &str) -> Result<NsytLatest> {
+    match serde_json::from_str(raw_json) {
+        Ok(api_results) => Ok(api_results),
+        Err(why) => Err(anyhow!(
+            "Error parsing InSight Lastest Images API results JSON: {:?}",
+            why
+        )),
+    }
+}
+
 /// Submits the query via `submit_query` then deserializes it through serde to a `M20ApiResults` object
 async fn fetch_page(query: &remotequery::RemoteQuery) -> Result<NsytApiResults> {
     match submit_query(query).await {
@@ -167,9 +184,7 @@ impl remotequery::Fetch for NsytFetch {
     }
 
     async fn fetch_latest(&self) -> Result<Box<dyn remotequery::LatestData>, FetchError> {
-        let uri = constants::url::NSYT_LATEST_WEBSERVICE_URL;
-
-        let req = match jsonfetch::JsonFetcher::new(uri) {
+        let req = match jsonfetch::JsonFetcher::new(constants::url::NSYT_LATEST_WEBSERVICE_URL) {
             Ok(req) => req,
             Err(why) => {
                 return Err(FetchError::ProgrammingError(f!(
@@ -178,15 +193,20 @@ impl remotequery::Fetch for NsytFetch {
                 )));
             }
         };
-        match req.fetch_str().await {
-            Ok(v) => {
-                let res: NsytLatest = serde_json::from_str(v.as_str()).unwrap();
-                Ok(Box::new(res))
+
+        let results_string = match req.fetch_str().await {
+            Ok(results_string) => results_string,
+            Err(why) => return Err(FetchError::RemoteError(f!("Remote error: {:?}", why))),
+        };
+
+        match parse_msl_latest_json(&results_string) {
+            Ok(latest) => Ok(Box::new(latest)),
+            Err(why) => {
+                return Err(FetchError::ParseError(f!(
+                    "Serde parsing from_str failed. {}",
+                    why
+                )));
             }
-            Err(e) => Err(FetchError::ParseError(f!(
-                "Serde parsing from_str failed. {}",
-                e
-            ))),
         }
     }
 
@@ -204,15 +224,11 @@ impl remotequery::Fetch for NsytFetch {
             }
         };
 
-        let api_results: NsytApiResults = match serde_json::from_str(&raw_json) {
-            Ok(api_results) => api_results,
-            Err(why) => {
-                return Err(FetchError::ParseError(f!(
-                    "Failed to parse InSight API JSON output: {:?}",
-                    why
-                )));
-            }
+        let api_results = match parse_api_results_json(&raw_json) {
+            Ok(res) => res,
+            Err(why) => return Err(FetchError::RemoteError(f!("JSON fetch error: {:?}", why))),
         };
+
         let pages = (api_results.total as f32 / query.num_per_page as f32).ceil() as i32;
         Ok(remotequery::RemoteStats {
             more: (api_results.page as i32) < pages - 1, // Assuming a zero-indexed page number
@@ -231,4 +247,30 @@ impl remotequery::Fetch for NsytFetch {
                 .collect(),
         }
     }
+}
+
+#[test]
+fn test_parse_api_results_json() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/marsapi")
+        .join("nsyt_fetch.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_api_results_json(&raw_json).expect("Failed to parse json");
+}
+
+#[test]
+fn test_parse_msl_latest_json() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/marsapi")
+        .join("nsyt_latest.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_msl_latest_json(&raw_json).expect("Failed to parse json");
 }

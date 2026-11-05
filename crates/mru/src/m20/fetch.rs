@@ -7,7 +7,7 @@ use crate::remotequery;
 use crate::remotequery::FetchError;
 use crate::util::{InstrumentMap, stringvec, stringvec_b};
 use crate::{f, t};
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use futures::future;
 use serde::{Deserialize, Serialize};
 use tokio;
@@ -110,6 +110,23 @@ async fn submit_query(query: &remotequery::RemoteQuery) -> Result<String> {
     req.fetch_str().await
 }
 
+fn parse_api_results_json(raw_json: &str) -> Result<M20ApiResults> {
+    match serde_json::from_str(raw_json) {
+        Ok(api_results) => Ok(api_results),
+        Err(why) => Err(anyhow!("Error parsing M20 API results JSON: {:?}", why)),
+    }
+}
+
+fn parse_msl_latest_json(raw_json: &str) -> Result<M20LatestData> {
+    match serde_json::from_str(raw_json) {
+        Ok(api_results) => Ok(api_results),
+        Err(why) => Err(anyhow!(
+            "Error parsing M20 Lastest Images API results JSON: {:?}",
+            why
+        )),
+    }
+}
+
 /// Submits the query via `submit_query` then deserializes it through serde to a `M20ApiResults` object
 async fn fetch_page(query: &remotequery::RemoteQuery) -> Result<M20ApiResults> {
     match submit_query(query).await {
@@ -182,9 +199,7 @@ impl remotequery::Fetch for M20Fetch {
     }
 
     async fn fetch_latest(&self) -> Result<Box<dyn remotequery::LatestData>, FetchError> {
-        let uri = constants::url::M20_LATEST_WEBSERVICE_URL;
-
-        let req = match jsonfetch::JsonFetcher::new(uri) {
+        let req = match jsonfetch::JsonFetcher::new(constants::url::M20_LATEST_WEBSERVICE_URL) {
             Ok(req) => req,
             Err(why) => {
                 return Err(FetchError::ProgrammingError(f!(
@@ -199,17 +214,15 @@ impl remotequery::Fetch for M20Fetch {
             Err(why) => return Err(FetchError::RemoteError(f!("Remote error: {:?}", why))),
         };
 
-        let res: M20LatestData = match serde_json::from_str(&results_string) {
-            Ok(res) => res,
+        match parse_msl_latest_json(&results_string) {
+            Ok(latest) => Ok(Box::new(latest)),
             Err(why) => {
                 return Err(FetchError::ParseError(f!(
                     "Serde parsing from_str failed. {}",
                     why
                 )));
             }
-        };
-
-        Ok(Box::new(res))
+        }
     }
 
     async fn fetch_stats(
@@ -221,7 +234,7 @@ impl remotequery::Fetch for M20Fetch {
             Err(why) => return Err(FetchError::RemoteError(f!("Remote error: {:?}", why))),
         };
 
-        let res: M20ApiResults = match serde_json::from_str(&results_string) {
+        let res = match parse_api_results_json(&results_string) {
             Ok(res) => res,
             Err(why) => return Err(FetchError::RemoteError(f!("JSON fetch error: {:?}", why))),
         };
@@ -276,4 +289,30 @@ impl remotequery::Fetch for M20Fetch {
             .collect(),
         }
     }
+}
+
+#[test]
+fn test_parse_api_results_json() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/marsapi")
+        .join("m20_fetch.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_api_results_json(&raw_json).expect("Failed to parse json");
+}
+
+#[test]
+fn test_parse_msl_latest_json() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+    let file_path = std::path::Path::new(manifest_dir)
+        .join("tests/testdata/marsapi")
+        .join("m20_latest.json");
+
+    let raw_json = std::fs::read_to_string(file_path).expect("Failed to load test data");
+
+    parse_msl_latest_json(&raw_json).expect("Failed to parse json");
 }
