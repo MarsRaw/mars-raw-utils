@@ -47,7 +47,7 @@ jobs:
     - uses: "actions-rs/cargo@v1"
       with:
         command: "test"
-        args: "-p mru -p mru-cli -- --nocapture"
+        args: "-p mru -p mru-cli --no-fail-fast -- --nocapture"
 
   fmt:
     name: "Cargo format"
