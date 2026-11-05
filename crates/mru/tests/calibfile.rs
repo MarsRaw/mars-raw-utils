@@ -2,8 +2,11 @@ use mru::calibfile;
 
 #[test]
 fn test_load_caldata_mapping_file() {
-    calibfile::locate_calibration_file(&String::from("caldata.toml"))
-        .expect("Failed to locate caldata.toml");
+    println!(
+        "{}",
+        calibfile::locate_calibration_file(&String::from("caldata.toml"))
+            .expect("Failed to locate caldata.toml")
+    );
     let config =
         calibfile::load_caldata_mapping_file().expect("Failed to load calibration data file");
     assert_eq!(

@@ -248,8 +248,8 @@ pub fn locate_calibration_file(file_path: &str) -> Result<String> {
 
     // Some default locations
     let mut locations = vec![
-        String::from("mars-raw-utils-data/caldata"), // Running within the repo directory (dev: cargo run --bin ...)
-        String::from("/usr/share/mars_raw_utils/data/"), // Linux, installed via apt or rpm
+        //String::from("mars-raw-utils-data/caldata"), // Running within the repo directory (dev: cargo run --bin ...)
+       // String::from("/usr/share/mars_raw_utils/data/"), // Linux, installed via apt or rpm
     ];
 
     if let Ok(exe_path) = std::env::current_exe()
@@ -262,6 +262,20 @@ pub fn locate_calibration_file(file_path: &str) -> Result<String> {
             locations.insert(
                 0,
                 format!("{:?}", filename.with_file_name("data").as_os_str()).replace('\"', ""),
+            );
+        }
+    }
+
+    // From within a workspace crate:
+    {
+        if let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            && let Some(parent_1) = root.parent()
+            && let Some(parent_2) = parent_1.parent()
+        {
+            let path_rel_to_crate = parent_2.join("mars-raw-utils-data/caldata");
+            locations.insert(
+                0,
+                String::from(path_rel_to_crate.as_os_str().to_str().unwrap()),
             );
         }
     }
