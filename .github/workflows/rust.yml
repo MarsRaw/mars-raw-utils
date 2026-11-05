@@ -29,6 +29,9 @@ jobs:
   test:
     name: "Cargo test"
     runs-on: "ubuntu-latest"
+    env: 
+      MARS_LOG_AT_LEVEL: "debug"
+      RUST_BACKTRACE: 1
     steps:
     - name: "Checkout repo"
       uses: actions/checkout@v6
