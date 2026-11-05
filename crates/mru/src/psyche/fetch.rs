@@ -169,6 +169,8 @@ impl remotequery::Fetch for PsycheFetch {
             }
         };
 
+        debug!("JSON Output:\n{}", raw_json);
+
         let api_results: PsycheApiResults = match serde_json::from_str(&raw_json) {
             Ok(api_results) => api_results,
             Err(why) => {
