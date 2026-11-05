@@ -199,12 +199,10 @@ impl remotequery::Fetch for MslFetch {
 
         match parse_msl_latest_json(&json) {
             Ok(res) => Ok(Box::new(res)),
-            Err(why) => {
-                return Err(FetchError::ParseError(f!(
-                    "Error parsing remote JSON from MSL API {:?}",
-                    why
-                )));
-            }
+            Err(why) => Err(FetchError::ParseError(f!(
+                "Error parsing remote JSON from MSL API {:?}",
+                why
+            ))),
         }
     }
 

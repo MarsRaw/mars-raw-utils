@@ -216,12 +216,10 @@ impl remotequery::Fetch for M20Fetch {
 
         match parse_msl_latest_json(&results_string) {
             Ok(latest) => Ok(Box::new(latest)),
-            Err(why) => {
-                return Err(FetchError::ParseError(f!(
-                    "Serde parsing from_str failed. {}",
-                    why
-                )));
-            }
+            Err(why) => Err(FetchError::ParseError(f!(
+                "Serde parsing from_str failed. {}",
+                why
+            ))),
         }
     }
 
