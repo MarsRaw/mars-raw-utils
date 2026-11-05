@@ -11,36 +11,46 @@ async fn test_psyche_latest() {
         .expect("Failed to fetch latest data");
 }
 
+async fn test_psyche_instrument_fetches_for_instrument(inst: &str) -> Result<(), FetchError> {
+    eprintln!("Testing fetch for {}", inst);
+    remotequery::perform_fetch(
+        &PsycheFetchClient::new(),
+        &RemoteQuery {
+            cameras: vec![inst.into()],
+            num_per_page: 5,
+            page: Some(0),
+            minsol: 0,
+            maxsol: 0,
+            thumbnails: false,
+            movie_only: false,
+            list_only: true,
+            search: vec![],
+            only_new: false,
+            product_types: vec![],
+            output_path: String::from(""),
+            filter: None,
+            filter_num: None,
+            filter_wavelenth: None,
+            start_date: Some("2026-05-16".parse::<DateTimeUtc>().unwrap().0),
+            end_date: Some("2026-05-16".parse::<DateTimeUtc>().unwrap().0),
+        },
+        |_| {},
+        |_| {},
+        None,
+    )
+    .await
+}
+
 #[tokio::test]
-async fn test_psyche_instrument_fetches() {
-    let instruments = vec!["A", "B"];
-    for i in instruments {
-        eprintln!("Testing fetch for {}", i);
-        _ = remotequery::perform_fetch(
-            &PsycheFetchClient::new(),
-            &RemoteQuery {
-                cameras: vec![i.into()],
-                num_per_page: 5,
-                page: Some(0),
-                minsol: 0,
-                maxsol: 0,
-                thumbnails: false,
-                movie_only: false,
-                list_only: true,
-                search: vec![],
-                only_new: false,
-                product_types: vec![],
-                output_path: String::from(""),
-                filter: None,
-                filter_num: None,
-                filter_wavelenth: None,
-                start_date: Some("2026-05-16".parse::<DateTimeUtc>().unwrap().0),
-                end_date: Some("2026-05-16".parse::<DateTimeUtc>().unwrap().0),
-            },
-            |_| {},
-            |_| {},
-            None,
-        )
-        .await;
-    }
+async fn test_psyche_instrument_fetches_a() {
+    test_psyche_instrument_fetches_for_instrument("A")
+        .await
+        .expect("Error fetching for camera A");
+}
+
+#[tokio::test]
+async fn test_psyche_instrument_fetches_b() {
+    test_psyche_instrument_fetches_for_instrument("B")
+        .await
+        .expect("Error fetching for camera B");
 }

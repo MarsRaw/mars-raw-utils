@@ -159,20 +159,35 @@ impl remotequery::Fetch for PsycheFetch {
         &self,
         query: &remotequery::RemoteQuery,
     ) -> Result<remotequery::RemoteStats, FetchError> {
-        match submit_query(query).await {
-            Ok(v) => {
-                let res: PsycheApiResults = serde_json::from_str(v.as_str()).unwrap();
-                let pages = (res.total as f32 / query.num_per_page as f32).ceil() as i32;
-                Ok(remotequery::RemoteStats {
-                    more: (res.page as i32) < pages - 1, // Assuming a zero-indexed page number
-                    error_message: String::from(""),
-                    total_results: res.total as i32,
-                    page: res.page as i32,
-                    total_images: res.items.len() as i32,
-                })
+        let raw_json = match submit_query(query).await {
+            Ok(raw_json) => raw_json,
+            Err(why) => {
+                return Err(FetchError::RemoteError(f!(
+                    "Error fetching remote JSON from Psyche API {:?}",
+                    why
+                )));
             }
-            Err(e) => Err(FetchError::RemoteError(f!("Remote error: {:?}", e))),
-        }
+        };
+
+        let api_results: PsycheApiResults = match serde_json::from_str(&raw_json) {
+            Ok(api_results) => api_results,
+            Err(why) => {
+                return Err(FetchError::ParseError(f!(
+                    "Failed to parse Psyche API JSON output: {:?}",
+                    why
+                )));
+            }
+        };
+
+        let pages = (api_results.total as f32 / query.num_per_page as f32).ceil() as i32;
+
+        Ok(remotequery::RemoteStats {
+            more: (api_results.page as i32) < pages - 1, // Assuming a zero-indexed page number
+            error_message: String::from(""),
+            total_results: api_results.total as i32,
+            page: api_results.page as i32,
+            total_images: api_results.items.len() as i32,
+        })
     }
 
     async fn fetch_latest(&self) -> Result<Box<dyn remotequery::LatestData>, FetchError> {
