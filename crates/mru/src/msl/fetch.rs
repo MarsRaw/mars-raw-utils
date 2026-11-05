@@ -194,20 +194,34 @@ impl remotequery::Fetch for MslFetch {
         &self,
         query: &remotequery::RemoteQuery,
     ) -> Result<remotequery::RemoteStats, FetchError> {
-        match submit_query(query).await {
-            Ok(v) => {
-                let res: MslApiResults = serde_json::from_str(v.as_str()).unwrap();
-                let pages = (res.total as f32 / query.num_per_page as f32).ceil() as i32;
-                Ok(remotequery::RemoteStats {
-                    more: (res.page as i32) < pages - 1, // Assuming a zero-indexed page number
-                    error_message: String::from(""),
-                    total_results: res.total as i32,
-                    page: res.page as i32,
-                    total_images: res.total as i32,
-                })
+        let raw_json = match submit_query(query).await {
+            Ok(raw_json) => raw_json,
+            Err(why) => {
+                return Err(FetchError::RemoteError(f!(
+                    "Error fetching remote JSON from MSL API {:?}",
+                    why
+                )));
             }
-            Err(e) => Err(FetchError::RemoteError(t!(e))),
-        }
+        };
+
+        let api_results: MslApiResults = match serde_json::from_str(&raw_json) {
+            Ok(api_results) => api_results,
+            Err(why) => {
+                return Err(FetchError::ParseError(f!(
+                    "Failed to parse MSL API JSON output: {:?}",
+                    why
+                )));
+            }
+        };
+
+        let pages = (api_results.total as f32 / query.num_per_page as f32).ceil() as i32;
+        Ok(remotequery::RemoteStats {
+            more: (api_results.page as i32) < pages - 1, // Assuming a zero-indexed page number
+            error_message: String::from(""),
+            total_results: api_results.total as i32,
+            page: api_results.page as i32,
+            total_images: api_results.total as i32,
+        })
     }
 
     fn make_instrument_map(&self) -> InstrumentMap {

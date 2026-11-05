@@ -221,7 +221,7 @@ impl remotequery::Fetch for M20Fetch {
             Err(why) => return Err(FetchError::RemoteError(f!("Remote error: {:?}", why))),
         };
 
-        let res: M20ApiResults = match serde_json::from_str(results_string.as_str()) {
+        let res: M20ApiResults = match serde_json::from_str(&results_string) {
             Ok(res) => res,
             Err(why) => return Err(FetchError::RemoteError(f!("JSON fetch error: {:?}", why))),
         };
