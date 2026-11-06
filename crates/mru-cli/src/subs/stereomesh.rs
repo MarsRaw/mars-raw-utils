@@ -11,7 +11,7 @@ use std::io::Write;
 use std::process;
 use stump;
 
-//pb_create_spinner!();
+pb_create_spinner!();
 
 #[derive(Parser)]
 #[command(author, version, about = "Generate a mesh from stereo pair", long_about = None)]
@@ -52,12 +52,27 @@ pub struct StereoMesh {
         help = "Maximum deviations from the median height from the surface"
     )]
     max_height_deviations: Option<f64>,
+
+    #[arg(long, short = 'p', help = "Disable multithreaded processing")]
+    no_multithreading: bool,
 }
 
 impl RunnableSubcommand for StereoMesh {
     async fn run(&self) -> Result<()> {
-        //pb_set_print!();
+        pb_set_print!();
         stump::print_experimental();
+
+        // The mesh code uses all available threads to parallelize the process.
+        // This can be a bit much for some systems, especially if keeping MRU
+        // to a small footprint is desirable.
+        if self.no_multithreading {
+            info!("User requested single thread execution.");
+            info!("Setting thread pool to 1.");
+            rayon::ThreadPoolBuilder::new()
+                .num_threads(1)
+                .build_global()
+                .unwrap();
+        }
 
         let p0 = String::from(self.left.as_os_str().to_str().unwrap());
         let p1 = String::from(self.right.as_os_str().to_str().unwrap());
@@ -65,13 +80,13 @@ impl RunnableSubcommand for StereoMesh {
 
         if !path::file_exists(&p0) {
             error!("Error: File not found (left eye): {}", p0);
-            //pb_done_with_error!();
+            pb_done_with_error!();
             process::exit(1);
         }
 
         if !path::file_exists(&p1) {
             error!("Error: File not found (right eye): {}", p1);
-            //pb_done_with_error!();
+            pb_done_with_error!();
             process::exit(1);
         }
 
@@ -80,7 +95,7 @@ impl RunnableSubcommand for StereoMesh {
                 "Error: Output file directory not found or is not writable: {}",
                 out_file_path
             );
-            //pb_done_with_error!();
+            pb_done_with_error!();
             process::exit(1);
         }
 
@@ -184,9 +199,18 @@ impl RunnableSubcommand for StereoMesh {
         writeln!(mtl, "Ka 1.0 1.0 1.0")?;
         writeln!(mtl, "Kd 1.0 1.0 1.0")?;
         writeln!(mtl, "Ks 0.0 0.0 0.0")?;
-        writeln!(mtl, "map_Ka {}", texture_path.display())?;
-        writeln!(mtl, "map_Kd {}", texture_path.display())?;
+        writeln!(
+            mtl,
+            "map_Ka ./{}",
+            texture_path.file_name().unwrap().display()
+        )?;
+        writeln!(
+            mtl,
+            "map_Kd ./{}",
+            texture_path.file_name().unwrap().display()
+        )?;
 
+        pb_done!();
         Ok(())
     }
 }

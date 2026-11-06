@@ -92,6 +92,7 @@ commands! {
     DsnEvents(dsnevents::DsnEvents),
     DsnStatus(dsnstatus::DsnStatus),
     StereoMesh(stereomesh::StereoMesh),
+    MergeMesh(mergemesh::MergeMesh),
     Project(project::Project)
 }
 
