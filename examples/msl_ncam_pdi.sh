@@ -102,7 +102,7 @@ cd $psol/NCAM
 
 if [ $do_fetch -eq 1 ]; then
     echo Fetching imagery from NASA servers...
-    
+
     # Fetch left and right Navcams, only NCAM sequences (not TRAV)
     mru msl-fetch -c NAV_RIGHT NAV_LEFT -s ${sol} -f NCAM00 -n
 
@@ -118,15 +118,11 @@ mru calibrate -i *JPG
 # It's always gonna be EDR for raws, but lets do this anyway
 prod_type=`ls N{L,R}*NCAM002[5-9]?*tif | head -n 1 | cut -c 14-16`
 
-# Extract site and left zero pad it to three characters
+# Extract site
 site=`ls N{L,R}*NCAM002[5-9]?*tif | head -n 1 | cut -c 19-21`
-site=`printf "%03d" $site`
 
-# Extract drive and left zero pad it to four characters
+# Extract drive
 drive=`ls N{L,R}*NCAM002[5-9]?*tif | head -n 1 | cut -c 22-25`
-drive=`printf "%04d" $drive`
-
-
 
 if [ $generate_mosaics -eq 1 ]; then
     echo Generating mosaics...
@@ -212,12 +208,8 @@ if [ $generate_penultimate_mesh -eq 1 ]; then
     echo Generating penultimate mesh...
 
     penultimate_prod_type=`ls NL*NCAM00385*.tif | head -n 1 | cut -c 14-18`
-
     penultimate_site=`ls NL*NCAM00385*.tif | head -n 1 | cut -c 19-21`
-    penultimate_site=`printf "%03d" $penultimate_site`
-
     penultimate_drive=`ls NL*NCAM00385*.tif | head -n 1 | cut -c 22-25`
-    penultimate_drive=`printf "%03d" $penultimate_drive`
 
     echo Penultimate Site: ${penultimate_site}
     echo Penultimate Drive: ${penultimate_drive}
