@@ -1,0 +1,76 @@
+use crate::{
+    calibfile,
+    calibrate::{Calibration, CompleteContext, cal_fail, cal_ok, cal_warn},
+    calprofile::CalProfile,
+    enums,
+    enums::Instrument,
+    marsimage::MarsImage,
+    util,
+};
+
+use sciimg::{imagebuffer, path};
+
+use anyhow::Result;
+
+#[derive(Copy, Clone)]
+pub struct MslChemCam {}
+
+impl Calibration for MslChemCam {
+    fn accepts_instrument(&self, instrument: Instrument) -> bool {
+        matches!(instrument, Instrument::MslChemCam)
+    }
+
+    fn process_file(
+        &self,
+        input_file: &str,
+        cal_context: &CalProfile,
+        only_new: bool,
+    ) -> Result<CompleteContext> {
+        let out_file = util::append_file_name(input_file, cal_context.filename_suffix.as_str());
+        if path::file_exists(&out_file) && only_new {
+            vprintln!("Output file exists, skipping. ({})", out_file);
+            return cal_warn(cal_context, &out_file);
+        }
+
+        let mut raw = MarsImage::open(input_file)?;
+
+        vprintln!("Loading image mask");
+        let mask = imagebuffer::ImageBuffer::from_file(
+            calibfile::get_calibration_file_for_instrument(
+                enums::Instrument::MslChemCam,
+                enums::CalFileType::Mask,
+            )
+            .unwrap()
+            .as_str(),
+        )
+        .unwrap();
+        raw.apply_alpha(&mask);
+
+        let data_max = 255.0;
+
+        if input_file.contains("EDR") {
+            vprintln!("Image appears to be in standard contrast");
+
+            vprintln!("Flatfielding...");
+            raw.flatfield();
+        } else if input_file.contains("EDR") {
+            vprintln!("Image appears to be in enhanced contrast");
+            // ... Don't do flatfielding, these appear to already been applied.
+            // ... Do something about that
+        }
+
+        vprintln!("Normalizing...");
+        raw.image.normalize_to_16bit_with_max(data_max);
+
+        vprintln!("Writing to disk...");
+        raw.update_history();
+        raw.image.set_using_alpha(true);
+        match raw.save(&out_file) {
+            Ok(_) => cal_ok(cal_context, &out_file),
+            Err(why) => {
+                veprintln!("Error saving file: {}", why);
+                cal_fail(cal_context, &out_file)
+            }
+        }
+    }
+}
