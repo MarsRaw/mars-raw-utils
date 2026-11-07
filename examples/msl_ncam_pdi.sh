@@ -41,7 +41,7 @@ mesh_point_density=5
 mesh_kernel_size=25
 
 # Minimum point correlation value
-mesh_min_correlation=0.2
+mesh_min_correlation=5.0
 
 # The mesh code uses all available threads to parallelize the process which can be a bit 
 # much for some systems, especially if keeping MRU to a small footprint is desirable.
@@ -111,20 +111,31 @@ elif [ `ls N{L,R}*NCAM00353*JPG N{L,R}*NCAM00354*JPG N{L,R}*NCAM002[5-9]*JPG 2> 
     exit 1
 fi
 
+if [ `ls *JPG 2> /dev/null | wc -l` -eq 0 ]; then 
+    echo No images found on Sol $sol. 
+    exit 2
+fi
+
 # Run calibration
 echo Running image calibration...
 mru calibrate -i *JPG
 
+# Doublecheck and make sure the expected imaging exists. If not, print a message and exit
+if [ `ls N{L,R}*NCAM00353*tif N{L,R}*NCAM00354*tif N{L,R}*NCAM002[5-9]*tif 2> /dev/null | wc -l` -eq 0 ]; then
+    echo No post drive images found. Check whether a drive occured and if all data has been downlinked.
+    exit 3
+fi
+
 # It's always gonna be EDR for raws, but lets do this anyway
-prod_type=`ls N{L,R}*NCAM002[5-9]?*tif | head -n 1 | cut -c 14-16`
+prod_type=`ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | head -n 1 | cut -c 14-16`
 
 # Extract site
-site=`ls N{L,R}*NCAM002[5-9]?*tif | head -n 1 | cut -c 19-21`
+site=`ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | head -n 1 | cut -c 19-21`
 
 # Extract drive
-drive=`ls N{L,R}*NCAM002[5-9]?*tif | head -n 1 | cut -c 22-25`
+drive=`ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | head -n 1 | cut -c 22-25`
 
-if [ $generate_mosaics -eq 1 ]; then
+if [[ $generate_mosaics -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc -l` -gt 0 ]]; then
     echo Generating mosaics...
 
     echo Sol: $psol
@@ -154,7 +165,7 @@ if [ $generate_mosaics -eq 1 ]; then
 fi
 
 
-if [ $generate_pdi_mesh -eq 1 ]; then
+if [[ $generate_pdi_mesh -eq 1 && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc -l` -gt 0 ]]; then
     echo Generating post drive mesh...
 
     # Try not to conflict with any previous versions
@@ -186,7 +197,7 @@ if [ $generate_pdi_mesh -eq 1 ]; then
 
     # Merge wedges into single obj file
     if [ `cat pdi_meshes.lis | wc -l` -gt 1 ]; then
-        merged_mesh=N_L${psol}_${penultimate_prod_type}_${penultimate_site}_${penultimate_drive}_MRUPDIM_.obj
+        merged_mesh=N_L${psol}_${pdi_prod_type}_${site}_${drive}_MRUPDIM_.obj
         echo Merging PDI wedges into single mesh $merged_mesh
         mru merge-mesh -i `cat pdi_meshes.lis` -o $merged_mesh
     fi
@@ -204,7 +215,7 @@ if [ $generate_pdi_mesh -eq 1 ]; then
 fi
 
 # Generate Penultimate Mesh:
-if [ $generate_penultimate_mesh -eq 1 ]; then
+if [[ $generate_penultimate_mesh -eq 1 && `ls N*NCAM00385* 2> /dev/null | wc -l` -gt 0 ]]; then
     echo Generating penultimate mesh...
 
     penultimate_prod_type=`ls NL*NCAM00385*.tif | head -n 1 | cut -c 14-18`
@@ -254,6 +265,7 @@ if [ $generate_penultimate_mesh -eq 1 ]; then
         for f in `cat penultimate_meshes.lis`; do 
             rm $f 
         done
+
         rm penultimate_meshes.lis
     fi
 
@@ -271,23 +283,23 @@ if [ $organize -eq 1 ]; then
     mv *-rjcal.tif rdr/
     mv *-rjcal-metadata.json rdr/
 
-    if [ $generate_mosaics -eq 1 ]; then
+    if [[ $generate_mosaics -eq 1 && `ls *MRUGNM_.tif 2> /dev/null | wc -l ` -gt 0 ]]; then
 
         if [ ! -d mosaic ]; then
             mkdir mosaic
         fi
 
-        mv *MRUGNM_.tif mosaic
+        mv *MRUGNM_.tif mosaic 2> /dev/null
     fi
 
-    if [ $generate_pdi_mesh -eq 1 -o $generate_penultimate_mesh -eq 1 ]; then
+    if [[ ( $generate_pdi_mesh -eq 1 || $generate_penultimate_mesh -eq 1 ) && `ls *obj 2> /dev/null | wc -l` -gt 0 ]]; then
 
         if [ ! -d mesh ]; then 
             mkdir mesh
         fi
 
-        mv *.obj mesh/
-        mv *.mtl mesh/
+        mv *.obj mesh/ 2> /dev/null
+        mv *.mtl mesh/ 2> /dev/null
 
         # The material files have a relative pointer to the image texture. If we move
         # the file, then we need to alter that relative path to match the changes.
