@@ -41,7 +41,7 @@ mesh_point_density=5
 mesh_kernel_size=25
 
 # Minimum point correlation value
-mesh_min_correlation=5.0
+mesh_min_correlation=0.2
 
 # The mesh code uses all available threads to parallelize the process which can be a bit 
 # much for some systems, especially if keeping MRU to a small footprint is desirable.
