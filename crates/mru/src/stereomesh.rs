@@ -190,6 +190,7 @@ pub struct XyzRaster {
     pub image_width: usize, // left image size, for UV generation
     pub image_height: usize,
     pub xyz_grid: Vec<Vec<Vertex>>,
+    pub origin: Vector,
 }
 
 macro_rules! check_xyz_in_bounds_xyz_raster {
@@ -203,7 +204,13 @@ macro_rules! check_xyz_in_bounds_xyz_raster {
 }
 
 impl XyzRaster {
-    pub fn new(rows: usize, cols: usize, image_width: usize, image_height: usize) -> Result<Self> {
+    pub fn new(
+        rows: usize,
+        cols: usize,
+        image_width: usize,
+        image_height: usize,
+        origin: &Vector,
+    ) -> Result<Self> {
         if rows == 0 || cols == 0 {
             return Err(anyhow!(
                 "Error: Cannot create raster with zero length dimension"
@@ -218,6 +225,7 @@ impl XyzRaster {
 
             // Defaults with x/y values of zero are technically inconsistent and invalid in this contxt, but no-one's gonna come to arrest me....
             xyz_grid: vec![vec![Vertex::default(); cols]; rows],
+            origin: origin.to_owned(),
         })
     }
 
@@ -487,8 +495,16 @@ pub fn find_xyz_points(
                 .collect()
         })
         .collect();
-    let mut grid = XyzRaster::new(grid_height, grid_width, m0.image.width, m0.image.height)?;
+
+    let mut grid = XyzRaster::new(
+        grid_height,
+        grid_width,
+        m0.image.width,
+        m0.image.height,
+        &cahv0.c,
+    )?;
     grid.xyz_grid = xyz_grid;
+
     grid.reject_height_outliers(max_height_deviations);
     grid.provide_mesh_indexes();
 

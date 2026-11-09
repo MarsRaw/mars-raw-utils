@@ -6,6 +6,7 @@ use mru::stereomesh::Vertex;
 use mru::stereomesh::{StereoMeshOptions, find_xyz_points};
 
 use sciimg::prelude::*;
+use sciimg::vector::Vector;
 use std::fs::File;
 use std::io::Write;
 use std::process;
@@ -53,8 +54,45 @@ pub struct StereoMesh {
     )]
     max_height_deviations: Option<f64>,
 
+    #[arg(
+        long,
+        short = 'R',
+        help = "Maximum length to range ratio of any edge before a face is discarded"
+    )]
+    max_edge_ratio: Option<f64>,
+
+    #[arg(
+        long,
+        short = 'E',
+        help = "Maximum length of any edge before a face is discarded"
+    )]
+    max_edge_length: Option<f64>,
+
     #[arg(long, short = 'p', help = "Disable multithreaded processing")]
     no_multithreading: bool,
+}
+
+// So, to limit large anomolous spikes in the mesh, we will limit the length of any edge
+// to some reasonable value. If an edge exceeds the limit, the face is discarded.
+fn keep_face(
+    a: &Vector,
+    b: &Vector,
+    c: &Vector,
+    cam_center: &Vector,
+    max_edge_ratio: f64,
+    max_edge_length: f64,
+) -> bool {
+    let longest = a.distance_to(b).max(b.distance_to(c)).max(c.distance_to(a));
+
+    // Range from the camera to the face centroid
+    let centroid = (*a + *b + *c) / 3.0;
+    let range = centroid.distance_to(cam_center);
+
+    let limit = f64::INFINITY
+        .min(max_edge_ratio * range)
+        .min(max_edge_length);
+
+    longest <= limit
 }
 
 impl RunnableSubcommand for StereoMesh {
@@ -164,22 +202,114 @@ impl RunnableSubcommand for StereoMesh {
             writeln!(out, "f {a}/{a} {b}/{b} {c}/{c}")
         };
 
+        let max_edge_length = self.max_edge_length.unwrap_or(0.06);
+        let max_edge_ratio = self.max_edge_ratio.unwrap_or(0.03);
+
         for r in 0..xyz_raster.rows.saturating_sub(1) {
             for c in 0..xyz_raster.cols.saturating_sub(1) {
-                let tl = obj_idx(xyz_raster.get(r, c)?);
-                let tr = obj_idx(xyz_raster.get(r, c + 1)?);
-                let bl = obj_idx(xyz_raster.get(r + 1, c)?);
-                let br = obj_idx(xyz_raster.get(r + 1, c + 1)?);
+                let tl_v = xyz_raster.get(r, c)?;
+                let tr_v = xyz_raster.get(r, c + 1)?;
+                let bl_v = xyz_raster.get(r + 1, c)?;
+                let br_v = xyz_raster.get(r + 1, c + 1)?;
+
+                let tl = obj_idx(tl_v);
+                let tr = obj_idx(tr_v);
+                let bl = obj_idx(bl_v);
+                let br = obj_idx(br_v);
 
                 match (tl, tr, bl, br) {
                     (Some(tl), Some(tr), Some(bl), Some(br)) => {
-                        tri(tl, bl, tr)?;
-                        tri(tr, bl, br)?;
+                        let tl_xyz = tl_v.xyz.unwrap();
+                        let tr_xyz = tr_v.xyz.unwrap();
+                        let bl_xyz = bl_v.xyz.unwrap();
+                        let br_xyz = br_v.xyz.unwrap();
+
+                        if keep_face(
+                            &tl_xyz,
+                            &bl_xyz,
+                            &tr_xyz,
+                            &xyz_raster.origin,
+                            max_edge_ratio,
+                            max_edge_length,
+                        ) {
+                            tri(tl, bl, tr)?;
+                        }
+
+                        if keep_face(
+                            &tr_xyz,
+                            &bl_xyz,
+                            &br_xyz,
+                            &xyz_raster.origin,
+                            max_edge_ratio,
+                            max_edge_length,
+                        ) {
+                            tri(tr, bl, br)?;
+                        }
                     }
-                    (Some(tl), Some(tr), Some(bl), None) => tri(tl, bl, tr)?,
-                    (Some(tl), Some(tr), None, Some(br)) => tri(tl, br, tr)?,
-                    (Some(tl), None, Some(bl), Some(br)) => tri(tl, bl, br)?,
-                    (None, Some(tr), Some(bl), Some(br)) => tri(tr, bl, br)?,
+                    (Some(tl), Some(tr), Some(bl), None) => {
+                        let tl_xyz = tl_v.xyz.unwrap();
+                        let tr_xyz = tr_v.xyz.unwrap();
+                        let bl_xyz = bl_v.xyz.unwrap();
+
+                        if keep_face(
+                            &tl_xyz,
+                            &bl_xyz,
+                            &tr_xyz,
+                            &xyz_raster.origin,
+                            max_edge_ratio,
+                            max_edge_length,
+                        ) {
+                            tri(tl, bl, tr)?
+                        }
+                    }
+                    (Some(tl), Some(tr), None, Some(br)) => {
+                        let tl_xyz = tl_v.xyz.unwrap();
+                        let tr_xyz = tr_v.xyz.unwrap();
+                        let br_xyz = br_v.xyz.unwrap();
+
+                        if keep_face(
+                            &tl_xyz,
+                            &br_xyz,
+                            &tr_xyz,
+                            &xyz_raster.origin,
+                            max_edge_ratio,
+                            max_edge_length,
+                        ) {
+                            tri(tl, br, tr)?
+                        }
+                    }
+                    (Some(tl), None, Some(bl), Some(br)) => {
+                        let tl_xyz = tl_v.xyz.unwrap();
+                        let bl_xyz = bl_v.xyz.unwrap();
+                        let br_xyz = br_v.xyz.unwrap();
+
+                        if keep_face(
+                            &tl_xyz,
+                            &bl_xyz,
+                            &br_xyz,
+                            &xyz_raster.origin,
+                            max_edge_ratio,
+                            max_edge_length,
+                        ) {
+                            tri(tl, bl, br)?
+                        }
+                    }
+                    (None, Some(tr), Some(bl), Some(br)) => {
+                        let tr_xyz = tr_v.xyz.unwrap();
+                        let bl_xyz = bl_v.xyz.unwrap();
+                        let br_xyz = br_v.xyz.unwrap();
+
+                        if keep_face(
+                            &tr_xyz,
+                            &bl_xyz,
+                            &br_xyz,
+                            &xyz_raster.origin,
+                            max_edge_ratio,
+                            max_edge_length,
+                        ) {
+                            tri(tr, bl, br)?
+                        }
+                    }
                     _ => {}
                 }
             }
