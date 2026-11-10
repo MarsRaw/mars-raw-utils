@@ -133,7 +133,7 @@ echo Running image calibration...
 mru calibrate -i *JPG
 
 # Doublecheck and make sure the expected imaging exists. If not, print a message and exit
-if [ `ls N{L,R}*NCAM00353*tif N{L,R}*NCAM00354*tif N{L,R}*NCAM002[5-9]*tif 2> /dev/null | wc -l` -eq 0 ]; then
+if [ `ls N{L,R}*NCAM00353*tif N{L,R}*NCAM00354*tif N{L,R}*NCAM002[5-9]*tif N{L,R}*NCAM00385*tif 2> /dev/null | wc -l` -eq 0 ]; then
     echo No post drive images found. Check whether a drive occured and if all data has been downlinked.
     exit 3
 fi
@@ -250,7 +250,7 @@ if [[ $generate_penultimate_mesh -eq 1 && `ls N*NCAM00385* 2> /dev/null | wc -l`
     # depending on RP needs.
     for sclk in `ls NL*NCAM00385*tif 2> /dev/null | cut -c 5-13`; do
 
-        nav_mesh=N_L${psol}_${prod_type}_${penultimate_site}_${penultimate_drive}_${sclk}M_.obj
+        nav_mesh=N_L${psol}_${penultimate_prod_type}_${penultimate_site}_${penultimate_drive}_${sclk}M_.obj
         echo $nav_mesh >> penultimate_meshes.lis 
 
         echo Creating $nav_mesh
@@ -272,7 +272,7 @@ if [[ $generate_penultimate_mesh -eq 1 && `ls N*NCAM00385* 2> /dev/null | wc -l`
     done
 
     # Merge wedges into single obj file
-    if [ `cat penultimate_meshes.lis | wc -l` -gt 1 ]; then
+    if [ `cat penultimate_meshes.lis | wc -l` -gt 0 ]; then
         merged_mesh=N_L${psol}_${penultimate_prod_type}_${penultimate_site}_${penultimate_drive}_PENULTIMATEM_.obj
         echo Merging Penultimate wedges into single mesh $merged_mesh
         mru merge-mesh -i `cat penultimate_meshes.lis` -o $merged_mesh
