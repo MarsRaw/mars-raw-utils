@@ -118,7 +118,7 @@ impl RunnableSubcommand for Info {
                 );
                 println!(
                     "Instrument:                  {:?}",
-                    img.metadata.instrument()
+                    img.metadata.instrument().unwrap_or(Instrument::None)
                 );
                 println!("Image Id:                    {}", img.metadata.imageid());
 

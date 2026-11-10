@@ -114,7 +114,7 @@ impl StereoRange {
 
         let mut out = MarsImage::from_image(&img, template.instrument);
 
-        let mut out_rover_metadata = if let Some(rover_metadata) = template.metadata.as_rover() {
+        let mut out_rover_metadata = if let Some(rover_metadata) = template.metadata.as_surface() {
             rover_metadata.clone()
         } else {
             return Err(anyhow!(
@@ -131,7 +131,7 @@ impl StereoRange {
         // Adjust to whatever your pipeline expects for a distortion-free model:
         out_rover_metadata.camera_model_type = Some("CAHV".to_string());
         out.update_history();
-        out.metadata.from_rover(&out_rover_metadata);
+        out.metadata.from_surface(&out_rover_metadata);
 
         Ok(out)
     }

@@ -13,7 +13,7 @@ use crate::marsimage::MarsImage;
 /// If your metadata models are already adjusted, skip this and call
 /// `linearize_image_with_model` directly.
 pub fn model_for_image(img: &MarsImage, apply_scaling: bool) -> Option<Cahvore> {
-    let rover_metadata = img.metadata.as_rover()?;
+    let rover_metadata = img.metadata.as_surface()?;
 
     let mut model = rover_metadata.camera_model_component_list.clone();
 
@@ -274,7 +274,7 @@ pub fn linearize_image_with_model(
         return Err(anyhow!("linearize_image: source image is empty"));
     }
 
-    let rover_metadata = if let Some(rover_metadata) = src.metadata.as_rover() {
+    let rover_metadata = if let Some(rover_metadata) = src.metadata.as_surface() {
         rover_metadata
     } else {
         return Err(anyhow!(
@@ -353,7 +353,7 @@ pub fn linearize_image_with_model(
 
     let mut out = MarsImage::from_image(&out_img, src.instrument);
 
-    let mut out_rover_metadata = if let Some(rover_metadata) = src.metadata.as_rover() {
+    let mut out_rover_metadata = if let Some(rover_metadata) = src.metadata.as_surface() {
         rover_metadata.clone()
     } else {
         return Err(anyhow!(
@@ -370,7 +370,7 @@ pub fn linearize_image_with_model(
     // Adjust to whatever your pipeline expects for a distortion-free model:
     out_rover_metadata.camera_model_type = Some("CAHV".to_string());
     out.update_history();
-    out.metadata.from_rover(&out_rover_metadata);
+    out.metadata.from_surface(&out_rover_metadata);
 
     Ok(out)
 }
@@ -427,7 +427,7 @@ pub fn resample_to_model(
     }
 
     let mut out = MarsImage::from_image(&out_img, src.instrument);
-    let mut out_rover_metadata = if let Some(rover_metadata) = src.metadata.as_rover() {
+    let mut out_rover_metadata = if let Some(rover_metadata) = src.metadata.as_surface() {
         rover_metadata.clone()
     } else {
         return Err(anyhow!(
@@ -444,7 +444,7 @@ pub fn resample_to_model(
     // Adjust to whatever your pipeline expects for a distortion-free model:
     out_rover_metadata.camera_model_type = Some("CAHV".to_string());
     out.update_history();
-    out.metadata.from_rover(&out_rover_metadata);
+    out.metadata.from_surface(&out_rover_metadata);
 
     Ok(out)
 }

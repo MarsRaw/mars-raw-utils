@@ -161,7 +161,7 @@ fn print_table_rover(images: &[Metadata], query: &RemoteQuery) {
     let table = images
         .iter()
         .map(|md| {
-            let mission_metadata = match md.as_rover() {
+            let mission_metadata = match md.as_surface() {
                 Some(md) => md,
                 None => panic!("Received non-surface metadata. Expected surface"),
             };
@@ -212,7 +212,7 @@ fn print_table_psyche(images: &[Metadata], query: &RemoteQuery) {
     let table = images
         .iter()
         .map(|md| {
-            let mission_metadata = match md.as_psyche() {
+            let mission_metadata = match md.as_flight() {
                 Some(md) => md,
                 None => panic!("Received surface metadata. Expected non-surface"),
             };

@@ -119,13 +119,13 @@ impl Calibration for M20MastcamZ {
             raw.desmear_ccd_image(cal_context.desmear_epsilon);
         } // else, don't bother
 
-        let subframe_rect = if let Some(md) = raw.metadata.as_rover() {
+        let subframe_rect = if let Some(md) = raw.metadata.as_surface() {
             md.subframe_rect.clone()
         } else {
             None
         };
 
-        let camera_model_component_list = if let Some(md) = raw.metadata.as_rover() {
+        let camera_model_component_list = if let Some(md) = raw.metadata.as_surface() {
             md.camera_model_component_list.clone()
         } else {
             Cahvore::default()

@@ -10,6 +10,7 @@ use mru::util;
 use sciimg::path;
 use std::env;
 use std::process;
+use stump::warn;
 
 pb_create_spinner!();
 
@@ -86,31 +87,65 @@ impl RunnableSubcommand for M20EcamAssemble {
 
         // Pastes the tiles into the canvas
         vprintln!("Adding {} tiles to composite", tiles.len());
-        composite.paste_tiles(&tiles);
+        let results = composite.paste_tiles(&tiles);
+
+        // Determine the dimension limits of the tiles
+        let mut tl_x = usize::MAX;
+        let mut tl_y = usize::MAX;
+        let mut br_x = usize::MIN;
+        let mut br_y = usize::MIN;
+
+        results
+            .iter()
+            .filter_map(|r| match r {
+                Err(why) => {
+                    warn!("Failed to paste subframe: {:?}", why);
+                    None
+                }
+                Ok(tc) => Some(tc),
+            })
+            .for_each(|tc| {
+                tl_x = tl_x.min(tc.top_left_x);
+                tl_y = tl_y.min(tc.top_left_y);
+                br_x = br_x.max(tc.bottom_right_x);
+                br_y = br_y.max(tc.bottom_right_y);
+            });
+
+        vprintln!(
+            "Cropping to subframe {}, {} - {}, {}",
+            tl_x,
+            tl_y,
+            br_x - tl_x,
+            br_y - tl_y
+        );
+        composite.crop(tl_x, tl_y, br_x - tl_x, br_y - tl_y);
 
         // Stretches image to 16 bit and saves to disk
         vprintln!("Saving composite to {}", output);
         composite.finalize_and_save(output);
 
-        // Update 'scale_factor' in the metadata and save to disk
-        match &mut tiles[0].image.metadata.mission {
-            MissionMetadata::Surface(md) => {
-                md.subframe_rect = Some(vec![1.0, 1.0, 5120.0, 3840.0]);
-            }
-            _ => {
-                return Err(anyhow!(
-                    "Received nonsurface metadata when surface (rover) metadata was expected"
-                ));
-            }
-        };
+        let mut metadata = tiles[0].image.metadata.clone();
 
-        tiles[0]
-            .image
-            .metadata
+        // Add the current process to the image history
+        metadata
             .processing
             .history
             .push(env::args().collect::<Vec<String>>().join(" "));
-        util::save_image_json(output, &tiles[0].image.metadata, None).unwrap();
+
+        // Update the subframe region to reflect the cropped composite
+        match &mut metadata.mission {
+            MissionMetadata::Surface(surface_metadata) => {
+                surface_metadata.subframe_rect = Some(vec![
+                    1.0 + tl_x as f64,
+                    1.0 + tl_y as f64,
+                    composite.width as f64 * surface_metadata.scale_factor as f64,
+                    composite.height as f64 * surface_metadata.scale_factor as f64,
+                ]);
+            }
+            MissionMetadata::Flight(_) => return Err(anyhow!("Invalid metadata for image")),
+        }
+
+        util::save_image_json(output, &metadata, None).unwrap();
 
         pb_done!();
         Ok(())

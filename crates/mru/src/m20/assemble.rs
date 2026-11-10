@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use sciimg::{enums::ImageMode, image};
 
 lazy_static! {
@@ -56,6 +56,7 @@ pub struct NavcamTile {
 }
 
 /// Container for tile coordinates and scale
+#[derive(Debug)]
 pub struct TileCoordinates {
     pub top_left_x: usize,
     pub top_left_y: usize,
@@ -151,7 +152,7 @@ impl NavcamTile {
 
     /// Returns the scale factor in the metadata `scale_factor` field
     pub fn get_scale_factor(&self) -> u32 {
-        if let Some(md) = self.image.metadata.as_rover() {
+        if let Some(md) = self.image.metadata.as_surface() {
             if md.scale_factor >= 1 {
                 md.scale_factor
             } else {
@@ -164,7 +165,7 @@ impl NavcamTile {
 
     // Returns the subframe coordinates from the metadata `subframe_rect` field
     pub fn get_subframe_region(&self) -> Vec<f64> {
-        if let Some(md) = self.image.metadata.as_rover() {
+        if let Some(md) = self.image.metadata.as_surface() {
             md.subframe_rect.clone().unwrap_or(vec![0.0])
         } else {
             vec![0.0]
@@ -174,6 +175,7 @@ impl NavcamTile {
 
 /// Implements a composite canvas image that will recieve the navcam tiles and
 /// eventually saved to disk
+#[derive(Debug)]
 pub struct Composite {
     pub scale: u32,
     pub width: usize,
@@ -230,34 +232,45 @@ impl Composite {
     }
 
     /// Pastes a set of `NavcamTile`s onto the canvas.
-    pub fn paste_tiles(&mut self, tiles: &[NavcamTile]) {
-        tiles.iter().for_each(|t| {
-            self.paste_tile(t);
-        });
+    pub fn paste_tiles(&mut self, tiles: &[NavcamTile]) -> Vec<Result<TileCoordinates>> {
+        tiles.iter().map(|t| self.paste_tile(t)).collect()
     }
 
     /// Pastes a `NavcamTile` onto the canvas. Will also attempt to crop tile edges
     /// to avoid compression artifacts and telemetry pixels
-    pub fn paste_tile(&mut self, tile: &NavcamTile) {
+    pub fn paste_tile(&mut self, tile: &NavcamTile) -> Result<TileCoordinates> {
         if let Some(tilecoord) = tile.get_tile_coordinates() {
             let mut paste_image = tile.image.image.clone();
 
-            if self.scale == 1 {
+            let (tl_x, tl_y, br_x, br_y) = if self.scale == 1 {
                 paste_image.crop(2, 2, paste_image.width - 4, paste_image.height - 4);
-
-                self.composite_image.paste(
-                    &paste_image,
+                (
                     tilecoord.top_left_x - 1,
                     tilecoord.top_left_y - 1,
-                );
+                    tilecoord.bottom_right_x - 6,
+                    tilecoord.bottom_right_y - 6,
+                )
             } else {
                 paste_image.crop(0, 0, paste_image.width, paste_image.height);
-                self.composite_image.paste(
-                    &paste_image,
+                (
                     tilecoord.top_left_x - 2,
                     tilecoord.top_left_y - 2,
-                );
-            }
+                    tilecoord.bottom_right_x - 2,
+                    tilecoord.bottom_right_y - 2,
+                )
+            };
+
+            self.composite_image.paste(&paste_image, tl_x, tl_y);
+
+            Ok(TileCoordinates {
+                top_left_x: tl_x,
+                top_left_y: tl_y,
+                bottom_right_x: br_x,
+                bottom_right_y: br_y,
+                scale: 0,
+            })
+        } else {
+            Err(anyhow!("Unable to paste tile: lacks subframe coordinates"))
         }
     }
 

@@ -141,15 +141,15 @@ impl Metadata {
         }
     }
 
-    pub fn from_rover(&mut self, rover_metadata: &SurfaceMetadata) {
+    pub fn from_surface(&mut self, rover_metadata: &SurfaceMetadata) {
         self.mission = MissionMetadata::Surface(rover_metadata.clone())
     }
 
-    pub fn from_psyche(&mut self, psyche_metadata: &FlightMetadata) {
+    pub fn from_flight(&mut self, psyche_metadata: &FlightMetadata) {
         self.mission = MissionMetadata::Flight(psyche_metadata.clone())
     }
 
-    pub fn as_rover(&self) -> Option<&SurfaceMetadata> {
+    pub fn as_surface(&self) -> Option<&SurfaceMetadata> {
         if let MissionMetadata::Surface(m) = &self.mission {
             Some(m)
         } else {
@@ -157,7 +157,7 @@ impl Metadata {
         }
     }
 
-    pub fn as_psyche(&self) -> Option<&FlightMetadata> {
+    pub fn as_flight(&self) -> Option<&FlightMetadata> {
         if let MissionMetadata::Flight(m) = &self.mission {
             Some(m)
         } else {

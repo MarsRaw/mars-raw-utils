@@ -104,7 +104,7 @@ impl Calibration for MslEcam {
         if path::file_exists(&flat_file_path) {
             let mut flat = MarsImage::open(&flat_file_path)?;
 
-            if let Some(md) = raw.metadata.as_rover()
+            if let Some(md) = raw.metadata.as_surface()
                 && let Some(rect) = &md.subframe_rect
             {
                 flat.crop(

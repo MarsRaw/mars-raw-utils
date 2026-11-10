@@ -1,7 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
-use mru::{composite, prelude::*};
+use mru::{composite::*, prelude::*};
 use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
 use std::process;
 use stump;
@@ -45,7 +45,7 @@ impl RunnableSubcommand for Composite {
 
         let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 
-        let map_context = composite::determine_map_context(&in_files, &quat)?;
+        let map_context = determine_map_context(&in_files, &quat)?;
         debug!("Map Context: {:?}", map_context);
         debug!(
             "FOV Vertical: {}",
@@ -69,7 +69,7 @@ impl RunnableSubcommand for Composite {
         let mut map = Image::create_masked(map_context.width, map_context.height, true);
 
         let first_image = MarsImage::open(&in_files[0])?;
-        let initial_origin = if let Some(model) = composite::get_cahvor(&first_image) {
+        let initial_origin = if let Some(model) = first_image.get_cahvor() {
             model.c()
         } else {
             error!("Cannot determine initial camera origin");
@@ -80,7 +80,7 @@ impl RunnableSubcommand for Composite {
         for in_file in in_files.iter() {
             if path::file_exists(in_file) {
                 info!("Processing File: {}", in_file);
-                composite::process_file(
+                process_file(
                     in_file,
                     &map_context,
                     &mut map,

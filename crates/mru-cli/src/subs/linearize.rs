@@ -38,7 +38,7 @@ fn linearize_mars_image(
 
     let nonlin_image = MarsImage::open(in_file)?;
 
-    let rover_metadata = if let Some(md) = nonlin_image.metadata.as_rover() {
+    let rover_metadata = if let Some(md) = nonlin_image.metadata.as_surface() {
         md
     } else {
         return Err(anyhow!(

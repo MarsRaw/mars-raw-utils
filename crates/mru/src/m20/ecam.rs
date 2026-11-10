@@ -79,7 +79,7 @@ impl Calibration for M20EECam {
             }
         };
 
-        let subframe_rect = if let Some(md) = raw.metadata.as_rover() {
+        let subframe_rect = if let Some(md) = raw.metadata.as_surface() {
             md.subframe_rect.clone()
         } else {
             return Err(anyhow!(
@@ -87,7 +87,7 @@ impl Calibration for M20EECam {
             ));
         };
 
-        let scale_factor = if let Some(md) = raw.metadata.as_rover() {
+        let scale_factor = if let Some(md) = raw.metadata.as_surface() {
             md.scale_factor
         } else {
             return Err(anyhow!(

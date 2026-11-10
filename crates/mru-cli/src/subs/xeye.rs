@@ -70,7 +70,7 @@ trait GetCameraModel {
 
 impl GetCameraModel for MarsImage {
     fn get_camera_model(&self) -> Option<Cahvore> {
-        if let Some(md) = self.metadata.as_rover() {
+        if let Some(md) = self.metadata.as_surface() {
             Some(md.camera_model_component_list.clone())
         } else {
             Some(Cahvore::default())

@@ -2,7 +2,7 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use anyhow::anyhow;
 use clap::Parser;
-use mru::{composite, prelude::*};
+use mru::{composite::*, prelude::*};
 use sciimg::vector::Vector;
 use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
 use std::process;
@@ -26,7 +26,7 @@ pub struct Project {
 }
 
 fn mast_azimuth_from_metadata(image: &MarsImage) -> Result<f64> {
-    let metadata = match image.metadata.as_rover() {
+    let metadata = match image.metadata.as_surface() {
         Some(md) => md,
         None => return Err(anyhow!("Error: Insufficient or missing image metadata")),
     };
@@ -41,7 +41,7 @@ fn mast_azimuth_from_metadata(image: &MarsImage) -> Result<f64> {
 }
 
 fn mast_azimuth_from_camera_model(image: &MarsImage) -> Result<f64> {
-    let camera_model = match composite::get_cahvor(image) {
+    let camera_model = match image.get_cahvor() {
         Some(cm) => cm,
         None => {
             return Err(anyhow!("Error: missing camera model from metadata"));
@@ -76,7 +76,7 @@ fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
     let quat =
         Quaternion::from_pitch_roll_yaw(0.0, 0.0, -look_azimuth + azimuth_rotation.to_radians());
 
-    let map_context = composite::determine_map_context(&[in_file.to_string()], &quat)?;
+    let map_context = determine_map_context(&[in_file.to_string()], &quat)?;
     debug!("Map Context: {:?}", map_context);
     debug!(
         "FOV Vertical: {}",
@@ -99,7 +99,7 @@ fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
 
     let mut map = Image::create_masked(map_context.width, map_context.height, true);
 
-    let initial_origin = if let Some(model) = composite::get_cahvor(&image) {
+    let initial_origin = if let Some(model) = image.get_cahvor() {
         model.c()
     } else {
         error!("Cannot determine initial camera origin");
@@ -109,7 +109,7 @@ fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
 
     if path::file_exists(in_file) {
         info!("Processing File: {}", in_file);
-        composite::process_file(
+        process_file(
             in_file,
             &map_context,
             &mut map,

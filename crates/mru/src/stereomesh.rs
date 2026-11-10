@@ -40,7 +40,7 @@ fn triangulate(p1: &Vector, d1: &Vector, p2: &Vector, d2: &Vector) -> Option<Tri
 
 pub fn get_cahvor(img: &MarsImage) -> Option<Cahvore> {
     img.metadata
-        .as_rover()
+        .as_surface()
         .map(|rover_metadata| rover_metadata.camera_model_component_list.clone())
 }
 

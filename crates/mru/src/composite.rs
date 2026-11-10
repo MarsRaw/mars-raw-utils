@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use anyhow::{Result, bail};
+use anyhow::{Result, anyhow, bail};
 use sciimg::{
     drawable::{Drawable, Point},
     prelude::*,
@@ -8,10 +8,52 @@ use sciimg::{
 };
 use std::str::FromStr;
 
-pub fn get_cahvor(img: &MarsImage) -> Option<Cahvore> {
-    img.metadata
-        .as_rover()
-        .map(|rover_metadata| rover_metadata.camera_model_component_list.clone())
+pub struct SubframeRegion {
+    pub x: usize,
+    pub y: usize,
+    pub columns: usize,
+    pub rows: usize,
+}
+
+impl SubframeRegion {
+    fn default(img: &MarsImage) -> Self {
+        Self {
+            x: 0,
+            y: 0,
+            columns: img.image.width,
+            rows: img.image.height,
+        }
+    }
+}
+
+impl MarsImage {
+    pub fn get_subframe_region(&self) -> SubframeRegion {
+        self.metadata
+            .as_surface()
+            .map(|rover_metadata| match &rover_metadata.subframe_rect {
+                Some(sr) => SubframeRegion {
+                    x: sr[0] as usize,
+                    y: sr[1] as usize,
+                    columns: sr[2] as usize,
+                    rows: sr[3] as usize,
+                },
+                None => SubframeRegion::default(self),
+            })
+            .unwrap()
+    }
+
+    pub fn get_scale_factor(&self) -> usize {
+        match self.metadata.as_surface() {
+            Some(sm) => sm.scale_factor as usize,
+            None => 1,
+        }
+    }
+
+    pub fn get_cahvor(&self) -> Option<Cahvore> {
+        self.metadata
+            .as_surface()
+            .map(|rover_metadata| rover_metadata.camera_model_component_list.clone())
+    }
 }
 
 pub struct Extent {
@@ -152,20 +194,21 @@ pub fn determine_map_context(input_files: &[String], quat: &Quaternion) -> Resul
             Err(why) => bail!("Failed to open file {}: {:?}", input_file, why),
         };
 
-        let model = match get_cahvor(&img) {
-            Some(model) => model,
+        let scale_factor = img.get_scale_factor();
+        let model = match img.get_cahvor() {
+            Some(model) => model.scale(scale_factor as f64, scale_factor as f64),
             None => bail!("Error: Invalid or missing camera model"),
         };
 
         let (x0, xh, x1) = (
             -0.5,
-            img.image.width as f64 / 2.0 - 0.5,
-            img.image.width as f64 - 0.5,
+            (img.image.width as f64 / 2.0 - 0.5) * scale_factor as f64,
+            (img.image.width as f64 - 0.5) * scale_factor as f64,
         );
         let (y0, yh, y1) = (
             -0.5,
-            img.image.height as f64 / 2.0 - 0.5,
-            img.image.height as f64 - 0.5,
+            (img.image.height as f64 / 2.0 - 0.5) * scale_factor as f64,
+            (img.image.height as f64 - 0.5) * scale_factor as f64,
         );
 
         // Here we check the four corners and the middle point of each four sides
@@ -250,7 +293,7 @@ pub fn process_file<D: Drawable>(
 ) -> Result<()> {
     let mut img = MarsImage::open(input_file)?;
 
-    img.instrument = if let Some(rover_metadata) = img.metadata.as_rover() {
+    img.instrument = if let Some(rover_metadata) = img.metadata.as_surface() {
         Instrument::from_str(rover_metadata.instrument.as_str()).unwrap()
     } else {
         panic!("Composite via CAHVORE camera model not supported for non-surface missions")
@@ -266,100 +309,135 @@ pub fn process_file<D: Drawable>(
         Eye::DontCare
     };
 
+    let subframe = img.get_subframe_region();
+    let scale_factor = img.get_scale_factor();
+
     //let pitch = (map_context.top_lat + map_context.bottom_lat) / 2.0;
     //vprintln!("Rotating pitch to {}", pitch);
     //let quat = Quaternion::from_pitch_roll_yaw(0.0, -20.0f64.to_radians(), azimuth_rotation.to_radians());
 
-    match get_cahvor(&img) {
-        Some(input_model) => {
-            // let input_model = match input_model_nonlinear.model_type() {
-            //     ModelType::CAHVORE => {
-            //         input_model_nonlinear.convert_to_type(ModelType::CAHVOR).expect("Failed to linearize camera model (forced CAHVOR)")
-            //     },
-            //     _ => input_model_nonlinear
+    let mut input_model = match img.get_cahvor() {
+        Some(input_model) => input_model,
+        None => return Err(anyhow!("CAHVOR not found for image, cannot continue")),
+    };
+
+    input_model = input_model.scale(scale_factor as f64, scale_factor as f64);
+
+    // if scale_factor != 2 {
+    //     input_model = input_model.scale(2.0, 2.0);
+    // }
+
+    // let input_model = match input_model_nonlinear.model_type() {
+    //     ModelType::CAHVORE => {
+    //         input_model_nonlinear.convert_to_type(ModelType::CAHVOR).expect("Failed to linearize camera model (forced CAHVOR)")
+    //     },
+    //     _ => input_model_nonlinear
+    // };
+
+    // debug!("");
+    // debug!("Input Model C: {:?}", input_model.c());
+    // debug!("Input Model A: {:?}", input_model.a());
+    // debug!("Input Model H: {:?}", input_model.h());
+    // debug!("Input Model V: {:?}", input_model.v());
+    // debug!("Input Model O: {:?}", input_model.o());
+    // debug!("Input Model R: {:?}", input_model.r());
+    // debug!("Input Model E: {:?}", input_model.e());
+    // debug!("Input Model Pupil Type: {:?}", input_model.pupil_type);
+    // debug!("Input Model Linearity: {:?}", input_model.linearity);
+    // debug!("");
+
+    let band_0 = img.image.get_band(0);
+    let band_1 = img.image.get_band(1);
+    let band_2 = img.image.get_band(2);
+
+    for x in 0..(img.image.width - 1) {
+        for y in 0..(img.image.height - 1) {
+            let origin_diff = input_model.c().subtract(initial_origin);
+
+            // let (full_frame_x, full_frame_y) = if scale_factor != 2 {
+            //     ((x + subframe.x) * 2, (y + subframe.y) * 2)
+            // } else {
+            //     (x + subframe.x, y + subframe.y)
             // };
 
-            // debug!("");
-            // debug!("Input Model C: {:?}", input_model.c());
-            // debug!("Input Model A: {:?}", input_model.a());
-            // debug!("Input Model H: {:?}", input_model.h());
-            // debug!("Input Model V: {:?}", input_model.v());
-            // debug!("Input Model O: {:?}", input_model.o());
-            // debug!("Input Model R: {:?}", input_model.r());
-            // debug!("Input Model E: {:?}", input_model.e());
-            // debug!("Input Model Pupil Type: {:?}", input_model.pupil_type);
-            // debug!("Input Model Linearity: {:?}", input_model.linearity);
-            // debug!("");
+            let full_frame_x = (x + subframe.x) * scale_factor;
+            let full_frame_y = (y + subframe.y) * scale_factor;
 
-            let band_0 = img.image.get_band(0);
-            let band_1 = img.image.get_band(1);
-            let band_2 = img.image.get_band(2);
+            // println!("{} - {}", full_frame_x, full_frame_y);
 
-            for x in 0..(img.image.width - 1) {
-                for y in 0..(img.image.height - 1) {
-                    let origin_diff = input_model.c().subtract(initial_origin);
+            let (tl_x, tl_y) = get_ls_from_map_xy(
+                &input_model,
+                map_context,
+                full_frame_x,
+                full_frame_y,
+                quat,
+                &origin_diff,
+            );
+            let (tr_x, tr_y) = get_ls_from_map_xy(
+                &input_model,
+                map_context,
+                full_frame_x + (1 * scale_factor),
+                full_frame_y,
+                quat,
+                &origin_diff,
+            );
+            let (bl_x, bl_y) = get_ls_from_map_xy(
+                &input_model,
+                map_context,
+                full_frame_x,
+                full_frame_y + (1 * scale_factor),
+                quat,
+                &origin_diff,
+            );
+            let (br_x, br_y) = get_ls_from_map_xy(
+                &input_model,
+                map_context,
+                full_frame_x + (1 * scale_factor),
+                full_frame_y + (1 * scale_factor),
+                quat,
+                &origin_diff,
+            );
 
-                    let (tl_x, tl_y) =
-                        get_ls_from_map_xy(&input_model, map_context, x, y, quat, &origin_diff);
-                    let (tr_x, tr_y) =
-                        get_ls_from_map_xy(&input_model, map_context, x + 1, y, quat, &origin_diff);
-                    let (bl_x, bl_y) =
-                        get_ls_from_map_xy(&input_model, map_context, x, y + 1, quat, &origin_diff);
-                    let (br_x, br_y) = get_ls_from_map_xy(
-                        &input_model,
-                        map_context,
-                        x + 1,
-                        y + 1,
-                        quat,
-                        &origin_diff,
-                    );
-
-                    if !band_0.get_mask_at_point(x, y) {
-                        continue;
-                    }
-
-                    let tl = Point::create_rgb(
-                        tl_x,
-                        tl_y,
-                        band_0.get(x, y) as f64,
-                        band_1.get(x, y) as f64,
-                        band_2.get(x, y) as f64,
-                    );
-
-                    let tr = Point::create_rgb(
-                        tr_x,
-                        tr_y,
-                        band_0.get(x + 1, y) as f64,
-                        band_1.get(x + 1, y) as f64,
-                        band_2.get(x + 1, y) as f64,
-                    );
-
-                    let bl = Point::create_rgb(
-                        bl_x,
-                        bl_y,
-                        band_0.get(x, y + 1) as f64,
-                        band_1.get(x, y + 1) as f64,
-                        band_2.get(x, y + 1) as f64,
-                    );
-
-                    let br = Point::create_rgb(
-                        br_x,
-                        br_y,
-                        band_0.get(x + 1, y + 1) as f64,
-                        band_1.get(x + 1, y + 1) as f64,
-                        band_2.get(x + 1, y + 1) as f64,
-                    );
-
-                    map.paint_square_with_channel_rule(&tl, &bl, &br, &tr, false, |c| {
-                        (c == 0 && matches!(eye, Eye::Left | Eye::DontCare))
-                            || ((c == 1 || c == 2) && matches!(eye, Eye::Right | Eye::DontCare))
-                    });
-                }
+            if !band_0.get_mask_at_point(x, y) {
+                continue;
             }
-        }
-        None => {
-            error!("CAHVOR not found for image, cannot continue");
-            panic!("CAHVOR not found for image, cannot continue");
+
+            let tl = Point::create_rgb(
+                tl_x,
+                tl_y,
+                band_0.get(x, y) as f64,
+                band_1.get(x, y) as f64,
+                band_2.get(x, y) as f64,
+            );
+
+            let tr = Point::create_rgb(
+                tr_x,
+                tr_y,
+                band_0.get(x + 1, y) as f64,
+                band_1.get(x + 1, y) as f64,
+                band_2.get(x + 1, y) as f64,
+            );
+
+            let bl = Point::create_rgb(
+                bl_x,
+                bl_y,
+                band_0.get(x, y + 1) as f64,
+                band_1.get(x, y + 1) as f64,
+                band_2.get(x, y + 1) as f64,
+            );
+
+            let br = Point::create_rgb(
+                br_x,
+                br_y,
+                band_0.get(x + 1, y + 1) as f64,
+                band_1.get(x + 1, y + 1) as f64,
+                band_2.get(x + 1, y + 1) as f64,
+            );
+
+            map.paint_square_with_channel_rule(&tl, &bl, &br, &tr, false, |c| {
+                (c == 0 && matches!(eye, Eye::Left | Eye::DontCare))
+                    || ((c == 1 || c == 2) && matches!(eye, Eye::Right | Eye::DontCare))
+            });
         }
     }
 
