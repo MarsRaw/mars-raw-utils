@@ -376,7 +376,7 @@ pub fn process_file<D: Drawable>(
             let (tr_x, tr_y) = get_ls_from_map_xy(
                 &input_model,
                 map_context,
-                full_frame_x + (1 * scale_factor),
+                full_frame_x + scale_factor,
                 full_frame_y,
                 quat,
                 &origin_diff,
@@ -385,15 +385,15 @@ pub fn process_file<D: Drawable>(
                 &input_model,
                 map_context,
                 full_frame_x,
-                full_frame_y + (1 * scale_factor),
+                full_frame_y + scale_factor,
                 quat,
                 &origin_diff,
             );
             let (br_x, br_y) = get_ls_from_map_xy(
                 &input_model,
                 map_context,
-                full_frame_x + (1 * scale_factor),
-                full_frame_y + (1 * scale_factor),
+                full_frame_x + scale_factor,
+                full_frame_y + scale_factor,
                 quat,
                 &origin_diff,
             );
