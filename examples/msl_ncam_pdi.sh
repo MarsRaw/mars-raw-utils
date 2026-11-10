@@ -41,7 +41,19 @@ mesh_point_density=5
 mesh_kernel_size=25
 
 # Minimum point correlation value
-mesh_min_correlation=0.2
+mesh_min_correlation=0.05
+
+# Maximum length of any given edge before a face is rejected
+max_edge_length=0.5
+
+# Ratio of maximum length to range
+max_edge_ratio=0.05
+
+# Maximum left/right consistency tolerance
+max_lr_error_px=40
+
+# Maximum convergent ray miss distance
+max_miss_distance=0.6
 
 # The mesh code uses all available threads to parallelize the process which can be a bit 
 # much for some systems, especially if keeping MRU to a small footprint is desirable.
@@ -191,6 +203,10 @@ if [[ $generate_pdi_mesh -eq 1 && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
             -d $mesh_point_density \
             -k $mesh_kernel_size \
             -c $mesh_min_correlation \
+            -E $max_edge_length \
+            -R $max_edge_ratio \
+            -e $max_lr_error_px \
+            -x $max_miss_distance \
             $disable_multithreading
 
     done
@@ -247,6 +263,10 @@ if [[ $generate_penultimate_mesh -eq 1 && `ls N*NCAM00385* 2> /dev/null | wc -l`
             -d $mesh_point_density \
             -k $mesh_kernel_size \
             -c $mesh_min_correlation \
+            -E $max_edge_length \
+            -R $max_edge_ratio \
+            -e $max_lr_error_px \
+            -x $max_miss_distance \
             $disable_multithreading
 
     done
