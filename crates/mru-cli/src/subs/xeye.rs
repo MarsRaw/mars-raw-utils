@@ -3,7 +3,11 @@ use anyhow::Result;
 use clap::Parser;
 use image::load_from_memory;
 use mru::prelude::*;
-use sciimg::{drawable::*, prelude::*, vector::Vector};
+use sciimg::{
+    drawable::{Drawable, Point},
+    prelude::*,
+    vector::Vector,
+};
 use std::process;
 use stump;
 

@@ -1,4 +1,4 @@
-use mru::calprofile::*;
+use mru::calprofile::load_calibration_profile;
 
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;

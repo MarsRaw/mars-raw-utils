@@ -1,8 +1,11 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
-use mru::{composite::*, prelude::*};
-use sciimg::{drawable::*, prelude::*, quaternion::Quaternion};
+use mru::{
+    composite::{determine_map_context, process_file},
+    prelude::*,
+};
+use sciimg::{drawable::Drawable, prelude::*, quaternion::Quaternion};
 use std::process;
 use stump;
 

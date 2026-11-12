@@ -40,4 +40,6 @@ cli-table = { workspace = true }
 futures = { workspace = true }
 dateparser = { workspace = true }
 quick-xml = { workspace = true }
-tempfile = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3.10"

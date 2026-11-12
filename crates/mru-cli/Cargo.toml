@@ -37,7 +37,8 @@ itertools = { workspace = true }
 dateparser = { workspace = true }
 num-format = { workspace = true }
 
-
+[lints]
+workspace = true
 
 [package.metadata.deb]
 name = "mru"

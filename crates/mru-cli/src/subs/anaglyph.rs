@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use clap::Parser;
 use mru::composite;
 use mru::prelude::*;
-use sciimg::{drawable::*, prelude::*, vector::Vector};
+use sciimg::{drawable::Drawable, prelude::*, vector::Vector};
 use std::process;
 use stump;
 
