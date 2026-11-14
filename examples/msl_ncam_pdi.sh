@@ -133,7 +133,7 @@ echo Running image calibration...
 mru calibrate -i *JPG
 
 # Doublecheck and make sure the expected imaging exists. If not, print a message and exit
-if [ `ls N{L,R}*NCAM00353*tif N{L,R}*NCAM00354*tif N{L,R}*NCAM002[5-9]*tif N{L,R}*NCAM00385*tif 2> /dev/null | wc -l` -eq 0 ]; then
+if [ `ls N{L,R}*NCAM00346*tif N{L,R}*NCAM00353*tif N{L,R}*NCAM00354*tif N{L,R}*NCAM002[5-9]*tif N{L,R}*NCAM00385*tif 2> /dev/null | wc -l` -eq 0 ]; then
     echo No post drive images found. Check whether a drive occured and if all data has been downlinked.
     exit 3
 fi
@@ -161,18 +161,19 @@ if [[ $generate_mosaics -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
     nav_right_mosaic=N_R000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
     nav_anaglyph_mosaic=N_A000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
 
+    # NCAM00346 - Workspace 1x1 (skinny)
     # NCAM00353 - Workspace 2x1 (medium and high quality)
     # NCAM00354 - CCAM targetable region 5x1
     # NCAM002[5-9]? - Typically a drive direction 5x1, complete the 360 7x1, and upper tier 12x1 (subframed to 384x1024, 512x1024, or 640x1024)
 
     # Create Left-eye Mosaic
-    mru composite -i NL*NCAM00353*.tif NL*NCAM00354*.tif NL*NCAM002[5-9]?*tif -o $nav_left_mosaic
+    mru composite -i NL*NCAM00[346,353]*.tif NL*NCAM00354*.tif NL*NCAM002[5-9]?*tif -o $nav_left_mosaic
 
     # Create Right-eye Mosaic
-    mru composite -i NR*NCAM00353*.tif NR*NCAM00354*.tif NR*NCAM002[5-9]?*tif -o $nav_right_mosaic
+    mru composite -i NR*NCAM00[346,353]*.tif NR*NCAM00354*.tif NR*NCAM002[5-9]?*tif -o $nav_right_mosaic
 
     # Create Red/Blue Anaglyph Mosaic
-    mru composite -i N{L,R}*NCAM00353*.tif N{L,R}*NCAM00354*.tif N{L,R}*NCAM002[5-9]?*tif -o $nav_anaglyph_mosaic -a
+    mru composite -i N{L,R}*NCAM00[346,353]*.tif N{L,R}*NCAM00354*.tif N{L,R}*NCAM002[5-9]?*tif -o $nav_anaglyph_mosaic -a
 
 fi
 
@@ -188,7 +189,7 @@ if [[ $generate_pdi_mesh -eq 1 && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
     pdi_prod_type=`ls N{L,R}*NCAM002[5-9]?*tif | head -n 1 | cut -c 14-18`
 
     # For each stereo pair (they can be matched by looking at the SCLK portion of the file names), generate a mesh
-    for sclk in `ls NL*NCAM00353*.tif NL*NCAM00354*.tif NL*EDR_F*NCAM002[5-9]?*tif 2> /dev/null | cut -c 5-13`; do
+    for sclk in `ls NL*NCAM00[346,353]*.tif NL*NCAM00354*.tif NL*EDR_F*NCAM002[5-9]?*tif 2> /dev/null | cut -c 5-13`; do
 
         nav_mesh=N_L${psol}_${pdi_prod_type}_${site}_${drive}_${sclk}M_.obj
         echo $nav_mesh >> pdi_meshes.lis 

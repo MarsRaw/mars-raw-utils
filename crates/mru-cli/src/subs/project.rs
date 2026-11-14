@@ -2,6 +2,7 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use anyhow::anyhow;
 use clap::Parser;
+use mru::metadata::ImageProjection;
 use mru::{
     composite::{determine_map_context, process_file},
     prelude::*,
@@ -80,6 +81,7 @@ fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
         Quaternion::from_pitch_roll_yaw(0.0, 0.0, -look_azimuth + azimuth_rotation.to_radians());
 
     let map_context = determine_map_context(&[in_file.to_string()], &quat)?;
+
     debug!("Map Context: {:?}", map_context);
     debug!(
         "FOV Vertical: {}",
@@ -126,7 +128,28 @@ fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
         process::exit(1);
     }
 
-    map.save(&out_file)
+    // Unrotated projection model
+    let unrotated_map_context =
+        determine_map_context(&[in_file.to_string()], &Quaternion::default())?;
+
+    // Rebundle as a MarsImage with metadata
+    let mut projected_mars_image = image.clone();
+    projected_mars_image.image = map;
+    projected_mars_image.metadata.projection = Some(ImageProjection {
+        projection: Projection::Cylindrical, // Eventually this won't be hardcoded as I add additional projections (polar, etc)
+        top_lat: unrotated_map_context.top_lat,
+        bottom_lat: unrotated_map_context.bottom_lat,
+        left_lon: unrotated_map_context.left_lon,
+        right_lon: unrotated_map_context.right_lon,
+        width: unrotated_map_context.width,
+        height: unrotated_map_context.height,
+        degrees_per_pixel: unrotated_map_context.degrees_per_pixel,
+    });
+    projected_mars_image.update_history();
+
+    projected_mars_image.save(&out_file)
+
+    //map.save(&out_file)
 }
 
 impl RunnableSubcommand for Project {

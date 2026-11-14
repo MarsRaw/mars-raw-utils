@@ -1,4 +1,4 @@
-use crate::enums::{Instrument, Mission};
+use crate::enums::{Instrument, Mission, Projection};
 use crate::serializers::{
     as_cahvore, as_quaternion, as_tuple, as_utc_datetime, as_utc_datetime_opt, default_blank,
     default_false, default_vec_f64_none,
@@ -114,12 +114,25 @@ impl Default for MissionMetadata {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Default, Clone, Copy)]
+pub struct ImageProjection {
+    pub projection: Projection,
+    pub top_lat: f64,
+    pub bottom_lat: f64,
+    pub left_lon: f64,
+    pub right_lon: f64,
+    pub width: usize,
+    pub height: usize,
+    pub degrees_per_pixel: f64,
+}
+
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct Metadata {
     pub flight_mission: Mission,
     pub processing: ProcessingState,
     pub image: ImageMetadata,
     pub mission: MissionMetadata,
+    pub projection: Option<ImageProjection>,
 }
 
 impl Metadata {

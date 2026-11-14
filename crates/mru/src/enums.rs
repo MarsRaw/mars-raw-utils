@@ -126,3 +126,9 @@ pub enum CalFileType {
     Mask,
     Lut,
 }
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum Projection {
+    #[default]
+    Cylindrical,
+}
