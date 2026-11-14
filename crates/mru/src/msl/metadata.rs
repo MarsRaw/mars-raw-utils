@@ -130,7 +130,7 @@ impl MetadataConvert for ImageRecord {
                 camera_model_component_list: self.camera_model_component_list.clone(),
                 attitude: self.attitude,
             }),
-            projection: None,
+            mosaic: None,
         }
     }
 }

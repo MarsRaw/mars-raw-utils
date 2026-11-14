@@ -84,7 +84,7 @@ impl MetadataConvert for ImageRecord {
                 spacecraft_clock: self.spacecraft_clock,
                 subframe_rect: None,
             }),
-            projection: None,
+            mosaic: None,
         }
     }
 }

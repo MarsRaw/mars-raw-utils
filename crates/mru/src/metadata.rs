@@ -126,13 +126,29 @@ pub struct ImageProjection {
     pub degrees_per_pixel: f64,
 }
 
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct MosaicInput {
+    pub file: String,
+
+    // Gain will be used for luminance matching when assembling the mosaic
+    pub gain: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct Mosaic {
+    pub projection: ImageProjection,
+
+    // Input files
+    pub sources: Vec<MosaicInput>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct Metadata {
     pub flight_mission: Mission,
     pub processing: ProcessingState,
     pub image: ImageMetadata,
     pub mission: MissionMetadata,
-    pub projection: Option<ImageProjection>,
+    pub mosaic: Option<Mosaic>,
 }
 
 impl Metadata {
