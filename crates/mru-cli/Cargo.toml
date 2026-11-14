@@ -1,0 +1,124 @@
+[package]
+name = "mru-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description.workspace = true
+
+
+[[bin]]
+name = "mru"
+path = "src/mru.rs"
+
+[features]
+
+[dependencies]
+mru = { workspace = true }
+sciimg = { workspace = true }
+stump = { workspace = true }
+vicar = { workspace = true }
+image = { workspace = true }
+clap = { workspace = true }
+rayon = { workspace = true }
+chrono = { workspace = true }
+dirs = { workspace = true }
+wild = { workspace = true }
+colored = { workspace = true }
+backtrace = { workspace = true }
+lazy_static = { workspace = true }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+glob = { workspace = true }
+url = { workspace = true }
+indicatif = { workspace = true }
+cli-table = { workspace = true }
+itertools = { workspace = true }
+dateparser = { workspace = true }
+num-format = { workspace = true }
+
+[lints]
+workspace = true
+
+[package.metadata.deb]
+name = "mru"
+maintainer = "Kevin M. Gill <apoapsys@gmail.com>"
+copyright = "2026, Kevin M. Gill <apoapsys@gmail.com>"
+license-file = ["../../LICENSE", "2"]
+extended-description = "Utilities for working with publicly available raw MSL, Mars2020, and InSight images"
+depends = "$auto"
+section = "science"
+priority = "optional"
+assets = [
+    [
+        "target/release/mru",
+        "usr/bin/",
+        "755",
+    ],
+    [
+        "../../README.md",
+        "usr/share/doc/mars_raw_utils/README",
+        "644",
+    ],
+    [
+        "../../mars-raw-utils-data/caldata/*png",
+        "usr/share/mars_raw_utils/data/",
+        "644",
+    ],
+    [
+        "../../mars-raw-utils-data/caldata/*jpg",
+        "usr/share/mars_raw_utils/data/",
+        "644",
+    ],
+    [
+        "../../mars-raw-utils-data/caldata/*.toml",
+        "usr/share/mars_raw_utils/data/",
+        "644",
+    ],
+    [
+        "../../mars-raw-utils-data/caldata/msl/ilut/DECOMPAND0.TXT",
+        "usr/share/mars_raw_utils/data/msl/ilut/",
+        "644",
+    ],
+    [
+        "../../mars-raw-utils-data/caldata/m20/ilut/M20_MCZ_LUT2.txt",
+        "usr/share/mars_raw_utils/data/m20/ilut/",
+        "644",
+    ],
+    [
+        "../../mars-raw-utils-data/caldata/m20/ilut/M20_SI_LUT0.txt",
+        "usr/share/mars_raw_utils/data/m20/ilut/",
+        "644",
+    ],
+    [
+        "../../mars-raw-utils-data/caldata/m20/ilut/M20_LUT2_v2a.txt",
+        "usr/share/mars_raw_utils/data/m20/ilut/",
+        "644",
+    ],
+    [
+        "../../mars-raw-utils-data/caldata/m20/ilut/M20_COMP_LUT0.txt",
+        "usr/share/mars_raw_utils/data/m20/ilut/",
+        "644",
+    ],
+    [
+        "../../mars-raw-utils-data/caldata/nsyt/ilut/NSYT_LUT0.txt",
+        "usr/share/mars_raw_utils/data/nsyt/ilut/",
+        "644",
+    ],
+]
+
+[package.metadata.generate-rpm]
+name = "mru"
+assets = [
+    { source = "target/release/mru", dest = "/usr/bin/mru", mode = "755" },
+    { source = "README.md", dest = "/usr/share/doc/mars_raw_utils/README", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/*png", dest = "/usr/share/mars_raw_utils/data/", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/*jpg", dest = "/usr/share/mars_raw_utils/data/", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/*.toml", dest = "/usr/share/mars_raw_utils/data/", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/msl/ilut/DECOMPAND0.TXT", dest = "/usr/share/mars_raw_utils/data/msl/ilut/DECOMPAND0.TXT", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_MCZ_LUT2.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_MCZ_LUT2.txt", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_SI_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_SI_LUT0.txt", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_LUT2_v2a.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_LUT2_v2a.txt", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/m20/ilut/M20_COMP_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/m20/ilut/M20_COMP_LUT0.txt", mode = "644" },
+    { source = "mars-raw-utils-data/caldata/nsyt/ilut/NSYT_LUT0.txt", dest = "/usr/share/mars_raw_utils/data/nsyt/ilut/NSYT_LUT0.txt", mode = "644" },
+]

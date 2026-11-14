@@ -1,0 +1,280 @@
+#!/bin/bash
+# m20_ncam_pdi.sh - Generate M20 post drive navcam products
+# Steps, given a sol with post drive imaging:
+#    1. Download M20 navcam images
+#    2. Calibrate images to tifs
+#    3. Generate left-eye, right-eye, and anaglyph cylindrical mosaics
+#    4. Generate a surface mesh using lower and medium tier images
+#    5. Generate a surface mesh using penultimate images
+#        - Note: Penultimate images are taken by the RPs just pior to final 
+#                leg of the drive capture the rover's parking spot (area that 
+#                be under the rover once it finally parks).
+
+sol=$1
+
+# Left zero pad sol to four characters
+psol=`printf "%04d" $sol`  
+
+: ${MRUDATAHOME:=/data}
+MAGICK="`which magick`"
+do_fetch=0
+organize=0
+generate_mosaics=0
+generate_pdi_mesh=0
+generate_penultimate_mesh=0
+
+# Some extra mesh options:
+
+# Minimum point distance from the origin, in meters
+mesh_minimum_distance=1.5
+
+# Maximum point distance from the origin, in meters
+mesh_maximum_distance=15
+
+# Maximum height (z axis) deviation from the mediam surface, in meters
+mesh_maximum_height_deviations=0.1
+
+# Point density, in pixels
+mesh_point_density=5
+
+# Point kernel size, in pixels. Should be odd number
+mesh_kernel_size=25
+
+# Minimum point correlation value
+mesh_min_correlation=0.05
+
+# Maximum length of any given edge before a face is rejected
+max_edge_length=0.5
+
+# Ratio of maximum length to range
+max_edge_ratio=0.05
+
+# Maximum left/right consistency tolerance
+max_lr_error_px=40
+
+# Maximum convergent ray miss distance
+max_miss_distance=0.6
+
+# The mesh code uses all available threads to parallelize the process which can be a bit 
+# much for some systems, especially if keeping MRU to a small footprint is desirable.
+# If you would like to keep MRU to a single thread during that process, set disable_multithreading
+# to "-p". While MRU will use less CPU resources, this comes at the expense of a longer running process.
+disable_multithreading=
+
+function print_help() {
+
+    echo Generate M20 post drive products from Navcam images
+    echo 
+    echo Usage: `basename $0` \<SOL\> [OPTIONS]
+    echo
+    echo Options:
+    echo "  -f     Fetch imagery from NASA servers"
+    echo "  -m     Generate mosaics"
+    echo "  -M     Generate post drive mesh"
+    echo "  -p     Generate penultimate mesh"
+    echo "  -o     Organize outputs into rdr, mosaic, and mesh directories"
+    echo "  -v     Verbose output"
+    echo "  -V     Really verbose output"
+    echo "  -h     Print this help message"
+
+}
+
+while [ $# -gt 0 ]; do
+    if [ $1 == "-f" ]; then
+        do_fetch=1
+    elif [ $1 == "-o" ]; then 
+        organize=1
+    elif [ $1 == "-m" ]; then 
+        generate_mosaics=1
+    elif [ $1 == "-M" ]; then
+        generate_pdi_mesh=1
+    elif [ $1 == "-p" ]; then 
+        generate_penultimate_mesh=1
+    elif [ $1 == "-v" ]; then # Verbose
+        export MARS_LOG_AT_LEVEL=info
+    elif [ $1 == "-V" ]; then # Really verbose
+        export MARS_LOG_AT_LEVEL=debug
+    elif [ $1 == "-h" ]; then 
+        print_help
+        exit 0
+    fi
+    shift
+done
+
+
+# Move to a standard data directory 
+# takes the form $MRUDATAHOME/M20/<SOL>/NCAM
+cd $MRUDATAHOME/M20
+
+if [ ! -d $psol/NCAM ]; then
+    mkdir -p $psol/NCAM
+fi
+
+cd $psol/NCAM 
+
+if [ $do_fetch -eq 1 ]; then
+    echo Fetching imagery from NASA servers...
+
+    # Fetch left and right Navcams, only NCAM sequences (not TRAV)
+    mru m20-fetch -c NAVCAM_RIGHT NAVCAM_LEFT -s ${sol} -f NCAM0 -n
+
+elif [ `ls N[L,R]*NCAM0[2,3]??*png 2> /dev/null | wc -l` -eq 0 ]; then
+    echo No images found. Please rerun with -f option to fetch images from remote server
+    exit 1
+fi
+
+if [ `ls *png 2> /dev/null | wc -l` -eq 0 ]; then 
+    echo No images found on Sol $sol. 
+    exit 2
+fi
+
+# Assembling Navcam Tiles
+assemble_ncams.sh 
+
+# Run calibration
+echo Running image calibration...
+mru calibrate -i *assembled.tif -P m20_ncam_mcz
+
+# Doublecheck and make sure the expected imaging exists. If not, print a message and exit
+if [ `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2> /dev/null | wc -l` -eq 0 ]; then
+    echo No post drive images found. Check whether a drive occured and if all data has been downlinked.
+    exit 3
+fi
+
+# It's always gonna be EDR for raws, but lets do this anyway
+prod_type=`ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2> /dev/null | head -n 1 | cut -c 24-28`
+
+# Extract site
+site=`ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2> /dev/null | head -n 1 | cut -c 29-31`
+
+# Extract drive
+drive=`ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2> /dev/null | head -n 1 | cut -c 32-35`
+
+if [[ $generate_mosaics -eq 1  && `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2> /dev/null | wc -l` -gt 0 ]]; then
+    echo Generating mosaics...
+
+    echo Sol: $psol
+    echo Site: $site
+    echo Drive: $drive
+    echo Product Type: $prod_type
+
+    # MRUGN just means it was generated by MRU and not, say, some official tool
+    # CYL indicates a cylindrical projection.
+    nav_left_mosaic=N_L000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
+    nav_right_mosaic=N_R000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
+    nav_anaglyph_mosaic=N_A000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
+
+    # Create Left-eye Mosaic
+    mru composite -i NL*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_left_mosaic
+
+    # Create Right-eye Mosaic
+    mru composite -i NR*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_right_mosaic
+
+    # Create Red/Blue Anaglyph Mosaic
+    mru composite -i N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_anaglyph_mosaic -a
+
+fi
+
+
+if [[ $generate_pdi_mesh -eq 1 && `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2> /dev/null | wc -l` -gt 0 ]]; then
+    echo Generating post drive mesh...
+
+    # Try not to conflict with any previous versions
+    if [ -f pdi_meshes.lis ]; then
+        rm pdi_meshes.lis
+    fi
+
+    pdi_prod_type=`ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif| head -n 1 | cut -c 24-26`
+
+    # For each stereo pair (they can be matched by looking at the SCLK portion of the file names), generate a mesh
+    for sclk in `ls NL*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2> /dev/null | cut -c 10-19`; do
+
+        nav_mesh=N_L${psol}_${pdi_prod_type}_${site}_${drive}_${sclk}M_.obj
+        echo $nav_mesh >> pdi_meshes.lis 
+
+        echo Creating $nav_mesh
+        mru stereo-mesh -l NL*${sclk}*NCAM0[2,3]??*assembled-rjcal-mcz.tif  \
+            -r NR*${sclk}*NCAM0[2,3]??*assembled-rjcal-mcz.tif  \
+            -o $nav_mesh \
+            -m $mesh_minimum_distance \
+            -M $mesh_maximum_distance \
+            -H $mesh_maximum_height_deviations \
+            -d $mesh_point_density \
+            -k $mesh_kernel_size \
+            -c $mesh_min_correlation \
+            -E $max_edge_length \
+            -R $max_edge_ratio \
+            -e $max_lr_error_px \
+            -x $max_miss_distance \
+            $disable_multithreading
+
+    done
+
+    # Merge wedges into single obj file
+    if [ `cat pdi_meshes.lis | wc -l` -gt 1 ]; then
+        merged_mesh=N_L${psol}_${pdi_prod_type}_${site}_${drive}_MRUPDIM_.obj
+        echo Merging PDI wedges into single mesh $merged_mesh
+        mru merge-mesh -i `cat pdi_meshes.lis` -o $merged_mesh
+    fi
+
+    # Clean up pdi
+    if [ -f pdi_meshes.lis ]; then
+
+        # Delete the individual wedges, but leave the material (.mtl) files
+        for f in `cat pdi_meshes.lis`; do 
+            rm $f 
+        done
+        rm pdi_meshes.lis
+    fi
+
+fi
+
+
+# Generate Penultimate Mesh:
+# if [[ $generate_penultimate_mesh -eq 1 && `ls N*NCAM00385* 2> /dev/null | wc -l` -gt 0 ]]; then
+#     echo Generating penultimate mesh...
+# fi
+
+# Organize into subdirectories:
+if [ $organize -eq 1 ]; then 
+    echo Organizing outputs...
+
+    # We are not going to move EDRs into an edr directory
+
+    if [ ! -d rdr ]; then 
+        mkdir rdr
+    fi
+    mv *-assembled-rjcal-mcz.tif rdr/
+    mv *-assembled-rjcal-mcz-metadata.json rdr/
+
+    if [[ $generate_mosaics -eq 1 && `ls *MRUGNM_.tif 2> /dev/null | wc -l ` -gt 0 ]]; then
+
+        if [ ! -d mosaic ]; then
+            mkdir mosaic
+        fi
+
+        mv *MRUGNM_.tif mosaic 2> /dev/null
+    fi
+
+    if [[ ( $generate_pdi_mesh -eq 1 || $generate_penultimate_mesh -eq 1 ) && `ls *obj 2> /dev/null | wc -l` -gt 0 ]]; then
+
+        if [ ! -d mesh ]; then 
+            mkdir mesh
+        fi
+
+        mv *.obj mesh/ 2> /dev/null
+        mv *.mtl mesh/ 2> /dev/null
+
+        # The material files have a relative pointer to the image texture. If we move
+        # the file, then we need to alter that relative path to match the changes.
+        for f in `ls mesh/*mtl`; do
+            
+            if [ `uname` == "Darwin" ]; then 
+                sed -i '' 's/\.\//\.\.\/rdr\//g' $f # MacOS requires a value after the -i option.
+            else 
+                sed -i 's/\.\//\.\.\/rdr\//g' $f
+            fi
+
+        done
+    fi
+fi

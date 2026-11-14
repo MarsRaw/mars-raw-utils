@@ -1,0 +1,124 @@
+use crate::subs::runnable::RunnableSubcommand;
+use anyhow::Result;
+use anyhow::anyhow;
+use clap::Parser;
+use mru::composite;
+use mru::prelude::*;
+use sciimg::{drawable::Drawable, prelude::*, vector::Vector};
+use std::process;
+use stump;
+
+pb_create_spinner!();
+
+#[derive(Parser)]
+#[command(author, version, about = "Generate anaglyph from stereo pair", long_about = None)]
+pub struct Anaglyph {
+    #[arg(long, short, help = "Left image")]
+    left: std::path::PathBuf,
+
+    #[arg(long, short, help = "Right image")]
+    right: std::path::PathBuf,
+
+    #[arg(long, short, help = "Output image")]
+    output: std::path::PathBuf,
+
+    #[arg(long, short, help = "Monochrome color (before converting to red/blue)")]
+    mono: bool,
+}
+
+impl RunnableSubcommand for Anaglyph {
+    async fn run(&self) -> Result<()> {
+        pb_set_print!();
+        stump::print_experimental();
+
+        let left_image_path = String::from(self.left.as_os_str().to_str().unwrap());
+        let right_image_path = String::from(self.right.as_os_str().to_str().unwrap());
+        let out_file_path = self.output.as_os_str().to_str().unwrap();
+
+        if !path::file_exists(&left_image_path) {
+            error!("Error: File not found (left eye): {}", left_image_path);
+            pb_done_with_error!();
+            process::exit(1);
+        }
+
+        if !path::file_exists(&right_image_path) {
+            error!("Error: File not found (right eye): {}", right_image_path);
+            pb_done_with_error!();
+            process::exit(1);
+        }
+
+        if !path::parent_exists_and_writable(out_file_path) {
+            error!(
+                "Error: Output file directory not found or is not writable: {}",
+                out_file_path
+            );
+            pb_done_with_error!();
+            process::exit(1);
+        }
+
+        let mut left_img = MarsImage::open(&left_image_path)?;
+        let mut right_img = MarsImage::open(&right_image_path)?;
+
+        if self.mono {
+            info!("Converting input images to monochrome...");
+            left_img.to_mono();
+            right_img.to_mono();
+        }
+
+        let left_cahv = if let Some(md) = left_img.metadata.as_surface() {
+            md.camera_model_component_list.clone()
+        } else {
+            return Err(anyhow!("Anaglyph for nonsurface missions is not supported"));
+        };
+
+        let right_cahv = if let Some(md) = right_img.metadata.as_surface() {
+            md.camera_model_component_list.clone()
+        } else {
+            return Err(anyhow!("Anaglyph for nonsurface missions is not supported"));
+        };
+
+        let ground = Vector::new(0.0, 0.0, 1.84566);
+
+        let output_model = left_cahv.linearize(
+            left_img.image.width,
+            left_img.image.height,
+            left_img.image.width,
+            left_img.image.height,
+        )?;
+
+        let ext = composite::map_extent(
+            &[
+                (&left_cahv, left_img.image.width, left_img.image.height),
+                (&right_cahv, right_img.image.width, right_img.image.height),
+            ],
+            &output_model,
+            &ground,
+            64,
+            left_img.image.width * 3, // sanity cap; pick something that suits your data
+        )
+        .ok_or_else(|| anyhow!("anaglyph: no footprint"))?;
+        let output_model = output_model.shift(-ext.min_x, -ext.min_y);
+        let mut map = Image::create(ext.width, ext.height);
+
+        anaglyph::process_image(
+            &right_img,
+            &mut map,
+            &right_cahv,
+            &output_model,
+            &ground,
+            Eye::Right,
+        );
+        anaglyph::process_image(
+            &left_img,
+            &mut map,
+            &left_cahv,
+            &output_model,
+            &ground,
+            Eye::Left,
+        );
+
+        map.save(out_file_path).expect("Failed to save image");
+        pb_done!();
+        Ok(())
+    }
+}

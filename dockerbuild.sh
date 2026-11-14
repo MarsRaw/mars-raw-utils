@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MRU_VERSION=`cargo pkgid | cut -d @ -f 2`
+MRU_VERSION=`cargo pkgid -p mru-cli -q | cut -d \# -f 2`
 . docker/config.sh
 
 

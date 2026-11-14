@@ -1,0 +1,5 @@
+**/target
+.git
+.github
+**/.DS_Store
+dist
