@@ -201,6 +201,10 @@ impl MarsImage {
         self.metadata.processing.debayer = true;
     }
 
+    pub fn set_linearized(&mut self) {
+        self.metadata.processing.linearized = true;
+    }
+
     pub fn decompand(&mut self, ilt: &LookUpTable) {
         self.image.decompand(&ilt.to_array());
         self.metadata.processing.decompand = true;

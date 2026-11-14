@@ -15,12 +15,20 @@ use std::str::FromStr;
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct ProcessingState {
+    #[serde(default = "default_false")]
     pub decompand: bool,
+    #[serde(default = "default_false")]
     pub debayer: bool,
+    #[serde(default = "default_false")]
     pub flatfield: bool,
+    #[serde(default = "default_false")]
     pub radiometric: bool,
+    #[serde(default = "default_false")]
     pub inpaint: bool,
+    #[serde(default = "default_false")]
     pub cropped: bool,
+    #[serde(default = "default_false")]
+    pub linearized: bool,
     pub history: Vec<String>,
 }
 

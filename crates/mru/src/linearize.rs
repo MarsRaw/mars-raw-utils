@@ -362,6 +362,7 @@ pub fn linearize_image_with_model(
     };
 
     out.metadata = src.metadata.clone();
+    out.set_linearized();
 
     // The new model describes the *output* pixel grid, so the subframe offset
     // and scale have already been folded in.
