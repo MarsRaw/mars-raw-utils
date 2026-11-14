@@ -131,6 +131,7 @@ fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
     // Unrotated projection model
     let unrotated_map_context =
         determine_map_context(&[in_file.to_string()], &Quaternion::default())?;
+    debug!("Unrotated Map Context: {:?}", unrotated_map_context);
 
     // Rebundle as a MarsImage with metadata
     let mut projected_mars_image = image.clone();

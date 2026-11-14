@@ -144,7 +144,7 @@ fn vector_to_cylindrical(v: &Vector) -> LatLon {
     let az = v.y.atan2(v.x).wrap_tau();
     let el = (v.z).atan2(v.x.hypot(v.y)).wrap_pi();
     LatLon {
-        lat: el.to_degrees(),
+        lat: -el.to_degrees(),
         lon: az.to_degrees(),
     }
 }
@@ -275,8 +275,9 @@ fn get_ls_from_map_xy(
     let lat = ll.lat;
     let lon = ll.lon;
 
-    let out_y_f = (lat - map_context.bottom_lat) / (map_context.top_lat - map_context.bottom_lat)
-        * map_context.height as f64;
+    let out_y_f = map_context.height as f64
+        - ((lat - map_context.bottom_lat) / (map_context.top_lat - map_context.bottom_lat)
+            * map_context.height as f64);
     let out_x_f = (lon - map_context.left_lon) / (map_context.right_lon - map_context.left_lon)
         * map_context.width as f64;
 
@@ -350,10 +351,10 @@ pub fn process_file<D: Drawable>(
     let band_1 = img.image.get_band(1);
     let band_2 = img.image.get_band(2);
 
+    let origin_diff = input_model.c().subtract(initial_origin);
+
     for x in 0..(img.image.width - 1) {
         for y in 0..(img.image.height - 1) {
-            let origin_diff = input_model.c().subtract(initial_origin);
-
             // let (full_frame_x, full_frame_y) = if scale_factor != 2 {
             //     ((x + subframe.x) * 2, (y + subframe.y) * 2)
             // } else {
