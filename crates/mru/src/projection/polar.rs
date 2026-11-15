@@ -159,12 +159,12 @@ fn get_polar_xy(
     match c.ls_to_look_vector(&ImageCoordinate { line: y, sample: x }) {
         Ok(lv) => Ok(lookvector_to_polar(
             &lv,
-            Some(&quat),
-            &origin_diff,
+            Some(quat),
+            origin_diff,
             Pole::Zenith,
             radial_map,
         )),
-        Err(why) => return Err(anyhow!("Unable to convert ls to look vector: {:?}", why)),
+        Err(why) => Err(anyhow!("Unable to convert ls to look vector: {:?}", why)),
     }
 }
 
@@ -184,7 +184,7 @@ fn get_map_xy_from_img_xy(
         line: img_y,
         sample: img_x,
     }) {
-        Ok(lv) => lookvector_to_polar(&lv, Some(&quat), &origin_diff, Pole::Zenith, radial_map),
+        Ok(lv) => lookvector_to_polar(&lv, Some(quat), origin_diff, Pole::Zenith, radial_map),
         Err(why) => return Err(anyhow!("Unable to convert ls to look vector: {:?}", why)),
     };
 
@@ -228,7 +228,7 @@ pub fn determine_map_extent(
     ]
     .iter()
     .try_for_each(|(x, y)| {
-        let polar_xy = match get_polar_xy(&model, *x, *y, &quat, &Vector::default(), &radial_map) {
+        let polar_xy = match get_polar_xy(&model, *x, *y, quat, &Vector::default(), radial_map) {
             Ok(polar_xy) => polar_xy,
             Err(why) => bail!("Failed to determine polar xy point: {:?}", why),
         };
@@ -255,12 +255,12 @@ pub fn determine_map_extent_for_files(
             Err(why) => bail!("Failed to open file {}: {:?}", input_file, why),
         };
 
-        let map_extent = determine_map_extent(&img, quat, &radial_map)?;
+        let map_extent = determine_map_extent(&img, quat, radial_map)?;
         extent.union(&map_extent);
         Ok(())
     })?;
 
-    extent.max_radius = max_polar_radius(max_radius, eye_height, &radial_map);
+    extent.max_radius = max_polar_radius(max_radius, eye_height, radial_map);
     extent.max_edge_length = max_edge_length;
 
     Ok(extent)
@@ -303,42 +303,42 @@ pub fn project_file_to_canvas<D: Drawable>(
 
             let (tl_x, tl_y) = get_map_xy_from_img_xy(
                 &input_model,
-                &map_extent,
+                map_extent,
                 full_frame_x,
                 full_frame_y,
-                &quat,
+                quat,
                 &origin_diff,
-                &radial_map,
+                radial_map,
             )?;
 
             let (tr_x, tr_y) = get_map_xy_from_img_xy(
                 &input_model,
-                &map_extent,
+                map_extent,
                 full_frame_x + scale_factor,
                 full_frame_y,
-                &quat,
+                quat,
                 &origin_diff,
-                &radial_map,
+                radial_map,
             )?;
 
             let (bl_x, bl_y) = get_map_xy_from_img_xy(
                 &input_model,
-                &map_extent,
+                map_extent,
                 full_frame_x,
                 full_frame_y + scale_factor,
-                &quat,
+                quat,
                 &origin_diff,
-                &radial_map,
+                radial_map,
             )?;
 
             let (br_x, br_y) = get_map_xy_from_img_xy(
                 &input_model,
-                &map_extent,
+                map_extent,
                 full_frame_x + scale_factor,
                 full_frame_y + scale_factor,
-                &quat,
+                quat,
                 &origin_diff,
-                &radial_map,
+                radial_map,
             )?;
 
             let tl = Point::create_rgb(
