@@ -15,9 +15,30 @@ pub fn create_composite(
     projection: Projection,
 ) -> Result<Image> {
     match projection {
-        Projection::Cylindrical => {
-            cylindrical::create_composite(in_files, anaglyph, azimuth_rotation)
-        }
+        Projection::Equirectangular => cylindrical::create_composite(
+            in_files,
+            anaglyph,
+            azimuth_rotation,
+            cylindrical::CylMap::Equirectangular,
+        ),
+        Projection::EqualArea => cylindrical::create_composite(
+            in_files,
+            anaglyph,
+            azimuth_rotation,
+            cylindrical::CylMap::EqualArea,
+        ),
+        Projection::Perspective => cylindrical::create_composite(
+            in_files,
+            anaglyph,
+            azimuth_rotation,
+            cylindrical::CylMap::Perspective,
+        ),
+        Projection::Mercator => cylindrical::create_composite(
+            in_files,
+            anaglyph,
+            azimuth_rotation,
+            cylindrical::CylMap::Mercator,
+        ),
         Projection::PolarEqualArea => polar::create_composite(
             in_files,
             anaglyph,

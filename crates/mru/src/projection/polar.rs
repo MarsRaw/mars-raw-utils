@@ -97,7 +97,7 @@ pub enum RadialMap {
 }
 
 impl RadialMap {
-    pub fn radial(&self, theta: f64) -> f64 {
+    pub fn project(&self, theta: f64) -> f64 {
         match self {
             RadialMap::Equidistant => theta,
             RadialMap::Stereographic => 2.0 * (theta / 2.0).tan(),
@@ -109,19 +109,19 @@ impl RadialMap {
 
     pub fn from_projection(projection: &Projection) -> Result<RadialMap> {
         match projection {
-            Projection::Cylindrical => Err(anyhow!("Invalid polar projection")),
             Projection::PolarEquidistant => Ok(RadialMap::Equidistant),
             Projection::PolarStereographic => Ok(RadialMap::Stereographic),
             Projection::PolarEqualArea => Ok(RadialMap::EqualArea),
             Projection::PolarOrthographic => Ok(RadialMap::Orthographic),
             Projection::PolarRectilinear => Ok(RadialMap::Rectilinear),
+            _ => Err(anyhow!("Invalid polar projection")),
         }
     }
 }
 
 fn max_polar_radius(max_radius: f64, height: f64, map: &RadialMap) -> f64 {
     let theta_max = max_radius.atan2(height); // angle off nadir
-    map.radial(theta_max)
+    map.project(theta_max)
 }
 
 pub fn vector_to_polar(v: &Vector, pole: Pole, map: &RadialMap) -> PolarXY {
@@ -133,7 +133,7 @@ pub fn vector_to_polar(v: &Vector, pole: Pole, map: &RadialMap) -> PolarXY {
     };
     let theta = cos_theta.clamp(-1.0, 1.0).acos();
 
-    let r = map.radial(theta);
+    let r = map.project(theta);
 
     // Azimuth, same definition as the cylindrical version
     let az = v.y.atan2(v.x);

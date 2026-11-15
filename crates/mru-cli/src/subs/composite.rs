@@ -40,7 +40,11 @@ pub struct Composite {
     )]
     distance: Option<f64>,
 
-    #[arg(long, short = 'p', help = "Mosaic projection (default: cylindrical)")]
+    #[arg(
+        long,
+        short = 'p',
+        help = "Mosaic projection (default: equirectangular)"
+    )]
     projection: Option<Projection>,
 
     #[arg(
@@ -66,7 +70,7 @@ impl RunnableSubcommand for Composite {
         let azimuth_rotation: f64 = self.azimuth.unwrap_or(0.0);
         let size = self.size.unwrap_or(2048);
         let max_radius = self.distance.unwrap_or(25.0);
-        let projection = self.projection.unwrap_or(Projection::Cylindrical);
+        let projection = self.projection.unwrap_or(Projection::Equirectangular);
 
         let canvas = create_composite(
             &in_files,

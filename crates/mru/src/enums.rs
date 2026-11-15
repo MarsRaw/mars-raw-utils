@@ -131,7 +131,10 @@ pub enum CalFileType {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ValueEnum)]
 pub enum Projection {
     #[default]
-    Cylindrical,
+    Equirectangular,
+    Perspective,
+    EqualArea,
+    Mercator,
     PolarEquidistant,
     PolarStereographic,
     PolarEqualArea,

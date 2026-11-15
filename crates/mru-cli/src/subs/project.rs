@@ -44,7 +44,11 @@ pub struct Project {
     )]
     distance: Option<f64>,
 
-    #[arg(long, short = 'p', help = "Mosaic projection (default: cylindrical)")]
+    #[arg(
+        long,
+        short = 'p',
+        help = "Mosaic projection (default: equirectangular)"
+    )]
     projection: Option<Projection>,
 
     #[arg(
@@ -95,7 +99,10 @@ fn project_image(
     projection: Projection,
 ) -> Result<()> {
     let file_suffix = match &projection {
-        Projection::Cylindrical => "cyl",
+        Projection::Equirectangular
+        | Projection::EqualArea
+        | Projection::Perspective
+        | Projection::Mercator => "cyl",
         _ => "pol",
     };
 
@@ -129,11 +136,15 @@ fn project_image(
     projected_mars_image.image = canvas;
 
     let projection_parameters = match &projection {
-        Projection::Cylindrical => {
+        Projection::Equirectangular
+        | Projection::EqualArea
+        | Projection::Perspective
+        | Projection::Mercator => {
             // Unrotated projection model
             let unrotated_map_extent = cylindrical::determine_map_extent_for_files(
                 &[in_file.to_string()],
                 &Quaternion::default(),
+                &cylindrical::CylMap::from_projection(&projection)?,
             )?;
             debug!("Unrotated Map Context: {:?}", unrotated_map_extent);
 
@@ -173,7 +184,7 @@ fn project_image(
 
     projected_mars_image.metadata.mosaic = Some(Mosaic {
         projection: ImageProjection {
-            projection: Projection::Cylindrical, // Eventually this won't be hardcoded as I add additional projections (polar, etc)
+            projection: Projection::Equirectangular, // Eventually this won't be hardcoded as I add additional projections (polar, etc)
             parameters: projection_parameters,
         },
         sources: vec![MosaicInput {
@@ -199,7 +210,7 @@ impl RunnableSubcommand for Project {
         let azimuth_rotation: f64 = self.azimuth.unwrap_or(0.0);
         let size = self.size.unwrap_or(2048);
         let max_radius = self.distance.unwrap_or(25.0);
-        let projection = self.projection.unwrap_or(Projection::Cylindrical);
+        let projection = self.projection.unwrap_or(Projection::Equirectangular);
 
         in_files.iter().try_for_each(|in_file| {
             project_image(

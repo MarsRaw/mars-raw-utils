@@ -1,7 +1,7 @@
 use std::str::FromStr as _;
 
 use crate::{
-    enums::{Eye, Instrument},
+    enums::{Eye, Instrument, Projection},
     marsimage::MarsImage,
     prelude::WrapCylindrical as _,
     util,
@@ -18,8 +18,39 @@ use sciimg::{
     quaternion::Quaternion,
     vector::Vector,
 };
+use std::f64::consts::{FRAC_PI_2, FRAC_PI_4};
 
 static SPHERE_RADIUS: f64 = 100.0;
+
+#[derive(Clone, Copy)]
+pub enum CylMap {
+    Equirectangular,
+    Perspective,
+    EqualArea,
+    Mercator,
+}
+
+impl CylMap {
+    pub fn project(&self, az: f64, el: f64) -> (f64, f64) {
+        let el_c = el.clamp(-FRAC_PI_2 + 1e-6, FRAC_PI_2 - 1e-6);
+        match self {
+            CylMap::Equirectangular => (az, el),
+            CylMap::Perspective => (az, el_c.tan()),
+            CylMap::EqualArea => (az, el.sin()),
+            CylMap::Mercator => (az, (FRAC_PI_4 + el_c / 2.0).tan().ln()),
+        }
+    }
+
+    pub fn from_projection(projection: &Projection) -> Result<CylMap> {
+        match projection {
+            Projection::Equirectangular => Ok(CylMap::Equirectangular),
+            Projection::EqualArea => Ok(CylMap::EqualArea),
+            Projection::Perspective => Ok(CylMap::Perspective),
+            Projection::Mercator => Ok(CylMap::Mercator),
+            _ => Err(anyhow!("Invalid cylindrical projection")),
+        }
+    }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct CylindricalMapExtent {
@@ -63,8 +94,8 @@ impl CylindricalMapExtent {
     }
 
     pub fn wrap_coord_extents(&mut self) {
-        self.top_lat = self.top_lat.wrap_pi_degrees();
-        self.bottom_lat = self.bottom_lat.wrap_pi_degrees();
+        // self.top_lat = self.top_lat.wrap_pi_degrees();
+        // self.bottom_lat = self.bottom_lat.wrap_pi_degrees();
         self.left_lon = self.left_lon.wrap_tau_degrees();
         self.right_lon = self.right_lon.wrap_tau_degrees();
     }
@@ -80,9 +111,12 @@ pub struct LatLon {
     pub lon: f64,
 }
 
-pub fn vector_to_cylindrical(v: &Vector) -> LatLon {
-    let az = v.y.atan2(v.x).wrap_tau();
-    let el = (v.z).atan2(v.x.hypot(v.y)).wrap_pi();
+pub fn vector_to_cylindrical(v: &Vector, cyl_map: &CylMap) -> LatLon {
+    let (az, el) = cyl_map.project(
+        v.y.atan2(v.x).wrap_tau(),
+        (v.z).atan2(v.x.hypot(v.y)).wrap_pi(),
+    );
+
     LatLon {
         lat: -el.to_degrees(),
         lon: az.to_degrees(),
@@ -93,6 +127,7 @@ pub fn lookvector_to_cylindrical(
     lv: &LookVector,
     quat: Option<&Quaternion>,
     origin_diff: &Vector,
+    cyl_map: &CylMap,
 ) -> LatLon {
     let ray = lv.intersect_to_sphere(SPHERE_RADIUS);
     let ray_moved = ray.subtract(origin_diff);
@@ -101,21 +136,26 @@ pub fn lookvector_to_cylindrical(
     } else {
         ray
     };
-    vector_to_cylindrical(&rotated)
+    vector_to_cylindrical(&rotated, cyl_map)
 }
 
-fn get_lat_lon(c: &Cahvore, x: f64, y: f64, quat: &Quaternion) -> Result<LatLon> {
+fn get_lat_lon(c: &Cahvore, x: f64, y: f64, quat: &Quaternion, cyl_map: &CylMap) -> Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate { line: y, sample: x }) {
         Ok(lv) => Ok(lookvector_to_cylindrical(
             &lv,
             Some(quat),
             &Vector::default(),
+            cyl_map,
         )),
         Err(e) => Err(e),
     }
 }
 
-pub fn determine_map_extent(img: &MarsImage, quat: &Quaternion) -> Result<CylindricalMapExtent> {
+pub fn determine_map_extent(
+    img: &MarsImage,
+    quat: &Quaternion,
+    cyl_map: &CylMap,
+) -> Result<CylindricalMapExtent> {
     let mut context = CylindricalMapExtent::default();
 
     let scale_factor = img.get_scale_factor();
@@ -148,7 +188,7 @@ pub fn determine_map_extent(img: &MarsImage, quat: &Quaternion) -> Result<Cylind
     ]
     .iter()
     .for_each(|(x, y)| {
-        if let Ok(ll) = get_lat_lon(&model, *x, *y, quat) {
+        if let Ok(ll) = get_lat_lon(&model, *x, *y, quat, cyl_map) {
             context.union_ll(&ll);
         }
     });
@@ -230,6 +270,7 @@ pub fn map_extent(
 pub fn determine_map_extent_for_files(
     input_files: &[String],
     quat: &Quaternion,
+    cyl_map: &CylMap,
 ) -> Result<CylindricalMapExtent> {
     let mut context = CylindricalMapExtent {
         top_lat: f64::MIN,
@@ -247,7 +288,7 @@ pub fn determine_map_extent_for_files(
             Err(why) => bail!("Failed to open file {}: {:?}", input_file, why),
         };
 
-        let map_extent = determine_map_extent(&img, quat)?;
+        let map_extent = determine_map_extent(&img, quat, cyl_map)?;
         context.union(&map_extent);
         Ok(())
     })?;
@@ -265,6 +306,7 @@ fn get_ls_from_map_xy(
     y: usize,
     quat: &Quaternion,
     origin_diff: &Vector,
+    cyl_map: &CylMap,
 ) -> (f64, f64) {
     let img_x = x as f64;
     let img_y = y as f64;
@@ -277,7 +319,7 @@ fn get_ls_from_map_xy(
         Err(_) => panic!("Unable to convert ls to look vector"),
     };
 
-    let ll = lookvector_to_cylindrical(&lv, Some(quat), origin_diff);
+    let ll = lookvector_to_cylindrical(&lv, Some(quat), origin_diff, cyl_map);
     let lat = ll.lat;
     let lon = ll.lon;
 
@@ -297,6 +339,7 @@ pub fn project_file_to_canvas<D: Drawable>(
     anaglyph: bool,
     quat: &Quaternion,
     initial_origin: &Vector,
+    cyl_map: &CylMap,
 ) -> Result<()> {
     let mut img = MarsImage::open(input_file)?;
 
@@ -344,6 +387,7 @@ pub fn project_file_to_canvas<D: Drawable>(
                 full_frame_y,
                 quat,
                 &origin_diff,
+                cyl_map,
             );
             let (tr_x, tr_y) = get_ls_from_map_xy(
                 &input_model,
@@ -352,6 +396,7 @@ pub fn project_file_to_canvas<D: Drawable>(
                 full_frame_y,
                 quat,
                 &origin_diff,
+                cyl_map,
             );
             let (bl_x, bl_y) = get_ls_from_map_xy(
                 &input_model,
@@ -360,6 +405,7 @@ pub fn project_file_to_canvas<D: Drawable>(
                 full_frame_y + scale_factor,
                 quat,
                 &origin_diff,
+                cyl_map,
             );
             let (br_x, br_y) = get_ls_from_map_xy(
                 &input_model,
@@ -368,6 +414,7 @@ pub fn project_file_to_canvas<D: Drawable>(
                 full_frame_y + scale_factor,
                 quat,
                 &origin_diff,
+                cyl_map,
             );
 
             if !band_0.get_mask_at_point(x, y) {
@@ -420,10 +467,11 @@ pub fn create_composite(
     in_files: &[String],
     anaglyph: bool,
     azimuth_rotation: f64,
+    cyl_map: CylMap,
 ) -> Result<Image> {
     let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 
-    let map_context = determine_map_extent_for_files(in_files, &quat)?;
+    let map_context = determine_map_extent_for_files(in_files, &quat, &cyl_map)?;
     debug!("Map Context: {:?}", map_context);
     debug!(
         "FOV Vertical: {}",
@@ -459,6 +507,7 @@ pub fn create_composite(
                 anaglyph,
                 &quat,
                 &initial_origin,
+                &cyl_map,
             )
         } else {
             bail!("Error: input file not found: {}", in_file)
