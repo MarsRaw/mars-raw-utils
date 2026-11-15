@@ -3,9 +3,13 @@ use anyhow::Result;
 use anyhow::anyhow;
 use clap::Parser;
 use mru::composite::create_composite;
+use mru::metadata::CylindricalProjectionParameters;
+use mru::metadata::PolarProjectionParameters;
+use mru::metadata::ProjectionParameters;
 use mru::metadata::{ImageProjection, Mosaic, MosaicInput};
 use mru::prelude::*;
-use mru::projection::cylindrical::determine_map_extent_for_files;
+use mru::projection::cylindrical;
+use mru::projection::polar;
 use sciimg::vector::Vector;
 use sciimg::{prelude::*, quaternion::Quaternion};
 use stump;
@@ -115,24 +119,56 @@ fn project_image(
         projection,
     )?;
 
-    // Unrotated projection model
-    let unrotated_map_context =
-        determine_map_extent_for_files(&[in_file.to_string()], &Quaternion::default())?;
-    debug!("Unrotated Map Context: {:?}", unrotated_map_context);
-
     // Rebundle as a MarsImage with metadata
     let mut projected_mars_image = image.clone();
     projected_mars_image.image = canvas;
+
+    let projection_parameters = match &projection {
+        Projection::Cylindrical => {
+            // Unrotated projection model
+            let unrotated_map_extent = cylindrical::determine_map_extent_for_files(
+                &[in_file.to_string()],
+                &Quaternion::default(),
+            )?;
+            debug!("Unrotated Map Context: {:?}", unrotated_map_extent);
+
+            ProjectionParameters::Cylindrical(CylindricalProjectionParameters {
+                top_lat: unrotated_map_extent.top_lat,
+                bottom_lat: unrotated_map_extent.bottom_lat,
+                left_lon: unrotated_map_extent.left_lon,
+                right_lon: unrotated_map_extent.right_lon,
+                width: unrotated_map_extent.width,
+                height: unrotated_map_extent.height,
+                degrees_per_pixel: unrotated_map_extent.degrees_per_pixel,
+            })
+        }
+        // All the others are polar at the moment
+        _ => {
+            let radial_map = polar::RadialMap::from_projection(&projection)?;
+            let unrotated_map_extent = polar::determine_map_extent_for_files(
+                &[in_file.to_string()],
+                &Quaternion::default(),
+                max_radius,
+                eye_height,
+                size,
+                &radial_map,
+            )?;
+            debug!("Unrotated Map Context: {:?}", unrotated_map_extent);
+            ProjectionParameters::Polar(PolarProjectionParameters {
+                min_x: unrotated_map_extent.min_x,
+                max_x: unrotated_map_extent.max_x,
+                min_y: unrotated_map_extent.min_y,
+                max_y: unrotated_map_extent.max_y,
+                max_radius: unrotated_map_extent.max_radius,
+                max_edge_length: unrotated_map_extent.max_edge_length,
+            })
+        }
+    };
+
     projected_mars_image.metadata.mosaic = Some(Mosaic {
         projection: ImageProjection {
             projection: Projection::Cylindrical, // Eventually this won't be hardcoded as I add additional projections (polar, etc)
-            top_lat: unrotated_map_context.top_lat,
-            bottom_lat: unrotated_map_context.bottom_lat,
-            left_lon: unrotated_map_context.left_lon,
-            right_lon: unrotated_map_context.right_lon,
-            width: unrotated_map_context.width,
-            height: unrotated_map_context.height,
-            degrees_per_pixel: unrotated_map_context.degrees_per_pixel,
+            parameters: projection_parameters,
         },
         sources: vec![MosaicInput {
             file: in_file.to_string(),

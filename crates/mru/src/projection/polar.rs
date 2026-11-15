@@ -11,7 +11,7 @@ use sciimg::{
     vector::Vector,
 };
 
-use crate::marsimage::MarsImage;
+use crate::{enums::Projection, marsimage::MarsImage};
 
 const SPHERE_RADIUS: f64 = 100.0;
 const RECTILINEAR_MAX_THETA: f64 = std::f64::consts::FRAC_PI_2 - 1e-6;
@@ -24,12 +24,12 @@ pub struct PolarXY {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct PolarMapExtent {
-    min_x: f64,
-    max_x: f64,
-    min_y: f64,
-    max_y: f64,
-    max_radius: f64,
-    max_edge_length: usize,
+    pub min_x: f64,
+    pub max_x: f64,
+    pub min_y: f64,
+    pub max_y: f64,
+    pub max_radius: f64,
+    pub max_edge_length: usize,
 }
 
 impl PolarMapExtent {
@@ -102,6 +102,17 @@ impl RadialMap {
             RadialMap::EqualArea => 2.0 * (theta / 2.0).sin(),
             RadialMap::Orthographic => theta.sin(),
             RadialMap::Rectilinear => theta.min(RECTILINEAR_MAX_THETA).tan(),
+        }
+    }
+
+    pub fn from_projection(projection: &Projection) -> Result<RadialMap> {
+        match projection {
+            Projection::Cylindrical => Err(anyhow!("Invalid polar projection")),
+            Projection::PolarEquidistant => Ok(RadialMap::Equidistant),
+            Projection::PolarStereographic => Ok(RadialMap::Stereographic),
+            Projection::PolarEqualArea => Ok(RadialMap::EqualArea),
+            Projection::PolarOrthographic => Ok(RadialMap::Orthographic),
+            Projection::PolarRectilinear => Ok(RadialMap::Rectilinear),
         }
     }
 }

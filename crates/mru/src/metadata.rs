@@ -122,9 +122,8 @@ impl Default for MissionMetadata {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Clone, Copy)]
-pub struct ImageProjection {
-    pub projection: Projection,
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+pub struct CylindricalProjectionParameters {
     pub top_lat: f64,
     pub bottom_lat: f64,
     pub left_lon: f64,
@@ -132,6 +131,34 @@ pub struct ImageProjection {
     pub width: usize,
     pub height: usize,
     pub degrees_per_pixel: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+pub struct PolarProjectionParameters {
+    pub min_x: f64,
+    pub max_x: f64,
+    pub min_y: f64,
+    pub max_y: f64,
+    pub max_radius: f64,
+    pub max_edge_length: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+pub enum ProjectionParameters {
+    Cylindrical(CylindricalProjectionParameters),
+    Polar(PolarProjectionParameters),
+}
+
+impl Default for ProjectionParameters {
+    fn default() -> Self {
+        ProjectionParameters::Cylindrical(CylindricalProjectionParameters::default())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, Clone, Copy)]
+pub struct ImageProjection {
+    pub projection: Projection,
+    pub parameters: ProjectionParameters,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
