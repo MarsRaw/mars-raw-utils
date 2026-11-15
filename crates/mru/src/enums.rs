@@ -1,3 +1,4 @@
+use clap::ValueEnum;
 use std::str::FromStr;
 use std::{fmt, num::ParseIntError};
 
@@ -127,7 +128,7 @@ pub enum CalFileType {
     Lut,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ValueEnum)]
 pub enum Projection {
     #[default]
     Cylindrical,
@@ -135,4 +136,5 @@ pub enum Projection {
     PolarStereographic,
     PolarEqualArea,
     PolarOrthographic,
+    PolarRectilinear,
 }

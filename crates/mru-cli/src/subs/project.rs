@@ -25,6 +25,30 @@ pub struct Project {
         allow_negative_numbers = true
     )]
     azimuth: Option<f64>,
+
+    #[arg(
+        long,
+        short = 's',
+        help = "Image size used as length & height for polar projections (default: 2048)"
+    )]
+    size: Option<usize>,
+
+    #[arg(
+        long,
+        short = 'd',
+        help = "Maximum distance (meters) for polar projections (default: 25.0)"
+    )]
+    distance: Option<f64>,
+
+    #[arg(long, short = 'p', help = "Mosaic projection (default: cylindrical)")]
+    projection: Option<Projection>,
+
+    #[arg(
+        long,
+        short = 'e',
+        help = "Eye height (meters) for polar projections (default: 1.98)"
+    )]
+    eye_height: Option<f64>,
 }
 
 fn mast_azimuth_from_metadata(image: &MarsImage) -> Result<f64> {
@@ -58,7 +82,14 @@ fn mast_azimuth_from_camera_model(image: &MarsImage) -> Result<f64> {
     Ok(d.y.atan2(d.x).rem_euclid(std::f64::consts::TAU))
 }
 
-fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
+fn project_image(
+    in_file: &str,
+    azimuth_rotation: f64,
+    size: usize,
+    max_radius: f64,
+    eye_height: f64,
+    projection: Projection,
+) -> Result<()> {
     let out_file = util::append_file_name(in_file, "cyl");
 
     let image = MarsImage::open(in_file)?;
@@ -78,7 +109,10 @@ fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
         &[in_file.to_string()],
         false,
         look_azimuth,
-        Projection::Cylindrical,
+        size,
+        max_radius,
+        eye_height,
+        projection,
     )?;
 
     // Unrotated projection model
@@ -121,10 +155,21 @@ impl RunnableSubcommand for Project {
             .collect();
 
         let azimuth_rotation: f64 = self.azimuth.unwrap_or(0.0);
+        let size = self.size.unwrap_or(2048);
+        let max_radius = self.distance.unwrap_or(25.0);
+        let projection = self.projection.unwrap_or(Projection::Cylindrical);
+        let eye_height = self.eye_height.unwrap_or(1.98);
 
         in_files.iter().try_for_each(|in_file| {
-            project_image(in_file, azimuth_rotation)
-                .map_err(|why| anyhow!("Error reprojecting image: {:?}", why))
+            project_image(
+                in_file,
+                azimuth_rotation,
+                size,
+                max_radius,
+                eye_height,
+                projection,
+            )
+            .map_err(|why| anyhow!("Error reprojecting image: {:?}", why))
         })?;
 
         pb_done!();

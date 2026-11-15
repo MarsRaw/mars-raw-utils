@@ -25,6 +25,30 @@ pub struct Composite {
         allow_negative_numbers = true
     )]
     azimuth: Option<f64>,
+
+    #[arg(
+        long,
+        short = 's',
+        help = "Image size used as length & height for polar projections (default: 2048)"
+    )]
+    size: Option<usize>,
+
+    #[arg(
+        long,
+        short = 'd',
+        help = "Maximum distance (meters) for polar projections (default: 25.0)"
+    )]
+    distance: Option<f64>,
+
+    #[arg(long, short = 'p', help = "Mosaic projection (default: cylindrical)")]
+    projection: Option<Projection>,
+
+    #[arg(
+        long,
+        short = 'e',
+        help = "Eye height (meters) for polar projections (default: 1.98)"
+    )]
+    eye_height: Option<f64>,
 }
 
 impl RunnableSubcommand for Composite {
@@ -40,12 +64,19 @@ impl RunnableSubcommand for Composite {
         let output = self.output.as_os_str().to_str().unwrap();
 
         let azimuth_rotation: f64 = self.azimuth.unwrap_or(0.0);
+        let size = self.size.unwrap_or(2048);
+        let max_radius = self.distance.unwrap_or(25.0);
+        let projection = self.projection.unwrap_or(Projection::Cylindrical);
+        let eye_height = self.eye_height.unwrap_or(1.98);
 
         let canvas = create_composite(
             &in_files,
             self.anaglyph,
             azimuth_rotation,
-            Projection::Cylindrical,
+            size,
+            max_radius,
+            eye_height,
+            projection,
         )?;
         canvas.save(output).expect("Failed to save image");
 

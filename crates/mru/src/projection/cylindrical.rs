@@ -104,11 +104,11 @@ pub fn lookvector_to_cylindrical(
     vector_to_cylindrical(&rotated)
 }
 
-fn get_lat_lon(c: &Cahvore, x: f64, y: f64, _quat: &Quaternion) -> Result<LatLon> {
+fn get_lat_lon(c: &Cahvore, x: f64, y: f64, quat: &Quaternion) -> Result<LatLon> {
     match c.ls_to_look_vector(&ImageCoordinate { line: y, sample: x }) {
         Ok(lv) => Ok(lookvector_to_cylindrical(
             &lv,
-            Some(_quat),
+            Some(quat),
             &Vector::default(),
         )),
         Err(e) => Err(e),
