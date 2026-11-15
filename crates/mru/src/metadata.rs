@@ -141,6 +141,7 @@ pub struct PolarProjectionParameters {
     pub max_y: f64,
     pub max_radius: f64,
     pub max_edge_length: usize,
+    pub eye_height: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]

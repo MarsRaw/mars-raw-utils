@@ -30,6 +30,7 @@ pub struct PolarMapExtent {
     pub max_y: f64,
     pub max_radius: f64,
     pub max_edge_length: usize,
+    pub eye_height: f64,
 }
 
 impl PolarMapExtent {
@@ -48,6 +49,7 @@ impl PolarMapExtent {
             max_y: f64::MIN,
             max_radius: f64::MIN,
             max_edge_length: 0,
+            eye_height: 0.0,
         }
     }
 
@@ -250,15 +252,40 @@ pub fn determine_map_extent(
     Ok(extent)
 }
 
+fn compute_eye_height_from_model(img: &MarsImage) -> Result<f64> {
+    let initial_origin = if let Some(model) = img.get_cahvor() {
+        model.c()
+    } else {
+        return Err(anyhow!("Error: Cannot determine initial camera origin"));
+    };
+
+    let mut surface_origin = initial_origin;
+    surface_origin.z = 0.0;
+    let computed_eye_height = surface_origin.distance_to(&initial_origin);
+    Ok(computed_eye_height)
+}
+
 pub fn determine_map_extent_for_files(
     input_files: &[String],
     quat: &Quaternion,
     max_radius: f64,
-    eye_height: f64,
+    eye_height: Option<f64>,
     max_edge_length: usize,
     radial_map: &RadialMap,
 ) -> Result<PolarMapExtent> {
     let mut extent = PolarMapExtent::default();
+
+    if input_files.is_empty() {
+        return Err(anyhow!("Cannot determine map extent: no input files"));
+    }
+
+    let use_eye_height = match &eye_height {
+        Some(eye_height) => *eye_height,
+        None => {
+            let first_image = MarsImage::open(input_files.first().unwrap())?;
+            compute_eye_height_from_model(&first_image)?
+        }
+    };
 
     input_files.iter().try_for_each(|input_file| {
         let img = match MarsImage::open(input_file) {
@@ -271,8 +298,9 @@ pub fn determine_map_extent_for_files(
         Ok(())
     })?;
 
-    extent.max_radius = max_polar_radius(max_radius, eye_height, radial_map);
+    extent.max_radius = max_polar_radius(max_radius, use_eye_height, radial_map);
     extent.max_edge_length = max_edge_length;
+    extent.eye_height = use_eye_height;
 
     Ok(extent)
 }
@@ -398,11 +426,18 @@ pub fn create_composite(
     radial_map: RadialMap,
     max_edge_length: usize,
     max_radius: f64,
-    eye_height: f64,
+    eye_height: Option<f64>,
 ) -> Result<Image> {
     if _anaglyph {
         return Err(anyhow!("Anaglyph unsupported for polar projections"));
     }
+
+    let first_image = MarsImage::open(&in_files[0])?;
+    let initial_origin = if let Some(model) = first_image.get_cahvor() {
+        model.c()
+    } else {
+        return Err(anyhow!("Error: Cannot determine initial camera origin"));
+    };
 
     let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 
@@ -417,13 +452,6 @@ pub fn create_composite(
     debug!("Map Context: {:?}", map_extent);
 
     let mut map = Image::create_masked(max_edge_length, max_edge_length, true);
-
-    let first_image = MarsImage::open(&in_files[0])?;
-    let initial_origin = if let Some(model) = first_image.get_cahvor() {
-        model.c()
-    } else {
-        return Err(anyhow!("Error: Cannot determine initial camera origin"));
-    };
 
     in_files.iter().try_for_each(|in_file| {
         if path::file_exists(in_file) {

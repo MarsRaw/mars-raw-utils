@@ -46,7 +46,7 @@ pub struct Composite {
     #[arg(
         long,
         short = 'e',
-        help = "Eye height (meters) for polar projections (default: 1.98)"
+        help = "Override eye height (meters) for polar projections"
     )]
     eye_height: Option<f64>,
 }
@@ -67,7 +67,6 @@ impl RunnableSubcommand for Composite {
         let size = self.size.unwrap_or(2048);
         let max_radius = self.distance.unwrap_or(25.0);
         let projection = self.projection.unwrap_or(Projection::Cylindrical);
-        let eye_height = self.eye_height.unwrap_or(1.98);
 
         let canvas = create_composite(
             &in_files,
@@ -75,7 +74,7 @@ impl RunnableSubcommand for Composite {
             azimuth_rotation,
             size,
             max_radius,
-            eye_height,
+            self.eye_height,
             projection,
         )?;
         canvas.save(output).expect("Failed to save image");

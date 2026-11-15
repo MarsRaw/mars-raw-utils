@@ -11,7 +11,7 @@ pub fn create_composite(
     azimuth_rotation: f64,
     max_edge_length_polar: usize,
     max_radius_polar: f64,
-    eye_height_polar: f64,
+    eye_height_polar: Option<f64>,
     projection: Projection,
 ) -> Result<Image> {
     match projection {

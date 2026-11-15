@@ -50,7 +50,7 @@ pub struct Project {
     #[arg(
         long,
         short = 'e',
-        help = "Eye height (meters) for polar projections (default: 1.98)"
+        help = "Override eye height (meters) for polar projections"
     )]
     eye_height: Option<f64>,
 }
@@ -91,10 +91,15 @@ fn project_image(
     azimuth_rotation: f64,
     size: usize,
     max_radius: f64,
-    eye_height: f64,
+    eye_height: Option<f64>,
     projection: Projection,
 ) -> Result<()> {
-    let out_file = util::append_file_name(in_file, "cyl");
+    let file_suffix = match &projection {
+        Projection::Cylindrical => "cyl",
+        _ => "pol",
+    };
+
+    let out_file = util::append_file_name(in_file, file_suffix);
 
     let image = MarsImage::open(in_file)?;
 
@@ -161,6 +166,7 @@ fn project_image(
                 max_y: unrotated_map_extent.max_y,
                 max_radius: unrotated_map_extent.max_radius,
                 max_edge_length: unrotated_map_extent.max_edge_length,
+                eye_height: unrotated_map_extent.eye_height,
             })
         }
     };
@@ -194,7 +200,6 @@ impl RunnableSubcommand for Project {
         let size = self.size.unwrap_or(2048);
         let max_radius = self.distance.unwrap_or(25.0);
         let projection = self.projection.unwrap_or(Projection::Cylindrical);
-        let eye_height = self.eye_height.unwrap_or(1.98);
 
         in_files.iter().try_for_each(|in_file| {
             project_image(
@@ -202,7 +207,7 @@ impl RunnableSubcommand for Project {
                 azimuth_rotation,
                 size,
                 max_radius,
-                eye_height,
+                self.eye_height,
                 projection,
             )
             .map_err(|why| anyhow!("Error reprojecting image: {:?}", why))
