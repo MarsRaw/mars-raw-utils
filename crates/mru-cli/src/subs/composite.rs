@@ -1,12 +1,7 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
-use mru::{
-    composite::{determine_map_context, process_file},
-    prelude::*,
-};
-use sciimg::{drawable::Drawable, prelude::*, quaternion::Quaternion};
-use std::process;
+use mru::{composite::create_composite, enums::Projection};
 use stump;
 
 pb_create_spinner!();
@@ -46,59 +41,13 @@ impl RunnableSubcommand for Composite {
 
         let azimuth_rotation: f64 = self.azimuth.unwrap_or(0.0);
 
-        let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
-
-        let map_context = determine_map_context(&in_files, &quat)?;
-        debug!("Map Context: {:?}", map_context);
-        debug!(
-            "FOV Vertical: {}",
-            map_context.top_lat - map_context.bottom_lat
-        );
-        debug!(
-            "FOV Horizontal: {}",
-            map_context.right_lon - map_context.left_lon
-        );
-
-        if map_context.width == 0 {
-            error!("Output expected to have zero width. Cannot continue with that. Exiting...");
-            pb_done_with_error!();
-            process::exit(1);
-        } else if map_context.height == 0 {
-            error!("Output expected to have zero height. Cannot continue with that. Exiting...");
-            pb_done_with_error!();
-            process::exit(1);
-        }
-
-        let mut map = Image::create_masked(map_context.width, map_context.height, true);
-
-        let first_image = MarsImage::open(&in_files[0])?;
-        let initial_origin = if let Some(model) = first_image.get_cahvor() {
-            model.c()
-        } else {
-            error!("Cannot determine initial camera origin");
-            pb_done_with_error!();
-            process::exit(2);
-        };
-
-        for in_file in in_files.iter() {
-            if path::file_exists(in_file) {
-                info!("Processing File: {}", in_file);
-                process_file(
-                    in_file,
-                    &map_context,
-                    &mut map,
-                    self.anaglyph,
-                    &quat,
-                    &initial_origin,
-                )?;
-            } else {
-                error!("File not found: {}", in_file);
-                pb_done_with_error!();
-                process::exit(1);
-            }
-        }
-
-        map.save(output).expect("Failed to save image");
+        let canvas = create_composite(
+            &in_files,
+            self.anaglyph,
+            azimuth_rotation,
+            Projection::Cylindrical,
+        )?;
+        canvas.save(output).expect("Failed to save image");
 
         pb_done!();
         Ok(())

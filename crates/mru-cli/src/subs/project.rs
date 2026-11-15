@@ -2,14 +2,12 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use anyhow::anyhow;
 use clap::Parser;
+use mru::composite::create_composite;
 use mru::metadata::{ImageProjection, Mosaic, MosaicInput};
-use mru::{
-    composite::{determine_map_context, process_file},
-    prelude::*,
-};
+use mru::prelude::*;
+use mru::projection::cylindrical::determine_map_extent_for_files;
 use sciimg::vector::Vector;
-use sciimg::{drawable::Drawable, prelude::*, quaternion::Quaternion};
-use std::process;
+use sciimg::{prelude::*, quaternion::Quaternion};
 use stump;
 
 pb_create_spinner!();
@@ -68,74 +66,29 @@ fn project_image(in_file: &str, azimuth_rotation: f64) -> Result<()> {
     // Try to get the azimuth from the metadata first. If that fails, try the camera model.
     // If the camera model fails, just blow up because we won't be able to project the
     // image anyways
-    let look_azimuth = if let Ok(az) = mast_azimuth_from_metadata(&image) {
+    let look_azimuth = -if let Ok(az) = mast_azimuth_from_metadata(&image) {
         az
     } else {
         mast_azimuth_from_camera_model(&image)?
-    };
+    } + azimuth_rotation.to_radians();
 
     debug!("Azimuth from camera model: {}", look_azimuth.to_degrees());
 
-    // Add an additional 90 degrees to center the image in frame
-    let quat =
-        Quaternion::from_pitch_roll_yaw(0.0, 0.0, -look_azimuth + azimuth_rotation.to_radians());
-
-    let map_context = determine_map_context(&[in_file.to_string()], &quat)?;
-
-    debug!("Map Context: {:?}", map_context);
-    debug!(
-        "FOV Vertical: {}",
-        map_context.top_lat - map_context.bottom_lat
-    );
-    debug!(
-        "FOV Horizontal: {}",
-        map_context.right_lon - map_context.left_lon
-    );
-
-    if map_context.width == 0 {
-        error!("Output expected to have zero width. Cannot continue with that. Exiting...");
-        pb_done_with_error!();
-        process::exit(1);
-    } else if map_context.height == 0 {
-        error!("Output expected to have zero height. Cannot continue with that. Exiting...");
-        pb_done_with_error!();
-        process::exit(1);
-    }
-
-    let mut map = Image::create_masked(map_context.width, map_context.height, true);
-
-    let initial_origin = if let Some(model) = image.get_cahvor() {
-        model.c()
-    } else {
-        error!("Cannot determine initial camera origin");
-        pb_done_with_error!();
-        process::exit(2);
-    };
-
-    if path::file_exists(in_file) {
-        info!("Processing File: {}", in_file);
-        process_file(
-            in_file,
-            &map_context,
-            &mut map,
-            false,
-            &quat,
-            &initial_origin,
-        )?;
-    } else {
-        error!("File not found: {}", in_file);
-        pb_done_with_error!();
-        process::exit(1);
-    }
+    let canvas = create_composite(
+        &[in_file.to_string()],
+        false,
+        look_azimuth,
+        Projection::Cylindrical,
+    )?;
 
     // Unrotated projection model
     let unrotated_map_context =
-        determine_map_context(&[in_file.to_string()], &Quaternion::default())?;
+        determine_map_extent_for_files(&[in_file.to_string()], &Quaternion::default())?;
     debug!("Unrotated Map Context: {:?}", unrotated_map_context);
 
     // Rebundle as a MarsImage with metadata
     let mut projected_mars_image = image.clone();
-    projected_mars_image.image = map;
+    projected_mars_image.image = canvas;
     projected_mars_image.metadata.mosaic = Some(Mosaic {
         projection: ImageProjection {
             projection: Projection::Cylindrical, // Eventually this won't be hardcoded as I add additional projections (polar, etc)

@@ -74,6 +74,9 @@ pub mod msl;
 /// Routines for InSight image processing
 pub mod nsyt;
 
+/// Routines for projecting look vectors to cylindrical, polar, etc
+pub mod projection;
+
 /// Routines and data structures for Psyche image processing
 pub mod psyche;
 

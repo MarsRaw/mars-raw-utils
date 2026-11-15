@@ -131,4 +131,8 @@ pub enum CalFileType {
 pub enum Projection {
     #[default]
     Cylindrical,
+    PolarEquidistant,
+    PolarStereographic,
+    PolarEqualArea,
+    PolarOrthographic,
 }

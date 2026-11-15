@@ -2,8 +2,8 @@ use std::{env, str::FromStr};
 
 use anyhow::{Error, Result, anyhow};
 use sciimg::{
-    DnVec, VecMath, debayer::DebayerMethod, drawable::Drawable, enums::ImageMode, image::Image,
-    imagebuffer::ImageBuffer, inpaint, path,
+    DnVec, VecMath, camera::cahvore::Cahvore, debayer::DebayerMethod, drawable::Drawable,
+    enums::ImageMode, image::Image, imagebuffer::ImageBuffer, inpaint, path,
 };
 
 use crate::{
@@ -14,6 +14,24 @@ use crate::{
     util,
 };
 use image::ImageReader;
+
+pub struct SubframeRegion {
+    pub x: usize,
+    pub y: usize,
+    pub columns: usize,
+    pub rows: usize,
+}
+
+impl SubframeRegion {
+    fn default(img: &MarsImage) -> Self {
+        Self {
+            x: 0,
+            y: 0,
+            columns: img.image.width,
+            rows: img.image.height,
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct MarsImage {
@@ -377,5 +395,33 @@ impl MarsImage {
                 i,
             );
         });
+    }
+
+    pub fn get_subframe_region(&self) -> SubframeRegion {
+        self.metadata
+            .as_surface()
+            .map(|rover_metadata| match &rover_metadata.subframe_rect {
+                Some(sr) => SubframeRegion {
+                    x: sr[0] as usize,
+                    y: sr[1] as usize,
+                    columns: sr[2] as usize,
+                    rows: sr[3] as usize,
+                },
+                None => SubframeRegion::default(self),
+            })
+            .unwrap()
+    }
+
+    pub fn get_scale_factor(&self) -> usize {
+        match self.metadata.as_surface() {
+            Some(sm) => sm.scale_factor as usize,
+            None => 1,
+        }
+    }
+
+    pub fn get_cahvor(&self) -> Option<Cahvore> {
+        self.metadata
+            .as_surface()
+            .map(|rover_metadata| rover_metadata.camera_model_component_list.clone())
     }
 }
