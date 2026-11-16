@@ -171,6 +171,7 @@ if [[ $generate_mosaics -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
     nav_right_mosaic=N_R000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
     nav_anaglyph_mosaic=N_A000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
     nav_polar_mosaic=N_L000_${psol}_${prod_type}${site}POL_S_${drive}_MRUGNM_.tif
+    nav_rectilinear_mosaic=N_L000_${psol}_${prod_type}${site}VRT_S_${drive}_MRUGNM_.tif
 
     # NCAM00346 - Workspace 1x1 (skinny)
     # NCAM00353 - Workspace 2x1 (medium and high quality)
@@ -188,6 +189,9 @@ if [[ $generate_mosaics -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
 
     # Create Left-eye Polar Stereographic Mosaic
     mru composite -i NL*NCAM00[346,353]*.tif NL*NCAM00354*.tif NL*NCAM002[5-9]?*tif -o $nav_polar_mosaic -p polar-stereographic
+
+    # Create Left-eye Polar Rectilinear (Vertical) Mosaic
+    mru composite -i NL*NCAM00[346,353]*.tif NL*NCAM00354*.tif NL*NCAM002[5-9]?*tif -o $nav_rectilinear_mosaic -p polar-rectilinear
 fi
 
 

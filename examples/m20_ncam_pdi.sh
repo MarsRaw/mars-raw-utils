@@ -39,7 +39,7 @@ mesh_maximum_height_deviations=0.1
 mesh_point_density=1
 
 # Downscale factor for stereo pair images
-stereo_downscale=1
+stereo_downscale=2
 
 # Point kernel size, in pixels. Should be odd number
 mesh_kernel_size=17
@@ -54,7 +54,7 @@ max_edge_length=0.5
 max_edge_ratio=0.05
 
 # Maximum left/right consistency tolerance
-max_lr_error_px=2
+max_lr_error_px=20
 
 # Maximum convergent ray miss distance
 max_miss_distance=0.05
@@ -139,11 +139,11 @@ if [ `ls *png 2> /dev/null | wc -l` -eq 0 ]; then
 fi
 
 # Assembling Navcam Tiles
-#assemble_ncams.sh 
+assemble_ncams.sh 
 
 # Run calibration
 echo Running image calibration...
-#mru calibrate -i *assembled.tif -P m20_ncam_mcz
+mru calibrate -i *assembled.tif -P m20_ncam_mcz
 
 # Doublecheck and make sure the expected imaging exists. If not, print a message and exit
 if [ `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2> /dev/null | wc -l` -eq 0 ]; then
@@ -173,6 +173,9 @@ if [[ $generate_mosaics -eq 1  && `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.ti
     nav_left_mosaic=N_L000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
     nav_right_mosaic=N_R000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
     nav_anaglyph_mosaic=N_A000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
+    nav_polar_mosaic=N_L000_${psol}_${prod_type}${site}POL_S_${drive}_MRUGNM_.tif
+    nav_rectilinear_mosaic=N_L000_${psol}_${prod_type}${site}VRT_S_${drive}_MRUGNM_.tif
+
 
     # Create Left-eye Mosaic
     mru composite -i NL*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_left_mosaic
@@ -182,6 +185,12 @@ if [[ $generate_mosaics -eq 1  && `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.ti
 
     # Create Red/Blue Anaglyph Mosaic
     mru composite -i N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_anaglyph_mosaic -a
+
+    # Create Left-eye Polar Stereographic Mosaic
+    mru composite -i NL*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_polar_mosaic -p polar-stereographic
+
+    # Create Left-eye Polar Rectilinear (Vertical) Mosaic
+    mru composite -i NL*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_rectilinear_mosaic -p polar-rectilinear
 
 fi
 
@@ -245,8 +254,6 @@ if [[ $generate_orrs -eq 1  && `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2
 
 fi
 
-exit
-
 if [[ $generate_pdi_mesh -eq 1 && `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif 2> /dev/null | wc -l` -gt 0 ]]; then
     echo Generating post drive mesh...
 
@@ -277,6 +284,7 @@ if [[ $generate_pdi_mesh -eq 1 && `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.ti
             -R $max_edge_ratio \
             -e $max_lr_error_px \
             -x $max_miss_distance \
+            -D $stereo_downscale \
             $disable_multithreading
 
     done
