@@ -5,7 +5,7 @@ use subs::runnable::RunnableSubcommand;
 use subs::{
     anaglyph, caldata, calibrate, compose, composite, crop, debayer, decorr, diffgif, dsnevents,
     dsnstatus, focusmerge, hpcfilter, info, inpaint, levels, linearize, m20, meanstack, mer,
-    mergemesh, msl, nsyt, passes, pds2png, profile, project, psyche, range, stereomesh, xeye,
+    mergemesh, msl, nsyt, orr, passes, pds2png, profile, project, psyche, range, stereomesh, xeye,
 };
 
 #[macro_use]
@@ -97,7 +97,10 @@ commands! {
     DsnStatus(dsnstatus::DsnStatus),
     StereoMesh(stereomesh::StereoMesh),
     MergeMesh(mergemesh::MergeMesh),
-    Project(project::Project)
+    Project(project::Project),
+
+    #[clap(name = "orthogonal-map")]
+    OrrMap(orr::OrrMap)
 }
 
 #[tokio::main]
