@@ -62,7 +62,7 @@ pub struct RemsSols {
 fn parse_json_data(raw_json: &str) -> Result<Vec<RemsSol>> {
     let res: RemsSols = match serde_json::from_str(raw_json) {
         Ok(res) => res,
-        Err(why) => return Err(anyhow!("Failed to parse M20 weather json data: {:?}", why)),
+        Err(why) => return Err(anyhow!("Failed to parse MSL weather json data: {:?}", why)),
     };
     Ok(res.sols)
 }
