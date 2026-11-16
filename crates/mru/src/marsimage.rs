@@ -360,7 +360,7 @@ impl MarsImage {
             Some(md) => md.clone(),
             None => return Err(anyhow!("Invalid metadata attached to surface image")),
         };
-        md.scale_factor = factor.scalar() as u32;
+        md.scale_factor = md.scale_factor * factor.scalar() as u32;
 
         smaller.metadata.mission = Surface(md);
 
