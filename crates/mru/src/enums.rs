@@ -141,3 +141,31 @@ pub enum Projection {
     PolarOrthographic,
     PolarRectilinear,
 }
+
+// Controlled image downscaling
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, ValueEnum)]
+pub enum DownsampleScale {
+    #[default]
+    #[value(name = "1")]
+    ScaleFactor1,
+
+    #[value(name = "2")]
+    ScaleFactor2,
+
+    #[value(name = "4")]
+    ScaleFactor4,
+
+    #[value(name = "8")]
+    ScaleFactor8,
+}
+
+impl DownsampleScale {
+    pub fn scalar(&self) -> usize {
+        match self {
+            Self::ScaleFactor1 => 1,
+            Self::ScaleFactor2 => 2,
+            Self::ScaleFactor4 => 4,
+            Self::ScaleFactor8 => 8,
+        }
+    }
+}

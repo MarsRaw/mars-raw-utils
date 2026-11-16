@@ -2,6 +2,8 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use anyhow::anyhow;
 use clap::Parser;
+use mru::enums::DownsampleScale;
+use mru::marsimage::MarsImage;
 use mru::stereomesh::Vertex;
 use mru::stereomesh::{StereoMeshOptions, find_xyz_points};
 
@@ -78,6 +80,13 @@ pub struct OrrMap {
         help = "Image size used as length & height for the output map (default: 2048)"
     )]
     size: Option<usize>,
+
+    #[arg(
+        long,
+        short = 'D',
+        help = "Downsample scale. 1 or a power of 2 from 2-8 "
+    )]
+    downsample: Option<DownsampleScale>,
 }
 
 // So, to limit large anomolous spikes in the mesh, we will limit the length of any edge
@@ -149,6 +158,7 @@ impl RunnableSubcommand for OrrMap {
 
         let max_range = self.max_range.unwrap_or(defaults.far);
         let min_range = self.min_range.unwrap_or(defaults.near);
+        let downsample = self.downsample.unwrap_or(defaults.downsample);
 
         let xyz_raster = match find_xyz_points(
             &p0,
@@ -164,6 +174,7 @@ impl RunnableSubcommand for OrrMap {
                 max_height_deviations: self
                     .max_height_deviations
                     .unwrap_or(defaults.max_height_deviations),
+                downsample,
             }),
         ) {
             Ok(xyz_raster) => xyz_raster,
@@ -175,10 +186,10 @@ impl RunnableSubcommand for OrrMap {
 
         let origin = Vector::default();
 
-        let img = Image::open(&p0)?;
-        let band_0 = img.get_band(0);
-        let band_1 = img.get_band(1);
-        let band_2 = img.get_band(2);
+        let img = MarsImage::open(&p0)?.downsample(downsample)?;
+        let band_0 = img.image.get_band(0);
+        let band_1 = img.image.get_band(1);
+        let band_2 = img.image.get_band(2);
 
         let vector_to_xy = |vtx: &Vector| -> (f64, f64) {
             let h_len = (map_size / 2) as f64;

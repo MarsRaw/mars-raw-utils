@@ -2,6 +2,7 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use anyhow::anyhow;
 use clap::Parser;
+use mru::enums::DownsampleScale;
 use mru::stereomesh::Vertex;
 use mru::stereomesh::{StereoMeshOptions, find_xyz_points};
 
@@ -32,7 +33,7 @@ pub struct StereoMesh {
     #[arg(long, short = 'M', help = "Maximum range (meters)")]
     max_range: Option<f64>,
 
-    #[arg(long, short = 'd', help = "Point density")]
+    #[arg(long, short = 'd', help = "Point density (pixel step size)")]
     density: Option<usize>,
 
     #[arg(long, short = 'k', help = "Kernel size")]
@@ -67,6 +68,13 @@ pub struct StereoMesh {
         help = "Maximum length of any edge before a face is discarded"
     )]
     max_edge_length: Option<f64>,
+
+    #[arg(
+        long,
+        short = 'D',
+        help = "Downsample scale. 1 or a power of 2 from 2-8 "
+    )]
+    downsample: Option<DownsampleScale>,
 
     #[arg(long, short = 'p', help = "Disable multithreaded processing")]
     no_multithreading: bool,
@@ -153,6 +161,7 @@ impl RunnableSubcommand for StereoMesh {
                 max_height_deviations: self
                     .max_height_deviations
                     .unwrap_or(defaults.max_height_deviations),
+                downsample: self.downsample.unwrap_or(defaults.downsample),
             }),
         ) {
             Ok(xyz_raster) => xyz_raster,

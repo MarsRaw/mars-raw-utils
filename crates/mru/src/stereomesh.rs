@@ -1,11 +1,12 @@
+use crate::enums::DownsampleScale;
 use crate::prelude::*;
 use crate::stereo::Integral;
+use crate::stereo::model_for_image;
 use crate::stereo::rectify_models;
 use crate::stereo::remove_local_mean;
 use crate::stereo::resample_to_model;
 use anyhow::Result;
 use anyhow::anyhow;
-use anyhow::bail;
 use rayon::prelude::*;
 use sciimg::{prelude::*, vector::Vector};
 
@@ -40,12 +41,6 @@ fn triangulate(p1: &Vector, d1: &Vector, p2: &Vector, d2: &Vector) -> Option<Tri
         point: (q1 + q2) * 0.5,
         miss_distance: (q1 - q2).len(),
     })
-}
-
-pub fn get_cahvor(img: &MarsImage) -> Option<Cahvore> {
-    img.metadata
-        .as_surface()
-        .map(|rover_metadata| rover_metadata.camera_model_component_list.clone())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -280,19 +275,21 @@ pub struct StereoMeshOptions {
     pub max_miss_distance: f64,
     pub min_correlation: f64,
     pub max_height_deviations: f64,
+    pub downsample: DownsampleScale,
 }
 
 impl Default for StereoMeshOptions {
     fn default() -> Self {
         StereoMeshOptions {
-            kernel_size: 17,
-            point_density: 5,
+            kernel_size: 25,
+            point_density: 1,
             near: 1.0,
             far: 10.0,
             max_lr_error_px: 5,
             max_miss_distance: 0.1,
             min_correlation: 0.4,
             max_height_deviations: 0.3,
+            downsample: DownsampleScale::ScaleFactor1,
         }
     }
 }
@@ -316,25 +313,13 @@ pub fn find_xyz_points(
         ));
     }
 
-    let m0 = match MarsImage::open(left_file_path) {
-        Ok(img) => img,
-        Err(why) => return Err(anyhow!("Failed to open file {}: {:?}", left_file_path, why)),
-    };
-    let m1 = match MarsImage::open(right_file_path) {
-        Ok(img) => img,
-        Err(why) => {
-            return Err(anyhow!(
-                "Failed to open file {}: {:?}",
-                right_file_path,
-                why
-            ));
-        }
-    };
-
     let options = match options_opt {
         Some(options) => options,
         None => &StereoMeshOptions::default(),
     };
+
+    let m0 = MarsImage::open(left_file_path)?.downsample(options.downsample)?;
+    let m1 = MarsImage::open(right_file_path)?.downsample(options.downsample)?;
 
     let kernel_size = options.kernel_size;
     let k_half = kernel_size / 2;
@@ -346,14 +331,14 @@ pub fn find_xyz_points(
     let min_correlation = options.min_correlation;
     let max_height_deviations = options.max_height_deviations;
 
-    let cahv0 = match get_cahvor(&m0) {
-        Some(cahv) => cahv,
-        None => bail!("No CAHVORE model for image 1"),
+    let cahv0 = match model_for_image(&m0, true) {
+        Some(model) => model,
+        None => return Err(anyhow!("No camera model for image. Cannot resample.")),
     };
 
-    let cahv1 = match get_cahvor(&m1) {
-        Some(cahv) => cahv,
-        None => bail!("No CAHVORE model for image 2"),
+    let cahv1 = match model_for_image(&m1, true) {
+        Some(model) => model,
+        None => return Err(anyhow!("No camera model for image. Cannot resample.")),
     };
 
     let pair = rectify_models(&cahv0, &cahv1, m0.image.width, m0.image.height)?;
@@ -405,11 +390,6 @@ pub fn find_xyz_points(
 
         let cands = epipolar_candidates(&pair.left, &pair.right, x0, y0, limit_near, limit_far);
         let lstats = left_int.window(lx, ly, kernel_size);
-
-        // If these are zero then the window is black and likely missing data. Good idea to skip it
-        if lstats.0 == 0.0 && lstats.1 == 0.0 {
-            return vtx;
-        }
 
         let mut best = PointMatch::default();
         for (cx, cy) in cands {

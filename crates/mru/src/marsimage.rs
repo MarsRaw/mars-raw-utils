@@ -8,9 +8,13 @@ use sciimg::{
 
 use crate::{
     decompanding::LookUpTable,
-    enums::{self, Instrument},
+    enums::{self, DownsampleScale, Instrument},
     flatfield, inpaintmask,
-    metadata::{Metadata, MissionMetadata, load_image_metadata},
+    metadata::{
+        Metadata,
+        MissionMetadata::{self, Surface},
+        load_image_metadata,
+    },
     util,
 };
 use image::ImageReader;
@@ -336,8 +340,31 @@ impl MarsImage {
         self.image.to_mono();
     }
 
+    // Resize image to an arbitrary size
     pub fn resize_to(&mut self, to_width: usize, to_height: usize) {
         self.image.resize_to(to_width, to_height);
+    }
+
+    // Downsample given a power-of-2 ratio
+    pub fn downsample(&self, factor: DownsampleScale) -> Result<MarsImage> {
+        if factor == DownsampleScale::ScaleFactor1 {
+            return Ok(self.clone());
+        }
+        let d_w = self.image.width / factor.scalar();
+        let d_h = self.image.height / factor.scalar();
+
+        let mut smaller = self.clone();
+        smaller.resize_to(d_w, d_h);
+
+        let mut md = match smaller.metadata.as_surface() {
+            Some(md) => md.clone(),
+            None => return Err(anyhow!("Invalid metadata attached to surface image")),
+        };
+        md.scale_factor = factor.scalar() as u32;
+
+        smaller.metadata.mission = Surface(md);
+
+        Ok(smaller)
     }
 
     pub fn to_grayscale(&self) -> Result<Self> {

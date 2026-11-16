@@ -36,10 +36,13 @@ mesh_maximum_distance=15
 mesh_maximum_height_deviations=0.1
 
 # Point density, in pixels
-mesh_point_density=5
+mesh_point_density=1
+
+# Downscale factor for stereo pair images
+stereo_downscale=1
 
 # Point kernel size, in pixels. Should be odd number
-mesh_kernel_size=25
+mesh_kernel_size=17
 
 # Minimum point correlation value
 mesh_min_correlation=0.05
@@ -51,7 +54,7 @@ max_edge_length=0.5
 max_edge_ratio=0.05
 
 # Maximum left/right consistency tolerance
-max_lr_error_px=40
+max_lr_error_px=2
 
 # Maximum convergent ray miss distance
 max_miss_distance=0.6
@@ -61,6 +64,9 @@ max_miss_distance=0.6
 # If you would like to keep MRU to a single thread during that process, set disable_multithreading
 # to "-p". While MRU will use less CPU resources, this comes at the expense of a longer running process.
 disable_multithreading=
+
+# Length/Width size for ORR output mosaic
+orr_map_size=4096
 
 function print_help() {
 
@@ -220,7 +226,8 @@ if [[ $generate_orrs -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc -l
                 -R $max_edge_ratio \
                 -e $max_lr_error_px \
                 -x $max_miss_distance \
-                -s 4096
+                -s $orr_map_size \
+                -D $stereo_downscale \
                 $disable_multithreading
         done
 
@@ -273,6 +280,7 @@ if [[ $generate_pdi_mesh -eq 1 && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
             -R $max_edge_ratio \
             -e $max_lr_error_px \
             -x $max_miss_distance \
+            -D $stereo_downscale \
             $disable_multithreading
 
     done
