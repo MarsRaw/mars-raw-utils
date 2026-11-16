@@ -18,8 +18,10 @@ use sciimg::camera::cahvore::Cahvore;
 use sciimg::enums::ImageMode;
 use sciimg::image::Image;
 
-use crate::linearize::{model_for_image, resample_to_model};
 use crate::marsimage::MarsImage;
+use crate::stereo::{
+    Integral, model_for_image, rectify_models, remove_local_mean, resample_to_model,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RangeKind {
@@ -63,20 +65,6 @@ impl Default for StereoParams {
             range_kind: RangeKind::Distance,
         }
     }
-}
-
-/// Rectified model pair.
-#[derive(Debug, Clone)]
-pub struct RectifiedPair {
-    pub left: Cahvore,
-    pub right: Cahvore,
-    /// Focal length in pixels (same for both, square pixels).
-    pub focal_px: f64,
-    /// Baseline length in the units of the camera models (meters).
-    pub baseline_m: f64,
-    /// Principal point, shared by both rectified images.
-    pub hc: f64,
-    pub vc: f64,
 }
 
 /// Result of `compute_stereo_range`. All arrays are row-major in the rectified
@@ -137,66 +125,6 @@ impl StereoRange {
     }
 }
 
-/// Pixel scale (focal length in pixels) of a linear model.
-fn pixel_scale(m: &Cahvore) -> f64 {
-    let a = m.a.normalized();
-    (m.h - a * m.h.dot_product(&a)).norm()
-}
-
-/// Build the rectified model pair for two cameras in the same frame.
-///
-///   x' = (C_R - C_L) / |C_R - C_L|         image "right"; epipolar direction
-///   A' = mean boresight made orthogonal to x'
-///   y' = A' x x'                           image "down"
-///
-/// Both models use A', H = hc*A' + f*x', V = vc*A' + f*y', so a point at depth
-/// Z lands on the same row in both and has disparity f*B/Z.
-pub fn rectify_models(
-    left: &Cahvore,
-    right: &Cahvore,
-    width: usize,
-    height: usize,
-) -> Result<RectifiedPair> {
-    let ll = left.linearize(width, height, width, height)?;
-    let lr = right.linearize(width, height, width, height)?;
-    let focal_px = 0.5 * (pixel_scale(&ll) + pixel_scale(&lr));
-
-    let baseline = right.c - left.c;
-    let baseline_m = baseline.norm();
-    if baseline_m < 1e-6 {
-        return Err(anyhow!("rectify_models: left and right centers coincide"));
-    }
-
-    // Sanity check: the right camera must be on the +x (image right) side of
-    // the left camera, otherwise the images are swapped.
-    let a_l = ll.a.normalized();
-    let right_l = (ll.h - a_l * ll.h.dot_product(&a_l)).normalized();
-    if baseline.dot_product(&right_l) <= 0.0 {
-        return Err(anyhow!(
-            "rectify_models: right camera is not to the right of the left; images swapped?"
-        ));
-    }
-
-    let x = baseline / baseline_m;
-    let a_mean = (ll.a.normalized() + lr.a.normalized()).normalized();
-    let a = (a_mean - x * a_mean.dot_product(&x)).normalized();
-    let down = a.cross_product(&x).normalized();
-
-    let hc = (width as f64 - 1.0) / 2.0;
-    let vc = (height as f64 - 1.0) / 2.0;
-
-    let make = |c| Cahvore::new_cahv(c, a, a * hc + x * focal_px, a * vc + down * focal_px);
-
-    Ok(RectifiedPair {
-        left: make(left.c),
-        right: make(right.c),
-        focal_px,
-        baseline_m,
-        hc,
-        vc,
-    })
-}
-
 /// Compute a range image (meters) from a left/right pair. Both images must be
 /// the same size and carry camera models in the same frame; both are brought
 /// to the pixel grid of their loaded image by `model_for_image`.
@@ -227,8 +155,8 @@ pub fn compute_stereo_range(
     let pair = rectify_models(&model_l, &model_r, w, h)?;
 
     // Rectify both images onto the shared geometry.
-    let rect_l = resample_to_model(left, &model_l, pair.left.clone(), w, h)?;
-    let rect_r = resample_to_model(right, &model_r, pair.right.clone(), w, h)?;
+    let rect_l = resample_to_model(left, pair.left.clone(), w, h)?;
+    let rect_r = resample_to_model(right, pair.right.clone(), w, h)?;
 
     let (mut gl, valid_l) = luma(&rect_l);
     let (mut gr, valid_r) = luma(&rect_r);
@@ -297,7 +225,7 @@ pub fn compute_stereo_range(
 }
 
 /// Mean of all bands and a validity mask from the alpha channel.
-fn luma(img: &MarsImage) -> (Vec<f32>, Vec<bool>) {
+pub fn luma(img: &MarsImage) -> (Vec<f32>, Vec<bool>) {
     let (w, h) = (img.image.width, img.image.height);
     let nb = img.image.num_bands();
     let mut g = vec![0.0_f32; w * h];
@@ -313,43 +241,6 @@ fn luma(img: &MarsImage) -> (Vec<f32>, Vec<bool>) {
         }
     }
     (g, valid)
-}
-
-/// (w+1) x (h+1) summed-area table.
-fn integral(data: &[f32], w: usize, h: usize, out: &mut Vec<f64>) {
-    let stride = w + 1;
-    out.clear();
-    out.resize(stride * (h + 1), 0.0);
-    for y in 0..h {
-        let mut row = 0.0_f64;
-        for x in 0..w {
-            row += data[y * w + x] as f64;
-            out[(y + 1) * stride + (x + 1)] = out[y * stride + (x + 1)] + row;
-        }
-    }
-}
-
-/// Mean over the (2r+1)^2 window at (x, y), clamped to the image.
-#[inline]
-fn box_mean(ii: &[f64], w: usize, h: usize, x: usize, y: usize, r: usize) -> f64 {
-    let stride = w + 1;
-    let x0 = x.saturating_sub(r);
-    let x1 = (x + r + 1).min(w);
-    let y0 = y.saturating_sub(r);
-    let y1 = (y + r + 1).min(h);
-    let sum =
-        ii[y1 * stride + x1] - ii[y0 * stride + x1] - ii[y1 * stride + x0] + ii[y0 * stride + x0];
-    sum / ((x1 - x0) * (y1 - y0)) as f64
-}
-
-fn remove_local_mean(g: &mut [f32], w: usize, h: usize, r: usize) {
-    let mut ii = Vec::new();
-    integral(g, w, h, &mut ii);
-    for y in 0..h {
-        for x in 0..w {
-            g[y * w + x] -= box_mean(&ii, w, h, x, y, r) as f32;
-        }
-    }
 }
 
 /// SAD block matching along rows on a rectified pair. Returns left-referenced
@@ -380,7 +271,7 @@ fn match_blocks(
     let penalty = 0.25_f32;
 
     let mut diff = vec![0.0_f32; n];
-    let mut ii: Vec<f64> = Vec::new();
+    // let mut ii: Vec<f64> = Vec::new();
     let mut c_cur = vec![0.0_f32; n];
     let mut c_prev = vec![f32::INFINITY; n];
 
@@ -405,12 +296,13 @@ fn match_blocks(
                 };
             }
         }
-        integral(&diff, w, h, &mut ii);
+        let integral = Integral::new(&diff, w, h);
 
         for y in 0..h {
             for x in 0..w {
                 let i = y * w + x;
-                let c = box_mean(&ii, w, h, x, y, r) as f32;
+                let c = integral.box_mean(w, h, x, y, r) as f32;
+
                 c_cur[i] = c;
 
                 // Left-referenced winner (and the +1 neighbor cost).

@@ -110,6 +110,9 @@ pub mod location;
 /// A collection of serde de/serializers for various types
 pub mod serializers;
 
+// Procedures for support stereo processing
+pub mod stereo;
+
 // Linearize lens distortion based on CAHVORE camera model
 pub mod linearize;
 

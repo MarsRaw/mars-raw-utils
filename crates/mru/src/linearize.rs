@@ -4,35 +4,8 @@ use sciimg::vector::Vector;
 use sciimg::{prelude::*, quaternion::Quaternion};
 
 use crate::marsimage::MarsImage;
-
-/// The source camera model, adjusted to the pixel grid of the image as loaded.
-///
-/// Assumes the model in the metadata describes the full, unscaled frame, and
-/// that `subframe_rect` is [x, y, width, height] with 1-based x/y in full-frame
-/// pixels (the same convention `MarsImage::flatfield` uses to crop the flat).
-/// If your metadata models are already adjusted, skip this and call
-/// `linearize_image_with_model` directly.
-pub fn model_for_image(img: &MarsImage, apply_scaling: bool) -> Option<Cahvore> {
-    let rover_metadata = img.metadata.as_surface()?;
-
-    let mut model = rover_metadata.camera_model_component_list.clone();
-
-    if let Some(sf) = &rover_metadata.subframe_rect
-        && sf.len() >= 2
-    {
-        // source pixel in the loaded image = full-frame pixel - (origin - 1)
-        model = model.shift(-(sf[0] - 1.0), -(sf[1] - 1.0));
-    }
-
-    // This tends to lead to weird results in M20 NavCam images, so I'm going
-    // to hide it behind a user option.
-    if apply_scaling && rover_metadata.scale_factor > 1 {
-        let s = 1.0 / rover_metadata.scale_factor as f64;
-        model = model.scale(s, s);
-    }
-
-    Some(model)
-}
+use crate::stereo::build_map;
+use crate::stereo::model_for_image;
 
 /// What to do with the boresight when leveling.
 #[derive(Debug, Clone, Copy)]
@@ -344,7 +317,7 @@ pub fn linearize_image_with_model(
             }
 
             for band in 0..num_bands {
-                let v = bilinear(src.image.get_band(band), s, l);
+                let v = src.image.get_band(band).get_interpolated(s, l)?;
                 out_img.put(x, y, v, band);
             }
             out_img.put_alpha(x, y, true);
@@ -374,147 +347,4 @@ pub fn linearize_image_with_model(
     out.metadata.from_surface(&out_rover_metadata);
 
     Ok(out)
-}
-
-/// Resample `src` (described by `src_model`) onto an arbitrary linear output
-/// model and canvas. This is the shared back end for linearizing, leveling,
-/// expanding and stereo rectification.
-pub fn resample_to_model(
-    src: &MarsImage,
-    src_model: &Cahvore,
-    out_model: Cahvore,
-    out_width: usize,
-    out_height: usize,
-) -> Result<MarsImage> {
-    if src.is_empty() || src.image.num_bands() == 0 {
-        return Err(anyhow!("resample_to_model: source image is empty"));
-    }
-
-    let src_w = src.image.width;
-    let src_h = src.image.height;
-    let num_bands = src.image.num_bands();
-
-    let map = build_map(src_model, &out_model, src_w, src_h, out_width, out_height);
-
-    // Alpha starts fully masked (false); only pixels that map into the source
-    // frame are switched on below. Pixels that never get written stay 0.
-    let mut out_img = Image::new_with_bands_masked(
-        out_width,
-        out_height,
-        num_bands,
-        src.image.get_mode(),
-        false,
-    )?;
-
-    for y in 0..out_height {
-        for x in 0..out_width {
-            let Some((s, l)) = map[y * out_width + x] else {
-                continue;
-            };
-
-            // Respect the source alpha at the nearest source pixel.
-            let nx = (s.round() as usize).min(src_w - 1);
-            let ny = (l.round() as usize).min(src_h - 1);
-            if !src.get_alpha_at(nx, ny) {
-                continue;
-            }
-
-            for band in 0..num_bands {
-                let v = bilinear(src.image.get_band(band), s, l);
-                out_img.put(x, y, v, band);
-            }
-            out_img.put_alpha(x, y, true);
-        }
-    }
-
-    let mut out = MarsImage::from_image(&out_img, src.instrument);
-    let mut out_rover_metadata = if let Some(rover_metadata) = src.metadata.as_surface() {
-        rover_metadata.clone()
-    } else {
-        return Err(anyhow!(
-            "Non surface metadata constructed when a surface (rover) metadata was expected"
-        ));
-    };
-
-    out.metadata = src.metadata.clone();
-
-    // The new model describes the *output* pixel grid, so the subframe offset
-    // and scale have already been folded in.
-    out_rover_metadata.camera_model_component_list = out_model;
-    out_rover_metadata.subframe_rect = None;
-    // Adjust to whatever your pipeline expects for a distortion-free model:
-    out_rover_metadata.camera_model_type = Some("CAHV".to_string());
-    out.update_history();
-    out.metadata.from_surface(&out_rover_metadata);
-
-    Ok(out)
-}
-
-/// For each output pixel (row-major), the (sample, line) in the source image,
-/// or None if the ray can't be projected or lands outside the source frame.
-///
-/// This depends only on the two camera models and the image sizes, so it can be
-/// built once and reused for every frame taken with the same model.
-pub fn build_map(
-    src_model: &Cahvore,
-    out_model: &Cahvore,
-    src_w: usize,
-    src_h: usize,
-    out_w: usize,
-    out_h: usize,
-) -> Vec<Option<(f32, f32)>> {
-    let max_s = (src_w - 1) as f64;
-    let max_l = (src_h - 1) as f64;
-
-    let mut map = Vec::with_capacity(out_w * out_h);
-
-    for y in 0..out_h {
-        for x in 0..out_w {
-            let entry = out_model
-                .ls_to_look_vector(&ImageCoordinate {
-                    line: y as f64,
-                    sample: x as f64,
-                })
-                .ok()
-                .and_then(|lv| {
-                    // Output camera shares C with the source, so the ray
-                    // direction is all that's needed. `infinity = true` skips
-                    // the entrance-pupil (E) shift.
-                    src_model.xyz_to_ls(&lv.look_direction, true).ok()
-                })
-                .filter(|c| {
-                    c.sample.is_finite()
-                        && c.line.is_finite()
-                        && c.sample >= 0.0
-                        && c.sample <= max_s
-                        && c.line >= 0.0
-                        && c.line <= max_l
-                })
-                .map(|c| (c.sample as f32, c.line as f32));
-
-            map.push(entry);
-        }
-    }
-
-    map
-}
-
-/// Bilinear sample of an ImageBuffer at fractional (sample, line); pixel
-/// centers sit on integer coordinates.
-///
-/// This stands in for `ImageBuffer::get_interpolated`, which panics when the
-/// sample lands on the last row/column (it reads x+1 / y+1 unconditionally).
-/// Here the neighbors are clamped to the frame instead.
-fn bilinear(buf: &ImageBuffer, s: f32, l: f32) -> f32 {
-    let x0 = (s.floor() as usize).min(buf.width - 1);
-    let y0 = (l.floor() as usize).min(buf.height - 1);
-    let x1 = (x0 + 1).min(buf.width - 1);
-    let y1 = (y0 + 1).min(buf.height - 1);
-
-    let fx = s - x0 as f32;
-    let fy = l - y0 as f32;
-
-    let top = buf.get(x0, y0) * (1.0 - fx) + buf.get(x1, y0) * fx;
-    let bot = buf.get(x0, y1) * (1.0 - fx) + buf.get(x1, y1) * fx;
-    top * (1.0 - fy) + bot * fy
 }

@@ -1,4 +1,8 @@
 use crate::prelude::*;
+use crate::stereo::Integral;
+use crate::stereo::rectify_models;
+use crate::stereo::remove_local_mean;
+use crate::stereo::resample_to_model;
 use anyhow::Result;
 use anyhow::anyhow;
 use anyhow::bail;
@@ -42,40 +46,6 @@ pub fn get_cahvor(img: &MarsImage) -> Option<Cahvore> {
     img.metadata
         .as_surface()
         .map(|rover_metadata| rover_metadata.camera_model_component_list.clone())
-}
-
-struct Integral {
-    w: usize,
-    sum: Vec<f64>,
-    sq: Vec<f64>,
-}
-
-impl Integral {
-    fn new(data: &[f32], w: usize, h: usize) -> Self {
-        let iw = w + 1;
-        let mut sum = vec![0.0; iw * (h + 1)];
-        let mut sq = vec![0.0; iw * (h + 1)];
-        for y in 0..h {
-            let (mut rs, mut rq) = (0.0, 0.0);
-            for x in 0..w {
-                let v = data[y * w + x] as f64;
-                rs += v;
-                rq += v * v;
-                sum[(y + 1) * iw + x + 1] = sum[y * iw + x + 1] + rs;
-                sq[(y + 1) * iw + x + 1] = sq[y * iw + x + 1] + rq;
-            }
-        }
-        Self { w: iw, sum, sq }
-    }
-
-    // (sum, sum of squares) over the k×k window with top-left (x, y)
-    fn window(&self, x: usize, y: usize, k: usize) -> (f64, f64) {
-        let f = |t: &[f64]| {
-            t[(y + k) * self.w + x + k] - t[y * self.w + x + k] - t[(y + k) * self.w + x]
-                + t[y * self.w + x]
-        };
-        (f(&self.sum), f(&self.sq))
-    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -386,23 +356,37 @@ pub fn find_xyz_points(
         None => bail!("No CAHVORE model for image 2"),
     };
 
-    let b0 = m0.image.get_band(0);
-    let b1 = m1.image.get_band(0);
+    let pair = rectify_models(&cahv0, &cahv1, m0.image.width, m0.image.height)?;
 
-    let (lw, lh) = (b0.width, b0.height);
-    let (rw, rh) = (b1.width, b1.height);
+    let m0_mono = m0.to_grayscale()?;
+    let m1_mono = m1.to_grayscale()?;
 
-    let left_px: Vec<f32> = b0.to_vector();
-    let right_px: Vec<f32> = b1.to_vector();
+    let rect_l = resample_to_model(&m0, pair.left.clone(), m0.image.width, m0.image.height)?;
+    let rect_r = resample_to_model(&m1, pair.right.clone(), m0.image.width, m0.image.height)?;
+
+    let (lw, lh) = (m0_mono.image.width, m0_mono.image.height);
+    let (rw, rh) = (m1_mono.image.width, m1_mono.image.height);
+
+    let mut b0 = rect_l.image.get_band(0).clone();
+    let mut b1 = rect_r.image.get_band(0).clone();
+
+    b0.normalize_mut(0.0, 1.0);
+    b1.normalize_mut(0.0, 1.0);
+
+    let mut left_px: Vec<f32> = b0.to_vector();
+    let mut right_px: Vec<f32> = b1.to_vector();
+
+    remove_local_mean(&mut left_px, lw, lh, kernel_size);
+    remove_local_mean(&mut right_px, lw, lh, kernel_size);
 
     let left_int = Integral::new(&left_px, lw, lh);
     let right_int = Integral::new(&right_px, rw, rh);
 
     let x0_lo = k_half;
-    let x0_hi = m0.image.width - k_half;
+    let x0_hi = m0_mono.image.width - k_half;
 
     let y0_lo = k_half;
-    let y0_hi = m0.image.height - k_half;
+    let y0_hi = m0_mono.image.height - k_half;
 
     let grid_width = (x0_hi - x0_lo).div_ceil(point_density);
     let grid_height = (y0_hi - y0_lo).div_ceil(point_density);
@@ -419,7 +403,7 @@ pub fn find_xyz_points(
             return vtx;
         }
 
-        let cands = epipolar_candidates(&cahv0, &cahv1, x0, y0, limit_near, limit_far);
+        let cands = epipolar_candidates(&pair.left, &pair.right, x0, y0, limit_near, limit_far);
         let lstats = left_int.window(lx, ly, kernel_size);
 
         // If these are zero then the window is black and likely missing data. Good idea to skip it
@@ -462,11 +446,11 @@ pub fn find_xyz_points(
         }
 
         let (Ok(lv0), Ok(lv1)) = (
-            cahv0.ls_to_look_vector(&ImageCoordinate {
+            pair.left.ls_to_look_vector(&ImageCoordinate {
                 line: y0 as f64,
                 sample: x0 as f64,
             }),
-            cahv1.ls_to_look_vector(&ImageCoordinate {
+            pair.right.ls_to_look_vector(&ImageCoordinate {
                 line: (best.ry + k_half) as f64,
                 sample: (best.rx + k_half) as f64,
             }),
@@ -496,13 +480,7 @@ pub fn find_xyz_points(
         })
         .collect();
 
-    let mut grid = XyzRaster::new(
-        grid_height,
-        grid_width,
-        m0.image.width,
-        m0.image.height,
-        &cahv0.c,
-    )?;
+    let mut grid = XyzRaster::new(grid_height, grid_width, lw, lh, &pair.left.c)?;
     grid.xyz_grid = xyz_grid;
 
     grid.reject_height_outliers(max_height_deviations);
