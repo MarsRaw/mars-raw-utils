@@ -20,6 +20,7 @@ MAGICK="`which magick`"
 do_fetch=0
 organize=0
 generate_mosaics=0
+generate_orrs=0
 generate_pdi_mesh=0
 generate_penultimate_mesh=0
 
@@ -70,6 +71,7 @@ function print_help() {
     echo Options:
     echo "  -f     Fetch imagery from NASA servers"
     echo "  -m     Generate mosaics"
+    echo "  -O     Generate ORRs"
     echo "  -M     Generate post drive mesh"
     echo "  -p     Generate penultimate mesh"
     echo "  -o     Organize outputs into rdr, mosaic, and mesh directories"
@@ -86,6 +88,8 @@ while [ $# -gt 0 ]; do
         organize=1
     elif [ $1 == "-m" ]; then 
         generate_mosaics=1
+    elif [ $1 == "-O" ]; then
+        generate_orrs=1
     elif [ $1 == "-M" ]; then
         generate_pdi_mesh=1
     elif [ $1 == "-p" ]; then 
@@ -130,7 +134,7 @@ fi
 
 # Run calibration
 echo Running image calibration...
-mru calibrate -i *JPG
+#mru calibrate -i *JPG
 
 # Doublecheck and make sure the expected imaging exists. If not, print a message and exit
 if [ `ls N{L,R}*NCAM00346*tif N{L,R}*NCAM00353*tif N{L,R}*NCAM00354*tif N{L,R}*NCAM002[5-9]*tif N{L,R}*NCAM00385*tif 2> /dev/null | wc -l` -eq 0 ]; then
@@ -177,6 +181,64 @@ if [[ $generate_mosaics -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
 
 fi
 
+
+if [[ $generate_orrs -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc -l` -gt 0 ]]; then
+    echo Generating Orthorectified Map...
+
+    echo Sol: $psol
+    echo Site: $site
+    echo Drive: $drive
+    echo Product Type: $prod_type
+
+    # Try not to conflict with any previous versions
+    if [ -f orr_maps.lis ]; then
+        rm orr_maps.lis
+    fi
+
+    for seqid in `ls NL*NCAM002[5-9]?*.tif | cut -c 26-34 | sort | uniq -c | grep -E "[5,7] " | tr -s ' ' | cut -d ' ' -f 3`; do 
+
+        for sclk in `ls NL*${seqid}*.tif 2> /dev/null | cut -c 5-13`; do
+            echo $seqid $sclk
+
+            nav_orr=N_L${psol}_${prod_type}_${site}_${drive}_${sclk}_ORR_M_.tif
+            echo $nav_orr >> orr_maps.lis 
+
+            echo Creating $nav_orr
+            mru orthogonal-map -l NL*${sclk}*NCAM00[2-3]*.tif \
+                -r NR*${sclk}*NCAM00[2-3]*.tif \
+                -o $nav_orr \
+                -m $mesh_minimum_distance \
+                -M $mesh_maximum_distance \
+                -H $mesh_maximum_height_deviations \
+                -d $mesh_point_density \
+                -k $mesh_kernel_size \
+                -c $mesh_min_correlation \
+                -E $max_edge_length \
+                -R $max_edge_ratio \
+                -e $max_lr_error_px \
+                -x $max_miss_distance \
+                -s 4096
+                $disable_multithreading
+        done
+
+    done
+
+    # Merge ORR wedges into single tif file
+    if [ `cat orr_maps.lis | wc -l` -gt 1 ]; then
+        merged_tif=N_L${psol}_${prod_type}_${site}_${drive}_ORR_.tif
+        echo Merging PDI ORR wedges into single tif $merged_tif
+        magick `cat orr_maps.lis` -evaluate-sequence max $merged_tif
+    fi
+
+    # Clean up ORR wedges
+    # if [ -f orr_maps.lis ]; then
+
+    #     for f in `cat orr_maps.lis`; do 
+    #         rm $f 
+    #     done
+    #     rm orr_maps.lis
+    # fi
+fi
 
 if [[ $generate_pdi_mesh -eq 1 && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc -l` -gt 0 ]]; then
     echo Generating post drive mesh...
