@@ -134,7 +134,7 @@ fi
 
 # Run calibration
 echo Running image calibration...
-#mru calibrate -i *JPG
+mru calibrate -i *JPG
 
 # Doublecheck and make sure the expected imaging exists. If not, print a message and exit
 if [ `ls N{L,R}*NCAM00346*tif N{L,R}*NCAM00353*tif N{L,R}*NCAM00354*tif N{L,R}*NCAM002[5-9]*tif N{L,R}*NCAM00385*tif 2> /dev/null | wc -l` -eq 0 ]; then
@@ -164,6 +164,7 @@ if [[ $generate_mosaics -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
     nav_left_mosaic=N_L000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
     nav_right_mosaic=N_R000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
     nav_anaglyph_mosaic=N_A000_${psol}_${prod_type}${site}CYL_S_${drive}_MRUGNM_.tif
+    nav_polar_mosaic=N_L000_${psol}_${prod_type}${site}POL_S_${drive}_MRUGNM_.tif
 
     # NCAM00346 - Workspace 1x1 (skinny)
     # NCAM00353 - Workspace 2x1 (medium and high quality)
@@ -179,6 +180,8 @@ if [[ $generate_mosaics -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
     # Create Red/Blue Anaglyph Mosaic
     mru composite -i N{L,R}*NCAM00[346,353]*.tif N{L,R}*NCAM00354*.tif N{L,R}*NCAM002[5-9]?*tif -o $nav_anaglyph_mosaic -a
 
+    # Create Left-eye Polar Stereographic Mosaic
+    mru composite -i NL*NCAM00[346,353]*.tif NL*NCAM00354*.tif NL*NCAM002[5-9]?*tif -o $nav_polar_mosaic -p polar-stereographic
 fi
 
 
@@ -227,17 +230,17 @@ if [[ $generate_orrs -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc -l
     if [ `cat orr_maps.lis | wc -l` -gt 1 ]; then
         merged_tif=N_L${psol}_${prod_type}_${site}_${drive}_ORR_.tif
         echo Merging PDI ORR wedges into single tif $merged_tif
-        magick `cat orr_maps.lis` -evaluate-sequence max $merged_tif
+        mru overlay -i `cat orr_maps.lis` -o $merged_tif
     fi
 
     # Clean up ORR wedges
-    # if [ -f orr_maps.lis ]; then
+    if [ -f orr_maps.lis ]; then
 
-    #     for f in `cat orr_maps.lis`; do 
-    #         rm $f 
-    #     done
-    #     rm orr_maps.lis
-    # fi
+        for f in `cat orr_maps.lis`; do 
+            rm $f 
+        done
+        rm orr_maps.lis
+    fi
 fi
 
 if [[ $generate_pdi_mesh -eq 1 && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc -l` -gt 0 ]]; then
@@ -373,6 +376,15 @@ if [ $organize -eq 1 ]; then
         fi
 
         mv *MRUGNM_.tif mosaic 2> /dev/null
+    fi
+
+    if [[ $generate_orrs -eq 1 && `ls *_ORR_.tif 2> /dev/null | wc -l ` -gt 0 ]]; then
+
+        if [ ! -d mosaic ]; then
+            mkdir mosaic
+        fi
+
+        mv *_ORR_.tif mosaic 2> /dev/null
     fi
 
     if [[ ( $generate_pdi_mesh -eq 1 || $generate_penultimate_mesh -eq 1 ) && `ls *obj 2> /dev/null | wc -l` -gt 0 ]]; then

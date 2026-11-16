@@ -155,6 +155,7 @@ pub mod linearize;
 pub mod meanstack;
 pub mod mergemesh;
 pub mod orr;
+pub mod overlay;
 pub mod passes;
 pub mod pds2png;
 pub mod profile;
