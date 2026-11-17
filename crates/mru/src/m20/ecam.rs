@@ -6,7 +6,7 @@ use crate::{
     enums::{self, Instrument},
     marsimage::MarsImage,
     memcache::load_image,
-    metadata::MissionMetadata,
+    metadata::MissionMetadata::{self, Surface},
     util,
 };
 use anyhow::{Error, Result, anyhow};
@@ -224,6 +224,17 @@ impl Calibration for M20EECam {
 
         //
         //
+
+        // The camera model is prescaled relative to the scaling factor, so technically they are out of sync when scale_factor > 2.
+        // We have already done the operations required to deal with scale_factor, so let's just set it to 1 so it
+        // matches the scale of the camera model.
+
+        let mut rover_metadata = match raw.metadata.as_surface() {
+            Some(md) => md.clone(),
+            None => return cal_fail(cal_context, &out_file),
+        };
+        rover_metadata.scale_factor = 1;
+        raw.metadata.mission = Surface(rover_metadata);
 
         vprintln!("Writing to disk...");
         raw.update_history();

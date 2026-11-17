@@ -318,8 +318,12 @@ pub fn find_xyz_points(
         None => &StereoMeshOptions::default(),
     };
 
-    let m0 = MarsImage::open(left_file_path)?.downsample(options.downsample)?;
-    let m1 = MarsImage::open(right_file_path)?.downsample(options.downsample)?;
+    let m0 = MarsImage::open(left_file_path)?
+        .downsample(options.downsample)?
+        .to_grayscale()?;
+    let m1 = MarsImage::open(right_file_path)?
+        .downsample(options.downsample)?
+        .to_grayscale()?;
 
     let kernel_size = options.kernel_size;
     let k_half = kernel_size / 2;
@@ -343,14 +347,14 @@ pub fn find_xyz_points(
 
     let pair = rectify_models(&cahv0, &cahv1, m0.image.width, m0.image.height)?;
 
-    let m0_mono = m0.to_grayscale()?;
-    let m1_mono = m1.to_grayscale()?;
-
     let rect_l = resample_to_model(&m0, pair.left.clone(), m0.image.width, m0.image.height)?;
     let rect_r = resample_to_model(&m1, pair.right.clone(), m0.image.width, m0.image.height)?;
 
-    let (lw, lh) = (m0_mono.image.width, m0_mono.image.height);
-    let (rw, rh) = (m1_mono.image.width, m1_mono.image.height);
+    rect_l.save("/Users/kgill/data/M20/meshtest2/rect_l.tif")?;
+    rect_r.save("/Users/kgill/data/M20/meshtest2/rect_r.tif")?;
+
+    let (lw, lh) = (rect_l.image.width, rect_l.image.height);
+    let (rw, rh) = (rect_r.image.width, rect_r.image.height);
 
     let mut b0 = rect_l.image.get_band(0).clone();
     let mut b1 = rect_r.image.get_band(0).clone();
@@ -368,10 +372,10 @@ pub fn find_xyz_points(
     let right_int = Integral::new(&right_px, rw, rh);
 
     let x0_lo = k_half;
-    let x0_hi = m0_mono.image.width - k_half;
+    let x0_hi = rect_l.image.width - k_half;
 
     let y0_lo = k_half;
-    let y0_hi = m0_mono.image.height - k_half;
+    let y0_hi = rect_l.image.height - k_half;
 
     let grid_width = (x0_hi - x0_lo).div_ceil(point_density);
     let grid_height = (y0_hi - y0_lo).div_ceil(point_density);
