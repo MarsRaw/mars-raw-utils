@@ -3,6 +3,7 @@ use anyhow::Result;
 use anyhow::anyhow;
 use clap::Parser;
 use mru::enums::DownsampleScale;
+use mru::marsimage::MarsImage;
 use mru::stereomesh::Vertex;
 use mru::stereomesh::{StereoMeshOptions, find_xyz_points};
 
@@ -146,6 +147,7 @@ impl RunnableSubcommand for StereoMesh {
         }
 
         let defaults = StereoMeshOptions::default();
+        let left_metadata = MarsImage::load_image_metadata(&p0);
 
         let xyz_raster = match find_xyz_points(
             &p0,
@@ -162,13 +164,19 @@ impl RunnableSubcommand for StereoMesh {
                     .max_height_deviations
                     .unwrap_or(defaults.max_height_deviations),
                 downsample: self.downsample.unwrap_or(defaults.downsample),
+                linearize: !left_metadata.processing.linearized,
             }),
         ) {
             Ok(xyz_raster) => xyz_raster,
             Err(why) => return Err(anyhow!("Error generating points: {:?}", why)),
         };
 
-        let mtl_path = self.output.with_extension("mtl");
+        let texture_path = self.output.with_added_extension("tif");
+        xyz_raster
+            .left_eye_img
+            .save(texture_path.as_os_str().to_str().unwrap())?;
+
+        let mtl_path = self.output.with_added_extension("mtl");
         let mtl_name = mtl_path
             .file_name()
             .and_then(|n| n.to_str())
@@ -328,7 +336,8 @@ impl RunnableSubcommand for StereoMesh {
 
         // Texture is the left image. Prefer an absolute path so the MTL works
         // wherever the OBJ is opened from.
-        let texture_path = std::fs::canonicalize(&self.left).unwrap_or_else(|_| self.left.clone());
+        let texture_path =
+            std::fs::canonicalize(&texture_path).unwrap_or_else(|_| texture_path.clone());
 
         let mut mtl = File::create(&mtl_path)
             .map_err(|why| anyhow!("Failed to create material file: {:?}", why))?;

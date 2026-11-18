@@ -162,7 +162,7 @@ impl MarsImage {
         }
     }
 
-    fn load_image_metadata(file_path: &str) -> Metadata {
+    pub fn load_image_metadata(file_path: &str) -> Metadata {
         let metadata_file = util::replace_image_extension(file_path, "-metadata.json");
         info!("Checking for metadata file at {}", metadata_file);
         if path::file_exists(metadata_file.as_str()) {

@@ -2,7 +2,6 @@ use crate::enums::DownsampleScale;
 use crate::prelude::*;
 use crate::stereo::Integral;
 use crate::stereo::model_for_image;
-use crate::stereo::rectify_models;
 use crate::stereo::remove_local_mean;
 use crate::stereo::resample_to_model;
 use anyhow::Result;
@@ -156,6 +155,8 @@ pub struct XyzRaster {
     pub image_height: usize,
     pub xyz_grid: Vec<Vec<Vertex>>,
     pub origin: Vector,
+    pub left_eye_img: MarsImage,
+    pub right_eye_img: MarsImage,
 }
 
 macro_rules! check_xyz_in_bounds_xyz_raster {
@@ -175,6 +176,8 @@ impl XyzRaster {
         image_width: usize,
         image_height: usize,
         origin: &Vector,
+        left: &MarsImage,
+        right: &MarsImage,
     ) -> Result<Self> {
         if rows == 0 || cols == 0 {
             return Err(anyhow!(
@@ -191,6 +194,8 @@ impl XyzRaster {
             // Defaults with x/y values of zero are technically inconsistent and invalid in this contxt, but no-one's gonna come to arrest me....
             xyz_grid: vec![vec![Vertex::default(); cols]; rows],
             origin: origin.to_owned(),
+            left_eye_img: left.to_owned(),
+            right_eye_img: right.to_owned(),
         })
     }
 
@@ -276,6 +281,7 @@ pub struct StereoMeshOptions {
     pub min_correlation: f64,
     pub max_height_deviations: f64,
     pub downsample: DownsampleScale,
+    pub linearize: bool,
 }
 
 impl Default for StereoMeshOptions {
@@ -290,6 +296,7 @@ impl Default for StereoMeshOptions {
             min_correlation: 0.4,
             max_height_deviations: 0.3,
             downsample: DownsampleScale::ScaleFactor1,
+            linearize: false,
         }
     }
 }
@@ -318,12 +325,8 @@ pub fn find_xyz_points(
         None => &StereoMeshOptions::default(),
     };
 
-    let m0 = MarsImage::open(left_file_path)?
-        .downsample(options.downsample)?
-        .to_grayscale()?;
-    let m1 = MarsImage::open(right_file_path)?
-        .downsample(options.downsample)?
-        .to_grayscale()?;
+    let m0 = MarsImage::open(left_file_path)?.downsample(options.downsample)?;
+    let m1 = MarsImage::open(right_file_path)?.downsample(options.downsample)?;
 
     let kernel_size = options.kernel_size;
     let k_half = kernel_size / 2;
@@ -345,19 +348,52 @@ pub fn find_xyz_points(
         None => return Err(anyhow!("No camera model for image. Cannot resample.")),
     };
 
-    let pair = rectify_models(&cahv0, &cahv1, m0.image.width, m0.image.height)?;
+    let (left_model, right_model, left_img, right_img) = if options.linearize {
+        let left_linearized_model = cahv0.linearize(
+            m0.image.width,
+            m0.image.height,
+            m0.image.width,
+            m0.image.height,
+        )?;
 
-    let rect_l = resample_to_model(&m0, pair.left.clone(), m0.image.width, m0.image.height)?;
-    let rect_r = resample_to_model(&m1, pair.right.clone(), m0.image.width, m0.image.height)?;
+        let right_linearized_model = cahv1.linearize(
+            m1.image.width,
+            m1.image.height,
+            m1.image.width,
+            m1.image.height,
+        )?;
 
-    rect_l.save("/Users/kgill/data/M20/meshtest2/rect_l.tif")?;
-    rect_r.save("/Users/kgill/data/M20/meshtest2/rect_r.tif")?;
+        let rect_l = resample_to_model(
+            &m0,
+            left_linearized_model.clone(),
+            m0.image.width,
+            m0.image.height,
+        )?;
+        let rect_r = resample_to_model(
+            &m1,
+            right_linearized_model.clone(),
+            m0.image.width,
+            m0.image.height,
+        )?;
 
-    let (lw, lh) = (rect_l.image.width, rect_l.image.height);
-    let (rw, rh) = (rect_r.image.width, rect_r.image.height);
+        (
+            left_linearized_model,
+            right_linearized_model,
+            rect_l,
+            rect_r,
+        )
+    } else {
+        (cahv0, cahv1, m0, m1)
+    };
 
-    let mut b0 = rect_l.image.get_band(0).clone();
-    let mut b1 = rect_r.image.get_band(0).clone();
+    let left_mono = left_img.to_grayscale()?;
+    let right_mono = right_img.to_grayscale()?;
+
+    let (lw, lh) = (left_mono.image.width, left_mono.image.height);
+    let (rw, rh) = (right_mono.image.width, right_mono.image.height);
+
+    let mut b0 = left_mono.image.get_band(0).clone();
+    let mut b1 = right_mono.image.get_band(0).clone();
 
     b0.normalize_mut(0.0, 1.0);
     b1.normalize_mut(0.0, 1.0);
@@ -372,10 +408,10 @@ pub fn find_xyz_points(
     let right_int = Integral::new(&right_px, rw, rh);
 
     let x0_lo = k_half;
-    let x0_hi = rect_l.image.width - k_half;
+    let x0_hi = left_img.image.width - k_half;
 
     let y0_lo = k_half;
-    let y0_hi = rect_l.image.height - k_half;
+    let y0_hi = left_img.image.height - k_half;
 
     let grid_width = (x0_hi - x0_lo).div_ceil(point_density);
     let grid_height = (y0_hi - y0_lo).div_ceil(point_density);
@@ -392,7 +428,7 @@ pub fn find_xyz_points(
             return vtx;
         }
 
-        let cands = epipolar_candidates(&pair.left, &pair.right, x0, y0, limit_near, limit_far);
+        let cands = epipolar_candidates(&left_model, &right_model, x0, y0, limit_near, limit_far);
         let lstats = left_int.window(lx, ly, kernel_size);
 
         let mut best = PointMatch::default();
@@ -430,11 +466,11 @@ pub fn find_xyz_points(
         }
 
         let (Ok(lv0), Ok(lv1)) = (
-            pair.left.ls_to_look_vector(&ImageCoordinate {
+            left_model.ls_to_look_vector(&ImageCoordinate {
                 line: y0 as f64,
                 sample: x0 as f64,
             }),
-            pair.right.ls_to_look_vector(&ImageCoordinate {
+            right_model.ls_to_look_vector(&ImageCoordinate {
                 line: (best.ry + k_half) as f64,
                 sample: (best.rx + k_half) as f64,
             }),
@@ -464,7 +500,15 @@ pub fn find_xyz_points(
         })
         .collect();
 
-    let mut grid = XyzRaster::new(grid_height, grid_width, lw, lh, &pair.left.c)?;
+    let mut grid = XyzRaster::new(
+        grid_height,
+        grid_width,
+        lw,
+        lh,
+        &left_model.c,
+        &left_img,
+        &right_img,
+    )?;
     grid.xyz_grid = xyz_grid;
 
     grid.reject_height_outliers(max_height_deviations);

@@ -299,7 +299,7 @@ if [[ $generate_pdi_mesh -eq 1 && `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.ti
     # Clean up pdi
     if [ -f pdi_meshes.lis ]; then
 
-        # Delete the individual wedges, but leave the material (.mtl) files
+        # Delete the individual wedges, but leave the material (.obj.mtl) and texture (.obj.tif) files
         for f in `cat pdi_meshes.lis`; do 
             rm $f 
         done
@@ -351,18 +351,8 @@ if [ $organize -eq 1 ]; then
         fi
 
         mv *.obj mesh/ 2> /dev/null
-        mv *.mtl mesh/ 2> /dev/null
-
-        # The material files have a relative pointer to the image texture. If we move
-        # the file, then we need to alter that relative path to match the changes.
-        for f in `ls mesh/*mtl`; do
-            
-            if [ `uname` == "Darwin" ]; then 
-                sed -i '' 's/\.\//\.\.\/rdr\//g' $f # MacOS requires a value after the -i option.
-            else 
-                sed -i 's/\.\//\.\.\/rdr\//g' $f
-            fi
-
-        done
+        mv *.obj.mtl mesh/ 2> /dev/null
+        mv *.obj.tif mesh/ 2> /dev/null
+        mv *.obj-metadata.json mesh/ 2> /dev/null
     fi
 fi

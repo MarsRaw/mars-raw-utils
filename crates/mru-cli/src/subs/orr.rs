@@ -160,6 +160,8 @@ impl RunnableSubcommand for OrrMap {
         let min_range = self.min_range.unwrap_or(defaults.near);
         let downsample = self.downsample.unwrap_or(defaults.downsample);
 
+        let left_metadata = MarsImage::load_image_metadata(&p0);
+
         let xyz_raster = match find_xyz_points(
             &p0,
             &p1,
@@ -175,6 +177,7 @@ impl RunnableSubcommand for OrrMap {
                     .max_height_deviations
                     .unwrap_or(defaults.max_height_deviations),
                 downsample,
+                linearize: !left_metadata.processing.linearized,
             }),
         ) {
             Ok(xyz_raster) => xyz_raster,
@@ -186,7 +189,8 @@ impl RunnableSubcommand for OrrMap {
 
         let origin = Vector::default();
 
-        let img = MarsImage::open(&p0)?.downsample(downsample)?;
+        let img = xyz_raster.left_eye_img.to_owned();
+
         let band_0 = img.image.get_band(0);
         let band_1 = img.image.get_band(1);
         let band_2 = img.image.get_band(2);
