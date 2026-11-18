@@ -17,11 +17,10 @@ use anyhow::{Result, anyhow};
 use sciimg::camera::cahvore::Cahvore;
 use sciimg::enums::ImageMode;
 use sciimg::image::Image;
+use sciimg::integral::{Integral, remove_local_mean};
 
 use crate::marsimage::MarsImage;
-use crate::stereo::{
-    Integral, model_for_image, rectify_models, remove_local_mean, resample_to_model,
-};
+use crate::stereo::{model_for_image, rectify_models, resample_to_model};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RangeKind {

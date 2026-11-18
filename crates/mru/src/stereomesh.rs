@@ -1,13 +1,15 @@
 use crate::enums::DownsampleScale;
 use crate::prelude::*;
-use crate::stereo::Integral;
 use crate::stereo::model_for_image;
-use crate::stereo::remove_local_mean;
 use crate::stereo::resample_to_model;
 use anyhow::Result;
 use anyhow::anyhow;
 use rayon::prelude::*;
-use sciimg::{prelude::*, vector::Vector};
+use sciimg::camera::cahvore::Cahvore;
+use sciimg::camera::model::ImageCoordinate;
+use sciimg::integral::{ImageIntegral, Integral};
+use sciimg::path;
+use sciimg::vector::Vector;
 
 struct Triangulated {
     point: Vector,
@@ -386,26 +388,11 @@ pub fn find_xyz_points(
         (cahv0, cahv1, m0, m1)
     };
 
-    let left_mono = left_img.to_grayscale()?;
-    let right_mono = right_img.to_grayscale()?;
+    let left_int = left_img.image.to_mono_integral_basic(kernel_size)?;
+    let right_int = right_img.image.to_mono_integral_basic(kernel_size)?;
 
-    let (lw, lh) = (left_mono.image.width, left_mono.image.height);
-    let (rw, rh) = (right_mono.image.width, right_mono.image.height);
-
-    let mut b0 = left_mono.image.get_band(0).clone();
-    let mut b1 = right_mono.image.get_band(0).clone();
-
-    b0.normalize_mut(0.0, 1.0);
-    b1.normalize_mut(0.0, 1.0);
-
-    let mut left_px: Vec<f32> = b0.to_vector();
-    let mut right_px: Vec<f32> = b1.to_vector();
-
-    remove_local_mean(&mut left_px, lw, lh, kernel_size);
-    remove_local_mean(&mut right_px, lw, lh, kernel_size);
-
-    let left_int = Integral::new(&left_px, lw, lh);
-    let right_int = Integral::new(&right_px, rw, rh);
+    let (lw, lh) = (left_img.image.width, left_img.image.height);
+    let (rw, rh) = (right_img.image.width, right_img.image.height);
 
     let x0_lo = k_half;
     let x0_hi = left_img.image.width - k_half;
@@ -444,12 +431,12 @@ pub fn find_xyz_points(
                 }
                 let (rx, ry) = (rx as usize, ry as usize);
                 let c = ncc(
-                    &left_px,
+                    &left_int.data,
                     lw,
                     lx,
                     ly,
                     lstats,
-                    &right_px,
+                    &right_int.data,
                     rw,
                     rx,
                     ry,
