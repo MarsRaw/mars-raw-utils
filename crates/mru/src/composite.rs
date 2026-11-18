@@ -1,6 +1,9 @@
 use crate::{
     prelude::*,
-    projection::{cylindrical, polar},
+    projection::{
+        cylindrical,
+        polar::{self, PolarView},
+    },
 };
 use anyhow::Result;
 use sciimg::image::Image;
@@ -10,8 +13,7 @@ pub fn create_composite(
     anaglyph: bool,
     azimuth_rotation: f64,
     max_edge_length_polar: usize,
-    max_radius_polar: f64,
-    eye_height_polar: Option<f64>,
+    polar_view: PolarView,
     projection: Projection,
 ) -> Result<Image> {
     match projection {
@@ -45,8 +47,7 @@ pub fn create_composite(
             azimuth_rotation,
             polar::RadialMap::EqualArea,
             max_edge_length_polar,
-            max_radius_polar,
-            eye_height_polar,
+            polar_view,
         ),
         Projection::PolarEquidistant => polar::create_composite(
             in_files,
@@ -54,8 +55,7 @@ pub fn create_composite(
             azimuth_rotation,
             polar::RadialMap::Equidistant,
             max_edge_length_polar,
-            max_radius_polar,
-            eye_height_polar,
+            polar_view,
         ),
         Projection::PolarOrthographic => polar::create_composite(
             in_files,
@@ -63,8 +63,7 @@ pub fn create_composite(
             azimuth_rotation,
             polar::RadialMap::Orthographic,
             max_edge_length_polar,
-            max_radius_polar,
-            eye_height_polar,
+            polar_view,
         ),
         Projection::PolarStereographic => polar::create_composite(
             in_files,
@@ -72,8 +71,7 @@ pub fn create_composite(
             azimuth_rotation,
             polar::RadialMap::Stereographic,
             max_edge_length_polar,
-            max_radius_polar,
-            eye_height_polar,
+            polar_view,
         ),
         Projection::PolarRectilinear => polar::create_composite(
             in_files,
@@ -81,8 +79,7 @@ pub fn create_composite(
             azimuth_rotation,
             polar::RadialMap::Rectilinear,
             max_edge_length_polar,
-            max_radius_polar,
-            eye_height_polar,
+            polar_view,
         ),
     }
 }

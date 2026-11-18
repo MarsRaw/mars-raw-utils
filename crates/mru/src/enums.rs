@@ -142,6 +142,14 @@ pub enum Projection {
     PolarRectilinear,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ValueEnum)]
+pub enum VerticalPerspective {
+    Sky,
+    #[default]
+    Ground,
+    GroundAngle,
+}
+
 // Controlled image downscaling
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, ValueEnum)]
 pub enum DownsampleScale {

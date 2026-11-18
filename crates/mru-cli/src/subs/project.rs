@@ -10,6 +10,10 @@ use mru::metadata::{ImageProjection, Mosaic, MosaicInput};
 use mru::prelude::*;
 use mru::projection::cylindrical;
 use mru::projection::polar;
+use mru::projection::polar::PolarView;
+use mru::projection::polar::Pole;
+use rayon::iter::IntoParallelRefIterator as _;
+use rayon::iter::ParallelIterator;
 use sciimg::vector::Vector;
 use sciimg::{prelude::*, quaternion::Quaternion};
 use stump;
@@ -46,6 +50,13 @@ pub struct Project {
 
     #[arg(
         long,
+        short = 'P',
+        help = "Vertical perspective (ground, sky) for polar projections (default: ground)"
+    )]
+    perspective: Option<VerticalPerspective>,
+
+    #[arg(
+        long,
         short = 'p',
         help = "Mosaic projection (default: equirectangular)"
     )]
@@ -57,6 +68,13 @@ pub struct Project {
         help = "Override eye height (meters) for polar projections"
     )]
     eye_height: Option<f64>,
+
+    #[arg(
+        long,
+        short = 'z',
+        help = "Maximum angle from center (zenith or nadir) (default: 90/deg)"
+    )]
+    max_zenith_angle: Option<f64>,
 }
 
 fn mast_azimuth_from_metadata(image: &MarsImage) -> Result<f64> {
@@ -94,8 +112,7 @@ fn project_image(
     in_file: &str,
     azimuth_rotation: f64,
     size: usize,
-    max_radius: f64,
-    eye_height: Option<f64>,
+    polar_view: PolarView,
     projection: Projection,
 ) -> Result<()> {
     let file_suffix = match &projection {
@@ -126,8 +143,7 @@ fn project_image(
         false,
         look_azimuth,
         size,
-        max_radius,
-        eye_height,
+        polar_view,
         projection,
     )?;
 
@@ -164,10 +180,9 @@ fn project_image(
             let unrotated_map_extent = polar::determine_map_extent_for_files(
                 &[in_file.to_string()],
                 &Quaternion::default(),
-                max_radius,
-                eye_height,
                 size,
-                &radial_map,
+                polar_view,
+                radial_map,
             )?;
             debug!("Unrotated Map Context: {:?}", unrotated_map_extent);
             ProjectionParameters::Polar(PolarProjectionParameters {
@@ -178,6 +193,11 @@ fn project_image(
                 max_radius: unrotated_map_extent.max_radius,
                 max_edge_length: unrotated_map_extent.max_edge_length,
                 eye_height: unrotated_map_extent.eye_height,
+                pole: match unrotated_map_extent.pole {
+                    Pole::Zenith => metadata::Pole::Zenith,
+                    Pole::Nadir => metadata::Pole::Nadir,
+                },
+                max_theta: unrotated_map_extent.max_theta,
             })
         }
     };
@@ -212,16 +232,22 @@ impl RunnableSubcommand for Project {
         let max_radius = self.distance.unwrap_or(25.0);
         let projection = self.projection.unwrap_or(Projection::Equirectangular);
 
-        in_files.iter().try_for_each(|in_file| {
-            project_image(
-                in_file,
-                azimuth_rotation,
-                size,
+        let polar_view = match self.perspective.unwrap_or(VerticalPerspective::Ground) {
+            VerticalPerspective::Sky => PolarView::Sky {
+                max_zenith_deg: self.max_zenith_angle.unwrap_or(90.0),
+            },
+            VerticalPerspective::GroundAngle => PolarView::GroundAngle {
+                max_zenith_deg: self.max_zenith_angle.unwrap_or(90.0),
+            },
+            VerticalPerspective::Ground => PolarView::Ground {
                 max_radius,
-                self.eye_height,
-                projection,
-            )
-            .map_err(|why| anyhow!("Error reprojecting image: {:?}", why))
+                eye_height: self.eye_height,
+            },
+        };
+
+        in_files.par_iter().try_for_each(|in_file| {
+            project_image(in_file, azimuth_rotation, size, polar_view, projection)
+                .map_err(|why| anyhow!("Error reprojecting image: {:?}", why))
         })?;
 
         pb_done!();

@@ -1,3 +1,5 @@
+use std::f64::consts::FRAC_PI_2;
+
 use anyhow::{Result, anyhow, bail};
 use sciimg::{
     camera::{
@@ -20,6 +22,22 @@ const RECTILINEAR_MAX_THETA: f64 = std::f64::consts::FRAC_PI_2 - 1e-6;
 pub struct PolarXY {
     pub x: f64,
     pub y: f64,
+
+    // Angle off the chosen pole
+    pub theta: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum PolarView {
+    /// Nadir-centered, out to a ground distance
+    Ground {
+        max_radius: f64,
+        eye_height: Option<f64>,
+    },
+    /// Nadir-centered, up to the horizon (plus optional degrees above it)
+    GroundAngle { max_zenith_deg: f64 },
+    /// Zenith-centered, down to the horizon (plus optional degrees below it)
+    Sky { max_zenith_deg: f64 },
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -31,6 +49,8 @@ pub struct PolarMapExtent {
     pub max_radius: f64,
     pub max_edge_length: usize,
     pub eye_height: f64,
+    pub pole: Pole,
+    pub max_theta: f64,
 }
 
 impl PolarMapExtent {
@@ -50,6 +70,8 @@ impl PolarMapExtent {
             max_radius: f64::MIN,
             max_edge_length: 0,
             eye_height: 0.0,
+            pole: Pole::Zenith,
+            max_theta: 0.0,
         }
     }
 
@@ -77,14 +99,18 @@ impl PolarMapExtent {
 }
 
 /// Which pole sits at the center of the polar plot.
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub enum Pole {
+    #[default]
     Zenith, // up
-    Nadir,  // down
+    Nadir, // down
 }
 
 /// Radial mapping from the angle off the center pole.
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub enum RadialMap {
     /// r = angle from pole (equidistant / azimuthal equidistant)
+    #[default]
     Equidistant,
     /// r = 2 * tan(angle / 2) (stereographic, conformal)
     Stereographic,
@@ -119,19 +145,13 @@ impl RadialMap {
     }
 }
 
-fn max_polar_radius(max_radius: f64, height: f64, map: &RadialMap) -> f64 {
-    let theta_max = max_radius.atan2(height); // angle off nadir
-    map.project(theta_max)
-}
-
-pub fn vector_to_polar(v: &Vector, pole: Pole, map: &RadialMap) -> PolarXY {
-    // Angle between the vector and the chosen pole, in [0, pi]
-    let len = (v.x * v.x + v.y * v.y + v.z * v.z).sqrt();
+pub fn vector_to_polar(v: &Vector, pole: Pole, map: RadialMap) -> PolarXY {
     let cos_theta = match pole {
-        Pole::Zenith => v.z / len,
-        Pole::Nadir => -v.z / len,
+        Pole::Zenith => -v.z,
+        Pole::Nadir => v.z,
     };
-    let theta = cos_theta.clamp(-1.0, 1.0).acos();
+
+    let theta = v.x.hypot(v.y).atan2(cos_theta);
 
     let r = map.project(theta);
 
@@ -141,6 +161,7 @@ pub fn vector_to_polar(v: &Vector, pole: Pole, map: &RadialMap) -> PolarXY {
     PolarXY {
         x: r * az.cos(),
         y: r * az.sin(),
+        theta,
     }
 }
 
@@ -149,7 +170,7 @@ pub fn lookvector_to_polar(
     quat: Option<&Quaternion>,
     origin_diff: &Vector,
     pole: Pole,
-    map: &RadialMap,
+    map: RadialMap,
 ) -> PolarXY {
     let ray = lv.intersect_to_sphere(SPHERE_RADIUS);
     let ray_moved = ray.subtract(origin_diff);
@@ -167,14 +188,15 @@ fn get_polar_xy(
     y: f64,
     quat: &Quaternion,
     origin_diff: &Vector,
-    radial_map: &RadialMap,
+    pole: Pole,
+    radial_map: RadialMap,
 ) -> Result<PolarXY> {
     match c.ls_to_look_vector(&ImageCoordinate { line: y, sample: x }) {
         Ok(lv) => Ok(lookvector_to_polar(
             &lv,
             Some(quat),
             origin_diff,
-            Pole::Zenith,
+            pole,
             radial_map,
         )),
         Err(why) => Err(anyhow!("Unable to convert ls to look vector: {:?}", why)),
@@ -188,26 +210,28 @@ fn get_map_xy_from_img_xy(
     y: usize,
     quat: &Quaternion,
     origin_diff: &Vector,
-    radial_map: &RadialMap,
-) -> Result<(f64, f64)> {
-    let img_x = x as f64;
-    let img_y = y as f64;
+    radial_map: RadialMap,
+) -> Result<Option<(f64, f64)>> {
+    let lv = model
+        .ls_to_look_vector(&ImageCoordinate {
+            line: y as f64,
+            sample: x as f64,
+        })
+        .map_err(|why| anyhow!("Unable to convert ls to look vector: {:?}", why))?;
 
-    let xy = match model.ls_to_look_vector(&ImageCoordinate {
-        line: img_y,
-        sample: img_x,
-    }) {
-        Ok(lv) => lookvector_to_polar(&lv, Some(quat), origin_diff, Pole::Zenith, radial_map),
-        Err(why) => return Err(anyhow!("Unable to convert ls to look vector: {:?}", why)),
-    };
+    let xy = lookvector_to_polar(&lv, Some(quat), origin_diff, map_extent.pole, radial_map);
 
-    Ok(map_extent.xy_to_map_xy(xy.x, xy.y))
+    if xy.theta > map_extent.max_theta {
+        return Ok(None); // beyond the horizon (or the ground radius)
+    }
+    Ok(Some(map_extent.xy_to_map_xy(xy.x, xy.y)))
 }
 
 pub fn determine_map_extent(
     img: &MarsImage,
     quat: &Quaternion,
-    radial_map: &RadialMap,
+    pole: Pole,
+    radial_map: RadialMap,
 ) -> Result<PolarMapExtent> {
     let mut extent = PolarMapExtent::default();
 
@@ -241,10 +265,11 @@ pub fn determine_map_extent(
     ]
     .iter()
     .try_for_each(|(x, y)| {
-        let polar_xy = match get_polar_xy(&model, *x, *y, quat, &Vector::default(), radial_map) {
-            Ok(polar_xy) => polar_xy,
-            Err(why) => bail!("Failed to determine polar xy point: {:?}", why),
-        };
+        let polar_xy =
+            match get_polar_xy(&model, *x, *y, quat, &Vector::default(), pole, radial_map) {
+                Ok(polar_xy) => polar_xy,
+                Err(why) => bail!("Failed to determine polar xy point: {:?}", why),
+            };
         extent.union_xy(&polar_xy);
         Ok(())
     })?;
@@ -265,13 +290,79 @@ fn compute_eye_height_from_model(img: &MarsImage) -> Result<f64> {
     Ok(computed_eye_height)
 }
 
+fn view_limits(view: PolarView, map: RadialMap, first: &MarsImage) -> Result<(Pole, f64, f64)> {
+    // returns (pole, max_theta, eye_height)
+    match view {
+        PolarView::Ground {
+            max_radius,
+            eye_height,
+        } => {
+            let h = match eye_height {
+                Some(h) => h,
+                None => compute_eye_height_from_model(first)?,
+            };
+            Ok((Pole::Nadir, max_radius.atan2(h), h))
+        }
+        PolarView::GroundAngle { max_zenith_deg } => {
+            if !(max_zenith_deg > 0.0 && max_zenith_deg <= 180.0) {
+                bail!(
+                    "max zenith angle must be in (0, 180] degrees, got {}",
+                    max_zenith_deg
+                );
+            }
+            let max_theta = max_zenith_deg.to_radians();
+
+            match map {
+                RadialMap::Rectilinear if max_theta >= RECTILINEAR_MAX_THETA => {
+                    bail!(
+                        "Rectilinear cannot reach 90 degrees from nadir; use a smaller angle or another radial map"
+                    )
+                }
+                RadialMap::Orthographic if max_theta > FRAC_PI_2 => {
+                    bail!("Orthographic folds back past 90 degrees from nadir; use 90 or less")
+                }
+                RadialMap::Stereographic if max_theta >= std::f64::consts::PI - 1e-6 => {
+                    bail!("Stereographic diverges at 180 degrees from nadir; use a smaller angle")
+                }
+                _ => {}
+            }
+            Ok((Pole::Nadir, max_theta, 0.0))
+        }
+
+        PolarView::Sky { max_zenith_deg } => {
+            if !(max_zenith_deg > 0.0 && max_zenith_deg <= 180.0) {
+                bail!(
+                    "max zenith angle must be in (0, 180] degrees, got {}",
+                    max_zenith_deg
+                );
+            }
+            let max_theta = max_zenith_deg.to_radians();
+
+            match map {
+                RadialMap::Rectilinear if max_theta >= RECTILINEAR_MAX_THETA => {
+                    bail!(
+                        "Rectilinear cannot reach 90 degrees from zenith; use a smaller angle or another radial map"
+                    )
+                }
+                RadialMap::Orthographic if max_theta > FRAC_PI_2 => {
+                    bail!("Orthographic folds back past 90 degrees from zenith; use 90 or less")
+                }
+                RadialMap::Stereographic if max_theta >= std::f64::consts::PI - 1e-6 => {
+                    bail!("Stereographic diverges at 180 degrees from zenith; use a smaller angle")
+                }
+                _ => {}
+            }
+            Ok((Pole::Zenith, max_theta, 0.0))
+        }
+    }
+}
+
 pub fn determine_map_extent_for_files(
     input_files: &[String],
     quat: &Quaternion,
-    max_radius: f64,
-    eye_height: Option<f64>,
     max_edge_length: usize,
-    radial_map: &RadialMap,
+    view: PolarView,
+    radial_map: RadialMap,
 ) -> Result<PolarMapExtent> {
     let mut extent = PolarMapExtent::default();
 
@@ -279,13 +370,13 @@ pub fn determine_map_extent_for_files(
         return Err(anyhow!("Cannot determine map extent: no input files"));
     }
 
-    let use_eye_height = match &eye_height {
-        Some(eye_height) => *eye_height,
-        None => {
-            let first_image = MarsImage::open(input_files.first().unwrap())?;
-            compute_eye_height_from_model(&first_image)?
-        }
-    };
+    let first = MarsImage::open(input_files.first().unwrap())?;
+    let (pole, max_theta, eye_height) = view_limits(view, radial_map, &first)?;
+    extent.pole = pole;
+    extent.max_theta = max_theta;
+    extent.max_radius = radial_map.project(max_theta);
+    extent.eye_height = eye_height;
+    extent.max_edge_length = max_edge_length;
 
     input_files.iter().try_for_each(|input_file| {
         let img = match MarsImage::open(input_file) {
@@ -293,14 +384,10 @@ pub fn determine_map_extent_for_files(
             Err(why) => bail!("Failed to open file {}: {:?}", input_file, why),
         };
 
-        let map_extent = determine_map_extent(&img, quat, radial_map)?;
+        let map_extent = determine_map_extent(&img, quat, pole, radial_map)?;
         extent.union(&map_extent);
         Ok(())
     })?;
-
-    extent.max_radius = max_polar_radius(max_radius, use_eye_height, radial_map);
-    extent.max_edge_length = max_edge_length;
-    extent.eye_height = use_eye_height;
 
     Ok(extent)
 }
@@ -311,7 +398,7 @@ pub fn project_file_to_canvas<D: Drawable>(
     map: &mut D,
     quat: &Quaternion,
     initial_origin: &Vector,
-    radial_map: &RadialMap,
+    radial_map: RadialMap,
 ) -> Result<()> {
     let img = MarsImage::open(input_file)?;
 
@@ -340,45 +427,46 @@ pub fn project_file_to_canvas<D: Drawable>(
             let full_frame_x = (x + subframe.x) * scale_factor;
             let full_frame_y = (y + subframe.y) * scale_factor;
 
-            let (tl_x, tl_y) = get_map_xy_from_img_xy(
-                &input_model,
-                map_extent,
-                full_frame_x,
-                full_frame_y,
-                quat,
-                &origin_diff,
-                radial_map,
-            )?;
-
-            let (tr_x, tr_y) = get_map_xy_from_img_xy(
-                &input_model,
-                map_extent,
-                full_frame_x + scale_factor,
-                full_frame_y,
-                quat,
-                &origin_diff,
-                radial_map,
-            )?;
-
-            let (bl_x, bl_y) = get_map_xy_from_img_xy(
-                &input_model,
-                map_extent,
-                full_frame_x,
-                full_frame_y + scale_factor,
-                quat,
-                &origin_diff,
-                radial_map,
-            )?;
-
-            let (br_x, br_y) = get_map_xy_from_img_xy(
-                &input_model,
-                map_extent,
-                full_frame_x + scale_factor,
-                full_frame_y + scale_factor,
-                quat,
-                &origin_diff,
-                radial_map,
-            )?;
+            let (Some((tl_x, tl_y)), Some((tr_x, tr_y)), Some((bl_x, bl_y)), Some((br_x, br_y))) = (
+                get_map_xy_from_img_xy(
+                    &input_model,
+                    map_extent,
+                    full_frame_x,
+                    full_frame_y,
+                    quat,
+                    &origin_diff,
+                    radial_map,
+                )?,
+                get_map_xy_from_img_xy(
+                    &input_model,
+                    map_extent,
+                    full_frame_x + scale_factor,
+                    full_frame_y,
+                    quat,
+                    &origin_diff,
+                    radial_map,
+                )?,
+                get_map_xy_from_img_xy(
+                    &input_model,
+                    map_extent,
+                    full_frame_x,
+                    full_frame_y + scale_factor,
+                    quat,
+                    &origin_diff,
+                    radial_map,
+                )?,
+                get_map_xy_from_img_xy(
+                    &input_model,
+                    map_extent,
+                    full_frame_x + scale_factor,
+                    full_frame_y + scale_factor,
+                    quat,
+                    &origin_diff,
+                    radial_map,
+                )?,
+            ) else {
+                continue;
+            };
 
             let tl = Point::create_rgb(
                 tl_x,
@@ -425,8 +513,7 @@ pub fn create_composite(
     azimuth_rotation: f64,
     radial_map: RadialMap,
     max_edge_length: usize,
-    max_radius: f64,
-    eye_height: Option<f64>,
+    view: PolarView,
 ) -> Result<Image> {
     if _anaglyph {
         return Err(anyhow!("Anaglyph unsupported for polar projections"));
@@ -441,14 +528,8 @@ pub fn create_composite(
 
     let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 
-    let map_extent = determine_map_extent_for_files(
-        in_files,
-        &quat,
-        max_radius,
-        eye_height,
-        max_edge_length,
-        &radial_map,
-    )?;
+    let map_extent =
+        determine_map_extent_for_files(in_files, &quat, max_edge_length, view, radial_map)?;
     debug!("Map Context: {:?}", map_extent);
 
     let mut map = Image::create_masked(max_edge_length, max_edge_length, true);
@@ -462,7 +543,7 @@ pub fn create_composite(
                 &mut map,
                 &quat,
                 &initial_origin,
-                &radial_map,
+                radial_map,
             )
         } else {
             bail!("Error: input file not found: {}", in_file)

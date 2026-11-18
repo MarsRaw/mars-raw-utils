@@ -134,6 +134,13 @@ pub struct CylindricalProjectionParameters {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+pub enum Pole {
+    #[default]
+    Zenith,
+    Nadir,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
 pub struct PolarProjectionParameters {
     pub min_x: f64,
     pub max_x: f64,
@@ -142,6 +149,8 @@ pub struct PolarProjectionParameters {
     pub max_radius: f64,
     pub max_edge_length: usize,
     pub eye_height: f64,
+    pub pole: Pole,
+    pub max_theta: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]

@@ -68,6 +68,12 @@ disable_multithreading=
 # Length/Width size for ORR output mosaic
 orr_map_size=4096
 
+# Projection used for creating polar mosaics
+polar_projection=polar-stereographic
+
+# Maximum angle in degrees from nadir (down)
+polar_maximum_degrees_from_nadir=110
+
 function print_help() {
 
     echo Generate MSL post drive products from Navcam images
@@ -188,7 +194,7 @@ if [[ $generate_mosaics -eq 1  && `ls N{L,R}*NCAM002[5-9]?*tif 2> /dev/null | wc
     mru composite -i N{L,R}*NCAM00[346,353]*.tif N{L,R}*NCAM00354*.tif N{L,R}*NCAM002[5-9]?*tif -o $nav_anaglyph_mosaic -a
 
     # Create Left-eye Polar Stereographic Mosaic
-    mru composite -i NL*NCAM00[346,353]*.tif NL*NCAM00354*.tif NL*NCAM002[5-9]?*tif -o $nav_polar_mosaic -p polar-stereographic
+    mru composite -i NL*NCAM00[346,353]*.tif NL*NCAM00354*.tif NL*NCAM002[5-9]?*tif -o $nav_polar_mosaic -P ground-angle -p $polar_projection -z $polar_maximum_degrees_from_nadir
 
     # Create Left-eye Polar Rectilinear (Vertical) Mosaic
     mru composite -i NL*NCAM00[346,353]*.tif NL*NCAM00354*.tif NL*NCAM002[5-9]?*tif -o $nav_rectilinear_mosaic -p polar-rectilinear
