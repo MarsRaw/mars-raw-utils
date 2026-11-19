@@ -1,7 +1,6 @@
 use crate::subs::runnable::RunnableSubcommand;
 use anyhow::{Result, anyhow, bail};
 use clap::Parser;
-use itertools::iproduct;
 use sciimg::{drawable::Drawable, image::Image};
 use std::path::PathBuf;
 pb_create!();
@@ -51,25 +50,7 @@ impl RunnableSubcommand for Overlay {
                 Ok(img) => img,
                 Err(why) => bail!("Failed to open file: {:?}", why),
             };
-            if img.width != composite.width || img.height != composite.height {
-                bail!("Image dimensions do not match");
-            }
-
-            // This works like using "Lighten Only in photoshop". For each pixel,
-            // this will check whether the input image grayscale value is greater
-            // than the composite image. If it is, it will set that value into the
-            // composite image.
-            iproduct!(0..img.height, 0..img.width).for_each(|(y, x)| {
-                let img_gray = img.get_pixel_grayscale(x, y);
-                let comp_gray = composite.get_pixel_grayscale(x, y);
-                if img_gray > comp_gray {
-                    for b in 0..img.num_bands() {
-                        let img_pixel_value = img.get_band(b).get(x, y);
-                        composite.put(x, y, img_pixel_value, b);
-                    }
-                }
-            });
-
+            composite.overlay(&img)?;
             Ok(())
         })?;
 

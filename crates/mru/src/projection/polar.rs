@@ -1,6 +1,5 @@
-use std::f64::consts::FRAC_PI_2;
-
 use anyhow::{Result, anyhow, bail};
+use rayon::prelude::*;
 use sciimg::{
     camera::{
         cahvore::Cahvore,
@@ -8,10 +7,10 @@ use sciimg::{
     },
     drawable::{Drawable, Point},
     image::Image,
-    path,
     quaternion::Quaternion,
     vector::Vector,
 };
+use std::f64::consts::FRAC_PI_2;
 
 use crate::{enums::Projection, marsimage::MarsImage};
 
@@ -531,24 +530,26 @@ pub fn create_composite(
     let map_extent =
         determine_map_extent_for_files(in_files, &quat, max_edge_length, view, radial_map)?;
     debug!("Map Context: {:?}", map_extent);
-
     let mut map = Image::create_masked(max_edge_length, max_edge_length, true);
 
-    in_files.iter().try_for_each(|in_file| {
-        if path::file_exists(in_file) {
-            info!("Processing File: {}", in_file);
+    let local_maps: Result<Vec<Image>> = in_files
+        .par_iter()
+        .map(|in_file| {
+            let mut local_map = Image::create_masked(max_edge_length, max_edge_length, true);
             project_file_to_canvas(
                 in_file,
                 &map_extent,
-                &mut map,
+                &mut local_map,
                 &quat,
                 &initial_origin,
                 radial_map,
-            )
-        } else {
-            bail!("Error: input file not found: {}", in_file)
-        }
-    })?;
+            )?;
+            Ok(local_map)
+        })
+        .collect();
 
+    for local_map in local_maps? {
+        map.overlay(&local_map)?;
+    }
     Ok(map)
 }
