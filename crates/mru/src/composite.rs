@@ -15,6 +15,7 @@ pub fn create_composite(
     max_edge_length_polar: usize,
     polar_view: PolarView,
     projection: Projection,
+    draw_grid: bool,
 ) -> Result<Image> {
     match projection {
         Projection::Equirectangular => cylindrical::create_composite(
@@ -22,24 +23,28 @@ pub fn create_composite(
             anaglyph,
             azimuth_rotation,
             cylindrical::CylMap::Equirectangular,
+            draw_grid,
         ),
         Projection::EqualArea => cylindrical::create_composite(
             in_files,
             anaglyph,
             azimuth_rotation,
             cylindrical::CylMap::EqualArea,
+            draw_grid,
         ),
         Projection::Perspective => cylindrical::create_composite(
             in_files,
             anaglyph,
             azimuth_rotation,
             cylindrical::CylMap::Perspective,
+            draw_grid,
         ),
         Projection::Mercator => cylindrical::create_composite(
             in_files,
             anaglyph,
             azimuth_rotation,
             cylindrical::CylMap::Mercator,
+            draw_grid,
         ),
         Projection::PolarEqualArea => polar::create_composite(
             in_files,
@@ -48,6 +53,7 @@ pub fn create_composite(
             polar::RadialMap::EqualArea,
             max_edge_length_polar,
             polar_view,
+            draw_grid,
         ),
         Projection::PolarEquidistant => polar::create_composite(
             in_files,
@@ -56,6 +62,7 @@ pub fn create_composite(
             polar::RadialMap::Equidistant,
             max_edge_length_polar,
             polar_view,
+            draw_grid,
         ),
         Projection::PolarOrthographic => polar::create_composite(
             in_files,
@@ -64,6 +71,7 @@ pub fn create_composite(
             polar::RadialMap::Orthographic,
             max_edge_length_polar,
             polar_view,
+            draw_grid,
         ),
         Projection::PolarStereographic => polar::create_composite(
             in_files,
@@ -72,6 +80,7 @@ pub fn create_composite(
             polar::RadialMap::Stereographic,
             max_edge_length_polar,
             polar_view,
+            draw_grid,
         ),
         Projection::PolarRectilinear => polar::create_composite(
             in_files,
@@ -80,6 +89,7 @@ pub fn create_composite(
             polar::RadialMap::Rectilinear,
             max_edge_length_polar,
             polar_view,
+            draw_grid,
         ),
     }
 }

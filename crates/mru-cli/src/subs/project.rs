@@ -14,8 +14,9 @@ use mru::projection::polar::PolarView;
 use mru::projection::polar::Pole;
 use rayon::iter::IntoParallelRefIterator as _;
 use rayon::iter::ParallelIterator;
+use sciimg::camera::model::ImageCoordinate;
 use sciimg::vector::Vector;
-use sciimg::{prelude::*, quaternion::Quaternion};
+
 use stump;
 
 pb_create_spinner!();
@@ -145,6 +146,7 @@ fn project_image(
         size,
         polar_view,
         projection,
+        false,
     )?;
 
     // Rebundle as a MarsImage with metadata
@@ -157,10 +159,11 @@ fn project_image(
         | Projection::Perspective
         | Projection::Mercator => {
             // Unrotated projection model
-            let unrotated_map_extent = cylindrical::determine_map_extent_for_files(
+
+            let unrotated_map_extent = cylindrical::CylindricalMapExtent::new_from_files(
                 &[in_file.to_string()],
-                &Quaternion::default(),
-                &cylindrical::CylMap::from_projection(&projection)?,
+                None,
+                cylindrical::CylMap::from_projection(&projection)?,
             )?;
             debug!("Unrotated Map Context: {:?}", unrotated_map_extent);
 
@@ -177,9 +180,9 @@ fn project_image(
         // All the others are polar at the moment
         _ => {
             let radial_map = polar::RadialMap::from_projection(&projection)?;
-            let unrotated_map_extent = polar::determine_map_extent_for_files(
+            let unrotated_map_extent = polar::PolarMapExtent::new_from_files(
                 &[in_file.to_string()],
-                &Quaternion::default(),
+                None,
                 size,
                 polar_view,
                 radial_map,

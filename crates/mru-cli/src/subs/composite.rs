@@ -22,6 +22,9 @@ pub struct Composite {
     #[arg(long, short, help = "Anaglyph mode")]
     anaglyph: bool,
 
+    #[arg(long, short, help = "Draw gridlines")]
+    grid: bool,
+
     #[arg(
         long,
         short = 'r',
@@ -110,6 +113,7 @@ impl RunnableSubcommand for Composite {
             size,
             polar_view,
             projection,
+            self.grid,
         )?;
         canvas.save(output).expect("Failed to save image");
 
