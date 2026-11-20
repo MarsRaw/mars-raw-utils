@@ -431,7 +431,7 @@ impl MapCanvas {
 
         for x in 0..(img.image.width - 1) {
             for y in 0..(img.image.height - 1) {
-                if !band_0.get_mask_at_point(x, y) {
+                if !band_0.get_mask_at_point(x, y) || !img.image.get_alpha_at(x, y) {
                     continue;
                 }
 

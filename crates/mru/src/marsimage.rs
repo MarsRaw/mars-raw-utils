@@ -3,7 +3,7 @@ use std::{env, str::FromStr};
 use anyhow::{Error, Result, anyhow};
 use sciimg::{
     DnVec, VecMath, camera::cahvore::Cahvore, debayer::DebayerMethod, drawable::Drawable,
-    enums::ImageMode, image::Image, imagebuffer::ImageBuffer, inpaint, path,
+    enums::ImageMode, image::Image, imagebuffer::ImageBuffer, inpaint, path, resize::ResizeFilter,
 };
 
 use crate::{
@@ -342,11 +342,30 @@ impl MarsImage {
 
     // Resize image to an arbitrary size
     pub fn resize_to(&mut self, to_width: usize, to_height: usize) {
-        self.image.resize_to(to_width, to_height);
+        self.resize_to_with_filter(to_width, to_height, ResizeFilter::Lanczos3);
+    }
+
+    // Resize image to an arbitrary size
+    pub fn resize_to_with_filter(
+        &mut self,
+        to_width: usize,
+        to_height: usize,
+        filter: ResizeFilter,
+    ) {
+        self.image
+            .resize_to_with_filter(to_width, to_height, filter);
+    }
+
+    pub fn downsample(&self, factor: DownsampleScale) -> Result<MarsImage> {
+        self.downsample_with_filter(factor, ResizeFilter::Lanczos3)
     }
 
     // Downsample given a power-of-2 ratio
-    pub fn downsample(&self, factor: DownsampleScale) -> Result<MarsImage> {
+    pub fn downsample_with_filter(
+        &self,
+        factor: DownsampleScale,
+        filter: ResizeFilter,
+    ) -> Result<MarsImage> {
         if factor == DownsampleScale::ScaleFactor1 {
             return Ok(self.clone());
         }
@@ -354,7 +373,7 @@ impl MarsImage {
         let d_h = self.image.height / factor.scalar();
 
         let mut smaller = self.clone();
-        smaller.resize_to(d_w, d_h);
+        smaller.resize_to_with_filter(d_w, d_h, filter);
 
         let mut md = match smaller.metadata.as_surface() {
             Some(md) => md.clone(),

@@ -139,28 +139,6 @@ impl Calibration for M20EECam {
             }
         };
 
-        // vprintln!("Loading image mask");
-        // let mut mask = match calibfile::get_calibration_file_for_instrument(
-        //     instrument,
-        //     enums::CalFileType::Mask,
-        // ) {
-        //     Ok(s) => {
-        //         let mask_file_path = s.replace("-scalefactor-", scale_factor_str.as_str());
-        //         info!(
-        //             "Mask file path for scale factor {}: {}",
-        //             scale_factor, mask_file_path
-        //         );
-        //         load_image(&mask_file_path).unwrap()
-        //     }
-        //     Err(why) => {
-        //         warn!(
-        //             "Flat file not determined for instrument {:?}: {:?}",
-        //             instrument, why
-        //         );
-        //         Image::new_empty().unwrap()
-        //     }
-        // };
-
         if let Some(rect) = &subframe_rect {
             flat.crop(
                 (rect[0] as usize - 1) / scale_factor as usize,
@@ -172,15 +150,6 @@ impl Calibration for M20EECam {
             info!("Flat cropped to {}x{}", flat.width, flat.height);
         }
 
-        // if !mask.is_empty() {
-        //     let mask_adjusted = create_adjusted_mask(mask.get_band(0));
-        //     raw.image
-        //         .set_band(&raw.image.get_band(0).multiply(&mask_adjusted).unwrap(), 0);
-        //     raw.image
-        //         .set_band(&raw.image.get_band(1).multiply(&mask_adjusted).unwrap(), 1);
-        //     raw.image
-        //         .set_band(&raw.image.get_band(2).multiply(&mask_adjusted).unwrap(), 2);
-        // }
         raw.apply_flat(&flat);
 
         if !raw.image.is_grayscale() {
@@ -200,6 +169,56 @@ impl Calibration for M20EECam {
             raw.image.normalize_to_16bit_with_max(data_max);
         }
 
+        vprintln!("Loading image mask");
+
+        let mask_file_path = match calibfile::get_calibration_file_for_instrument(
+            instrument,
+            enums::CalFileType::Mask,
+        ) {
+            Ok(s) => Some(s.replace("-scalefactor-", scale_factor_str.as_str())),
+            Err(why) => {
+                warn!(
+                    "Flat file not determined for instrument {:?}: {:?}",
+                    instrument, why
+                );
+                None
+            }
+        };
+        if let Some(mask_file_path) = &mask_file_path {
+            if path::file_exists(mask_file_path) && path::file_readable(mask_file_path) {
+                info!("Loading mask file from {}", mask_file_path);
+                let mut mask = load_image(mask_file_path)?;
+                if scale_factor == 2 {
+                    let d_w = mask.width / scale_factor as usize;
+                    let d_h = mask.height / scale_factor as usize;
+                    info!(
+                        "Downscaling mask file to {}x{} (raw image dimensions: {}x{})",
+                        d_w, d_h, raw.image.width, raw.image.height
+                    );
+                    mask.resize_to_with_filter(d_w, d_h, sciimg::resize::ResizeFilter::Nearest);
+                }
+
+                if let Some(rect) = &subframe_rect {
+                    mask.crop(
+                        (rect[0] as usize - 1) / scale_factor as usize,
+                        (rect[1] as usize - 1) / scale_factor as usize,
+                        (rect[2] as usize) / scale_factor as usize,
+                        (rect[3] as usize) / scale_factor as usize,
+                    );
+
+                    info!("Mask cropped to {}x{}", mask.width, mask.height);
+                }
+
+                info!("Applying mask to image");
+                raw.apply_alpha(mask.get_band(0));
+                raw.image.set_using_alpha(true);
+            } else {
+                warn!(
+                    "Mask file does not exist or is not readable: {}",
+                    mask_file_path
+                );
+            }
+        }
         // Trim off border pixels
 
         if cal_context.auto_subframing {
@@ -238,6 +257,7 @@ impl Calibration for M20EECam {
 
         vprintln!("Writing to disk...");
         raw.update_history();
+
         match raw.save(&out_file) {
             Ok(_) => cal_ok(cal_context, &out_file),
             Err(why) => {
