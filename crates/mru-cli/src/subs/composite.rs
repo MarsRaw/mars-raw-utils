@@ -25,6 +25,9 @@ pub struct Composite {
     #[arg(long, short, help = "Draw gridlines")]
     grid: bool,
 
+    #[arg(long, short = 't', help = "Transparent background")]
+    transparent: bool,
+
     #[arg(
         long,
         short = 'r',
@@ -114,6 +117,7 @@ impl RunnableSubcommand for Composite {
             polar_view,
             projection,
             self.grid,
+            self.transparent,
         )?;
         canvas.save(output).expect("Failed to save image");
 

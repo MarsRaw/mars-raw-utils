@@ -389,12 +389,13 @@ impl MapCanvas {
         quat: Option<Quaternion>,
         radial_map: RadialMap,
         max_edge_length: usize,
+        transparent: bool,
     ) -> MapCanvas {
         MapCanvas {
             ctx,
             quat,
             radial_map,
-            canvas: Image::create_masked(max_edge_length, max_edge_length, true),
+            canvas: Image::create_masked(max_edge_length, max_edge_length, !transparent),
         }
     }
 
@@ -647,6 +648,7 @@ impl MapCanvas {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn create_composite(
     in_files: &[String],
     _anaglyph: bool,
@@ -655,6 +657,7 @@ pub fn create_composite(
     max_edge_length: usize,
     view: PolarView,
     draw_grid: bool,
+    transparent: bool,
 ) -> Result<Image> {
     if _anaglyph {
         return Err(anyhow!("Anaglyph unsupported for polar projections"));
@@ -674,7 +677,13 @@ pub fn create_composite(
 
     debug!("Map Context: {:?}", map_extent);
 
-    let mut map = MapCanvas::new(map_extent, Some(quat), radial_map, max_edge_length);
+    let mut map = MapCanvas::new(
+        map_extent,
+        Some(quat),
+        radial_map,
+        max_edge_length,
+        transparent,
+    );
 
     if draw_grid {
         map.draw_grid(65535.0, 10, 10);

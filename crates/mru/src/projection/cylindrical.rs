@@ -258,12 +258,13 @@ impl MapCanvas {
         quat: Option<Quaternion>,
         cyl_map: CylMap,
         anaglyph: bool,
+        transparent: bool,
     ) -> MapCanvas {
         MapCanvas {
             ctx,
             quat,
             cyl_map,
-            canvas: Image::create_masked(ctx.width, ctx.height, true),
+            canvas: Image::create_masked(ctx.width, ctx.height, !transparent),
             anaglyph,
         }
     }
@@ -562,6 +563,7 @@ pub fn create_composite(
     azimuth_rotation: f64,
     cyl_map: CylMap,
     draw_grid: bool,
+    transparent: bool,
 ) -> Result<Image> {
     let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
 
@@ -589,7 +591,7 @@ pub fn create_composite(
         return Err(anyhow!("Error: Cannot determine initial camera origin"));
     };
 
-    let mut canvas = MapCanvas::new(map_context, Some(quat), cyl_map, anaglyph);
+    let mut canvas = MapCanvas::new(map_context, Some(quat), cyl_map, anaglyph, transparent);
 
     if draw_grid {
         canvas.draw_grid(65535.0, 10, 10);

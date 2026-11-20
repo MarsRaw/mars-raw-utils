@@ -132,7 +132,7 @@ if [ $do_fetch -eq 1 ]; then
     echo Fetching imagery from NASA servers...
 
     # Fetch left and right Navcams, only NCAM sequences (not TRAV)
-    mru m20-fetch -c NAVCAM_RIGHT NAVCAM_LEFT -s ${sol} -f NCAM0 -n
+    mru m20-fetch -c NAVCAM_RIGHT NAVCAM_LEFT -s ${sol} -f NCAM -n
 
 elif [ `ls N[L,R]*NCAM0[2,3]??*png 2> /dev/null | wc -l` -eq 0 ]; then
     echo No images found. Please rerun with -f option to fetch images from remote server
@@ -184,19 +184,19 @@ if [[ $generate_mosaics -eq 1  && `ls N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.ti
 
 
     # Create Left-eye Mosaic
-    mru composite -i NL*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_left_mosaic
+    mru composite -i NL*NCAM[0,1][2,3]??*assembled-rjcal-mcz.tif -o $nav_left_mosaic
 
     # Create Right-eye Mosaic
-    mru composite -i NR*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_right_mosaic
+    mru composite -i NR*NCAM[0,1][2,3]??*assembled-rjcal-mcz.tif -o $nav_right_mosaic
 
     # Create Red/Blue Anaglyph Mosaic
-    mru composite -i N[L,R]*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_anaglyph_mosaic -a
+    mru composite -i N[L,R]*NCAM[0,1][2,3]??*assembled-rjcal-mcz.tif -o $nav_anaglyph_mosaic -a
 
     # Create Left-eye Polar Stereographic Mosaic
-    mru composite -i NL*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_polar_mosaic  -P ground-angle -p $polar_projection -z $polar_maximum_degrees_from_nadir
+    mru composite -i NL*NCAM[0,1][2,3]??*assembled-rjcal-mcz.tif -o $nav_polar_mosaic  -P ground-angle -p $polar_projection -z $polar_maximum_degrees_from_nadir
 
     # Create Left-eye Polar Rectilinear (Vertical) Mosaic
-    mru composite -i NL*NCAM0[2,3]??*assembled-rjcal-mcz.tif -o $nav_rectilinear_mosaic -p polar-rectilinear
+    mru composite -i NL*NCAM[0,1][2,3]??*assembled-rjcal-mcz.tif -o $nav_rectilinear_mosaic -p polar-rectilinear
 
 fi
 

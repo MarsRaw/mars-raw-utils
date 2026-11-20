@@ -27,6 +27,9 @@ pub struct Project {
     #[arg(long, short, help = "Input images", num_args = 1..)]
     input_files: Vec<std::path::PathBuf>,
 
+    #[arg(long, short = 't', help = "Transparent background")]
+    transparent: bool,
+
     #[arg(
         long,
         short = 'r',
@@ -115,6 +118,7 @@ fn project_image(
     size: usize,
     polar_view: PolarView,
     projection: Projection,
+    transparent: bool,
 ) -> Result<()> {
     let file_suffix = match &projection {
         Projection::Equirectangular
@@ -147,6 +151,7 @@ fn project_image(
         polar_view,
         projection,
         false,
+        transparent,
     )?;
 
     // Rebundle as a MarsImage with metadata
@@ -249,8 +254,15 @@ impl RunnableSubcommand for Project {
         };
 
         in_files.par_iter().try_for_each(|in_file| {
-            project_image(in_file, azimuth_rotation, size, polar_view, projection)
-                .map_err(|why| anyhow!("Error reprojecting image: {:?}", why))
+            project_image(
+                in_file,
+                azimuth_rotation,
+                size,
+                polar_view,
+                projection,
+                self.transparent,
+            )
+            .map_err(|why| anyhow!("Error reprojecting image: {:?}", why))
         })?;
 
         pb_done!();
