@@ -2,6 +2,9 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use anyhow::anyhow;
 use clap::Parser;
+use mru::composite::CompositeOptions;
+use mru::composite::ExtentCont;
+use mru::composite::ProjectionCont;
 use mru::composite::create_composite;
 use mru::metadata::CylindricalProjectionParameters;
 use mru::metadata::PolarProjectionParameters;
@@ -112,6 +115,7 @@ fn mast_azimuth_from_camera_model(image: &MarsImage) -> Result<f64> {
     Ok(d.y.atan2(d.x).rem_euclid(std::f64::consts::TAU))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn project_image(
     in_file: &str,
     azimuth_rotation: f64,
@@ -119,6 +123,8 @@ fn project_image(
     polar_view: PolarView,
     projection: Projection,
     transparent: bool,
+    initial_origin: Option<Vector>,
+    map_extent: Option<ExtentCont>,
 ) -> Result<()> {
     let file_suffix = match &projection {
         Projection::Equirectangular
@@ -143,16 +149,18 @@ fn project_image(
 
     debug!("Azimuth from camera model: {}", look_azimuth.to_degrees());
 
-    let canvas = create_composite(
-        &[in_file.to_string()],
-        false,
-        look_azimuth,
-        size,
+    let canvas = create_composite(CompositeOptions {
+        in_files: [in_file.to_string()].to_vec(),
+        anaglyph: false,
+        azimuth_rotation,
+        max_edge_length_polar: size,
         polar_view,
-        projection,
-        false,
+        projection: ProjectionCont::from_projection(projection),
+        draw_grid: false,
         transparent,
-    )?;
+        initial_origin,
+        map_extent,
+    })?;
 
     // Rebundle as a MarsImage with metadata
     let mut projected_mars_image = image.clone();
@@ -225,6 +233,14 @@ fn project_image(
     projected_mars_image.save(&out_file)
 }
 
+fn initial_origin_from_image_path(img_path: &str) -> Result<Option<Vector>> {
+    let img = MarsImage::open(img_path)?;
+    match img.get_cahvor() {
+        Some(cahvore) => Ok(Some(cahvore.c())),
+        None => Ok(None),
+    }
+}
+
 impl RunnableSubcommand for Project {
     async fn run(&self) -> Result<()> {
         pb_set_print!();
@@ -253,6 +269,27 @@ impl RunnableSubcommand for Project {
             },
         };
 
+        let map_ext = if projection.is_polar() {
+            // For now, we want polar projected images to all have the same dimensions to make
+            // assembling them easier. If the projection code determines the extent for each file
+            // individually, the dimensions will be a little bit different. By determining a map
+            // extent that would work for all the files, we can be sure the output dimensions
+            // will match.
+            Some(ExtentCont::determine_from_files(
+                &in_files,
+                azimuth_rotation,
+                projection,
+                size,
+                polar_view,
+            )?)
+        } else {
+            // Doesn't matter so much for cylindrical. And by not supplying a map extent to cylindrical, it
+            // will limit the output image size to just the image being projected (which is what we want in this case)
+            None
+        };
+
+        let initial_origin = initial_origin_from_image_path(in_files.first().unwrap())?;
+
         in_files.par_iter().try_for_each(|in_file| {
             project_image(
                 in_file,
@@ -261,6 +298,8 @@ impl RunnableSubcommand for Project {
                 polar_view,
                 projection,
                 self.transparent,
+                initial_origin,
+                map_ext,
             )
             .map_err(|why| anyhow!("Error reprojecting image: {:?}", why))
         })?;

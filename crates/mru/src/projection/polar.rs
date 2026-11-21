@@ -11,7 +11,11 @@ use sciimg::{
 };
 use std::f64::consts::FRAC_PI_2;
 
-use crate::{enums::Projection, marsimage::MarsImage};
+use crate::{
+    composite::{CompositeOptions, ExtentCont, ProjectionCont},
+    enums::Projection,
+    marsimage::MarsImage,
+};
 
 const SPHERE_RADIUS: f64 = 100.0;
 const RECTILINEAR_MAX_THETA: f64 = std::f64::consts::FRAC_PI_2 - 1e-6;
@@ -36,6 +40,15 @@ pub enum PolarView {
     GroundAngle { max_zenith_deg: f64 },
     /// Zenith-centered, down to the horizon (plus optional degrees below it)
     Sky { max_zenith_deg: f64 },
+}
+
+impl Default for PolarView {
+    fn default() -> Self {
+        PolarView::Ground {
+            max_radius: 25.0,
+            eye_height: None,
+        }
+    }
 }
 
 pub fn vector_to_polar(v: &Vector, pole: Pole, map: RadialMap) -> PolarXY {
@@ -649,31 +662,47 @@ impl MapCanvas {
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn create_composite(
-    in_files: &[String],
-    _anaglyph: bool,
-    azimuth_rotation: f64,
-    radial_map: RadialMap,
-    max_edge_length: usize,
-    view: PolarView,
-    draw_grid: bool,
-    transparent: bool,
-) -> Result<Image> {
-    if _anaglyph {
+pub fn create_composite(options: CompositeOptions) -> Result<Image> {
+    if options.anaglyph {
         return Err(anyhow!("Anaglyph unsupported for polar projections"));
     }
 
-    let first_image = MarsImage::open(&in_files[0])?;
-    let initial_origin = if let Some(model) = first_image.get_cahvor() {
-        model.c()
-    } else {
-        return Err(anyhow!("Error: Cannot determine initial camera origin"));
+    let first_image = MarsImage::open(&options.in_files[0])?;
+
+    let initial_origin = match options.initial_origin {
+        Some(io) => io.to_owned(),
+        None => {
+            if let Some(model) = first_image.get_cahvor() {
+                model.c()
+            } else {
+                return Err(anyhow!("Error: Cannot determine initial camera origin"));
+            }
+        }
     };
 
-    let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
+    let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, options.azimuth_rotation.to_radians());
 
-    let map_extent =
-        PolarMapExtent::new_from_files(in_files, Some(quat), max_edge_length, view, radial_map)?;
+    let radial_map = match options.projection {
+        ProjectionCont::Polar(radial_map) => radial_map,
+        _ => return Err(anyhow!("Unsupported projection type passed to polar")),
+    };
+
+    let map_extent = if let Some(map_extent) = &options.map_extent {
+        match map_extent {
+            ExtentCont::Polar(map_extent) => map_extent.to_owned(),
+            ExtentCont::Cylindrical(_) => {
+                return Err(anyhow!("Unsupported map extent type passed to polar"));
+            }
+        }
+    } else {
+        PolarMapExtent::new_from_files(
+            &options.in_files,
+            Some(quat),
+            options.max_edge_length_polar,
+            options.polar_view,
+            radial_map,
+        )?
+    };
 
     debug!("Map Context: {:?}", map_extent);
 
@@ -681,15 +710,16 @@ pub fn create_composite(
         map_extent,
         Some(quat),
         radial_map,
-        max_edge_length,
-        transparent,
+        options.max_edge_length_polar,
+        options.transparent,
     );
 
-    if draw_grid {
+    if options.draw_grid {
         map.draw_grid(65535.0, 10, 10);
     }
 
-    in_files
+    options
+        .in_files
         .iter()
         .try_for_each(|in_file| map.project_file_to_canvas(in_file, &initial_origin))?;
 

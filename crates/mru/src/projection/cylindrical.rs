@@ -1,6 +1,7 @@
 use std::str::FromStr as _;
 
 use crate::{
+    composite::{CompositeOptions, ExtentCont, ProjectionCont},
     enums::{Eye, Instrument, Projection},
     marsimage::MarsImage,
     prelude::WrapCylindrical as _,
@@ -22,7 +23,7 @@ use std::f64::consts::{FRAC_PI_2, FRAC_PI_4};
 
 static SPHERE_RADIUS: f64 = 100.0;
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum CylMap {
     Equirectangular,
     Perspective,
@@ -557,47 +558,66 @@ impl MapCanvas {
     }
 }
 
-pub fn create_composite(
-    in_files: &[String],
-    anaglyph: bool,
-    azimuth_rotation: f64,
-    cyl_map: CylMap,
-    draw_grid: bool,
-    transparent: bool,
-) -> Result<Image> {
-    let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, azimuth_rotation.to_radians());
+pub fn create_composite(options: CompositeOptions) -> Result<Image> {
+    let quat = Quaternion::from_pitch_roll_yaw(0.0, 0.0, options.azimuth_rotation.to_radians());
 
-    let map_context = CylindricalMapExtent::new_from_files(in_files, Some(quat), cyl_map)?;
-    debug!("Map Context: {:?}", map_context);
+    let cyl_map = match options.projection {
+        ProjectionCont::Cylindrical(cyl_map) => cyl_map,
+        _ => return Err(anyhow!("Unsupported projection type passed to cylindrical")),
+    };
+
+    let map_extent = if let Some(map_extent) = &options.map_extent {
+        match map_extent {
+            ExtentCont::Cylindrical(map_extent) => map_extent.to_owned(),
+            ExtentCont::Polar(_) => {
+                return Err(anyhow!("Unsupported map extent type passed to cylindrical"));
+            }
+        }
+    } else {
+        CylindricalMapExtent::new_from_files(&options.in_files, Some(quat), cyl_map)?
+    };
+
+    debug!("Map Context: {:?}", map_extent);
     debug!(
         "FOV Vertical: {}",
-        map_context.top_lat - map_context.bottom_lat
+        map_extent.top_lat - map_extent.bottom_lat
     );
     debug!(
         "FOV Horizontal: {}",
-        map_context.right_lon - map_context.left_lon
+        map_extent.right_lon - map_extent.left_lon
     );
 
-    if map_context.width == 0 {
+    if map_extent.width == 0 {
         return Err(anyhow!("Error: Output expected to have zero width"));
-    } else if map_context.height == 0 {
+    } else if map_extent.height == 0 {
         return Err(anyhow!("Error: output expected to have zero height"));
     }
 
-    let first_image = MarsImage::open(&in_files[0])?;
-    let initial_origin = if let Some(model) = first_image.get_cahvor() {
-        model.c()
-    } else {
-        return Err(anyhow!("Error: Cannot determine initial camera origin"));
+    let first_image = MarsImage::open(&options.in_files[0])?;
+    let initial_origin = match options.initial_origin {
+        Some(io) => io.to_owned(),
+        None => {
+            if let Some(model) = first_image.get_cahvor() {
+                model.c()
+            } else {
+                return Err(anyhow!("Error: Cannot determine initial camera origin"));
+            }
+        }
     };
 
-    let mut canvas = MapCanvas::new(map_context, Some(quat), cyl_map, anaglyph, transparent);
+    let mut canvas = MapCanvas::new(
+        map_extent,
+        Some(quat),
+        cyl_map,
+        options.anaglyph,
+        options.transparent,
+    );
 
-    if draw_grid {
+    if options.draw_grid {
         canvas.draw_grid(65535.0, 10, 10);
     }
 
-    in_files.iter().try_for_each(|in_file| {
+    options.in_files.iter().try_for_each(|in_file| {
         if path::file_exists(in_file) {
             info!("Processing File: {}", in_file);
             canvas.project_file_to_canvas(in_file, &initial_origin)

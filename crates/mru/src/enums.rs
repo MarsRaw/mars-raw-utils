@@ -142,6 +142,26 @@ pub enum Projection {
     PolarRectilinear,
 }
 
+impl Projection {
+    pub fn is_cylindrical(&self) -> bool {
+        matches!(
+            self,
+            Self::EqualArea | Self::Equirectangular | Self::Mercator | Self::Perspective
+        )
+    }
+
+    pub fn is_polar(&self) -> bool {
+        matches!(
+            self,
+            Self::PolarEqualArea
+                | Self::PolarEquidistant
+                | Self::PolarOrthographic
+                | Self::PolarRectilinear
+                | Self::PolarStereographic
+        )
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ValueEnum)]
 pub enum VerticalPerspective {
     Sky,

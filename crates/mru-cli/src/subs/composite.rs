@@ -2,7 +2,7 @@ use crate::subs::runnable::RunnableSubcommand;
 use anyhow::Result;
 use clap::Parser;
 use mru::{
-    composite::create_composite,
+    composite::{CompositeOptions, ProjectionCont, create_composite},
     enums::{Projection, VerticalPerspective},
     projection::polar::PolarView,
 };
@@ -109,16 +109,19 @@ impl RunnableSubcommand for Composite {
             },
         };
 
-        let canvas = create_composite(
-            &in_files,
-            self.anaglyph,
+        let canvas = create_composite(CompositeOptions {
+            in_files,
+            anaglyph: self.anaglyph,
             azimuth_rotation,
-            size,
+            max_edge_length_polar: size,
             polar_view,
-            projection,
-            self.grid,
-            self.transparent,
-        )?;
+            projection: ProjectionCont::from_projection(projection),
+            draw_grid: self.grid,
+            transparent: self.transparent,
+            initial_origin: None,
+            ..Default::default()
+        })?;
+
         canvas.save(output).expect("Failed to save image");
 
         pb_done!();
