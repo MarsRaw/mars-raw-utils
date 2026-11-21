@@ -5,5 +5,7 @@ test*.gif
 test*.png
 test*.jpg
 tests/testdata/caltesting
+crates/mru/tests/testdata/caltesting
 .idea
 rustfmt.toml
+dist

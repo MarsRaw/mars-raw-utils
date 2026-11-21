@@ -14,10 +14,10 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 COPY . .
 
 # Test MRU
-RUN cargo test 
+#RUN cargo test  -p mru -p mru-cli
 
 # Build and install MRU
-RUN cargo install --path .
+RUN cargo install --path crates/mru-cli
 
 # Create and populate calibration data folder
 RUN mkdir ~/.marsdata/

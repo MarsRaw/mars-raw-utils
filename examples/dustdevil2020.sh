@@ -7,12 +7,7 @@ lights_only=""
 
 : ${MRUDATAHOME:=/data}
 
-# Make sure we use the ImageMagick convert rather than the ISIS convert
-CONVERT=/usr/bin/convert
-if [ ! -f $CONVERT ]; then
-    CONVERT=/usr/local/bin/convert
-fi
-
+MAGICK="`which magick`"
 
 export MARS_LOG_AT_LEVEL=info
 
@@ -82,12 +77,12 @@ done
 if [ `ls *NCAM00500*-rjcal.tif 2> /dev/null | wc -l` -eq 15 ]; then
     echo "Processing gif for NCAM00500"
     rm DiffGif_${sol}_NCAM00500.gif
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 3` -o DustDevil_${sol}_NCAM00500_part1_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 6 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part2_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 9 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part3_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 12 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part4_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
-    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 15 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part5_rjcal.gif -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
-    $CONVERT DustDevil_${sol}_NCAM00500_part1_rjcal.gif  DustDevil_${sol}_NCAM00500_part2_rjcal.gif DustDevil_${sol}_NCAM00500_part3_rjcal.gif \
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 3` -o DustDevil_${sol}_NCAM00500_part1_rjcal.gif ${lights_only} -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 6 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part2_rjcal.gif ${lights_only} -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 9 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part3_rjcal.gif ${lights_only} -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 12 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part4_rjcal.gif ${lights_only} -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    mru -v diffgif -i `ls *NCAM00500*-rjcal.tif | head -n 15 | tail -n 3` -o DustDevil_${sol}_NCAM00500_part5_rjcal.gif ${lights_only} -b 0 -w 10.0 -g 1.0 -l 5 -d 40 -p stacked -m
+    $MAGICK DustDevil_${sol}_NCAM00500_part1_rjcal.gif  DustDevil_${sol}_NCAM00500_part2_rjcal.gif DustDevil_${sol}_NCAM00500_part3_rjcal.gif \
         DustDevil_${sol}_NCAM00500_part4_rjcal.gif DustDevil_${sol}_NCAM00500_part5_rjcal.gif DustDevil_${sol}_NCAM00500_rjcal.gif 
     rm DustDevil_${sol}_NCAM00500_part*_rjcal.gif 
 fi

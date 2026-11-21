@@ -1,0 +1,45 @@
+[package]
+name = "mru"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description.workspace = true
+
+[lints]
+workspace = true
+
+[lib]
+name = "mru"
+
+[features]
+
+[dependencies]
+sciimg = { workspace = true }
+stump = { workspace = true }
+image = { workspace = true }
+clap = { workspace = true }
+serde_json = { workspace = true }
+reqwest = { workspace = true }
+toml = { workspace = true }
+serde = { workspace = true }
+string-builder = { workspace = true }
+gif = { workspace = true }
+rayon = { workspace = true }
+chrono = { workspace = true }
+dirs = { workspace = true }
+colored = { workspace = true }
+backtrace = { workspace = true }
+lazy_static = { workspace = true }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+regex = { workspace = true }
+url = { workspace = true }
+futures-util = { workspace = true }
+cli-table = { workspace = true }
+futures = { workspace = true }
+dateparser = { workspace = true }
+quick-xml = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3.10"

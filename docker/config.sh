@@ -1,4 +1,4 @@
 
 : ${PROJECT:=mars_raw_utils}
 : ${VENDOR:=kevinmgill}
-: ${MRU_VERSION:=0.9.0}
+: ${MRU_VERSION:=0.10.0}

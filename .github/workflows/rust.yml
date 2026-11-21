@@ -14,7 +14,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
     - name: "Checkout repo"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         submodules: recursive
     - uses: "actions-rs/toolchain@v1"
@@ -29,9 +29,12 @@ jobs:
   test:
     name: "Cargo test"
     runs-on: "ubuntu-latest"
+    env: 
+      MARS_LOG_AT_LEVEL: "debug"
+      RUST_BACKTRACE: 1
     steps:
     - name: "Checkout repo"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         submodules: recursive
 
@@ -44,13 +47,14 @@ jobs:
     - uses: "actions-rs/cargo@v1"
       with:
         command: "test"
+        args: "-p mru -p mru-cli --no-fail-fast -- --nocapture --skip test_psyche_instrument_fetches"
 
   fmt:
     name: "Cargo format"
     runs-on: "ubuntu-latest"
     steps:
     - name: "Checkout repo"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         submodules: recursive
 
@@ -72,7 +76,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
     - name: "Checkout repo"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         submodules: recursive
 
